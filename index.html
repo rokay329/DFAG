@@ -282,17 +282,24 @@
   #touch .tb canvas { width: 30px; height: 30px; image-rendering: pixelated; margin-bottom: 1px; }
   #touch .tb.dn { background: rgba(93,26,30,.85); transform: translateY(1px); }
   #touch .tb.cd { opacity: .45; }
-  #touch .tb.big { width: 84px; height: 84px; right: calc(26px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); font-size: 13px; }
-  #touch .tb.big canvas { width: 40px; height: 40px; }
-  #touch .tb.mid { width: 58px; height: 58px; }
-  #touch .tb.sm { width: 40px; height: 40px; border-radius: 6px; font-size: 10px; }
-  #tSkill { right: calc(118px + env(safe-area-inset-right)); bottom: calc(22px + env(safe-area-inset-bottom)); }
-  #tAwk { right: calc(104px + env(safe-area-inset-right)); bottom: calc(92px + env(safe-area-inset-bottom)); }
-  #tDodge { right: calc(36px + env(safe-area-inset-right)); bottom: calc(120px + env(safe-area-inset-bottom)); }
-  #tF { right: calc(176px + env(safe-area-inset-right)); bottom: calc(88px + env(safe-area-inset-bottom)); }
-  #tMap { right: calc(58px + env(safe-area-inset-right)); top: 42%; }
-  #tPause { right: calc(12px + env(safe-area-inset-right)); top: 42%; }
-  #tFull { right: calc(104px + env(safe-area-inset-right)); top: 42%; }
+  /* 버튼 크기·위치는 화면 높이에 비례(--u, game.js fit에서 설정) */
+  #touch { --u: 1; }
+  #touch .tb.big { width: calc(var(--u) * 76px); height: calc(var(--u) * 76px); right: calc(var(--u) * 22px + env(safe-area-inset-right)); bottom: calc(var(--u) * 20px + env(safe-area-inset-bottom)); font-size: calc(var(--u) * 12px); }
+  #touch .tb.big canvas { width: calc(var(--u) * 36px); height: calc(var(--u) * 36px); }
+  #touch .tb.mid { width: calc(var(--u) * 52px); height: calc(var(--u) * 52px); font-size: calc(var(--u) * 11px); }
+  #touch .tb.mid canvas { width: calc(var(--u) * 26px); height: calc(var(--u) * 26px); }
+  #touch .tb.sm { width: calc(var(--u) * 36px); height: calc(var(--u) * 36px); font-size: calc(var(--u) * 10px); }
+  #tSkill { right: calc(var(--u) * 106px + env(safe-area-inset-right)); bottom: calc(var(--u) * 14px + env(safe-area-inset-bottom)); }
+  #tAwk { right: calc(var(--u) * 100px + env(safe-area-inset-right)); bottom: calc(var(--u) * 78px + env(safe-area-inset-bottom)); }
+  #tDodge { right: calc(var(--u) * 34px + env(safe-area-inset-right)); bottom: calc(var(--u) * 108px + env(safe-area-inset-bottom)); }
+  #tF { right: calc(var(--u) * 160px + env(safe-area-inset-right)); bottom: calc(var(--u) * 64px + env(safe-area-inset-bottom)); }
+  /* 작은 버튼: 기본은 미니맵 아래 가로줄, 게임 화면 옆에 여백이 있으면 그 여백 위쪽에 세로로 */
+  #tPause { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: 38%; }
+  #tMap { right: calc(var(--u) * 50px + env(safe-area-inset-right)); top: 38%; }
+  #tFull { right: calc(var(--u) * 92px + env(safe-area-inset-right)); top: 38%; }
+  #touch.side #tPause { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 8px + env(safe-area-inset-top)); }
+  #touch.side #tMap { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 50px + env(safe-area-inset-top)); }
+  #touch.side #tFull { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 92px + env(safe-area-inset-top)); }
   #rotate { position: fixed; inset: 0; z-index: 60; background: #070509; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gold-l); font-family: 'Galmuri11', monospace; font-size: 15px; text-align: center; }
   #rotate b { font-size: 34px; }
   body.touch.portrait #rotate { display: flex; }
@@ -374,7 +381,7 @@
         </div>
       </div>
       <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.47 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v0.50 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->

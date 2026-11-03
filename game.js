@@ -6681,7 +6681,7 @@
       a.layer('top'); a.star(28, 7, 2, '#ffffff', '#ffffff'); a.px(26, 27, '#9fd2ff'); a.px(5, 6, '#9fd2ff');
     }),
   };
-  function drawIcon32(c, key) { c.width = 32; c.height = 32; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.clearRect(0, 0, 32, 32); if (ICON32[key]) g.drawImage(ICON32[key], 0, 0); }
+  function drawIcon32(c, key) { c.width = 32; c.height = 32; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.clearRect(0, 0, 32, 32); if (ICON32[key]) { const I = ICON32[key].cell || ICON32[key]; g.drawImage(I, 0, 0, 32, 32); } } // v0.49: 캐릭터와 같은 2px 칸 아이콘
   drawIcon32($('skA').querySelector('canvas'), 'atk');
   drawIcon32($('skK').querySelector('canvas'), 'skill');
   drawIcon32($('skL').querySelector('canvas'), 'awaken');
@@ -7100,7 +7100,7 @@
   zone.addEventListener('touchstart', e => {
     e.preventDefault(); const t = e.changedTouches[0]; if (TOUCH.stick) return;
     TOUCH.stick = { id: t.identifier, x: t.clientX, y: t.clientY };
-    stick.style.left = t.clientX + 'px'; stick.style.top = t.clientY + 'px'; stick.classList.add('on'); stickTo(0, 0);
+    const zr = zone.getBoundingClientRect(); stick.style.left = (t.clientX - zr.left) + 'px'; stick.style.top = (t.clientY - zr.top) + 'px'; /* 조이스틱은 zone 안 좌표 */ stick.classList.add('on'); stickTo(0, 0);
   }, { passive: false });
   zone.addEventListener('touchmove', e => { e.preventDefault(); for (const t of e.changedTouches) if (TOUCH.stick && t.identifier === TOUCH.stick.id) stickTo(t.clientX - TOUCH.stick.x, t.clientY - TOUCH.stick.y); }, { passive: false });
   const stickEnd = e => { for (const t of e.changedTouches) if (TOUCH.stick && t.identifier === TOUCH.stick.id) { TOUCH.stick = null; stick.classList.remove('on'); stickTo(0, 0); } };
@@ -7135,15 +7135,25 @@
   }
 
   // ---------------------------------------------------------------- 화면 맞춤
+  var fitW = 0, fitH = 0; // enableTouch가 먼저 fit을 부를 수 있어 var/function으로 끌어올린다
+  function viewW() { return window.visualViewport ? visualViewport.width : innerWidth; }
+  function viewH() { return window.visualViewport ? visualViewport.height : innerHeight; }
   function fit() {
-    const fitS = Math.min(innerWidth / VW, innerHeight / VH);
+    fitW = viewW(); fitH = viewH();
+    const fitS = Math.min(fitW / VW, fitH / VH);
     const s = typeof TOUCH !== 'undefined' && TOUCH.on ? fitS : Math.max(0.75, Math.floor(fitS * 4) / 4); // 모바일은 화면에 꽉 차게
     const wrap = $('wrap');
     wrap.style.width = `${VW * s}px`; wrap.style.height = `${VH * s}px`;
     cv.style.width = `${VW * s}px`; cv.style.height = `${VH * s}px`;
     $('ui').style.transform = `scale(${s})`;
+    if (typeof TOUCH !== 'undefined' && TOUCH.on) {
+      const u = Math.max(0.75, Math.min(1.35, fitH / 400)), side = (fitW - VW * s) / 2;
+      const t = $('touch'); t.style.setProperty('--u', u.toFixed(3)); t.classList.toggle('side', side >= 46 * u);
+    }
   }
-  addEventListener('resize', fit); fit();
+  addEventListener('resize', fit); addEventListener('orientationchange', () => { fit(); setTimeout(fit, 250); setTimeout(fit, 700); });
+  if (window.visualViewport) visualViewport.addEventListener('resize', fit);
+  fit();
 
   // ---------------------------------------------------------------- 루프
   let last = performance.now();
@@ -7151,7 +7161,7 @@
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     try { update(dt); } catch (err) { console.error(err); }
     try { render(); } catch (err) { console.error(err); }
-    try { hud(); updatePeek(); touchHud(); } catch (err) { console.error(err); }
+    try { hud(); updatePeek(); touchHud(); if (viewW() !== fitW || viewH() !== fitH) fit(); } catch (err) { console.error(err); }
     requestAnimationFrame(frame);
   }
   titleMats();
