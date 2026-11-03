@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <title>잿빛 왕관 토벌대 — 프로토타입</title>
 <link rel="stylesheet" href="fonts.css">
 <style>
@@ -267,6 +268,34 @@
   .fgDetail.hitng { animation: fgng .4s steps(6) 1; }
   @keyframes fgok { 0% { background: #fff3c0; } 30% { background: #6e5320; } 100% { background: #120e15; } }
   @keyframes fgng { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); background: #3a0a10; } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+
+  /* ---------- 모바일 터치 조작 ---------- */
+  body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #touch { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: none; font-family: 'Galmuri11', 'Galmuri9', monospace; }
+  #touch.on { display: block; }
+  #touch .zone { position: absolute; left: 0; bottom: 0; width: 46%; height: 70%; pointer-events: auto; }
+  #touch .stick { position: absolute; width: 104px; height: 104px; margin: -52px 0 0 -52px; border-radius: 50%; border: 2px solid rgba(201,162,74,.55); background: rgba(10,7,14,.35); display: none; }
+  #touch .stick.on { display: block; }
+  #touch .knob { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(242,215,140,.55); border: 2px solid #000; }
+  #touch .tb { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--gold-d), 0 2px 0 rgba(0,0,0,.6);
+    background: rgba(26,20,31,.72); color: var(--ink); display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 11px; line-height: 1.1; text-shadow: 1px 1px 0 #000; }
+  #touch .tb canvas { width: 30px; height: 30px; image-rendering: pixelated; margin-bottom: 1px; }
+  #touch .tb.dn { background: rgba(93,26,30,.85); transform: translateY(1px); }
+  #touch .tb.cd { opacity: .45; }
+  #touch .tb.big { width: 84px; height: 84px; right: calc(26px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); font-size: 13px; }
+  #touch .tb.big canvas { width: 40px; height: 40px; }
+  #touch .tb.mid { width: 58px; height: 58px; }
+  #touch .tb.sm { width: 40px; height: 40px; border-radius: 6px; font-size: 10px; }
+  #tSkill { right: calc(118px + env(safe-area-inset-right)); bottom: calc(22px + env(safe-area-inset-bottom)); }
+  #tAwk { right: calc(104px + env(safe-area-inset-right)); bottom: calc(92px + env(safe-area-inset-bottom)); }
+  #tDodge { right: calc(36px + env(safe-area-inset-right)); bottom: calc(120px + env(safe-area-inset-bottom)); }
+  #tF { right: calc(176px + env(safe-area-inset-right)); bottom: calc(88px + env(safe-area-inset-bottom)); }
+  #tMap { right: calc(58px + env(safe-area-inset-right)); top: 42%; }
+  #tPause { right: calc(12px + env(safe-area-inset-right)); top: 42%; }
+  #tFull { right: calc(104px + env(safe-area-inset-right)); top: 42%; }
+  #rotate { position: fixed; inset: 0; z-index: 60; background: #070509; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gold-l); font-family: 'Galmuri11', monospace; font-size: 15px; text-align: center; }
+  #rotate b { font-size: 34px; }
+  body.touch.portrait #rotate { display: flex; }
 </style>
 </head>
 <body>
@@ -345,7 +374,7 @@
         </div>
       </div>
       <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.46 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v0.47 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
@@ -415,6 +444,19 @@
     </div>
   </div>
 </div>
+<div id="touch">
+  <div class="zone" id="tZone"><div class="stick" id="tStick"><div class="knob" id="tKnob"></div></div></div>
+  <div class="tb big" id="tAtk" data-k="j"><canvas width="32" height="32"></canvas>공격</div>
+  <div class="tb mid" id="tSkill" data-k="k"><canvas width="32" height="32"></canvas><span>스킬</span></div>
+  <div class="tb mid" id="tAwk" data-k="e"><canvas width="32" height="32"></canvas><span>각성</span></div>
+  <div class="tb mid" id="tDodge" data-k=" ">점멸</div>
+  <div class="tb sm" id="tF" data-k="f" style="border-radius:50%">F</div>
+  <div class="tb sm" id="tMap" data-k="Tab">지도</div>
+  <div class="tb sm" id="tPause" data-k="Escape">❚❚</div>
+  <div class="tb sm" id="tFull">전체</div>
+</div>
+<div id="rotate"><b>⟳</b>가로로 돌려 주세요<span style="font-size:11px;color:var(--quiet)">잿빛 왕관 토벌대는 가로 화면에서 플레이해요</span></div>
+
 <script src="music.js"></script>
 <script src="game.js"></script>
 </body>

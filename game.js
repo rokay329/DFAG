@@ -4382,6 +4382,7 @@
     updatePoison(dt);
     if (Math.abs(Math.cos(P.ang)) > 0.15 && P.state !== 'charge' && P.state !== 'attack' && P.state !== 'shadow' && P.state !== 'storm' && P.state !== 'butt') P.face = Math.cos(P.ang) > 0 ? 1 : -1;
 
+    if (pressed['j'] || pressed['k'] || pressed['e'] || pressed['l'] || (RANGED() && keys['j'])) { const te = touchAim(); if (te) P.ang = Math.atan2(te.y - (isElite(te) || te.type === 'boss' ? 20 : 8) - (P.y - 10), te.x - P.x); }
     const wantAtk = take('j'), wantSkill = take('k'), wantAwk = take('l') || take('e'), wantDodge = take(' ');
     const holdAtk = RANGED() && (keys['j'] || mouse.down);
     const free = P.state === 'idle' || P.state === 'attack' || P.state === 'rattack';
@@ -4785,7 +4786,8 @@
     const P = G.player;
     P.gauge = 0; P.state = 'cast'; P.t = 0; P.combo = 0;
     let tx, ty;
-    if (mouse.active > 0) { tx = mouse.x + cam.x; ty = mouse.y + cam.y; } else { tx = P.x + Math.cos(P.ang) * 150; ty = P.y + Math.sin(P.ang) * 150; }
+    const te = touchAim();
+    if (mouse.active > 0) { tx = mouse.x + cam.x; ty = mouse.y + cam.y; } else if (te) { tx = te.x; ty = te.y; } else { tx = P.x + Math.cos(P.ang) * 150; ty = P.y + Math.sin(P.ang) * 150; }
     const d = Math.hypot(tx - P.x, ty - P.y); if (d > 280) { tx = P.x + (tx - P.x) / d * 280; ty = P.y + (ty - P.y) / d * 280; }
     tx = clamp(tx, A.x0 + 20, A.x1 - 20); ty = clamp(ty, A.y0 + 20, A.y1 - 20);
     G.meteor = { x: tx, y: ty, t: 0, dur: 1.0, r: 120, fell: false, post: 0 };
@@ -6757,6 +6759,10 @@
   // 조작 안내 (화면 위쪽)
   function keyGuideHTML() {
     const C = CL(), k = (key, t) => `<span class="ki"><span class="key">${key}</span>${t}</span>`;
+    if (typeof TOUCH !== 'undefined' && TOUCH.on) return `<div class="kt">터치 조작</div>
+      <div class="kr">${k('왼쪽 끌기', '이동')}${k('공격', '가까운 적 자동 조준')}${k('스킬', C.skill)}${k('각성', C.awaken)}${k('점멸', '회피')}</div>
+      <div class="kr">${k('F', '상호작용')}${k('지도', '방 지도·순간이동')}${k('❚❚', '일시정지')}</div>
+      <div class="kh">공격 직전 점멸 = 퍼펙트 회피 · 화면을 탭하면 그쪽으로 공격</div>`;
     return `<div class="kt">조작 안내</div>
       <div class="kr">${k('WASD', '이동')}${k('LMB', '공격')}${k('RMB', C.skill)}${k('E', C.awaken)}${k('SPACE', '점멸')}</div>
       <div class="kr">${k('F', '상호작용')}${k('TAB', '지도')}${k('ESC', '일시정지')}${k('M', '음악')}</div>
@@ -7070,9 +7076,68 @@
   $('fgTestMats').addEventListener('click', () => { SAVE.gold += 20000; SAVE.mats.iron += 60; SAVE.mats.crystal += 20; persist(); sfx('select'); forgeMsg = '<span class="ok">테스트 재료 지급: 골드 20000 · 철광석 60 · 결정 20</span>'; renderForge(); });
   $('fgTestItem').addEventListener('click', () => { const it = makeItem(forgeCls); SAVE.inv.push(it); forgeSel = it.id; persist(); sfx('drop'); forgeMsg = `<span class="ok">테스트 장비 지급: ${it.name}</span>`; renderForge(); });
 
+
+  // ---------------------------------------------------------------- 모바일 터치 조작
+  // 왼쪽 아무 곳이나 눌러 끌면 가상 조이스틱(WASD), 오른쪽 버튼은 키 입력을 그대로 흉내 낸다 → 기존 입력 처리를 모두 재사용
+  const TOUCH = { on: false, held: {}, stick: null, dirs: { w: false, a: false, s: false, d: false } };
+  const keyEv = (type, key) => dispatchEvent(new KeyboardEvent(type, { key, bubbles: true }));
+  function enableTouch() {
+    if (TOUCH.on) return; TOUCH.on = true; document.body.classList.add('touch'); fit();
+    if (G) { G.kgCls = null; }
+  }
+  if (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches) enableTouch();
+  addEventListener('touchstart', () => enableTouch(), { passive: true });
+  function setDir(k, on) { if (TOUCH.dirs[k] === on) return; TOUCH.dirs[k] = on; keyEv(on ? 'keydown' : 'keyup', k); }
+  function stickTo(dx, dy) {
+    const d = Math.hypot(dx, dy), R = 40, k = d > R ? R / d : 1;
+    $('tKnob').style.transform = `translate(${dx * k}px,${dy * k}px)`;
+    const dead = 12, a = Math.atan2(dy, dx), on = d > dead;
+    // 8방향: 각 축은 ±67.5° 안이면 켠다
+    setDir('d', on && Math.cos(a) > 0.38); setDir('a', on && Math.cos(a) < -0.38);
+    setDir('s', on && Math.sin(a) > 0.38); setDir('w', on && Math.sin(a) < -0.38);
+  }
+  const zone = $('tZone'), stick = $('tStick');
+  zone.addEventListener('touchstart', e => {
+    e.preventDefault(); const t = e.changedTouches[0]; if (TOUCH.stick) return;
+    TOUCH.stick = { id: t.identifier, x: t.clientX, y: t.clientY };
+    stick.style.left = t.clientX + 'px'; stick.style.top = t.clientY + 'px'; stick.classList.add('on'); stickTo(0, 0);
+  }, { passive: false });
+  zone.addEventListener('touchmove', e => { e.preventDefault(); for (const t of e.changedTouches) if (TOUCH.stick && t.identifier === TOUCH.stick.id) stickTo(t.clientX - TOUCH.stick.x, t.clientY - TOUCH.stick.y); }, { passive: false });
+  const stickEnd = e => { for (const t of e.changedTouches) if (TOUCH.stick && t.identifier === TOUCH.stick.id) { TOUCH.stick = null; stick.classList.remove('on'); stickTo(0, 0); } };
+  zone.addEventListener('touchend', stickEnd); zone.addEventListener('touchcancel', stickEnd);
+  document.querySelectorAll('#touch .tb[data-k]').forEach(b => {
+    const k = b.dataset.k;
+    const dn = e => { e.preventDefault(); b.classList.add('dn'); TOUCH.held[k] = true; keyEv('keydown', k); };
+    const up = e => { e.preventDefault(); b.classList.remove('dn'); if (TOUCH.held[k]) { TOUCH.held[k] = false; keyEv('keyup', k); } };
+    b.addEventListener('touchstart', dn, { passive: false }); b.addEventListener('touchend', up); b.addEventListener('touchcancel', up);
+    b.addEventListener('mousedown', dn); b.addEventListener('mouseup', up); b.addEventListener('mouseleave', up);
+  });
+  $('tFull').addEventListener('click', () => { const d = document.documentElement; if (!document.fullscreenElement) { (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d); try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) { } } else document.exitFullscreen && document.exitFullscreen(); });
+  if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) $('tFull').style.display = 'none';
+  // 조준 보조: 터치로 공격·기술을 쓰면 가까운 적을 향한다 (마우스로 조준 중이면 그대로)
+  function touchAim() {
+    if (!TOUCH.on || mouse.active > 0 || !G) return null;
+    const P = G.player; let best = null, bd = 260;
+    for (const e of G.enemies) { if (e.dead) continue; const d = Math.hypot(e.x - P.x, e.y - P.y); if (d < bd) { bd = d; best = e; } }
+    return best;
+  }
+  function touchHud() {
+    const show = TOUCH.on && (mode === 'play' || mode === 'map');
+    $('touch').classList.toggle('on', show);
+    document.body.classList.toggle('portrait', TOUCH.on && innerHeight > innerWidth);
+    if (!show) { for (const k in TOUCH.held) if (TOUCH.held[k]) { TOUCH.held[k] = false; keyEv('keyup', k); } for (const k in TOUCH.dirs) setDir(k, false); return; }
+    if (G && TOUCH.iconCls !== G.cls) {
+      TOUCH.iconCls = G.cls; const C = CL(), ic = C.icons || (G.cls === 'ranger' ? ['dual', 'shadow', 'storm'] : ['atk', 'skill', 'awaken']);
+      drawIcon32($('tAtk').querySelector('canvas'), ic[0]); drawIcon32($('tSkill').querySelector('canvas'), ic[1]); drawIcon32($('tAwk').querySelector('canvas'), ic[2]);
+      
+    }
+    if (G && G.player) { const P = G.player, sk = P.chargeCd.some((c, i) => c <= 0 && i < (G.stats.fx.has('bulwark') && G.cls === 'knight' ? 2 : 1)); $('tSkill').classList.toggle('cd', !sk); $('tAwk').classList.toggle('cd', P.gauge < 100); $('tDodge').classList.toggle('cd', P.stam <= 0); $('tF').style.display = G.prompt ? '' : 'none'; }
+  }
+
   // ---------------------------------------------------------------- 화면 맞춤
   function fit() {
-    const s = Math.max(0.75, Math.floor(Math.min(innerWidth / VW, innerHeight / VH) * 4) / 4);
+    const fitS = Math.min(innerWidth / VW, innerHeight / VH);
+    const s = typeof TOUCH !== 'undefined' && TOUCH.on ? fitS : Math.max(0.75, Math.floor(fitS * 4) / 4); // 모바일은 화면에 꽉 차게
     const wrap = $('wrap');
     wrap.style.width = `${VW * s}px`; wrap.style.height = `${VH * s}px`;
     cv.style.width = `${VW * s}px`; cv.style.height = `${VH * s}px`;
@@ -7086,7 +7151,7 @@
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     try { update(dt); } catch (err) { console.error(err); }
     try { render(); } catch (err) { console.error(err); }
-    try { hud(); updatePeek(); } catch (err) { console.error(err); }
+    try { hud(); updatePeek(); touchHud(); } catch (err) { console.error(err); }
     requestAnimationFrame(frame);
   }
   titleMats();
