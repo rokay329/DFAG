@@ -6853,6 +6853,7 @@
     titlePanel = name;
     $('tmMain').style.display = name === 'main' ? '' : 'none';
     $('tmHowto').style.display = name === 'howto' ? '' : 'none';
+    $('ovTitle').classList.toggle('howto', name === 'howto');
     $('tmSound').style.display = name === 'sound' ? '' : 'none';
     resetArmed = false; $('tmMain').querySelector('[data-act="reset"]').textContent = '저장 초기화';
   }

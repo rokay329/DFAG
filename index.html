@@ -167,6 +167,10 @@
   .ver { position: absolute; right: 10px; bottom: 8px; font-family: 'Galmuri7'; font-size: 8px; color: var(--dim); }
   .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 6px 0; align-items: center; }
   .keys .key { justify-self: start; }
+  body:not(.touch) .touchOnly, body.touch .pcOnly { display: none !important; }
+  /* 조작법 패널: 넓게 펼치고 로고를 숨겨 화면 안에 들어오게, 그래도 길면 안에서 스크롤 */
+  #ovTitle.howto .logo, #ovTitle.howto #titleInfo { display: none; }
+  #ovTitle.howto #titleMenu { width: 500px; max-width: 94%; max-height: 404px; overflow-y: auto; }
   .keys span { color: var(--ink); }
   .vol { display: grid; grid-template-columns: 54px 1fr 26px; gap: 6px 8px; align-items: center; margin: 8px 0; }
   .vol span { color: var(--ink); }
@@ -357,7 +361,7 @@
         </div>
         <div id="tmHowto" style="display:none">
           <h2>조작법</h2>
-          <div class="keys">
+          <div class="keys pcOnly">
             <span class="key">WASD</span><span>이동 · 마우스를 움직이면 커서 방향 조준</span>
             <span class="key">LMB</span><span>공격 (직업별, 마법사·거너는 누르고 있으면 연사)</span>
             <span class="key">RMB</span><span>특수기술 (직업별)</span>
@@ -367,6 +371,17 @@
             <span class="key">TAB</span><span>지도 — 클리어한 방의 텔레포터로 순간이동</span>
             <span class="key">H</span><span>조작 안내 켜기/끄기 (시작할 때 자동 표시)</span>
             <span class="key">M</span><span>음악 켜기/끄기</span>
+          </div>
+          <div class="keys touchOnly">
+            <span class="key">왼쪽 끌기</span><span>이동 — 화면 왼쪽 아래 아무 곳이나 누르면 그 자리에 조이스틱</span>
+            <span class="key">공격</span><span>가까운 적을 자동 조준 (마법사·거너는 누르고 있으면 연사)</span>
+            <span class="key">스킬</span><span>특수기술 (직업별)</span>
+            <span class="key">각성</span><span>각성기 (직업별, 투지 100)</span>
+            <span class="key">점멸</span><span>회피 — 공격 직전이면 퍼펙트 회피</span>
+            <span class="key">F</span><span>상호작용 — 상자 · 상인 · 모닥불 · 텔레포터 앞에서 나타남</span>
+            <span class="key">지도</span><span>클리어한 방의 텔레포터로 순간이동</span>
+            <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
+            <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
           </div>
           <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트 방 2곳을 처치하면 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.</p>
           <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
@@ -381,7 +396,7 @@
         </div>
       </div>
       <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.50 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v0.51 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
