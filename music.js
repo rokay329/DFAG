@@ -46,6 +46,21 @@ window.AudioSys = (() => {
     ['Dm', 'D5 D5 F5 D5 E5:2 D5:2'], ['Bb', 'D5 D5 F5 D5 Bb4:4'], ['C', 'E5 E5 G5 E5 F5:2 E5:2'], ['A', 'C#5:2 E5:2 A5:4'],
     ['Eb', 'G5:2 F5 Eb5 D5:2 Bb4:2'], ['Dm', 'A4:2 D5:2 F5 E5 D5:2'], ['Gm', 'Bb4:2 D5:2 G5:2 F5:2'], ['A', 'E5:2 C#5:2 A4:4'],
   ];
+  // 무너진 성채: 타락 기사단의 의식장. 반음계 하강과 종소리 같은 긴 선율.
+  const CITADEL = [
+    ['Dm', 'D5:2 F5:2 E5 Eb5 D5:2'], ['Bb', 'D5:2 Bb4:2 D5 F5 G5:2'], ['Gm', 'Bb5:2 A5 G5 F5 Eb5:2'], ['A', 'E5:2 C#5:2 A4 C#5 D5:2'],
+    ['Dm', 'F5:2 A5:2 G5 F5 Eb5:2'], ['Eb', 'G5:2 Bb5:2 A5 G5 F5:2'], ['Bb', 'D5:2 F5:2 Eb5 D5 C#5:2'], ['A', 'A4:2 C#5:2 E5:2 -:2'],
+    ['Gm', 'G5:2 Bb5:2 D6:2 C6:2'], ['Dm', 'A5:2 F5:2 D5:2 C#5:2'], ['Eb', 'Eb5:2 G5:2 Bb5:2 G5:2'], ['A', 'F5:2 E5:2 C#5:2 A4:2'],
+    ['Dm', 'D5:2 A4:2 D5 F5 G5:2'], ['Bb', 'F5:2 Eb5:2 D5 C#5 D5:2'], ['Gm', 'Bb4:2 D5:2 G5 F5 Eb5:2'], ['A', 'E5:2 C#5:2 D5:4'],
+  ];
+  const CITADEL_BOSS = [
+    ['Dm', 'D5 D5 A5:2 F5 Eb5 D5'], ['Eb', 'Eb5 Eb5 Bb5:2 G5 F5 Eb5'], ['Bb', 'D5 F5 Bb5:2 A5 G5 F5'], ['A', 'C#5:2 E5:2 A5:4'],
+    ['Dm', 'D6:2 C#6 A5 Bb5:2 A5:2'], ['Gm', 'G5 Bb5 D6:2 C6 Bb5 A5'], ['Eb', 'Eb6:2 D6 Bb5 G5 F5 Eb5'], ['A', 'A5:2 G5 F5 E5:2 C#5:2'],
+  ];
+  const CITADEL_REST = [
+    ['Dm', 'A4:4 D5:4'], ['Bb', 'F4:4 Bb4:4'], ['Gm', 'D5:2 Bb4:2 G4:4'], ['A', 'E5:4 C#5:4'],
+    ['Dm', 'F4:4 A4:4'], ['Eb', 'G4:4 Bb4:4'], ['Bb', 'D5:4 F5:4'], ['A', 'E5:4 -:4'],
+  ];
   const song = (rows) => rows.map(([c, m]) => ({ ch: CH[c], mel: bar(m) }));
   const SONGS = {
     title:   { bpm: 76,  bars: song(THEME.slice(0, 8)), lead: 'bell',  leadVol: 0.07, bass: 'long', arp: 'harp', drum: null,    pad: 0.035, choir: 0.03 },
@@ -54,6 +69,10 @@ window.AudioSys = (() => {
     rest:    { bpm: 84,  bars: song(REST),              lead: 'lute',  leadVol: 0.08, bass: 'long', arp: 'lute',   drum: null,    pad: 0.03,  choir: 0.025 },
     orc:     { bpm: 104, bars: song(ORC),               lead: 'pulse', leadVol: 0.05, bass: 'drive', arp: null,     drum: 'war',  pad: 0.03,  choir: 0.04 },
     orcboss: { bpm: 140, bars: song(ORC_BOSS),          lead: 'pulse', leadVol: 0.06, bass: 'drive', arp: 'harpsi', drum: 'warboss', pad: 0.03, choir: 0.045, stab: true },
+    citadel: { bpm: 96, bars: song(CITADEL),             lead: 'bell', leadVol: 0.065, bass: 'long', arp: 'harpsi', drum: 'field', pad: 0.045, choir: 0.035 },
+    citadelSurvive: { bpm: 116, bars: song(CITADEL),      lead: 'pulse', leadVol: 0.06, bass: 'pulse', arp: 'harpsi', drum: 'drive', pad: 0.035, choir: 0.035 },
+    citadelBoss: { bpm: 136, bars: song(CITADEL_BOSS),    lead: 'pulse', leadVol: 0.07, bass: 'drive', arp: 'harpsi', drum: 'boss', pad: 0.04, choir: 0.045, stab: true },
+    citadelRest: { bpm: 72, bars: song(CITADEL_REST),     lead: 'bell', leadVol: 0.055, bass: 'long', arp: 'lute', drum: null, pad: 0.04, choir: 0.04 },
     boss:    { bpm: 152, bars: song(BOSS),              lead: 'pulse', leadVol: 0.065, bass: 'drive', arp: 'harpsi', drum: 'boss', pad: 0.03, choir: 0.04, stab: true },
   };
 
