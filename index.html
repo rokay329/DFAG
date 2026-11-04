@@ -273,6 +273,62 @@
   @keyframes fgok { 0% { background: #fff3c0; } 30% { background: #6e5320; } 100% { background: #120e15; } }
   @keyframes fgng { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-4px); background: #3a0a10; } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
 
+
+  /* 장비 · 인벤토리 (v0.52) */
+  .invWin { width: 724px; max-width: 724px; padding: 9px 12px 7px; }
+  .invBody { display: flex; gap: 10px; height: 352px; margin-top: 4px; }
+  .invLeft { width: 270px; display: flex; flex-direction: column; gap: 6px; }
+  .invDoll { display: flex; justify-content: space-between; align-items: stretch; background: radial-gradient(circle at 50% 62%, #3b2d46, #120d16 72%); border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); padding: 6px; height: 176px; }
+  .eqCol { display: flex; flex-direction: column; justify-content: space-between; }
+  .eqSlot { width: 44px; height: 52px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; background: none; border: none; padding: 0; color: var(--quiet); font: inherit; }
+  .eqSlot .box { position: relative; width: 40px; height: 40px; background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--c, #3a2f40); display: flex; align-items: center; justify-content: center; }
+  .eqSlot .box img { width: 28px; height: 28px; image-rendering: pixelated; }
+  .eqSlot .box .lv { position: absolute; right: 1px; bottom: 0; font-family: 'Galmuri7'; font-size: 8px; color: var(--gold-l); font-style: normal; }
+  .eqSlot .box .ph { opacity: .22; filter: grayscale(1); }
+  .eqSlot span { font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; }
+  .eqSlot.sel .box { box-shadow: inset 0 0 0 1px var(--c, #3a2f40), 0 0 0 1px var(--gold-l); }
+  .eqSlot.sel span { color: var(--gold-l); }
+  .invPv { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .invPv canvas { width: 108px; height: 88px; }
+  .invCls { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); margin-top: 6px; }
+  .invCls small { display: block; text-align: center; font-family: 'Galmuri7'; font-weight: normal; font-size: 8px; color: var(--quiet); }
+  .invStats { display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 3px 8px; background: #120e15; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; padding: 6px 8px; }
+  .invStats span { color: var(--quiet); }
+  .invStats b { font-weight: normal; color: var(--ink); text-align: right; }
+  .invFx { flex: 1; overflow-y: auto; font-family: 'Galmuri7'; font-size: 8px; line-height: 1.6; color: var(--legend); }
+  .invFx .no { color: var(--dim); }
+  .invRight { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .invTabs { display: flex; gap: 4px; align-items: center; }
+  .invTabs .pbtn { white-space: nowrap; }
+  .invTabs .pbtn.sel { background: #5d1a1e; color: #fff; }
+  .invTabs .cnt { margin-left: auto; font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
+  .invGrid { display: grid; grid-template-columns: repeat(10, 36px); grid-auto-rows: 36px; gap: 3px; height: 156px; overflow-y: auto; align-content: start; background: #0b080d; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; padding: 4px; }
+  .ivCell { position: relative; width: 36px; height: 36px; padding: 0; cursor: pointer; background: #17121b; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--c); display: flex; align-items: center; justify-content: center; }
+  .ivCell img { width: 28px; height: 28px; image-rendering: pixelated; }
+  .ivCell.off img { filter: grayscale(.8) brightness(.55); }
+  .ivCell.sel { background: #2d2236; box-shadow: inset 0 0 0 1px var(--c), 0 0 0 1px var(--gold-l); }
+  .ivCell i { position: absolute; font-style: normal; font-family: 'Galmuri7'; font-size: 8px; line-height: 8px; }
+  .ivCell .lv { right: 1px; bottom: 1px; color: var(--gold-l); }
+  .ivCell .eq { left: 1px; top: 1px; background: var(--gold); color: #1a1208; padding: 0 1px; }
+  .ivCell.new::after { content: ''; position: absolute; right: 2px; top: 2px; width: 3px; height: 3px; background: var(--blood); box-shadow: 0 0 0 1px #000; }
+  .invEmpty { grid-column: 1 / -1; color: var(--dim); padding: 6px; }
+  .invDetail { flex: 1; background: #120e15; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; padding: 6px 9px; overflow-y: auto; display: flex; gap: 10px; }
+  .invDetail .dl { flex: 1; min-width: 0; }
+  .invDetail .dr { width: 170px; }
+  .invDetail .gr { font-family: 'Galmuri7'; font-size: 8px; color: var(--c); letter-spacing: 1px; }
+  .invDetail .nm { font-family: 'Galmuri11'; font-size: 12px; color: var(--c); margin-bottom: 3px; }
+  .invDetail .nm b { color: var(--gold-l); font-weight: normal; }
+  .invDetail .mn { color: var(--ink); margin-bottom: 2px; }
+  .invDetail .op { color: var(--ink); line-height: 1.5; }
+  .invDetail .fx { color: var(--legend); line-height: 1.5; }
+  .invDetail .rp { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); margin-top: 4px; }
+  .cmpT { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); margin-bottom: 3px; }
+  .cmp { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 6px; font-family: 'Galmuri7'; font-size: 8px; }
+  .cmp span { color: var(--quiet); } .cmp b { font-weight: normal; color: var(--ink); text-align: right; }
+  .cmp .up { color: #8ff0a0; text-align: right; } .cmp .dn { color: #ff7070; text-align: right; } .cmp .eq0 { color: var(--dim); text-align: right; }
+  .invDetail .row { margin-top: 6px; }
+  .invHint { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; color: var(--quiet); }
+
   /* ---------- 모바일 터치 조작 ---------- */
   body.touch { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   #touch { position: fixed; inset: 0; z-index: 50; pointer-events: none; display: none; font-family: 'Galmuri11', 'Galmuri9', monospace; }
@@ -301,9 +357,11 @@
   #tPause { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: 38%; }
   #tMap { right: calc(var(--u) * 50px + env(safe-area-inset-right)); top: 38%; }
   #tFull { right: calc(var(--u) * 92px + env(safe-area-inset-right)); top: 38%; }
+  #tInv { right: calc(var(--u) * 134px + env(safe-area-inset-right)); top: 38%; }
   #touch.side #tPause { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 8px + env(safe-area-inset-top)); }
   #touch.side #tMap { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 50px + env(safe-area-inset-top)); }
   #touch.side #tFull { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 92px + env(safe-area-inset-top)); }
+  #touch.side #tInv { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: calc(var(--u) * 134px + env(safe-area-inset-top)); }
   #rotate { position: fixed; inset: 0; z-index: 60; background: #070509; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gold-l); font-family: 'Galmuri11', monospace; font-size: 15px; text-align: center; }
   #rotate b { font-size: 34px; }
   body.touch.portrait #rotate { display: flex; }
@@ -342,7 +400,7 @@
     <div class="hud pf glass" id="keyguide"></div>
     <div class="hud" id="banner"></div>
     <div class="hud" id="lootFeed"></div>
-    <div class="hud f7" id="debug">테스트 키 — N 방 즉시 클리어 · B 보스 방으로 · V 스테이지 클리어 · T 무기 등급 바꾸기 · ESC 일시정지</div>
+    <div class="hud f7" id="debug">I 장비 · 테스트 키 — N 방 즉시 클리어 · B 보스 방으로 · V 스테이지 클리어 · T 무기 등급 바꾸기 · ESC 일시정지</div>
     <div class="hud f7" id="mute">M 음악 켜기/끄기</div>
 
     <!-- 타이틀 -->
@@ -369,6 +427,7 @@
             <span class="key">SPACE</span><span>점멸 — 공격 직전이면 퍼펙트 회피</span>
             <span class="key">F</span><span>상호작용 — 상자 열기 · 상인 구매 · 모닥불 휴식 · 텔레포터</span>
             <span class="key">TAB</span><span>지도 — 클리어한 방의 텔레포터로 순간이동</span>
+            <span class="key">I</span><span>장비 · 인벤토리 — 장착 장비·능력치 확인, 장비 비교·교체 (게임 멈춤)</span>
             <span class="key">H</span><span>조작 안내 켜기/끄기 (시작할 때 자동 표시)</span>
             <span class="key">M</span><span>음악 켜기/끄기</span>
           </div>
@@ -380,10 +439,11 @@
             <span class="key">점멸</span><span>회피 — 공격 직전이면 퍼펙트 회피</span>
             <span class="key">F</span><span>상호작용 — 상자 · 상인 · 모닥불 · 텔레포터 앞에서 나타남</span>
             <span class="key">지도</span><span>클리어한 방의 텔레포터로 순간이동</span>
+            <span class="key">가방</span><span>장비 · 인벤토리 — 장비 비교·교체 (게임 멈춤)</span>
             <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
             <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
           </div>
-          <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트 방 2곳을 처치하면 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.</p>
+          <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트 방 2곳을 처치하면 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.<br>오크에게 잡히면 공격을 연타하거나 점멸로 빠져나온다. 전쟁 북은 3번 때리면 찢어진다.</p>
           <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
         </div>
         <div id="tmSound" style="display:none">
@@ -396,7 +456,7 @@
         </div>
       </div>
       <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.51 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v0.72 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
@@ -450,6 +510,33 @@
       </div>
     </div>
 
+    <!-- 장비 · 인벤토리 -->
+    <div class="ov" id="ovInv">
+      <div class="pf win invWin">
+        <div class="fgTop">
+          <h2>장비 · 인벤토리</h2>
+          <div class="fgMoney"><span>골드 <b id="ivGold">0</b></span><span>철광석 조각 <b id="ivIron">0</b></span><span>정령의 결정 <b id="ivCrystal">0</b></span></div>
+        </div>
+        <div class="invBody">
+          <div class="invLeft">
+            <div class="invDoll">
+              <div class="eqCol" id="eqL"></div>
+              <div class="invPv"><canvas class="px" id="invPv" width="108" height="88"></canvas><div class="invCls" id="invCls"></div></div>
+              <div class="eqCol" id="eqR"></div>
+            </div>
+            <div class="invStats" id="invStats"></div>
+            <div class="invFx" id="invFx"></div>
+          </div>
+          <div class="invRight">
+            <div class="invTabs" id="invTabs"></div>
+            <div class="invGrid" id="invGrid"></div>
+            <div class="invDetail" id="invDetail"></div>
+          </div>
+        </div>
+        <div class="invHint f7"><span class="pcOnly">방향키 선택 · ENTER 장착/해제 · Q / E 탭 바꾸기 · I 또는 ESC 닫기</span><span class="touchOnly">칸을 눌러 고르고 장착 · 해제</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
+      </div>
+    </div>
+
     <!-- 일시정지 -->
     <div class="ov" id="ovPause">
       <div class="pf win" style="width:240px">
@@ -460,6 +547,7 @@
         </div>
         <div class="menu" id="pmMenu">
           <button class="mi sel" data-act="resume">계속하기</button>
+          <button class="mi" data-act="inv">장비 · 인벤토리 [I]</button>
           <button class="mi danger" data-act="quit">토벌 포기</button>
         </div>
       </div>
@@ -476,6 +564,7 @@
   <div class="tb sm" id="tMap" data-k="Tab">지도</div>
   <div class="tb sm" id="tPause" data-k="Escape">❚❚</div>
   <div class="tb sm" id="tFull">전체</div>
+  <div class="tb sm" id="tInv" data-k="i">가방</div>
 </div>
 <div id="rotate"><b>⟳</b>가로로 돌려 주세요<span style="font-size:11px;color:var(--quiet)">잿빛 왕관 토벌대는 가로 화면에서 플레이해요</span></div>
 

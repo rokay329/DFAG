@@ -37,12 +37,23 @@ window.AudioSys = (() => {
     ['F', 'A4:4 C5:2 A4:2'], ['C', 'G4:4 E4:4'], ['Dm', 'F4:2 A4:2 D5:4'], ['Bb', 'C5:2 Bb4:2 A4:2 G4:2'],
     ['F', 'A4:4 C5:2 F5:2'], ['C', 'E5:4 C5:4'], ['Bb', 'D5:2 C5:2 Bb4:2 G4:2'], ['C', 'G4:4 -:4'],
   ];
+  // 오크 부락: 낮은 음역의 무거운 행진 + 전쟁 북 (챕터 3)
+  const ORC = [
+    ['Dm', 'D4:2 D4 F4 E4:2 D4:2'], ['Bb', 'F4:2 D4 Bb3 C4:4'], ['C', 'E4:2 C4 E4 G4:2 F4:2'], ['A', 'E4:3 D4 C#4:4'],
+    ['Dm', 'D5:2 C5 A4 Bb4:2 A4:2'], ['Gm', 'G4:2 Bb4 A4 G4:2 D4:2'], ['Eb', 'Eb4:2 G4:2 F4 Eb4 D4:2'], ['A', 'C#4:2 E4:2 A4:4'],
+  ];
+  const ORC_BOSS = [
+    ['Dm', 'D5 D5 F5 D5 E5:2 D5:2'], ['Bb', 'D5 D5 F5 D5 Bb4:4'], ['C', 'E5 E5 G5 E5 F5:2 E5:2'], ['A', 'C#5:2 E5:2 A5:4'],
+    ['Eb', 'G5:2 F5 Eb5 D5:2 Bb4:2'], ['Dm', 'A4:2 D5:2 F5 E5 D5:2'], ['Gm', 'Bb4:2 D5:2 G5:2 F5:2'], ['A', 'E5:2 C#5:2 A4:4'],
+  ];
   const song = (rows) => rows.map(([c, m]) => ({ ch: CH[c], mel: bar(m) }));
   const SONGS = {
     title:   { bpm: 76,  bars: song(THEME.slice(0, 8)), lead: 'bell',  leadVol: 0.07, bass: 'long', arp: 'harp', drum: null,    pad: 0.035, choir: 0.03 },
     field:   { bpm: 112, bars: song(THEME),             lead: 'pulse', leadVol: 0.06, bass: 'pulse', arp: 'harpsi', drum: 'field', pad: 0.025, choir: 0.02 },
     survive: { bpm: 132, bars: song(THEME),             lead: 'pulse', leadVol: 0.06, bass: 'pulse', arp: 'harpsi', drum: 'drive', pad: 0.025, choir: 0.025 },
     rest:    { bpm: 84,  bars: song(REST),              lead: 'lute',  leadVol: 0.08, bass: 'long', arp: 'lute',   drum: null,    pad: 0.03,  choir: 0.025 },
+    orc:     { bpm: 104, bars: song(ORC),               lead: 'pulse', leadVol: 0.05, bass: 'drive', arp: null,     drum: 'war',  pad: 0.03,  choir: 0.04 },
+    orcboss: { bpm: 140, bars: song(ORC_BOSS),          lead: 'pulse', leadVol: 0.06, bass: 'drive', arp: 'harpsi', drum: 'warboss', pad: 0.03, choir: 0.045, stab: true },
     boss:    { bpm: 152, bars: song(BOSS),              lead: 'pulse', leadVol: 0.065, bass: 'drive', arp: 'harpsi', drum: 'boss', pad: 0.03, choir: 0.04, stab: true },
   };
 
@@ -172,6 +183,18 @@ window.AudioSys = (() => {
       if (eighth === 2 || eighth === 6) snare(t, 0.11);
       hat(t, 0.03); hat(t + E / 2, 0.015);
       if (barIdx % 4 === 3 && eighth >= 6) { tom(t, 0.22, 200); tom(t + E / 2, 0.22, 150); }
+    }
+    else if (S.drum === 'war') {
+      if (eighth === 0 || eighth === 4) { kick(t, 0.34); tom(t, 0.2, 110); }
+      if (eighth === 2 || eighth === 3) tom(t, 0.16, 92);
+      if (eighth === 6) snare(t, 0.08);
+      if (eighth === 7 && barIdx % 2 === 1) { tom(t, 0.18, 140); tom(t + E / 2, 0.16, 120); }
+    } else if (S.drum === 'warboss') {
+      if (eighth % 2 === 0) kick(t, 0.34);
+      if (eighth % 2 === 1) tom(t, 0.2, eighth % 4 === 1 ? 160 : 120);
+      if (eighth === 2 || eighth === 6) snare(t, 0.1);
+      hat(t, 0.02);
+      if (barIdx % 4 === 3 && eighth >= 6) { tom(t, 0.24, 200); tom(t + E / 2, 0.24, 150); }
     }
     if (S.stab && (eighth === 0 || (eighth === 3 && barIdx % 2 === 1))) stab(ch, t, 0.03);
   }
