@@ -193,6 +193,19 @@
   .item .gr { font-family: 'Galmuri7'; font-size: 8px; color: var(--c); letter-spacing: 1px; }
   .item .nm { font-family: 'Galmuri11'; font-size: 12px; color: var(--c); }
   .item .fx { color: var(--legend); }
+  /* v0.98 효과 옵션 · 세트 · 저주 · 3택1 */
+  .efx { color: #7fd4ff; }
+  .setx { color: var(--sc); } .setx b { font-weight: normal; color: #fff; } .setx span { display: block; color: #8a8090; padding-left: 8px; } .setx span.on { color: var(--sc); }
+  .cursex { color: #ff6a6a; }
+  .pkRow { display: flex; gap: 10px; justify-content: center; align-items: stretch; margin-top: 8px; }
+  .pkCard { width: 214px; padding: 8px; text-align: left; color: var(--ink); font: inherit; font-size: 10px; line-height: 1.6; cursor: pointer; background: #120e15; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--c), 0 0 0 1px #000; position: relative; }
+  .pkCard:hover { background: #1e1622; box-shadow: inset 0 0 0 2px var(--c), 0 0 0 1px #000, 0 0 10px var(--c); }
+  .pkCard .gr { font-family: 'Galmuri7'; font-size: 8px; color: var(--c); letter-spacing: 1px; }
+  .pkCard .nm { font-family: 'Galmuri11'; font-size: 12px; color: var(--c); }
+  .pkCard .mn { color: #fff; }
+  .pkCard .fx { color: var(--legend); }
+  .pkCmp { margin-top: 5px; padding-top: 4px; border-top: 1px dashed #3a2f40; } .pkCmp i { display: block; font-style: normal; color: #8a8090; } .pkCmp span { display: inline-block; margin-right: 6px; } .pkCmp .up { color: #7dff8a; } .pkCmp .dn { color: #ff6a6a; }
+  .pkCard .key { position: absolute; right: 6px; top: 6px; }
   .item .new { position: absolute; right: 3px; top: 3px; font-family: 'Galmuri7'; font-size: 8px; background: var(--blood); color: #fff; padding: 0 2px; animation: blink .6s steps(2) infinite; }
   .item button { margin-top: 4px; }
   .pbtn { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); background: #2a2030; border: 1px solid #000; box-shadow: inset 1px 1px 0 #55465f, inset -1px -1px 0 #0e0a11; padding: 3px 9px; cursor: pointer; }
@@ -256,6 +269,7 @@
   .fgStat .up { color: #8ff0a0; }
   .fgOpt { color: var(--ink); line-height: 1.5; }
   .fgOpt.fx { color: var(--legend); }
+  .fgMore { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; } .fgMore small { color: #9a8f8a; margin-left: 4px; } .fgMore .pbtn[disabled] { opacity: .45; cursor: default; }
   .fgRate { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
   .fgRate span { color: var(--quiet); }
   .fgRate b { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; color: var(--gold-l); }
@@ -456,7 +470,7 @@
         </div>
       </div>
       <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.87 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v0.98 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
@@ -490,6 +504,13 @@
     </div>
 
     <!-- 휴식 -->
+    <div class="ov" id="ovPick">
+      <div class="pf win" style="max-width:720px">
+        <h2 id="pkTitle">보상 상자</h2>
+        <p>장비 셋 중 하나를 고른다. 고른 장비는 바로 장착되고, 쓰던 장비는 가방으로 들어간다.</p>
+        <div class="pkRow" id="pkChoices"></div>
+      </div>
+    </div>
     <div class="ov" id="ovRest">
       <div class="pf win">
         <h2>모닥불 — 휴식</h2>
