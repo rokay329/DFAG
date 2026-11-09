@@ -3014,6 +3014,18 @@
   }
   const doorIn = (d, k = 26) => ({ x: DOOR[d].x + (d === 'w' ? k : d === 'e' ? -k : 0), y: DOOR[d].y + (d === 'n' ? k : d === 's' ? -k : 0) });
   const ROOM_N = { forge: '대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '모닥불', reward: '보물 방', shop: '상인', secret: '비밀 방', boss: '보스' };
+  // v1.21 챕터마다 다른 엘리트 방 이름·문구 (tier 4 = 첫째 엘리트 방, tier 9 = 둘째)
+  const ELITE_ROOM = {
+    1: { n: '우두머리의 굴', tag: '굴', foe: '우두머리', clear: '우두머리 처치', loot: '우두머리의 전리품',
+      sub: { 4: '거대 고블린이 정령의 불씨를 움켜쥐고 있다', 9: '가시등 멧돼지가 불씨를 지키며 땅을 긁는다' } },
+    2: { n: '처형장', tag: '처형장', foe: '처형장', clear: '처형장 제압', loot: '처형장의 전리품',
+      sub: { 4: '기사단 처형인이 마지막 판결을 기다린다', 9: '처형인 곁에 역병 어미가 둥지를 틀었다' } },
+    3: { n: '결투장', tag: '결투장', foe: '결투', clear: '결투 승리', loot: '결투의 전리품',
+      sub: { 4: '투기장 챔피언 우르그가 엄니를 걸고 덤빈다', 9: '사슬 풀린 트롤 그러크가 우리 밖으로 뛰쳐나왔다' } },
+  };
+  const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
+  const roomName = t => t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
+  const roomTag = t => t === 'elite' ? ER().tag : ROOM_TAG[t];
   const ROOM_TAG = { forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '모닥불', reward: '보물', shop: '상인', secret: '비밀', boss: '보스' };
 
   function withSeed(seed, fn) {
@@ -3124,7 +3136,7 @@
     setArena(SHAPES[STD]);
     // 지도 경계
     const xs = rooms.map(r => r.gx), ys = rooms.map(r => r.gy);
-    return { rooms, start: rooms[0], boss, foyer, cur: null, eliteDone: 0, stage, bx0: Math.min(...xs), bx1: Math.max(...xs), by0: Math.min(...ys), by1: Math.max(...ys) };
+    return { rooms, start: rooms[0], boss, foyer, cur: null, eliteDone: 0, keys: 0, sock: [false, false], bossOpen: false, gate: null, stage, bx0: Math.min(...xs), bx1: Math.max(...xs), by0: Math.min(...ys), by1: Math.max(...ys) };
   }
 
   // ---------- 방 구조물: 기둥(나무) · 무너진 벽(덤불) · 잔해(바위) · 구덩이(연못)
@@ -3324,7 +3336,7 @@
     G.dun = genDungeon(G.stage);
     G.mood = null;
     enterRoom(G.dun.start, null);
-    banner(`STAGE ${G.stage}`, `${STG().n} — 엘리트 둘을 쓰러뜨려 보스의 봉인을 풀어라`);
+    banner(`STAGE ${G.stage}`, `${STG().n} — ${SK().intro}`);
   }
   function setMood(m) { if (G.mood !== m) { G.mood = m; window.AudioSys.setMood(m, true); } }
   const hiddenDoor = (R, d) => R.crack && R.crack.dir === d && !R.crack.broken;
@@ -3332,6 +3344,7 @@
     const D = G.dun, P = G.player;
     if (D.cur && D.cur !== R) D.cur.loot = G.loot.filter(l => l.life > 0);
     setArena(SHAPES[R.shape]);
+    R.socks = sealSocks(R);
     D.cur = R; R.visited = true; R.seen = true;
     for (const d in R.doors) if (R.doors[d] != null && !hiddenDoor(R, d)) D.rooms[R.doors[d]].seen = true;
     G.enemies = []; G.tele = []; G.hazards = []; G.proj = []; G.eproj = []; G.mproj = []; G.meteor = null; G.vortex = null; G.boss = null; G.bonfire = null;
@@ -3357,8 +3370,8 @@
     if (R.type === 'combat' || R.type === 'elite' || R.type === 'survive' || R.type === 'boss') {
       if (fresh) { G.rs.state = 'intro'; sealRoom(true); }
     } else R.cleared = true;
-    if (fresh && R.type === 'elite') banner('엘리트 방', STG().elite);
-    if (fresh && R.type === 'survive') banner('봉인된 방', '4페이즈 동안 끝없이 몰려오는 적을 막아라 · 시간이 지나면 다음 페이즈');
+    if (fresh && R.type === 'elite') banner(ER().n, ER().sub[R.tier] || STG().elite);
+    if (fresh && R.type === 'survive') banner('봉인된 방', `문이 닫혔다! ${SURV_N}번의 습격을 버텨라`);
     if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
     if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; P.hp = G.stats.hp; banner('모닥불', '불가에서 쉬면 축복을 하나 얻는다 · F'); } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('상인', '골드로 보급품을 산다 · F'); }
@@ -3378,7 +3391,7 @@
     const id = R.doors[d]; if (id == null) return 'none';
     if (hiddenDoor(R, d)) return 'crack';
     if (G.sealed) return 'sealed';
-    if (G.dun.rooms[id].type === 'boss' && G.dun.eliteDone < 2) return 'boss';
+    if (G.dun.rooms[id].type === 'boss' && !G.dun.bossOpen) return 'boss';
     return 'open';
   }
   function goRoom(R, entry, tele) {
@@ -3412,12 +3425,14 @@
         if (regen && G.spawnT <= 0 && alive + G.spawning < survCap(rs.ph)) { G.spawnT = (G.stage === 1 ? 1.5 : 1.2) * (1 - rs.ph * 0.12); let r = Math.random(); for (const [t, w] of STG().survive) { if (r < w) { queueSpawn(t); break; } r -= w; } }
         rs.idleT = alive + G.spawning === 0 ? rs.idleT + dt : 0;
         if (!last && (rs.phT >= PT || (rs.idleT > 1.2 && rs.phT > 4))) { rs.ph++; rs.phT = 0; survivePhase(rs.ph); }
-        else if (last && rs.phT >= PT && !rs.final) { rs.final = true; banner('적의 물결이 멎었다', '남은 적을 모두 쓰러뜨려라'); sfx('grogi'); }
+        else if (last && rs.phT >= PT && !rs.final) { rs.final = true; banner('습격 종료!', '남은 놈들을 쓸어버려라'); sfx('grogi'); }
+        { const c = Math.ceil(PT - rs.phT), k = rs.ph * 10 + c; if (c >= 1 && c <= 3 && rs.cdK !== k) { rs.cdK = k; banner(String(c), last ? '버텨라!' : '다음 습격이 온다'); sfx('blip', c === 1 ? 1.5 : 1); } }
         if (last && rs.phT >= PT && alive === 0 && G.spawning === 0) roomClear();
       }
     }
     updateNav(dt);
     G.crackCd = Math.max(0, (G.crackCd || 0) - dt);
+    updateGate(dt);
     if (!G.sealed && !G.trans && !P.dead) checkDoors();
     // 상호작용 (F)
     G.prompt = P.dead ? null : nearInteract();
@@ -3428,10 +3443,15 @@
     // 텔레포터 위 F 안내는 nearInteract에서
   }
   // 4페이즈 리젠 방 설정: 페이즈 길이, 페이즈별 최대 동시 적 수, 페이즈 시작 시 한꺼번에 몰려오는 적
+  const SURV_CRY = { // v1.18 습격마다 외치는 한 줄
+    1: ['덤불이 술렁인다 — 놈들이 온다!', '고블린 떼가 몰려온다!', '바닥에서 점액이 끓어오른다!', '거대 점액이 깨어났다 — 끝까지 버텨라!'],
+    2: ['무덤 뚜껑이 열린다 — 망자가 온다!', '썩은 기사단이 몰려든다!', '역병의 악취가 짙어진다!', '부푼 시체가 다가온다 — 끝까지 버텨라!'],
+    3: ['전쟁 함성이 협곡을 울린다!', '부락 전사들이 쏟아진다!', '정예 오크가 섞여 들어온다!', '대족장의 친위대다 — 끝까지 버텨라!'],
+  };
   const SURV_N = 4, SURV_PT = () => G.stage === 1 ? 14 : G.stage === 2 ? 15 : 16;
   const survCap = ph => Math.round(STG().surviveMax * (0.5 + ph * 0.17));
   function survivePhase(ph) {
-    banner(`페이즈 ${ph + 1}/${SURV_N}`, ph === SURV_N - 1 ? '마지막 물결 — 버텨라' : `${SURV_PT()}초 뒤 다음 물결이 온다`); sfx('growl', 0.8 - ph * 0.05); addShake(3 + ph);
+    banner(ph === SURV_N - 1 ? '최후의 습격!' : `습격 ${ph + 1}/${SURV_N}`, (SURV_CRY[G.stage] || SURV_CRY[1])[Math.min(ph, 3)]); sfx('growl', 0.8 - ph * 0.05); addShake(3 + ph);
     const n = 2 + ph; for (let i = 0; i < n; i++) { let r = Math.random(); for (const [t, w] of STG().survive) { if (r < w) { queueSpawn(t); break; } r -= w; } }
     if (G.stage === 3 && ph >= 2) queueSpawn(pick(['ocharge', 'otroll', 'ogrip']));
     if (G.stage !== 3 && ph === SURV_N - 1) queueSpawn(G.stage === 1 ? 'bigslime' : 'bloat');
@@ -3441,12 +3461,12 @@
     sealRoom(false);
     if (R.type === 'elite') {
       const n = ++G.dun.eliteDone;
-      banner(n >= 2 ? '보스의 봉인이 풀렸다' : `엘리트 처치 ${n}/2`, n >= 2 ? `${STG().boss}의 방으로 가는 문이 열렸다` : '엘리트를 하나 더 쓰러뜨리면 보스 방이 열린다');
-      if (n >= 2) sfx('grogi');
+      banner(`${ER().clear} ${Math.min(n, 2)}/2`, SK().drop); sfx('grogi');
+      { const q = freePoint(CX, CY + 44); spawnLoot('sealkey', q.x, q.y); G.fx.push({ kind: 'skybeam', x: q.x, y: q.y, w: 22, c: SK().rgb, t: 0.8, max: 0.8, up: true }); } // v1.18 봉인 열쇠
       R.chest = { x: CX, y: CY - 10, opened: false, kind: 'elite' }; // v0.98 엘리트 보상 상자 → 장비 3택1
       G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,170,90', t: 0.6, max: 0.6 });
     } else if (R.type === 'survive') {
-      banner('봉인 해제', '보상 상자가 나타났다');
+      banner('봉인 해제!', '살아남았다 — 보상 상자가 나타났다');
       R.chest = { x: CX, y: CY - 10, opened: false, kind: 'reward' };
       G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,210,120', t: 0.6, max: 0.6 });
     }
@@ -3472,7 +3492,7 @@
     if (R.type === 'elite' || R.type === 'combat' || R.type === 'survive') roomClear();
   }
   function debugToBoss() {
-    const D = G.dun; D.eliteDone = 2;
+    const D = G.dun; D.eliteDone = 2; D.sock = [true, true]; D.bossOpen = true; D.gate = null;
     const entry = Object.keys(D.boss.doors).find(d => D.boss.doors[d] != null);
     D.foyer.visited = D.foyer.seen = true; D.foyer.cleared = true;
     goRoom(D.boss, entry);
@@ -3502,8 +3522,9 @@
   function nearInteract() {
     const P = G.player, R = G.dun.cur, near = (o, d = 34) => Math.hypot(P.x - o.x, P.y - o.y) < d;
     { const fi = forgeInteract(); if (fi) return fi; }
-    if (R.chest && !R.chest.opened && !R.chest.fall && near(R.chest, 36)) return { k: 'chest', o: R.chest, x: R.chest.x, y: R.chest.y - 30, t: R.chest.kind === 'boss' ? 'F 보스의 전리품' : 'F 상자 열기' };
+    if (R.chest && (!R.chest.opened || R.chest.pending) && !R.chest.fall && near(R.chest, 36)) return { k: 'chest', o: R.chest, x: R.chest.x, y: R.chest.y - 30, t: R.chest.pending ? 'F 보류한 전리품 고르기' : R.chest.kind === 'boss' ? 'F 보스의 전리품' : 'F 상자 열기' };
     { const gl = nearGear(); if (gl) return { k: 'gear', o: gl, x: gl.x, y: gl.y - 30, t: 'F 줍기' }; }
+    if (R.socks && !G.dun.bossOpen && !G.dun.gate) for (const s of R.socks) if (!(s.dual ? G.dun.sock[0] && G.dun.sock[1] : G.dun.sock[s.i]) && near(s, 36)) { const K = SK(), y = s.y - SOCK_H[G.stage] - 8; return G.dun.keys > 0 ? { k: 'sock', o: s, x: s.x, y, t: `F ${K.act}` } : { k: 'none', o: s, x: s.x, y, t: K.need, bad: true }; }
     if (R.exit && near(R.exit, 26)) return { k: 'exit', o: R.exit, x: R.exit.x, y: R.exit.y - 30, t: R.type === 'forge' ? `F STAGE ${G.stage + 1}로` : G.stage < lastStage() ? `F 다음 스테이지로 · 대장간` : 'F 토벌 완료' };
     if (R.shop) for (const it of R.shop) if (!it.sold && near(it, 26)) return { k: 'shop', o: it, x: it.x, y: it.y - 34, t: `F ${SHOP_N[it.k]} · ${it.price}G`, bad: G.gold < it.price };
     if (G.bonfire && !R.used && near(G.bonfire, 44)) return { k: 'rest', o: G.bonfire, x: G.bonfire.x, y: G.bonfire.y - 38, t: 'F 휴식 · 축복 선택' };
@@ -3515,21 +3536,24 @@
   function doInteract(it) {
     const R = G.dun.cur;
     if (it.k === 'station') { openForge('station', it.o.k); return; }
+    if (it.k === 'none') { sfx('block'); return; }
+    if (it.k === 'sock') { placeSeal(it.o); return; }
     if (it.k === 'exit') { // v1.01: 주우지 않은 보스 전리품이 있으면 한 번 더 확인
       if (R.type === 'forge') { sfx('awaken'); flashT = 0.15; flashColor = '#ffe0b0'; leaveForge(); return; }
-      const left = (R.chest && R.chest.kind === 'boss' && !R.chest.opened) || G.loot.some(l => l.type === 'gear');
+      const left = (R.chest && R.chest.kind === 'boss' && !R.chest.opened) || G.dun.rooms.some(r => r.chest && r.chest.pending) || G.loot.some(l => l.type === 'gear');
       if (left && !(G.exitArm > time)) { G.exitArm = time + 3; sfx('block'); lootFeed('아직 챙기지 않은 전리품이 있다 — 다시 F를 누르면 출발', '#ffb060', 3000); return; }
       sfx('awaken'); flashT = 0.15; flashColor = '#ffe0b0'; G.exitArm = 0;
       if (G.stage < lastStage()) stageClear(); else showResult(true); return;
     }
     if (it.k === 'gear') { collectLoot(it.o); it.o.life = -1; G.loot = G.loot.filter(l => l !== it.o); gearCmpId = null; sfx('select'); return; }
     if (it.k === 'chest') {
-      const c = it.o; c.opened = true; c.openT = 0;
+      const c = it.o; if (c.pending) { openPick(c.kind, c); return; }
+      c.opened = true; c.openT = 0;
       sfx('drop'); sfx('coin'); addShake(3);
       G.fx.push({ kind: 'skybeam', x: c.x, y: c.y, w: 26, c: c.kind === 'secret' ? '200,140,255' : '255,210,120', t: 0.5, max: 0.5, up: true });
       spawnLoot('pouch', c.x, c.y + 6);
       if (c.kind === 'boss') { openBossChest(c); return; } // v0.98: 보스 장비는 상자에서
-      if (c.kind === 'reward' || c.kind === 'elite') { openPick(c.kind); return; } // v0.98: 장비 3개 중 하나를 고른다
+      if (c.kind === 'reward' || c.kind === 'elite') { openPick(c.kind, c); return; } // v0.98: 장비 3개 중 하나를 고른다
       const g = rollGradeW(c.kind === 'secret' ? [0, 35, 50, 15] : [25, 50, 20, 5]);
       spawnLoot('gear', c.x, c.y + 6, makeItem(G.cls, { grade: g }));
       if (c.kind === 'secret') { spawnLoot('orb', c.x, c.y + 6); spawnLoot('bigmeat', c.x, c.y + 6); G.crystal++; lootFeed('정령의 결정 +1', '#9fd2ff'); }
@@ -3552,7 +3576,7 @@
     SAVE.inv.push(it); const nx = statsIf(it.slot, it.id); SAVE.inv.pop(); const cur = calcStats(G.buffs);
     const curIt = SAVE.inv.find(i => i.id === eqOf(G.cls)[it.slot]);
     const rows = INV_STATS.map(([k, n, f]) => { const dv = nx[k] - cur[k], tiny = ['crit', 'critDmg', 'cdr'].includes(k) ? 0.0005 : 0.5; if (Math.abs(dv) < tiny) return ''; return `<span class="${dv > 0 ? 'up' : 'dn'}">${n} ${dv > 0 ? '▲' : '▼'}${f(Math.abs(dv)).replace('%', '')}${['crit', 'critDmg', 'cdr'].includes(k) ? '%p' : ''}</span>`; }).join('');
-    return `<div class="pkCmp"><i>${curIt ? `지금 「${curIt.name}」 대신` : '빈 칸에 장착'}</i>${rows || '<span>능력치 변화 없음</span>'}</div>`;
+    return `<div class="pkCmp"><i>${curIt ? `가방으로 · 「${curIt.name}」 대신 끼면` : '빈 칸 — 바로 장착'}</i>${rows || '<span>능력치 변화 없음</span>'}</div>`;
   }
   // v1.00 지금 장착 중인 장비 6칸 요약 (3택1 화면)
   function curGearStrip() {
@@ -3560,25 +3584,34 @@
     return '<div class="gcH">착용 중</div><div class="pcRow">' + SLOTS.map(sl => { const it = SAVE.inv.find(i => i.id === eq[sl.k]); if (!it) return `<div class="pc" style="--c:#3a2f40"><b>${sl.k === 'weapon' ? CLASSES[G.cls].weapon : sl.n}</b><i>빈 칸</i></div>`;
       const g = gradeOf(it), v = itemVal(it); return `<div class="pc" style="--c:${g.c}"><b>${slotName(it)}</b><span>${it.name}${it.lv ? ` +${it.lv}` : ''}</span><i>${it.stat === 'crit' ? `치명 +${v}%` : `${sl.label} +${v}`}${it.efx ? ` · ◆${EFX[it.efx].n}` : ''}${it.set ? ` · ⬢` : ''}</i></div>`; }).join('') + '</div>';
   }
-  function openPick(kind) {
-    mode = 'pick'; const w = PICK_W[kind][G.stage] || PICK_W[kind][1], slots = SLOTS.map(x => x.k), ch = [];
-    for (let i = 0; i < 3; i++) { const sl = slots.splice(randi(0, slots.length - 1), 1)[0]; ch.push(makeItem(G.cls, { grade: rollGradeW(w), slot: sl })); }
-    G.pickCh = ch; sfx('drop'); if (ch.some(it => it.grade === 'legend')) sfx('legend');
-    $('pkTitle').textContent = kind === 'elite' ? '엘리트의 전리품' : '보상 상자';
+  function openPick(kind, c) {
+    mode = 'pick'; const w = PICK_W[kind][G.stage] || PICK_W[kind][1], slots = SLOTS.map(x => x.k);
+    let ch = c && c.pick; // v1.19 보류했던 상자는 같은 세 장비를 다시 보여 준다
+    if (!ch) { ch = []; for (let i = 0; i < 3; i++) { const sl = slots.splice(randi(0, slots.length - 1), 1)[0]; ch.push(makeItem(G.cls, { grade: rollGradeW(w), slot: sl })); } if (c) { c.pick = ch; c.pending = true; } }
+    G.pickCh = ch; G.pickChest = c || null; sfx('drop'); if (ch.some(it => it.grade === 'legend')) sfx('legend');
+    $('pkTitle').textContent = kind === 'elite' ? ER().loot : '보상 상자';
     $('pkChoices').innerHTML = ch.map((it, i) => { const g = gradeOf(it), sl = slotOf(it), v = itemVal(it);
       return `<button class="pkCard pf" data-i="${i}" style="--c:${g.c}"><div class="gr">${g.n} · ${slotName(it)}</div><div class="nm">${it.name}</div><div class="mn">${it.stat === 'crit' ? `치명 확률 +${v}%` : `${sl.label} +${v}`}</div>${it.opts.map(o => `<div>${optText(o)}</div>`).join('')}${it.fx ? `<div class="fx">★ ${LEGEND_FX[it.fx].d}</div>` : ''}${itemExtra(it, G.cls)}${pickCompare(it)}<span class="key">${i + 1}</span></button>`; }).join('');
     $('pkChoices').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => takePick(+b.dataset.i)));
     $('pkCur').innerHTML = curGearStrip();
     $('ovPick').classList.add('on');
   }
+  // v1.19 고르지 않고 닫기: 상자는 열린 채로 남고, 다시 F를 누르면 같은 세 장비 중에서 고른다
+  function closePick() {
+    if (mode !== 'pick') return;
+    G.pickCh = null; G.pickChest = null; $('ovPick').classList.remove('on'); for (const k in pressed) pressed[k] = false; mode = 'play'; sfx('blip');
+    lootFeed('전리품을 보류했다 — 상자 앞에서 F로 다시 고를 수 있다', '#9a8f8a', 3200);
+  }
   function takePick(i) {
     const it = G.pickCh && G.pickCh[i]; if (!it) return;
     const P = G.player, g = gradeOf(it);
     SAVE.inv.push(it); G.fieldItems.push(it);
-    if (canEquip(it, G.cls)) { const oldHp = G.stats.hp; eqOf(G.cls)[it.slot] = it.id; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp); }
-    persist(); G.pickCh = null; $('ovPick').classList.remove('on'); mode = 'play'; sfx('select');
+    const empty = canEquip(it, G.cls) && !SAVE.inv.find(x => x.id === eqOf(G.cls)[it.slot]); // v1.19 빈 칸일 때만 바로 장착, 아니면 가방으로
+    if (empty) { const oldHp = G.stats.hp; eqOf(G.cls)[it.slot] = it.id; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp); }
+    if (G.pickChest) { G.pickChest.pending = false; G.pickChest.pick = null; G.pickChest = null; }
+    persist(); G.pickCh = null; $('ovPick').classList.remove('on'); for (const k in pressed) pressed[k] = false; mode = 'play'; sfx('select');
     G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 10, grow: 160, t: 0.5, max: 0.5, c: g.c });
-    lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b> — 장착${it.set ? ` · ${SETS[it.set].n} ${setCount(it.set)}/4` : ''}`, g.c, 4200);
+    lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b> — ${empty ? '빈 칸이라 바로 장착' : '가방에 보관 (I)'}${it.set ? ` · ${SETS[it.set].n} ${setCount(it.set)}/4` : ''}`, g.c, 4200);
   }
   // v0.98 보스 전리품 상자: 열면 장비가 튀어나와 등급 빛기둥을 세우고, 잠시 뒤 대장간(또는 결과 화면)으로
   function openBossChest(c) {
@@ -4185,7 +4218,7 @@
     for (const d in DIRS) {
       const st = doorState(R, d); if (st === 'none') continue;
       if (st === 'crack') drawCrack(R, d);
-      else if (st === 'boss') drawSeal(d, 1);
+      else if (st === 'boss') drawSeal(d, gateK());
       else if (G.sealAnim > 0) drawSeal(d, G.sealAnim);
       if (R.doors[d] != null && G.dun.rooms[R.doors[d]].type === 'boss' && st !== 'crack') drawBossSigil(d, st === 'boss');
     }
@@ -4217,7 +4250,140 @@
     const x = Math.round(q.x - spr.width / 2) & ~1, y = Math.round(q.y - spr.height / 2) & ~1;
     ctx.drawImage(spr, x, y);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = locked ? 0.25 + 0.25 * Math.sin(time * 3) : 0.7; ctx.drawImage(glow, x, y); ctx.restore();
-    if (locked) { ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; fillTextW(`엘리트 ${G.dun.eliteDone}/2`, q.x + 1, q.y + 19); ctx.fillStyle = '#ff8080'; fillTextW(`엘리트 ${G.dun.eliteDone}/2`, q.x, q.y + 18); }
+    if (locked) { const t = `${SK().unit} ${sealPlaced()}/2`; ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; fillTextW(t, q.x + 1, q.y + 19); ctx.fillStyle = '#ff8080'; fillTextW(t, q.x, q.y + 18); }
+  }
+  // ================================================================ v1.18 보스 문 봉인 기믹
+  // 엘리트를 쓰러뜨리면 「봉인 열쇠」가 떨어진다. 주워서 보스 방 앞 받침 2곳에 바치면(F) 챕터마다 다른 연출로 문이 열린다.
+  // 1장 잿빛 초원: 정령의 불씨 → 화톳대에 초록 불 → 가시덤불이 타서 걷힘
+  // 2장 무너진 성채: 기사단 인장 조각 → 문장 받침에 반쪽씩 → 방패가 맞물리면 쇠사슬이 끊기고 창살이 오름
+  // 3장 핏빛 엄니 부락: 전사의 엄니 → 해골 토템에 걸면 눈이 붉게 타오름 → 뿔나팔·북소리와 함께 통나무 문이 올라감
+  const SEAL = {
+    1: { key: '정령의 불씨', unit: '불씨', sockN: '화톳대', act: '정령의 불씨 붙이기', need: '불씨가 없다 — 우두머리의 굴에서 빼앗아 와라', c: '#c8f070', rgb: '190,240,110',
+      intro: '우두머리 둘이 품은 정령의 불씨로 보스 방의 가시덤불을 태워라', drop: '정령의 불씨가 떨어졌다 — 보스 방 앞 화톳대로!',
+      put: '화톳대에 초록 불이 붙었다', open: ['가시덤불이 불타 사라졌다', '점액왕의 둥지로 가는 길이 열렸다'] },
+    2: { key: '기사단 인장 조각', unit: '인장', sockN: '문장 받침', act: '인장 조각 끼우기', need: '인장 조각이 없다 — 처형장에서 되찾아 와라', c: '#ffd070', rgb: '255,205,110',
+      intro: '두 처형장에 흩어진 기사단 인장을 하나로 맞춰 봉인을 풀어라', drop: '기사단 인장 조각을 되찾았다 — 보스 방 앞 문장 받침으로!',
+      put: '인장 조각이 받침에 끼워졌다', put2: '두 조각이 하나의 문장으로 맞물렸다', open: ['기사단의 인장이 되살아났다', '쇠사슬이 끊어지고 창살이 올라간다'] },
+    3: { key: '전사의 엄니', unit: '엄니', sockN: '해골 토템', act: '엄니 바치기', need: '바칠 엄니가 없다 — 결투장 챔피언의 엄니를 뽑아 와라', c: '#ff8a60', rgb: '255,110,70',
+      intro: '결투장 챔피언 둘의 엄니를 뽑아 대족장의 해골 토템에 바쳐라', drop: '전사의 엄니를 뽑았다 — 보스 방 앞 해골 토템으로!',
+      put: '해골 토템의 눈에 불이 켜졌다', open: ['토템이 피를 마셨다', '뿔나팔이 울린다 — 대족장의 투기장 문이 올라간다'] },
+  };
+  const SK = () => SEAL[G && G.stage] || SEAL[1];
+  const sealPlaced = () => (G.dun && G.dun.sock ? G.dun.sock.filter(Boolean).length : 0);
+  function sealHud() { const D = G.dun; if (!D || D.forge) return ''; const K = SK(); return D.bossOpen ? '보스 방 열림' : `${K.unit} ${sealPlaced()}/2${D.keys ? ` (+${D.keys})` : ''}`; }
+  // 보스 문 양옆 받침 2곳: 문이 난 벽에 붙여 세운다 (몸이 걸리지 않는 장식 — 바닥 장애물과 별개)
+  function sealSocks(R) {
+    const D = G.dun; if (!D || D.forge || !R.doors) return null;
+    const d = Object.keys(R.doors).find(k => R.doors[k] != null && D.rooms[R.doors[k]] && D.rooms[R.doors[k]].type === 'boss'); if (!d) return null;
+    const p = DOOR[d];
+    if (G.stage === 2) { const q = d === 'n' ? { x: p.x + 60, y: A.y0 + 26 } : d === 's' ? { x: p.x + 60, y: A.y1 - 8 } : { x: d === 'w' ? A.x0 + 24 : A.x1 - 24, y: p.y + 66 }; return [Object.assign(q, { i: 0, d, dual: true })]; } // v1.21 성채는 받침 하나에 인장 두 조각을 맞춘다
+    return [-1, 1].map((s, i) => d === 'n' ? { x: p.x + s * 60, y: A.y0 + 26, i, d } : d === 's' ? { x: p.x + s * 60, y: A.y1 - 8, i, d }
+      : { x: d === 'w' ? A.x0 + 24 : A.x1 - 24, y: p.y + s * 50 + 16, i, d });
+  }
+  const SOCK_H = { 1: 30, 2: 38, 3: 44 };
+  // 받침 그림 (2px 칸)
+  const SOCK_PAL = {
+    1: { k: '#0b0a0e', H: '#9a9488', h: '#6a6474', l: '#4a4554', d: '#2d2935', D: '#1c1922', a: '#2a2622', A: '#4a423a', m: '#4a6a2a', M: '#6a8a3a' },
+    2: { k: '#0b0a0e', H: '#8a8496', h: '#5e5868', l: '#423d4c', d: '#2d2935', D: '#1c1922', s: '#7a7488', S: '#141218', G: '#e0b040', g: '#8a6420', R: '#a01828', r: '#6a0c18', W: '#f0e8d0', c: '#3a3442' },
+    3: { k: '#0b0806', W: '#e0d6c4', w: '#a49a84', b: '#c8bca0', B: '#8a7e66', t: '#6b4a2a', T: '#3a2416', r: '#a01820', e: '#1a0c08', E: '#ff4020', u: '#f0e6c8', U: '#b8a880', f: '#2e1d12' },
+  };
+  const SOCK_ART = {
+    1: ['.kk......kk.', '.kHk....kHk.', 'kHhkkkkkkhHk', 'khaAaaAaaAhk', 'kHhhhhhhhhHk', '.kllllllldk.', '..kldddddk..', '...kkddkk...', '....khdk....', '....kmdk....', '....khdk....', '...kkhdkk...', '..khMmhddk..', '.kHhhhhhddk.', '.kkkkkkkkkk.'],
+    2: ['..kkkkkkkk..', '.kssssssssk.', '.ksSSSSSSsk.', '.ksSSSSSSsk.', '.ksSSSSSSsk.', '..ksSSSSsk..', '...ksSSsk...', '....kssk....', '.kkkkkkkkkk.', 'kHhhhhhhhhHk', '.kllllllldk.', '.khlllllldk.', '.khlccccldk.', '.khllllldDk.', '.khllllldDk.', '.khllllldDk.', 'kkhhhhhhhdkk', 'kHhhhhhhhhHk', 'kkkkkkkkkkkk'],
+    3: ['.k........k.', 'kWk......kWk', 'kWWk....kWWk', '.kWWkkkkWWk.', '..kbbbbbbk..', '..kbBbbBbk..', '..kbebbebk..', '..kbbbbbbk..', '..kbWbbWbk..', '...kWkkWk...', '....kttk....', '...kttTtk...', '...ktrrTk...', '...kttTtk...', '...ktTTtk...', '...kttTtk...', '...ktrrTk...', '...kttTtk...', '...kttTtk...', '..kkttTtkk..', '.kfttttTTfk.', '.kkkkkkkkkk.'],
+  };
+  function sockArt(st, i, on) {
+    const g = fromRows(SOCK_ART[st]);
+    if (st === 2 && on) { // 인장 받침 하나: on 비트 1 = 왼쪽 반, 2 = 오른쪽 반 → 둘 다면 온전한 방패
+      for (let y = 1; y <= 7; y++) for (let x = 0; x < g[y].length; x++) {
+        const c = g[y][x]; if (c !== 's' && c !== 'S') continue;
+        if (x <= 5 ? !(on & 1) : !(on & 2)) continue;
+        g[y][x] = c === 's' ? 'G' : (x === 5 || x === 6) && y >= 2 && y <= 6 || y === 3 && x >= 3 && x <= 8 ? 'W' : (x + y) % 3 ? 'R' : 'r';
+      }
+      if (on !== 3) for (let y = 1; y <= 7; y++) { const x = on === 1 ? 5 : 6; if (g[y][x] === 'G' && y > 1) g[y][x] = 'g'; } // 반쪽일 때 금 간 단면
+    }
+    if (st === 3) {
+      if (on) { for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) if (g[y][x] === 'e') g[y][x] = 'E';
+        // 끈에 매단 엄니 (문 반대쪽으로 늘어뜨림)
+        const T = [[9, 10, 'f'], [9, 11, 'k'], [10, 11, 'f'], [10, 12, 'k'], [11, 12, 'k'], [10, 13, 'u'], [11, 13, 'k'], [10, 14, 'u'], [11, 14, 'U'], [12, 14, 'k'], [11, 15, 'u'], [12, 15, 'k'], [11, 16, 'U'], [12, 16, 'k'], [11, 17, 'r'], [12, 17, 'k'], [11, 18, 'k']];
+        for (const r of g) if (i === 0) r.unshift('.', '.'); else r.push('.', '.');
+        for (const [x, y, c] of T) g[y][i === 0 ? 13 - x : x] = c;
+      }
+    }
+    return gCanvas(g, SOCK_PAL[st]);
+  }
+  // 초록 정령불 (칸 단위로 흔들림)
+  function spiritFlame(x, y, big) {
+    const n = big ? 7 : 5, base = big ? 14 : 8;
+    for (let i = 0; i < n; i++) { const c = i - (n - 1) / 2, ph = Math.sin(time * 12 + i * 2.1 + x), h = (base + (ph + 1) * 4 - Math.abs(c) * 3) | 0, fx = (x - n + i * 2) & ~1;
+      if (h <= 0) continue;
+      ctx.fillStyle = '#2a7a3a'; ctx.fillRect(fx, y - (h & ~1), 2, h & ~1);
+      if (Math.abs(c) < n / 2 - 1) { ctx.fillStyle = '#7ad040'; ctx.fillRect(fx, y - ((h * 0.72) & ~1), 2, (h * 0.72) & ~1); }
+      if (Math.abs(c) < 1.5) { ctx.fillStyle = '#eaffb8'; ctx.fillRect(fx, y - ((h * 0.4) & ~1), 2, (h * 0.4) & ~1); } }
+  }
+  function drawSock(s) {
+    const D = G.dun, st = G.stage in SOCK_ART ? G.stage : 1, mask = s.dual ? (D.sock[0] ? 1 : 0) | (D.sock[1] ? 2 : 0) : D.sock[s.i] ? 1 : 0, on = mask > 0, full = s.dual ? mask === 3 : on;
+    const spr = art(`sock${st}${s.i}${mask}`, () => sockArt(st, s.i, st === 2 ? mask : on));
+    const bx = Math.round(s.x) & ~1, by = Math.round(s.y) & ~1, x = (bx - spr.width / 2) & ~1, y = by - spr.height;
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x + 4, by - 2, spr.width - 8, 4);
+    ctx.drawImage(spr, x, y);
+    const pt = s.putT != null ? time - s.putT : 9;
+    if (st === 1 && on) { spiritFlame(bx, y + 6, D.gate || pt < 0.6); if (Math.random() < 0.15) G.parts.push({ x: bx + rand(-4, 4), y: y - 4, vx: rand(-6, 6), vy: -rand(25, 45), t: rand(0.4, 0.8), c: pick(['#c8f070', '#7ad040', '#eaffb8']), g: 0, glow: true }); }
+    if (st === 3 && on && Math.floor(time * 8 + s.i * 3) % 3 === 0) { const ex = x + (s.i === 0 ? 4 : 0); ctx.fillStyle = '#ffc080'; ctx.fillRect(ex + 8, y + 12, 2, 2); ctx.fillRect(ex + 14, y + 12, 2, 2); }
+    if (st === 3 && on && Math.random() < 0.08) { const ex = x + (s.i === 0 ? 4 : 0); G.parts.push({ x: ex + 8 + rand(0, 6), y: y + 12, vx: rand(-4, 4), vy: -rand(10, 25), t: rand(0.3, 0.6), c: pick(['#ff4020', '#ff8040']), g: 0, glow: true }); }
+    if (st === 2 && on && Math.floor(time * 3 + s.i * 1.5) % 4 === 0) { ctx.fillStyle = '#fff6d0'; ctx.fillRect(x + (s.i === 0 ? 8 : 14), y + 4, 2, 2); }
+    if (pt < 0.35) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 1 - pt / 0.35; ctx.drawImage(art(`sockW${st}${s.i}`, () => { const c = sockArt(st, s.i, st === 2 ? (s.dual ? 3 : 1) : true), [o, ox] = mkCanvas(c.width, c.height); ox.drawImage(c, 0, 0); ox.globalCompositeOperation = 'source-in'; ox.fillStyle = '#fff'; ox.fillRect(0, 0, c.width, c.height); return o; }), x, y); ctx.restore(); }
+    // 열쇠를 들고 있으면 빈 받침 위에서 깜빡이는 화살표
+    if (!full && D.keys > 0 && !D.gate && Math.floor(time * 3) % 2 === 0) { const ay = y - 8 + (Math.floor(time * 3) % 4 === 0 ? 2 : 0), K = SK(); ctx.fillStyle = '#000'; ctx.fillRect(bx - 4, ay - 2, 8, 2); ctx.fillRect(bx - 2, ay, 4, 2); ctx.fillStyle = K.c; ctx.fillRect(bx - 4, ay - 4, 8, 2); ctx.fillRect(bx - 2, ay - 2, 4, 2); }
+  }
+  // 떨어진 봉인 열쇠 (불씨·인장 조각·엄니) + 위로 오르는 빛
+  const SKEY_ART = {
+    1: [['...k..', '..kyk.', '.kyYk.', '.kYWyk', 'kyWWYk', 'kYWWYk', '.kYYk.', '..kk..'], ['..k...', '.kyk..', '.kYyk.', 'kyWYk.', 'kYWWyk', 'kYWWYk', '.kYYk.', '..kk..']],
+    2: [['kkkk...', 'kGGGk..', 'kGRRWk.', 'kGRWWWk', 'kGRRWk.', '.kGRgk.', '..kGgk.', '...kk..']],
+    3: [['....kk.', '...kWk.', '..kWWk.', '..kWwk.', '.kWwk..', '.kWwk..', 'kWwk...', 'krrk...', '.kk....']],
+  };
+  const SKEY_PAL = { 1: { k: '#0c1406', y: '#5a9a2a', Y: '#a8e050', W: '#f0ffc0' }, 2: { k: '#0b0a0e', G: '#e0b040', g: '#8a6420', R: '#a01828', W: '#f0e8d0' }, 3: { k: '#0b0806', W: '#f0e6c8', w: '#b8a880', r: '#a01820' } };
+  function drawSealKey(l, x, y) {
+    const st = G.stage in SKEY_ART ? G.stage : 1, fr = SKEY_ART[st], f = Math.floor(time * 6) % fr.length;
+    const spr = art(`skey${st}${f}`, () => gCanvas(fromRows(fr[f]), SKEY_PAL[st])), K = SK();
+    const bx = Math.round(x) & ~1, by = Math.round(l.y) & ~1, h = 70 * Math.min(1, l.t * 2), pulse = 0.75 + Math.sin(time * 5) * 0.25;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (let yy = 16; yy < h; yy += 2) { const k = yy / h; for (let c = -2; c < 2; c++) { const edge = c === -2 || c === 1; if (!dith((bx >> 1) + c, (by - yy) >> 1, (1 - k) * (edge ? 0.4 : 0.85) * pulse)) continue; ctx.fillStyle = `rgba(${K.rgb},${(edge ? 0.45 : 0.8) * (1 - k * 0.6)})`; ctx.fillRect(bx + c * 2, by - yy, 2, 2); } }
+    ctx.restore();
+    ctx.drawImage(spr, (bx - spr.width / 2) & ~1, (Math.round(y) & ~1) - spr.height + 2);
+  }
+  function placeSeal(s) {
+    const D = G.dun, K = SK(), idx = s.dual ? D.sock.indexOf(false) : s.i; if (D.keys <= 0 || idx < 0 || D.sock[idx]) return;
+    D.keys--; D.sock[idx] = true; s.putT = time;
+    const top = s.y - SOCK_H[G.stage] + 6, n = sealPlaced();
+    G.fx.push({ kind: 'ring', x: s.x, y: top, r: 6, grow: 120, t: 0.4, max: 0.4, c: K.c }); burst(s.x, top, K.c, 14);
+    if (G.stage === 1) { sfx('fireball'); sfx('ready'); }
+    else if (G.stage === 2) { sfx('block'); sfx('heavy'); debris(s.x, top, 6); }
+    else { sfx('hit'); sfx('growl', 0.7); for (let i = 0; i < 6; i++) G.parts.push({ x: s.x + rand(-4, 4), y: top + 10, vx: rand(-10, 10), vy: rand(10, 40), t: rand(0.3, 0.6), c: '#a01820', g: 200 }); }
+    if (n >= 2) { D.gate = { t: 0, fired: {} }; banner(K.put2 || K.put, '봉인이 흔들린다…'); }
+    else { banner(K.put, `하나 더 바치면 봉인이 풀린다 (${n}/2)`); }
+  }
+  // 문이 열리는 동안 봉쇄 그림의 남은 비율 (1 → 0)
+  function gateK() { const g = G.dun && G.dun.gate; return g ? clamp(1 - (g.t - 0.8) / 1.0, 0, 1) : 1; }
+  function updateGate(dt) {
+    const D = G.dun, g = D && D.gate; if (!g) return;
+    g.t += dt; const R = D.cur, S = R && R.socks, st = G.stage, once = (k, at, fn) => { if (g.t >= at && !g.fired[k]) { g.fired[k] = 1; fn(); } };
+    if (S) {
+      const d = S[0].d, q = doorIn(d, 2), along = d === 'n' || d === 's' ? [1, 0] : [0, 1];
+      const onDoor = (c, vy = -30) => { const o = rand(-22, 22); G.parts.push({ x: q.x + along[0] * o + rand(-4, 4), y: q.y + along[1] * o - rand(0, 10), vx: rand(-10, 10), vy: vy * rand(0.6, 1.3), t: rand(0.4, 0.8), c, g: vy > 0 ? 300 : 0, glow: vy < 0 }); };
+      if (st === 1) { // 화톳대에서 덤불로 초록 불길이 번진다
+        if (g.t < 0.8) for (const s of S) if (Math.random() < 0.6) { const k = g.t / 0.8, sx = s.x + (q.x - s.x) * k, sy = s.y - 24 + (q.y - s.y + 24) * k; G.parts.push({ x: sx + rand(-3, 3), y: sy + rand(-3, 3), vx: 0, vy: -20, t: 0.35, c: pick(['#c8f070', '#7ad040']), g: 0, glow: true }); }
+        if (g.t > 0.6 && g.t < 1.9) for (let i = 0; i < 3; i++) onDoor(pick(['#c8f070', '#7ad040', '#ffb040', '#ff7020', '#eaffb8']), -50);
+        once('ign', 0.7, () => { sfx('fireball'); sfx('blast', 1.4); });
+      } else if (st === 2) { // 쇠사슬이 끊기고 창살이 오른다
+        once('c1', 0.2, () => { sfx('block', 0.8); onDoor('#a49cb0', 40); }); once('c2', 0.45, () => { sfx('block', 0.7); }); once('c3', 0.7, () => { sfx('heavy'); sfx('crunch'); for (let i = 0; i < 10; i++) onDoor(pick(['#7a7488', '#a49cb0', '#ffe0a0']), 60); });
+        if (g.t > 0.8 && g.t < 1.8 && Math.random() < 0.5) onDoor('#4a4656', 30);
+      } else { // 뿔나팔 · 북 세 번 · 통나무 문이 끌려 올라간다
+        once('horn', 0.05, () => sfx('roar', 0.8)); once('b1', 0.6, () => sfx('beat')); once('b2', 0.9, () => sfx('beat')); once('b3', 1.2, () => { sfx('beat'); sfx('heavy'); });
+        if (g.t > 0.8 && g.t < 1.8 && Math.random() < 0.5) dust(q.x + rand(-16, 16), q.y, 2);
+      }
+    }
+    if (g.t >= 2) { D.gate = null; D.bossOpen = true; const K = SK(); banner(K.open[0], K.open[1]); sfx('grogi'); flashT = 0.08; flashColor = st === 1 ? '#d0ffa0' : st === 2 ? '#fff0c0' : '#ffb090'; if (S) { const q = doorIn(S[0].d, 6); dust(q.x, q.y, 14); } }
   }
   // 금 간 벽: 성채는 벽면의 갈라짐, 초원은 숲길을 막은 바위 더미 (맞을수록 금이 늘어난다)
   function drawCrack(R, d) {
@@ -5429,6 +5595,7 @@
     if (R.props) for (const p of R.props) if (!PROPS[p.name].pit) ents.push({ y: p.y, d: () => drawProp(p) });
     if (G.drums) for (const dm of G.drums) ents.push({ y: dm.y, d: () => drawWarDrum(dm) });
     if (R.chest) ents.push({ y: R.chest.y, d: () => drawChest(R.chest) });
+    if (R.socks) for (const s of R.socks) ents.push({ y: s.y, d: () => drawSock(s) });
     if (R.srp) for (const s of R.srp) ents.push({ y: s.y, d: () => drawSR(s) });
     if (R.type === 'shop') { ents.push({ y: R.keeper ? R.keeper.y - 5 : CY - 28, d: () => drawShopKeeper(R) }); for (const s of R.shop) ents.push({ y: s.y, d: () => drawShopItem(s) }); }
     if (R.type === 'reward' && R.chest) ents.push({ y: R.chest.y - 1, d: () => drawTreasure(R) });
@@ -5444,6 +5611,7 @@
     if (R.props) for (const p of R.props) { const L = PROPS[p.name].light; if (L) lights.push({ x: p.x, y: p.y + L.dy, r: L.r + Math.sin(time * 9 + p.x) * 3, a: 0.8, c: L.c, ca: L.ca }); }
     if (G.flatLights) for (const l of G.flatLights) lights.push(l.flick ? Object.assign({}, l, { r: l.r + Math.sin(time * 10 + l.x) * 2 }) : l);
     if (G.stage === 1 && G.flies) for (const f of G.flies) if (f.cx != null) lights.push({ x: f.cx, y: f.cy, r: 14, a: 0.35, c: '220,255,120', ca: 0.2 });
+    if (R.socks) for (const s of R.socks) { const on = s.dual ? G.dun.sock[0] || G.dun.sock[1] : G.dun.sock[s.i]; lights.push({ x: s.x, y: s.y - SOCK_H[G.stage] + 6, r: on ? 64 + Math.sin(time * 9 + s.i) * 3 : 30, a: on ? 0.8 : 0.35, c: on ? SK().rgb : '200,200,220', ca: on ? 0.22 : 0.05 }); }
     if (R.chest && !R.chest.opened) lights.push({ x: R.chest.x, y: R.chest.y - 10, r: 60, a: 0.6, c: R.chest.kind === 'secret' ? '200,140,255' : '255,200,110', ca: 0.18 });
     if (R.chest && R.chest.kind === 'boss' && !R.chest.fall) lights.push({ x: R.chest.x, y: R.chest.y - 10, r: R.chest.opened ? 90 : 130, a: 0.8, c: '255,190,90', ca: R.chest.opened ? 0.1 : 0.25 });
     if (G.stage >= 2) for (const b of R.obs) if (b.t === 'post') continue; else if (b.t === 'pit') lights.push({ x: b.x, y: b.y0 + 10, r: Math.max(b.w, b.h) * 0.55, a: 0.22 }); else lights.push({ x: b.x, y: b.y - (b.t === 'pillar' ? 20 : 8), r: b.c ? 42 : Math.max(b.w, b.h) * 0.6 + 20, a: 0.28 });
@@ -5524,7 +5692,7 @@
     ctx.textAlign = 'center'; ctx.font = 'bold 12px Galmuri11'; ctx.fillStyle = '#ffe39a';
     ctx.fillText(`STAGE ${G.stage} · ${STG().n}`, VW / 2, 40);
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#9a92a8';
-    ctx.fillText(`엘리트 ${D.eliteDone}/2 · ${D.eliteDone >= 2 ? '보스 방 열림' : '보스 방 봉인'} · 골드 ${G.gold}G`, VW / 2, 54);
+    ctx.fillText(`${ER().foe} ${D.eliteDone}/2 · ${sealHud()} · ${D.bossOpen ? '보스 방 열림' : '보스 방 봉인'} · 골드 ${G.gold}G`, VW / 2, 54);
     // 통로
     ctx.fillStyle = '#5a5466';
     for (const r of D.rooms) { if (!r.visited) continue; const p = M.pos(r); for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d) || !D.rooms[id].seen) continue; const [dx, dy] = DIRS[d]; ctx.fillRect(Math.round(p.x + M.cw / 2 + dx * (M.cw / 2 + M.gap / 2) - (dx ? M.gap / 2 : 2)), Math.round(p.y + M.ch / 2 + dy * (M.ch / 2 + M.gap / 2) - (dy ? M.gap / 2 : 2)), dx ? M.gap : 4, dy ? M.gap : 4); } }
@@ -5535,7 +5703,7 @@
       if (r.cleared && FIGHT_T.has(r.type)) { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x, y, rw, rh); }
       ctx.strokeStyle = r.visited ? 'rgba(255,255,255,.15)' : r.type === 'boss' ? '#a02a34' : '#5a5466'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1);
       ctx.font = '8px Galmuri7'; ctx.fillStyle = r.visited ? '#f0e8d8' : r.type === 'boss' ? '#ff8080' : '#6a6478';
-      ctx.fillText(r.visited || r.type === 'boss' ? ROOM_TAG[r.type] : '?', x + rw / 2, y + rh / 2 + 3);
+      ctx.fillText(r.visited || r.type === 'boss' ? roomTag(r.type) : '?', x + rw / 2, y + rh / 2 + 3);
       if (r.visited && r.tele) { ctx.fillStyle = r.cleared ? '#9fd2ff' : '#4a4560'; ctx.fillRect(x + rw - 6, y + 2, 4, 4); }
       if (r.visited && r.chest && !r.chest.opened) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(x + 2, y + 2, 4, 4); }
       if (r.cleared && FIGHT_T.has(r.type)) { drawCheck(x + rw - 5, y + rh - 6, 2); ctx.font = "8px Galmuri7"; }
@@ -7207,13 +7375,14 @@
     pouch: { n: '금화 주머니', map: 'pouch', sc: 3, c: '#ffd34d', light: '255,210,120' },
     vial:  { n: '핏빛 영약', map: 'vial', sc: 3, c: '#e070d0', light: '220,60,200' },
     gear:  { n: '장비', map: 'gear', sc: 2 },
+    sealkey: { n: '봉인 열쇠', map: null, sc: 2, get c() { return SK().c; }, get light() { return SK().rgb; } }, // v1.18 엘리트가 떨어뜨리는 보스 문 열쇠 (챕터마다 다름)
   };
   // 잡몹 한 마리당 소모품은 최대 1개, 장비는 따로 굴린다
   const LOOT_TABLE = [['meat', 0.03], ['orb', 0.05], ['pouch', 0.03], ['vial', 0.01]];
   function spawnLoot(type, x, y, it) {
     const a = rand(0, TAU), sp = rand(30, 70);
     if (type === 'gear' && it && it.grade === 'legend') { sfx('legend'); flashT = Math.max(flashT, 0.06); flashColor = '#ff9a2e'; G.fx.push({ kind: 'skybeam', x, y, w: 24, c: '255,160,60', t: 0.7, max: 0.7 }); }
-    G.loot.push({ type, it, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.6, z: 6, vz: rand(110, 150), t: 0, life: type === 'gear' ? 1e9 : 18, bob: rand(0, TAU) });
+    G.loot.push({ type, it, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.6, z: 6, vz: rand(110, 150), t: 0, life: 1e9, /* v1.19 바닥에 떨어진 아이템은 사라지지 않는다 */ bob: rand(0, TAU) });
   }
   function rollLoot(e) {
     if (isSemi(e)) {
@@ -7631,7 +7800,7 @@
   }
   function enterForge() {
     const R = makeForgeRoom();
-    G.dun = { rooms: [R], start: R, cur: null, eliteDone: 2, stage: G.stage, forge: true, bx0: 0, bx1: 0, by0: 0, by1: 0 };
+    G.dun = { rooms: [R], start: R, cur: null, eliteDone: 2, keys: 0, sock: [true, true], bossOpen: true, gate: null, stage: G.stage, forge: true, bx0: 0, bx1: 0, by0: 0, by1: 0 };
     G.loot = []; G.drops = [];
     enterRoom(R, null);
     const P = G.player; P.x = CX + 22; P.y = A.y1 - 26;
@@ -7789,6 +7958,10 @@
       const g = randi(25, 45); G.gold += g; sfx('coin');
       G.nums.push({ x: P.x, y: P.y - 34, v: '+' + g, t: 0.9, c: '#ffd34d', s: 2 });
       lootFeed(`${L.n} — 골드 +${g}`, L.c);
+    } else if (l.type === 'sealkey') {
+      const K = SK(); G.dun.keys++; sfx('perfect'); sfx('drop'); burst(P.x, P.y - 12, K.c, 12);
+      G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 140, t: 0.4, max: 0.4, c: K.c });
+      lootFeed(`<b style="color:${K.c}">${K.key}</b> 획득 — 보스 방 앞 ${K.sockN}에 바쳐라 (F)`, K.c, 4000);
     } else if (l.type === 'vial') {
       G.frenzyT = 8; sfx('frenzy'); flashT = 0.06; flashColor = '#ff3040';
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 160, t: 0.35, max: 0.35, c: '#ff3040' });
@@ -7801,7 +7974,7 @@
         const curId = eqOf(G.cls)[it.slot], cur = SAVE.inv.find(i => i.id === curId);
         { const sl = slotOf(it), dv = itemVal(it) - (cur ? itemVal(cur) : 0); cmp = cur ? ` <span style="color:${dv > 0 ? '#7dff8a' : dv < 0 ? '#ff6a6a' : '#aaa'}">${sl.label} ${dv > 0 ? '▲' : dv < 0 ? '▼' : '='}${Math.abs(dv)}</span>` : ' <span style="color:#7dff8a">빈 칸</span>';
           G.nums.push({ x: P.x, y: P.y - 46, v: it.name, t: 1.4, c: g.c, s: 1, txt: true }); }
-        if (!it.curse && (!cur || itemVal(it) > itemVal(cur))) { // 저주 장비는 자동 장착하지 않음
+        if (!it.curse && !cur) { // v1.19 빈 칸일 때만 자동 장착 (저주 장비는 자동 장착하지 않음), 이미 끼고 있으면 가방으로
           eqOf(G.cls)[it.slot] = it.id; equipped = true;
           const oldHp = G.stats.hp; G.stats = calcStats(G.buffs);
           P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
@@ -7889,6 +8062,7 @@
       drawGearIcon(it, l.x, l.y - hover + 1);
       return;
     }
+    if (l.type === 'sealkey') { drawSealKey(l, l.x, l.y - hover + 1); return; }
     drawSprite(L.map, 'loot', L.sc, l.x, l.y - hover + 1, false);
   }
 
@@ -7901,7 +8075,7 @@
   function takeBossItems() {
     for (const it of G.newItems) {
       SAVE.inv.push(it);
-      if (canEquip(it, G.cls) && !it.curse) { const cur = SAVE.inv.find(i => i.id === eqOf(G.cls)[it.slot]); if (!cur || itemVal(it) > itemVal(cur)) eqOf(G.cls)[it.slot] = it.id; }
+      if (canEquip(it, G.cls) && !it.curse) { const cur = SAVE.inv.find(i => i.id === eqOf(G.cls)[it.slot]); if (!cur) eqOf(G.cls)[it.slot] = it.id; }
     }
   }
   // 1스테이지 클리어 → 대장간 → 2스테이지
@@ -9231,7 +9405,7 @@
   // 말뚝 우리 (v0.84): 둘레는 끝을 깎은 말뚝 울타리, 안쪽은 종류별로 채운다 — 뼈 무더기 / 부서진 무기 더미 / 도살장 / 맹수 우리
   const PEN_PAL = Object.assign({}, WOODPAL, { S: '#7a6e5c', u: '#22140c', U: '#2e1c10', v: '#3a0c08', x: '#6a3418', X: '#4a2410', g: '#808088', G: '#4a4a54', n: '#d8d8e0', p: '#f4ecdc', q: '#c03a2a' });
   function genPalisade(wc, hc, kind) {
-    kind = kind || pick(['bones', 'scrap', 'meat', 'beast']);
+    kind = kind || pick(['bones', 'scrap', 'meat']); // v1.20 맹수 우리(짚더미 둥지)는 무작위 배치에서 뺌
     const HH = 14, W0 = wc + 2, H0 = hc + HH + 2, g = mkGrid(W0, H0), set = (x, y, c) => { if (x >= 1 && x <= wc && y >= 1 && y < H0 - 1) g[y][x] = c; }, get = (x, y) => (g[y] && g[y][x]) || '.';
     const ix0 = 3, ix1 = wc - 2, iy0 = 5, iy1 = hc;
     // 1) 안쪽 바닥: 낮은 주파수 얼룩만 (잔노이즈 없이)
@@ -11287,9 +11461,9 @@
     if (tags !== hudPrev.tags) { $('p1tags').innerHTML = tags; hudPrev.tags = tags; }
     // 페이즈
     { const R = G.dun && G.dun.cur, rs = G.rs || {};
-      $('phaseText').textContent = R ? `${G.stage} · ${ROOM_N[R.type]}` : '';
-      let sub = `${R ? SHAPES[R.shape].n + ' · ' : ''}엘리트 ${G.dun ? G.dun.eliteDone : 0}/2 · ${G.gold}G`;
-      if (R && R.type === 'survive' && rs.state === 'run') { const left = SURV_PT() - (rs.phT || 0), al = G.enemies.filter(e => !e.dead).length; sub = rs.ph >= SURV_N - 1 && left <= 0 ? `페이즈 ${SURV_N}/${SURV_N} · 남은 적 ${al}` : (rs.ph || 0) >= SURV_N - 1 ? `페이즈 ${SURV_N}/${SURV_N} · 물결 종료까지 ${Math.max(0, left).toFixed(0)}초` : `페이즈 ${(rs.ph || 0) + 1}/${SURV_N} · 다음 물결 ${Math.max(0, left).toFixed(0)}초`; }
+      $('phaseText').textContent = R ? `${G.stage} · ${roomName(R.type)}` : '';
+      let sub = `${R ? SHAPES[R.shape].n + ' · ' : ''}${sealHud()} · ${G.gold}G`;
+      if (R && R.type === 'survive' && rs.state === 'run') { const left = SURV_PT() - (rs.phT || 0), al = G.enemies.filter(e => !e.dead).length; sub = rs.ph >= SURV_N - 1 && left <= 0 ? `잔당 소탕 · 남은 적 ${al}` : (rs.ph || 0) >= SURV_N - 1 ? `최후의 습격 · ${Math.max(0, left).toFixed(0)}초 버텨라` : `습격 ${(rs.ph || 0) + 1}/${SURV_N} · 다음 습격까지 ${Math.max(0, left).toFixed(0)}초`; }
       else if (R && R.waves && (rs.state === 'run' || rs.state === 'intro')) sub = `웨이브 ${Math.min(rs.wave + 1, R.waves.length)}/${R.waves.length} · 남은 적 ${G.enemies.filter(e => !e.dead).length + G.spawning}`;
       else if (R && R.type === 'boss') sub = '보스전';
       $('phaseSub').textContent = sub; }
@@ -11439,6 +11613,7 @@
     }
     else if (mode === 'rest' && ['1', '2', '3'].includes(k)) { const b = $('restChoices').children[+k - 1]; if (b) b.click(); }
     else if (mode === 'pick' && ['1', '2', '3'].includes(k)) takePick(+k - 1);
+    else if (mode === 'pick' && k === 'Escape') closePick();
   });
 
   // ---------------------------------------------------------------- 장비 · 인벤토리 (v0.52)
@@ -11761,6 +11936,7 @@
   }
   document.querySelectorAll('#fgTabs [data-cls]').forEach(b => b.addEventListener('click', () => { forgeCls = b.dataset.cls; forgeMsg = null; sfx('blip'); renderForge(); }));
   $('fgClose').addEventListener('click', closeForge);
+  { const b = $('pkClose'); if (b) b.addEventListener('click', closePick); } // index.html이 옛 버전이어도 멈추지 않게
 
 
   // ---------------------------------------------------------------- 모바일 터치 조작

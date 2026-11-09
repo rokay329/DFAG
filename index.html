@@ -475,7 +475,7 @@
             <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
             <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
           </div>
-          <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트 방 2곳을 처치하면 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.<br>오크에게 잡히면 공격을 연타하거나 점멸로 빠져나온다. 전쟁 북은 3번 때리면 찢어진다.</p>
+          <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트가 떨어뜨린 봉인 열쇠(불씨·인장·엄니) 2개를 보스 방 앞 받침에 바치면(F) 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.<br>오크에게 잡히면 공격을 연타하거나 점멸로 빠져나온다. 전쟁 북은 3번 때리면 찢어진다.</p>
           <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
         </div>
         <div id="tmSound" style="display:none">
@@ -487,7 +487,7 @@
           <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
         </div>
       </div>
-      <div class="ver">PROTOTYPE v1.17 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v1.21 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
@@ -524,9 +524,10 @@
     <div class="ov" id="ovPick">
       <div class="pf win" style="max-width:720px">
         <h2 id="pkTitle">보상 상자</h2>
-        <p>장비 셋 중 하나를 고른다. 고른 장비는 바로 장착되고, 쓰던 장비는 가방으로 들어간다.</p>
+        <p>장비 셋 중 하나를 고른다 [1·2·3]. 빈 칸이면 바로 장착, 이미 끼고 있으면 가방으로 들어간다.</p>
         <div class="pkRow" id="pkChoices"></div>
         <div id="pkCur"></div>
+        <button class="pbtn" id="pkClose" style="margin-top:10px">나중에 고르기 [ESC]</button>
       </div>
     </div>
     <div class="ov" id="ovRest">
