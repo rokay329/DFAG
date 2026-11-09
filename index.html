@@ -129,7 +129,6 @@
   #banner .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l);
     text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
   #banner .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; }
-  #debug { left: 8px; bottom: 6px; color: #5e5466; }
   #keyguide { left: 444px; top: 6px; transform: translateX(-50%); padding: 5px 9px 6px; opacity: 0; pointer-events: none; transition: opacity .3s steps(4); }
   #keyguide .kt { font-family: 'Galmuri9'; font-size: 9px; color: var(--gold-l); text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
   #keyguide .kr { display: flex; justify-content: center; gap: 10px; white-space: nowrap; }
@@ -155,7 +154,11 @@
   .mi.danger.sel { color: #ff9090; }
 
   /* 타이틀 */
-  #ovTitle { background: radial-gradient(ellipse at 50% 45%, rgba(20,8,20,.35), rgba(3,2,5,.9) 75%); flex-direction: column; gap: 14px; }
+  #ovTitle { background: linear-gradient(90deg, rgba(4,3,8,.82) 0%, rgba(4,3,8,.6) 28%, rgba(4,3,8,0) 50%); flex-direction: column; gap: 14px; align-items: flex-start; padding-left: 6%; } /* v1.12 글자·메뉴는 왼쪽, 오른쪽은 그림 */
+  #ovTitle > * { align-self: flex-start; }
+  #ovTitle .logo { width: max-content; } #ovTitle #titleMenu { width: 230px; } #ovTitle #titleInfo { width: max-content; text-align: left; }
+  body:has(#ovTitle.on) #mute { display: none; }
+  #ovTitle.howto #titleMenu { width: 500px; }
   .logo { text-align: center; }
   .logo .crown { width: 48px; height: 32px; margin: 0 auto 4px; }
   .logo h1 { margin: 0; font-family: 'Galmuri11'; font-weight: bold; font-size: 36px; letter-spacing: 3px; color: #f2d78c;
@@ -206,6 +209,20 @@
   .pkCard .fx { color: var(--legend); }
   .pkCmp { margin-top: 5px; padding-top: 4px; border-top: 1px dashed #3a2f40; } .pkCmp i { display: block; font-style: normal; color: #8a8090; } .pkCmp span { display: inline-block; margin-right: 6px; } .pkCmp .up { color: #7dff8a; } .pkCmp .dn { color: #ff6a6a; }
   .pkCard .key { position: absolute; right: 6px; top: 6px; }
+  /* v1.02 대장간 설비별 창: 모루=강화 / 숫돌=재련 / 용광로=분해 */
+  #ovForge[data-m="enh"] #fgRoll, #ovForge[data-m="enh"] #fgSalv { display: none; }
+  #ovForge[data-m="roll"] .fgRate, #ovForge[data-m="roll"] .fgRisk, #ovForge[data-m="roll"] .mile, #ovForge[data-m="roll"] .fgCost, #ovForge[data-m="roll"] #fgGo, #ovForge[data-m="roll"] #fgSalv { display: none; }
+  #ovForge[data-m="salv"] .fgRate, #ovForge[data-m="salv"] .fgRisk, #ovForge[data-m="salv"] .mile, #ovForge[data-m="salv"] .fgCost, #ovForge[data-m="salv"] #fgGo, #ovForge[data-m="salv"] #fgRoll, #ovForge[data-m="salv"] .fgStat i, #ovForge[data-m="salv"] .fgStat .up { display: none; }
+  /* v1.00 바닥 장비 비교 · 3택1 착용 중 요약 */
+  #gearCmp { right: 8px; bottom: 92px; width: 296px; padding: 6px; font-size: 10px; background: rgba(12,9,14,.9); box-shadow: inset 0 0 0 1px #3a2f40, 0 0 0 1px #000; pointer-events: none; opacity: 0; transform: translateY(6px); transition: opacity .12s, transform .12s; }
+  #gearCmp.on { opacity: 1; transform: none; }
+  body.touch #gearCmp { right: auto; left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 50px; } /* v1.13 모바일: 오른쪽 아래 터치 버튼과 화면 가운데(캐릭터)를 피해 1P 패널 아래 왼쪽에 */
+  #gearCmp .gcCols { display: flex; gap: 6px; align-items: flex-start; } #gearCmp .item { width: 139px; font-size: 9px; line-height: 1.45; padding: 5px; } #gearCmp .item .nm { font-size: 11px; } #gearCmp .setx span { display: none; }
+  .gcH { font-family: 'Galmuri7'; font-size: 8px; letter-spacing: 1px; color: #8a8090; margin: 0 0 3px 1px; }
+  .gcEmpty { color: #6a6070; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+  #gearCmp .pkCmp { margin-top: 5px; } .gcKey { margin-top: 4px; color: var(--gold-l); font-family: 'Galmuri9'; font-size: 9px; } .gcKey .kb { display: inline-block; padding: 0 3px; background: #2a2230; color: #fff; box-shadow: inset 0 0 0 1px #5a4a60; }
+  #pkCur { margin-top: 10px; text-align: left; } .pcRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .pc { padding: 3px 5px; font-size: 9px; line-height: 1.5; background: #120e15; box-shadow: inset 2px 0 0 var(--c), 0 0 0 1px #000; } .pc b { font-family: 'Galmuri7'; font-size: 8px; font-weight: normal; color: #8a8090; margin-right: 4px; } .pc span { color: var(--c); } .pc i { display: block; font-style: normal; color: #b8b0c0; }
   .item .new { position: absolute; right: 3px; top: 3px; font-family: 'Galmuri7'; font-size: 8px; background: var(--blood); color: #fff; padding: 0 2px; animation: blink .6s steps(2) infinite; }
   .item button { margin-top: 4px; }
   .pbtn { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); background: #2a2030; border: 1px solid #000; box-shadow: inset 1px 1px 0 #55465f, inset -1px -1px 0 #0e0a11; padding: 3px 9px; cursor: pointer; }
@@ -269,6 +286,7 @@
   .fgStat .up { color: #8ff0a0; }
   .fgOpt { color: var(--ink); line-height: 1.5; }
   .fgOpt.fx { color: var(--legend); }
+  .fgAct { flex-wrap: wrap; gap: 6px; } .fgAct small { color: #9a8f8a; margin-left: 4px; } .fgAct .pbtn[disabled] { opacity: .45; cursor: default; }
   .fgMore { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; } .fgMore small { color: #9a8f8a; margin-left: 4px; } .fgMore .pbtn[disabled] { opacity: .45; cursor: default; }
   .fgRate { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
   .fgRate span { color: var(--quiet); }
@@ -414,7 +432,7 @@
     <div class="hud pf glass" id="keyguide"></div>
     <div class="hud" id="banner"></div>
     <div class="hud" id="lootFeed"></div>
-    <div class="hud f7" id="debug">I 장비 · 테스트 키 — N 방 즉시 클리어 · B 보스 방으로 · V 스테이지 클리어 · T 무기 등급 바꾸기 · ESC 일시정지</div>
+    <div class="hud" id="gearCmp"></div>
     <div class="hud f7" id="mute">M 음악 켜기/끄기</div>
 
     <!-- 타이틀 -->
@@ -469,8 +487,7 @@
           <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
         </div>
       </div>
-      <div id="titleInfo"></div>
-      <div class="ver">PROTOTYPE v0.98 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v1.17 · ↑↓ 선택 · ENTER 결정</div>
     </div>
 
     <!-- 직업 선택 -->
@@ -488,7 +505,7 @@
     <div class="ov" id="ovForge">
       <div class="pf win fgWin">
         <div class="fgTop">
-          <h2>대장간 — 강화</h2>
+          <h2 id="fgTitle">대장간 — 강화</h2>
           <div class="fgMoney"><span>골드 <b id="fgGold">0</b></span><span>철광석 조각 <b id="fgIron">0</b></span><span>정령의 결정 <b id="fgCrystal">0</b></span></div>
         </div>
         <div class="fgTabs" id="fgTabs"><span class="f7" style="color:var(--quiet)">장착 기준</span><button class="pbtn" data-cls="knight">기사</button><button class="pbtn" data-cls="ranger">어세신</button><button class="pbtn" data-cls="mage">마법사</button><button class="pbtn" data-cls="priest">사제</button><button class="pbtn" data-cls="gunner">거너</button></div>
@@ -497,7 +514,7 @@
           <div class="fgDetail" id="fgDetail"></div>
         </div>
         <div class="row" style="justify-content:space-between">
-          <div class="row" style="margin:0"><button class="pbtn" id="fgTestMats">테스트 재료 받기</button><button class="pbtn" id="fgTestItem">테스트 장비 받기</button></div>
+          <div class="row fgAct" style="margin:0" id="fgEqRow"></div>
           <button class="pbtn" id="fgClose">돌아가기 [ESC]</button>
         </div>
       </div>
@@ -509,6 +526,7 @@
         <h2 id="pkTitle">보상 상자</h2>
         <p>장비 셋 중 하나를 고른다. 고른 장비는 바로 장착되고, 쓰던 장비는 가방으로 들어간다.</p>
         <div class="pkRow" id="pkChoices"></div>
+        <div id="pkCur"></div>
       </div>
     </div>
     <div class="ov" id="ovRest">
