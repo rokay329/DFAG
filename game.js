@@ -25,6 +25,285 @@
   const easeOut = t => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
   const $ = id => document.getElementById(id);
   const mkCanvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return [c, g]; };
+  // ================================================================ v1.79 반투명·그라데이션을 도트 디더로 (화면 캔버스 ctx 전용)
+  // 1) 반투명 칠하기(fillRect·fill·stroke): globalAlpha × 색 알파를 16단계로 끊어, 4×4 바이어 무늬(2px 칸)로 불투명 칸만 칠함
+  // 2) 반투명 그림(drawImage, 사라지는 적·시체·잔상·이펙트): 같은 무늬로 칸을 지워 '흩어지는 점'처럼 사라짐
+  // 3) 그라데이션: dRadial/dLinear가 칸마다 색·알파를 계산해 디더 무늬(CanvasPattern)를 만들어 줌 (화면 테두리·광채·빛줄기·바닥 굽기)
+  // 무늬는 8px(=4칸) 격자로 월드에 고정. DITHER_ON = false면 예전 그대로
+  let DITHER_ON = true;
+  let DLV = 4; // v1.80 반투명 알파 단계 수 — 0%·25%·50%·75%·100% 중 이웃한 두 단계 사이만 점으로 섞음 (예전: 0%와 100%를 섞어 망점이 셌음)
+  const dBandQ = (s, t, W = 0.4) => { const b = Math.floor(s), r = s - b, lo = 0.5 - W / 2; return r < lo ? b : r > lo + W ? b + 1 : b + ((r - lo) / W > t ? 1 : 0); };
+  const DBAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  const DMASK = [], DCOLP = new Map(), DRGBA = new Map();
+  const dAnchor = () => { const cx = CAMX, cy = CAMY; return [((-cx % 8) + 8) % 8, ((-cy % 8) + 8) % 8]; };
+  function dMaskTile(lv) { // lv 1..15: 바이어 값 < lv인 칸만 불투명한 8×8 타일
+    if (DMASK[lv]) return DMASK[lv];
+    const [c, g] = mkCanvas(8, 8); g.fillStyle = '#fff';
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) if (DBAY[y * 4 + x] < lv) g.fillRect(x * 2, y * 2, 2, 2);
+    return (DMASK[lv] = c);
+  }
+  function dParse(s) { // 'rgba(r, g, b, a)' · '#rrggbb' → [hex, alpha]
+    let v = DRGBA.get(s); if (v) return v;
+    if (s.charCodeAt(0) === 114) { const m = s.match(/[\d.]+/g); const h = '#' + [0, 1, 2].map(i => (+m[i]).toString(16).padStart(2, '0')).join(''); v = [h, m.length > 3 ? +m[3] : 1]; }
+    else v = [s, 1];
+    if (DRGBA.size > 2000) DRGBA.clear();
+    DRGBA.set(s, v); return v;
+  }
+  function dColPat(g, hex, lv) {
+    const k = hex + lv; let p = DCOLP.get(k);
+    if (!p) { const [c, cg] = mkCanvas(8, 8); cg.drawImage(dMaskTile(lv), 0, 0); cg.globalCompositeOperation = 'source-in'; cg.fillStyle = hex; cg.fillRect(0, 0, 8, 8); p = g.createPattern(c, 'repeat'); if (DCOLP.size > 600) DCOLP.clear(); DCOLP.set(k, p); }
+    return p;
+  }
+  const _P2D = CanvasRenderingContext2D.prototype, _fillRect = _P2D.fillRect, _fill = _P2D.fill, _stroke = _P2D.stroke, _drawImage = _P2D.drawImage;
+  // fillStyle/strokeStyle를 읽으면(게터) 매번 색 문자열을 새로 만들어 느려서, 넣을 때 원본을 기억해 둔다 (save/restore도 따라감)
+  const DSTY = { f: '#000', s: '#000', stack: [] };
+  { const pf = Object.getOwnPropertyDescriptor(_P2D, 'fillStyle'), ps = Object.getOwnPropertyDescriptor(_P2D, 'strokeStyle'), _save = _P2D.save, _restore = _P2D.restore;
+    Object.defineProperty(ctx, 'fillStyle', { get() { return pf.get.call(this); }, set(v) { DSTY.f = v; pf.set.call(this, v); }, configurable: true });
+    Object.defineProperty(ctx, 'strokeStyle', { get() { return ps.get.call(this); }, set(v) { DSTY.s = v; ps.set.call(this, v); }, configurable: true });
+    ctx.save = function () { DSTY.stack.push(DSTY.f, DSTY.s); return _save.call(this); };
+    ctx.restore = function () { if (DSTY.stack.length) { DSTY.s = DSTY.stack.pop(); DSTY.f = DSTY.stack.pop(); } return _restore.call(this); }; }
+  function dStyleCall(ctx2, orig, args, prop) {
+    if (!DITHER_ON) return orig.apply(ctx2, args);
+    const ga = ctx2.globalAlpha, st = prop === 'fillStyle' ? DSTY.f : DSTY.s;
+    if (typeof st !== 'string') return orig.apply(ctx2, args);
+    let hex = st, ca = 1;
+    if (st.charCodeAt(0) === 114 && st.charCodeAt(3) === 97) { const v = dParse(st); hex = v[0]; ca = v[1]; } // 'rgba('
+    const ea = ga * ca;
+    if (ea >= 0.999) return orig.apply(ctx2, args);
+    const sK = ea * DLV, bi = Math.floor(sK), base = bi / DLV, up = (bi + 1) / DLV, lv = Math.round((sK - bi) * 16); // base 단계 + 위 단계로 올릴 칸 비율(lv/16)
+    const pd = prop === 'fillStyle' ? Object.getOwnPropertyDescriptor(_P2D, 'fillStyle') : Object.getOwnPropertyDescriptor(_P2D, 'strokeStyle');
+    if (orig === _fillRect && args[2] <= 2 && args[3] <= 2) { // 한 칸짜리(불티·재·빛기둥 칸): 그 칸의 바이어 값으로 두 단계 중 하나
+      const a = DBAY[((args[1] >> 1) & 3) * 4 + ((args[0] >> 1) & 3)] < lv ? up : base; if (a <= 0) return;
+      ctx2.globalAlpha = Math.min(1, a); pd.set.call(ctx2, hex); orig.apply(ctx2, args); ctx2.globalAlpha = ga; pd.set.call(ctx2, st); return;
+    }
+    pd.set.call(ctx2, hex);
+    if (base > 0) { ctx2.globalAlpha = base; orig.apply(ctx2, args); }
+    if (lv > 0) { ctx2.globalAlpha = Math.min(1, up) - base; pd.set.call(ctx2, lv >= 16 ? hex : dColPat(ctx2, hex, lv)); orig.apply(ctx2, args); }
+    ctx2.globalAlpha = ga; pd.set.call(ctx2, st);
+  }
+  let DSC = null; const DMIMG = new WeakMap();
+  function dDrawImage(ctx2, args) {
+    const ga = ctx2.globalAlpha;
+    if (!DITHER_ON || ga >= 0.999) return _drawImage.apply(ctx2, args);
+    const sK = ga * DLV, bi = Math.floor(sK), base = bi / DLV, step = 1 / DLV, lv = Math.round((sK - bi) * 16);
+    if (base > 0) { ctx2.globalAlpha = base; _drawImage.apply(ctx2, args); ctx2.globalAlpha = ga; } // 아래 단계는 그냥 반투명으로
+    if (lv <= 0) return;
+    { const img0 = args[0], iw = img0.width, ih = img0.height; // 작은 그림은 그림 자체에 무늬를 입힌 사본을 캐시해서 바로 그림 (스프라이트는 이미 2px 칸)
+      if (iw * ih <= 160000 && (img0 instanceof HTMLCanvasElement || img0 instanceof HTMLImageElement)) {
+        let mp = DMIMG.get(img0); if (!mp) { mp = new Map(); DMIMG.set(img0, mp); }
+        let mc = mp.get(lv);
+        if (!mc) { const [c2, g2] = mkCanvas(iw, ih); _drawImage.call(g2, img0, 0, 0); g2.globalCompositeOperation = 'destination-in'; g2.fillStyle = g2.createPattern(dMaskTile(lv), 'repeat'); _fillRect.call(g2, 0, 0, iw, ih); mc = c2; mp.set(lv, mc); }
+        const a2 = args.slice(); a2[0] = mc; const pa = ctx2.globalAlpha; ctx2.globalAlpha = step; _drawImage.apply(ctx2, a2); ctx2.globalAlpha = pa; return;
+      } }
+    const img = args[0]; let dx, dy, dw, dh;
+    if (args.length === 3) { dx = args[1]; dy = args[2]; dw = img.width; dh = img.height; } else if (args.length === 5) { dx = args[1]; dy = args[2]; dw = args[3]; dh = args[4]; } else { dx = args[5]; dy = args[6]; dw = args[7]; dh = args[8]; }
+    const m = ctx2.getTransform(), xs = [], ys = [];
+    for (const [px, py] of [[dx, dy], [dx + dw, dy], [dx, dy + dh], [dx + dw, dy + dh]]) { xs.push(m.a * px + m.c * py + m.e); ys.push(m.b * px + m.d * py + m.f); }
+    const Wc = ctx2.canvas.width, Hc = ctx2.canvas.height;
+    const bx0 = Math.max(0, Math.floor(Math.min(...xs))), by0 = Math.max(0, Math.floor(Math.min(...ys))), bx1 = Math.min(Wc, Math.ceil(Math.max(...xs))), by1 = Math.min(Hc, Math.ceil(Math.max(...ys)));
+    const w = bx1 - bx0, h = by1 - by0; if (w <= 0 || h <= 0) return;
+    if (!DSC) { const [c, g] = mkCanvas(VW, VH); DSC = { c, g }; }
+    const g = DSC.g;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(0, 0, w, h);
+    g.setTransform(m.a, m.b, m.c, m.d, m.e - bx0, m.f - by0); g.filter = ctx2.filter || 'none'; g.imageSmoothingEnabled = false;
+    _drawImage.apply(g, args);
+    g.filter = 'none'; g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'destination-in';
+    const [ax, ay] = dAnchor(), pat = g.createPattern(dMaskTile(lv), 'repeat'); pat.setTransform(new DOMMatrix([1, 0, 0, 1, ax - bx0, ay - by0]));
+    g.fillStyle = pat; _fillRect.call(g, 0, 0, w, h); g.globalCompositeOperation = 'source-over';
+    ctx2.save(); ctx2.setTransform(1, 0, 0, 1, 0, 0); ctx2.globalAlpha = step; ctx2.filter = 'none';
+    _drawImage.call(ctx2, DSC.c, 0, 0, w, h, bx0, by0, w, h); ctx2.restore();
+  }
+  ctx.fillRect = function (...a) { return dStyleCall(this, _fillRect, a, 'fillStyle'); };
+  ctx.fill = function (...a) { return dStyleCall(this, _fill, a, 'fillStyle'); };
+  ctx.stroke = function (...a) { return dStyleCall(this, _stroke, a, 'strokeStyle'); };
+  ctx.drawImage = function (...a) { return dDrawImage(this, a); };
+  // ================================================================ v1.85 도트 규칙 강제 (화면 캔버스 ctx 한정)
+  // 1) 사각형·그림: 화면 좌표가 2px 칸 격자에 맞도록 (홀수·소수 좌표 → 가까운 짝수, 1px 두께 → 한 칸)
+  // 2) 곡선·선(경로 fill/stroke): 안티에일리어싱 없이 '칸 가운데가 모양 안에 드는 칸'만 사각형으로 칠함
+  //    (그림자·휘두르기 궤적·타격 이펙트·공격 예고 등). 회전된 좌표계에서 칠할 때만 예전 방식으로
+  let PX_STRICT = true;
+  const PXM = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0, st: [] };
+  {
+    const M = PXM, wrap = (name, fn) => { const o = ctx[name]; ctx[name] = function (...a) { fn(...a); return o.apply(this, a); }; };
+    wrap('save', () => M.st.push(M.a, M.b, M.c, M.d, M.e, M.f));
+    wrap('restore', () => { if (M.st.length >= 6) { M.f = M.st.pop(); M.e = M.st.pop(); M.d = M.st.pop(); M.c = M.st.pop(); M.b = M.st.pop(); M.a = M.st.pop(); } });
+    wrap('translate', (x, y) => { M.e += M.a * x + M.c * y; M.f += M.b * x + M.d * y; });
+    wrap('scale', (sx, sy) => { M.a *= sx; M.b *= sx; M.c *= sy; M.d *= sy; });
+    wrap('rotate', t => { const cs = Math.cos(t), sn = Math.sin(t), a = M.a, b = M.b, c = M.c, d = M.d; M.a = a * cs + c * sn; M.b = b * cs + d * sn; M.c = c * cs - a * sn; M.d = d * cs - b * sn; });
+    wrap('transform', (A, B, C, D, E, F) => { const a = M.a, b = M.b, c = M.c, d = M.d; M.a = a * A + c * B; M.b = b * A + d * B; M.c = a * C + c * D; M.d = b * C + d * D; M.e += a * E + c * F; M.f += b * E + d * F; });
+    wrap('setTransform', (a, b, c, d, e, f) => { if (a == null) { M.a = 1; M.b = 0; M.c = 0; M.d = 1; M.e = 0; M.f = 0; } else if (typeof a === 'object') { M.a = a.a; M.b = a.b; M.c = a.c; M.d = a.d; M.e = a.e; M.f = a.f; } else { M.a = a; M.b = b; M.c = c; M.d = d; M.e = e; M.f = f; } });
+    wrap('resetTransform', () => { M.a = 1; M.b = 0; M.c = 0; M.d = 1; M.e = 0; M.f = 0; });
+  }
+  const pxEven = v => Math.round(v / 2) * 2;
+  { // 1) 사각형·그림 격자 맞춤
+    const M = PXM, oRect = ctx.fillRect, oImg = ctx.drawImage;
+    ctx.fillRect = function (x, y, w, h) {
+      if (!PX_STRICT || M.b || M.c) return oRect.call(this, x, y, w, h);
+      const X0 = M.a * x + M.e, X1 = M.a * (x + w) + M.e, Y0 = M.d * y + M.f, Y1 = M.d * (y + h) + M.f;
+      const xa = Math.min(X0, X1), xb = Math.max(X0, X1), ya = Math.min(Y0, Y1), yb = Math.max(Y0, Y1);
+      if (!(xb > xa && yb > ya)) return; // 빈 사각형·NaN
+      let R0 = pxEven(xa), R1 = pxEven(xb), S0 = pxEven(ya), S1 = pxEven(yb);
+      if (R1 <= R0) R1 = R0 + 2; if (S1 <= S0) S1 = S0 + 2;
+      if (R0 === xa && R1 === xb && S0 === ya && S1 === yb) return oRect.call(this, x, y, w, h);
+      return oRect.call(this, (R0 - M.e) / M.a, (S0 - M.f) / M.d, (R1 - R0) / M.a, (S1 - S0) / M.d);
+    };
+    ctx.drawImage = function (img, ...a) {
+      if (!PX_STRICT || M.b || M.c) return oImg.call(this, img, ...a);
+      const n = a.length, ix = n === 8 ? 4 : 0;
+      const dx = a[ix], dy = a[ix + 1], dw = n === 2 ? img.width : a[ix + 2], dh = n === 2 ? img.height : a[ix + 3];
+      const X = Math.min(M.a * dx, M.a * (dx + dw)) + M.e, Y = Math.min(M.d * dy, M.d * (dy + dh)) + M.f;
+      const ex = pxEven(X) - X, ey = pxEven(Y) - Y;
+      if (ex || ey) { a = a.slice(); a[ix] = dx + ex / M.a; a[ix + 1] = dy + ey / M.d; }
+      return oImg.call(this, img, ...a);
+    };
+  }
+  { // 2) 경로를 칸 단위로: 경로 명령을 화면 좌표로 기록 → fill은 스캔라인(0이 아닌 감김), stroke는 선분까지 거리
+    const M = PXM, P = []; let cur = null, bad = false, sx = 0, sy = 0, lx = 0, ly = 0;
+    const T = (x, y) => [M.a * x + M.c * y + M.e, M.b * x + M.d * y + M.f];
+    const sub = (x, y) => { cur = { pts: [x, y], closed: false }; P.push(cur); sx = lx = x; sy = ly = y; };
+    const add = (x, y) => { if (!cur) sub(x, y); else { cur.pts.push(x, y); lx = x; ly = y; } };
+    const devR = (rx, ry) => Math.max(Math.abs(rx) * Math.hypot(M.a, M.b), Math.abs(ry) * Math.hypot(M.c, M.d));
+    const rec = (name, fn) => { const o = ctx[name]; ctx[name] = function (...a) { fn(...a); return o.apply(this, a); }; };
+    rec('beginPath', () => { P.length = 0; cur = null; bad = false; });
+    rec('moveTo', (x, y) => { const [X, Y] = T(x, y); sub(X, Y); });
+    rec('lineTo', (x, y) => { const [X, Y] = T(x, y); add(X, Y); });
+    rec('closePath', () => { if (cur) { cur.closed = true; const x = sx, y = sy; sub(x, y); } });
+    rec('rect', (x, y, w, h) => { const q = [T(x, y), T(x + w, y), T(x + w, y + h), T(x, y + h)]; sub(q[0][0], q[0][1]); for (let i = 1; i < 4; i++) add(q[i][0], q[i][1]); cur.closed = true; sub(q[0][0], q[0][1]); });
+    const ell = (x, y, rx, ry, rot, a0, a1, ccw) => {
+      if (!(rx >= 0 && ry >= 0)) { bad = true; return; }
+      let d = a1 - a0;
+      if (!ccw) { if (d >= TAU) d = TAU; else { d %= TAU; if (d < 0) d += TAU; } } else { if (-d >= TAU) d = -TAU; else { d %= TAU; if (d > 0) d -= TAU; } }
+      const n = Math.max(6, Math.min(96, Math.ceil(Math.abs(d) * devR(rx, ry) / 3))), cr = Math.cos(rot), sr = Math.sin(rot);
+      for (let i = 0; i <= n; i++) { const t = a0 + d * i / n, ex = rx * Math.cos(t), ey = ry * Math.sin(t); const [X, Y] = T(x + ex * cr - ey * sr, y + ex * sr + ey * cr); if (i === 0 && !cur) sub(X, Y); else add(X, Y); }
+    };
+    rec('arc', (x, y, r, a0, a1, ccw) => ell(x, y, r, r, 0, a0, a1, ccw));
+    rec('ellipse', (x, y, rx, ry, rot, a0, a1, ccw) => ell(x, y, rx, ry, rot, a0, a1, ccw));
+    rec('quadraticCurveTo', (cx, cy, x, y) => { const [X0, Y0] = [lx, ly], [CX, CY] = T(cx, cy), [X, Y] = T(x, y); for (let i = 1; i <= 10; i++) { const t = i / 10, u = 1 - t; add(u * u * X0 + 2 * u * t * CX + t * t * X, u * u * Y0 + 2 * u * t * CY + t * t * Y); } });
+    rec('bezierCurveTo', (c1x, c1y, c2x, c2y, x, y) => { const X0 = lx, Y0 = ly, [A, B] = T(c1x, c1y), [C, D] = T(c2x, c2y), [X, Y] = T(x, y); for (let i = 1; i <= 14; i++) { const t = i / 14, u = 1 - t; add(u * u * u * X0 + 3 * u * u * t * A + 3 * u * t * t * C + t * t * t * X, u * u * u * Y0 + 3 * u * u * t * B + 3 * u * t * t * D + t * t * t * Y); } });
+    rec('arcTo', () => { bad = true; });
+    // 칸 지도 (화면 384×216칸 + 둘레 여유)
+    const GX = -16, GY = -16, GW = (VW + 32) / 2, GH = (VH + 32) / 2, MAP = new Uint8Array(GW * GH);
+    let mx0, my0, mx1, my1;
+    const touch = (i, j) => { MAP[j * GW + i] = 1; if (i < mx0) mx0 = i; if (i > mx1) mx1 = i; if (j < my0) my0 = j; if (j > my1) my1 = j; };
+    function fillMap(evenOdd) {
+      let y0 = 1e9, y1 = -1e9; const E = [];
+      for (const s of P) { const p = s.pts, n = p.length / 2; if (n < 2) continue; for (let i = 0; i < n; i++) { const k = (i + 1) % n; const ax = p[i * 2], ay = p[i * 2 + 1], bx = p[k * 2], by = p[k * 2 + 1]; if (ay !== by) E.push(ax, ay, bx, by); if (ay < y0) y0 = ay; if (ay > y1) y1 = ay; } }
+      if (!E.length) return;
+      const j0 = Math.max(0, Math.floor((y0 - GY) / 2)), j1 = Math.min(GH - 1, Math.ceil((y1 - GY) / 2));
+      const xs = [];
+      for (let j = j0; j <= j1; j++) {
+        const yc = GY + j * 2 + 1; xs.length = 0;
+        for (let e = 0; e < E.length; e += 4) { const ay = E[e + 1], by = E[e + 3]; if ((yc >= ay && yc < by) || (yc >= by && yc < ay)) xs.push(E[e] + (yc - ay) * (E[e + 2] - E[e]) / (by - ay), by > ay ? 1 : -1); }
+        if (xs.length < 4) continue;
+        const ord = []; for (let i = 0; i < xs.length; i += 2) ord.push(i); ord.sort((p, q) => xs[p] - xs[q]);
+        let w = 0;
+        for (let k = 0; k < ord.length - 1; k++) {
+          w = evenOdd ? w ^ 1 : w + xs[ord[k] + 1]; if (!w) continue;
+          const xa = xs[ord[k]], xb = xs[ord[k + 1]];
+          const i0 = Math.max(0, Math.ceil((xa - GX - 1) / 2)), i1 = Math.min(GW - 1, Math.ceil((xb - GX - 1) / 2) - 1);
+          for (let i = i0; i <= i1; i++) touch(i, j);
+        }
+      }
+    }
+    function strokeMap(lw) { // 선분을 반 칸 간격으로 따라가며 반지름 hw 안의 칸을 칠함 (화면 밖 부분은 잘라냄)
+      const hw = Math.max(lw / 2, 1), hw2 = hw * hw, XL = GX - hw, XR = GX + GW * 2 + hw, YT = GY - hw, YB = GY + GH * 2 + hw;
+      for (const s of P) {
+        const p = s.pts, n = p.length / 2; if (n < 2) continue;
+        const segs = n - 1 + (s.closed ? 1 : 0);
+        for (let i = 0; i < segs; i++) {
+          const k = (i + 1) % n; let ax = p[i * 2], ay = p[i * 2 + 1], bx = p[k * 2], by = p[k * 2 + 1];
+          // 화면 사각형으로 자르기 (리앙-바스키)
+          let t0 = 0, t1 = 1; const dx = bx - ax, dy = by - ay; let ok = true;
+          for (const [pp, qq] of [[-dx, ax - XL], [dx, XR - ax], [-dy, ay - YT], [dy, YB - ay]]) {
+            if (pp === 0) { if (qq < 0) { ok = false; break; } continue; }
+            const r = qq / pp; if (pp < 0) { if (r > t1) { ok = false; break; } if (r > t0) t0 = r; } else { if (r < t0) { ok = false; break; } if (r < t1) t1 = r; }
+          }
+          if (!ok) continue;
+          const x0 = ax + dx * t0, y0 = ay + dy * t0, L = Math.hypot(dx, dy) * (t1 - t0), steps = Math.max(1, Math.ceil(L / 1.5));
+          for (let q = 0; q <= steps; q++) {
+            const px = x0 + dx * (t1 - t0) * q / steps, py = y0 + dy * (t1 - t0) * q / steps;
+            const i0 = Math.max(0, Math.ceil((px - hw - GX - 1) / 2)), i1 = Math.min(GW - 1, Math.floor((px + hw - GX - 1) / 2));
+            const j0 = Math.max(0, Math.ceil((py - hw - GY - 1) / 2)), j1 = Math.min(GH - 1, Math.floor((py + hw - GY - 1) / 2));
+            for (let jj = j0; jj <= j1; jj++) { const qy = GY + jj * 2 + 1 - py; for (let ii = i0; ii <= i1; ii++) { const qx = GX + ii * 2 + 1 - px; if (qx * qx + qy * qy <= hw2) touch(ii, jj); } }
+          }
+        }
+      }
+    }
+    function emit(g, rectFn) { // 칸 지도 → 줄마다 이어진 칸을 사각형 하나로
+      const ia = M.a, id = M.d, e = M.e, f = M.f;
+      for (let j = my0; j <= my1; j++) {
+        let i = mx0; const row = j * GW;
+        while (i <= mx1) {
+          if (!MAP[row + i]) { i++; continue; }
+          let k = i; while (k <= mx1 && MAP[row + k]) { MAP[row + k] = 0; k++; }
+          let h = 1; // 아래 줄들이 똑같은 구간이면 한 사각형으로 합침
+          for (let jj = j + 1; jj <= my1; jj++) {
+            const r2 = jj * GW; if (MAP[r2 + i - 1] && i > 0 || MAP[r2 + k]) break;
+            let same = true; for (let q = i; q < k; q++) if (!MAP[r2 + q]) { same = false; break; }
+            if (!same) break; for (let q = i; q < k; q++) MAP[r2 + q] = 0; h++;
+          }
+          const X = GX + i * 2, Y = GY + j * 2;
+          rectFn.call(g, (X - e) / ia, (Y - f) / id, (k - i) * 2 / ia, h * 2 / id);
+          i = k;
+        }
+      }
+    }
+    const pathOK = () => !bad && P.length && !M.b && !M.c && M.a && M.d;
+    const oFill = ctx.fill, oStroke = ctx.stroke, rectRaw = ctx.fillRect;
+    const run = (g, mapFn) => { mx0 = my0 = 1e9; mx1 = my1 = -1; mapFn(); if (mx1 >= 0) emit(g, rectRaw); };
+    ctx.fill = function (...a) {
+      if (!PX_STRICT || !DITHER_ON || a.length && typeof a[0] !== 'string' || !pathOK()) return oFill.apply(this, a); // v1.95 공격 예고(디더 예외 구간)는 원래대로 — 칸 쪼개기가 무거움
+      run(this, () => fillMap(a[0] === 'evenodd'));
+    };
+    ctx.stroke = function (...a) {
+      if (!PX_STRICT || !DITHER_ON || a.length || !pathOK()) return oStroke.apply(this, a);
+      const fs = DSTY.f, lw = this.lineWidth * Math.max(Math.abs(M.a), Math.abs(M.d));
+      this.fillStyle = DSTY.s;
+      try { run(this, () => strokeMap(lw)); } finally { this.fillStyle = fs; }
+    };
+  }
+  // 디더 그라데이션: 쓰는 곳은 createRadialGradient 대신 dRadial, fillStyle = gr 대신 gr.p(ctx [, x, y, w, h])
+  const DGC = new Map();
+  function dCol(c) { // 색 문자열 → [r,g,b,a]
+    if (c[0] === '#') return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16), 1];
+    const m = c.match(/[\d.]+/g); return [+m[0], +m[1], +m[2], m.length > 3 ? +m[3] : 1];
+  }
+  function dGrad(kind, geo) {
+    return { kind, geo, st: [], addColorStop(t, c) { this.st.push([t, dCol(c)]); },
+      p(g, ex, ey, ew, eh, N = 10, dk = 1) { // dk < 1: 색을 dk배 어둡게 하고 알파를 1/dk배로 (어두운 화면 위 테두리가 덜 거칠게)
+        const geo = this.geo;
+        if (ex == null) { const r = geo[5]; ex = geo[3] - r; ey = geo[4] - r; ew = eh = r * 2; }
+        const X0 = Math.floor(ex / 8) * 8, Y0 = Math.floor(ey / 8) * 8, X1 = Math.ceil((ex + ew) / 8) * 8, Y1 = Math.ceil((ey + eh) / 8) * 8, cw = (X1 - X0) / 2, ch = (Y1 - Y0) / 2;
+        if (cw <= 0 || ch <= 0 || cw * ch > 400000) return 'rgba(0,0,0,0)';
+        const st = this.st.slice().sort((a, b) => a[0] - b[0]).map(([t, c]) => [t, [c[0], c[1], c[2], Math.round(c[3] * 12) / 12]]); // 알파는 1/12 단위 (캐시 적중)
+        const q = v => Math.round(v / 2) * 2; // 위치·반지름은 2px 단위
+        const gk = this.kind === 'r' ? [geo[3] - X0, geo[4] - Y0, geo[2], geo[5]] : [geo[0] - X0, geo[1] - Y0, geo[2] - X0, geo[3] - Y0];
+        const key = this.kind + gk.map(q).join(',') + '|' + cw + 'x' + ch + '|' + N + '|' + dk + '|' + DLV + '|' + st.map(s => s[0] + ':' + s[1].join(',')).join(';');
+        let cv2 = DGC.get(key);
+        if (!cv2) {
+          const [c, gg] = mkCanvas(cw, ch), im = gg.createImageData(cw, ch), px = im.data;
+          const col0 = t => { if (t <= st[0][0]) return st[0][1]; for (let i = 1; i < st.length; i++) if (t <= st[i][0]) { const a = st[i - 1], b = st[i], k = (t - a[0]) / Math.max(1e-6, b[0] - a[0]); return [0, 1, 2, 3].map(j => a[1][j] + (b[1][j] - a[1][j]) * k); } return st[st.length - 1][1]; };
+          const LUT = []; for (let i = 0; i <= N; i++) LUT.push(col0(i / N)); // 단계가 N+1개뿐이라 미리 계산
+          const gk2 = gk.map(q), G0 = this.kind === 'r' ? [gk2[0] + X0, gk2[1] + Y0, gk2[2], gk2[3]] : [gk2[0] + X0, gk2[1] + Y0, gk2[2] + X0, gk2[3] + Y0];
+          for (let j = 0; j < ch; j++) for (let i = 0; i < cw; i++) {
+            const wx = X0 + i * 2 + 1, wy = Y0 + j * 2 + 1; let t;
+            if (this.kind === 'r') { const d = Math.hypot(wx - G0[0], wy - G0[1]); t = (d - G0[2]) / Math.max(1e-6, G0[3] - G0[2]); }
+            else { const vx = G0[2] - G0[0], vy = G0[3] - G0[1], L2 = vx * vx + vy * vy || 1; t = ((wx - G0[0]) * vx + (wy - G0[1]) * vy) / L2; }
+            t = Math.max(0, Math.min(1, t));
+            const b = (DBAY[(j & 3) * 4 + (i & 3)] + 0.5) / 16, c3 = LUT[Math.min(N, dBandQ(t * N, b))];
+            const al = Math.min(1, c3[3] / dk), sK = al * DLV, bi = Math.floor(sK), aq = Math.min(1, (bi + ((sK - bi) > b ? 1 : 0)) / DLV); if (aq <= 0) continue; // 알파도 단계 사이만 디더
+            const o = (j * cw + i) * 4; px[o] = c3[0] * dk; px[o + 1] = c3[1] * dk; px[o + 2] = c3[2] * dk; px[o + 3] = Math.round(aq * 255);
+          }
+          gg.putImageData(im, 0, 0); cv2 = c;
+          if (DGC.size > 240) DGC.clear();
+          DGC.set(key, cv2);
+        }
+        const pat = g.createPattern(cv2, 'no-repeat'); pat.setTransform(new DOMMatrix([2, 0, 0, 2, X0, Y0]));
+        return pat;
+      } };
+  }
+  const dRadial = (g, x0, y0, r0, x1, y1, r1) => DITHER_ON ? dGrad('r', [x0, y0, r0, x1, y1, r1]) : Object.assign(g.createRadialGradient(x0, y0, r0, x1, y1, r1), { p() { return this; } });
+  const dLinear = (g, x0, y0, x1, y1) => DITHER_ON ? dGrad('l', [x0, y0, x1, y1]) : Object.assign(g.createLinearGradient(x0, y0, x1, y1), { p() { return this; } });
 
   // ---------------------------------------------------------------- 저장
   const SAVE_KEY = 'acr_proto_v1';
@@ -1562,8 +1841,8 @@
     for (let i = 0; i < PILLARS.length - 1; i++) {
       const mx = (PILLARS[i] + PILLARS[i + 1]) / 2;
       g.fillStyle = '#07060a'; g.fillRect(mx - 9, T0 + 8, 18, 26); g.beginPath(); g.arc(mx, T0 + 8, 9, Math.PI, 0); g.fill();
-      const mg = g.createLinearGradient(0, T0, 0, T0 + 34); mg.addColorStop(0, 'rgba(110,100,160,.35)'); mg.addColorStop(1, 'rgba(40,30,70,.1)');
-      g.fillStyle = mg; g.fillRect(mx - 7, T0 + 9, 14, 24); g.beginPath(); g.arc(mx, T0 + 9, 7, Math.PI, 0); g.fill();
+      const mg = dLinear(g, 0, T0, 0, T0 + 34); mg.addColorStop(0, 'rgba(110,100,160,.35)'); mg.addColorStop(1, 'rgba(40,30,70,.1)');
+      g.fillStyle = mg.p(g, mx - 7, T0 + 2, 14, 32); g.fillRect(mx - 7, T0 + 9, 14, 24); g.beginPath(); g.arc(mx, T0 + 9, 7, Math.PI, 0); g.fill();
       g.fillStyle = '#07060a'; g.fillRect(mx - 1, T0 + 2, 2, 32); g.fillRect(mx - 7, T0 + 20, 14, 1);
     }
     // 기둥과 깃발
@@ -1593,8 +1872,8 @@
     g.fillStyle = '#4a4554'; g.fillRect(A.x0 - 2, A.y0, 2, A.y1 - A.y0 + 2); g.fillRect(A.x1, A.y0, 2, A.y1 - A.y0 + 2); g.fillRect(A.x0 - 2, A.y1, A.x1 - A.x0 + 4, 2);
     g.fillStyle = '#1b1820'; for (let y = A.y0 + 8; y < A.y1; y += 12) { g.fillRect(A.x0 - 6, y, 4, 2); g.fillRect(A.x1 + 2, y, 4, 2); } for (let x = A.x0 + 8; x < A.x1; x += 12) g.fillRect(x, A.y1 + 2, 2, 4);
     // 벽 아래 그림자
-    const sg = g.createLinearGradient(0, A.y0, 0, A.y0 + 22); sg.addColorStop(0, 'rgba(0,0,0,.6)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = sg; g.fillRect(A.x0, A.y0, A.x1 - A.x0, 22);
+    const sg = dLinear(g, 0, A.y0, 0, A.y0 + 22); sg.addColorStop(0, 'rgba(0,0,0,.6)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = sg.p(g, A.x0, A.y0, A.x1 - A.x0, 22); g.fillRect(A.x0, A.y0, A.x1 - A.x0, 22);
   }
   // ================================================================ v1.22 STAGE 4 잿빛 왕도 — 성채 그림을 재의 색으로 바꾸고 바닥에 재를 쌓는다
   // 색 바꾸기: 밝기는 지키고 채도를 빼서 따뜻한 잿빛으로. 금빛은 바랜 금으로, 붉은 천·피는 그을린 갈색으로
@@ -1661,16 +1940,10 @@
   let TORCHES = PILLARS.map(x => ({ x, y: 62 }));
   const titleEmbers = [];
 
-  // 안개 텍스처
-  const [fog, fogg] = mkCanvas(VW, VH);
-  for (let i = 0; i < 46; i++) {
-    const x = rand(0, VW), y = rand(0, VH), r = rand(30, 90);
-    const gr = fogg.createRadialGradient(x, y, 0, x, y, r);
-    gr.addColorStop(0, 'rgba(120,112,140,.07)'); gr.addColorStop(1, 'rgba(120,112,140,0)');
-    fogg.fillStyle = gr; fogg.fillRect(x - r, y - r, r * 2, r * 2);
-  }
   // 조명/핏자국 레이어
   const [lightC, lg] = mkCanvas(VW, VH);
+  let LIGHT_GL = false; // v1.78 조명 GL(디더) — 그래픽 카드가 없으면 매우 느려서 기본은 끔, __proto.lightGL로 시험
+  let LIGHT_DITH = true; // v1.78 디더 빛 도장 (기본) — __proto.lightDith로 끄면 예전 부드러운 그라데이션
   const LIGHTH = (() => { const [c, g] = mkCanvas(VW / 2, VH / 2), [gc, gg] = mkCanvas(VW / 2, VH / 2); return { c, g, gc, gg }; })(); // v1.17 반 해상도 빛 지도·빛 번짐
   const [decal, dg] = mkCanvas(W, H);
   function splat(x, y, n, col = '110,10,16') {
@@ -2072,7 +2345,7 @@
     if (st === 'wind' && e.pat === 'miasma') { aL = [-2, -4]; aR = [2, -4]; sx = 1 + 0.1 * g; sy = 1 + 0.06 * g; }
     if (st === 'wind' && e.pat === 'bile') rot = -0.15 * e.face * g;
     drawShadow(e.x, e.y + 2, 18);
-    if (e.state === 'wind' && e.pat === 'miasma' && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = ctx.createRadialGradient(e.x, e.y - 10, 0, e.x, e.y - 10, 30 + 50 * e.glow); gr.addColorStop(0, `rgba(150,220,80,${0.35 * e.glow})`); gr.addColorStop(1, 'rgba(150,220,80,0)'); ctx.fillStyle = gr; ctx.fillRect(e.x - 90, e.y - 100, 180, 180); ctx.restore(); }
+    if (e.state === 'wind' && e.pat === 'miasma' && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = dRadial(ctx, e.x, e.y - 10, 0, e.x, e.y - 10, 30 + 50 * e.glow); gr.addColorStop(0, `rgba(150,220,80,${0.35 * e.glow})`); gr.addColorStop(1, 'rgba(150,220,80,0)'); ctx.fillStyle = gr.p(ctx); ctx.fillRect(e.x - 90, e.y - 100, 180, 180); ctx.restore(); }
     { const by0 = e.y + 2 + ya, by = by0 + bob, o = (m, dx, dy, ex) => drawSprite(m, 'mother', 2, e.x + tr + dx * F, dy, flip, Object.assign({ white, rot, alpha: al }, ex || {}));
       o('moLegL', 0, by0 + lL); o('moLegR', 0, by0 + lR); o('moArmL', aL[0], by + aL[1]); o('moBody', 0, by, { sx, sy }); o('moArmR', aR[0], by + aR[1]);
       if (!white && al > 0.5) { // v1.52 배 속에서 무언가 꿈틀 · 맞은 직후 작은 손이 배를 밀고 나옴
@@ -2086,17 +2359,17 @@
     if (!white) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       const pulse = 0.35 + 0.25 * Math.sin(time * 4) + (e.state === 'wind' ? 0.4 * e.glow : 0);
-      const gr = ctx.createRadialGradient(e.x, e.y - 22 + ya, 0, e.x, e.y - 22 + ya, 14); gr.addColorStop(0, `rgba(170,240,90,${pulse})`); gr.addColorStop(1, 'rgba(170,240,90,0)');
-      ctx.fillStyle = gr; ctx.fillRect(e.x - 14, e.y - 36 + ya, 28, 28);
+      const gr = dRadial(ctx, e.x, e.y - 22 + ya, 0, e.x, e.y - 22 + ya, 14); gr.addColorStop(0, `rgba(170,240,90,${pulse})`); gr.addColorStop(1, 'rgba(170,240,90,0)');
+      ctx.fillStyle = gr.p(ctx); ctx.fillRect(e.x - 14, e.y - 36 + ya, 28, 28);
       ctx.fillStyle = `rgba(200,250,110,${0.6 + 0.4 * e.glow})`; for (const ox of [-4, 4]) ctx.fillRect(Math.round(e.x + tr + (flip ? -ox - 2 : ox)), Math.round(e.y - 38 + ya + bob), 2, 2);
       ctx.restore();
     }
     if (e.state === 'bilecharge' && !white) {
       const k = 1 - e.t / e.chargeMax, mx = e.x + e.face * 1, my = e.y - 32 + ya;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const rr = 4 + 12 * k, gr = ctx.createRadialGradient(mx, my, 0, mx, my, rr);
+      const rr = 4 + 12 * k, gr = dRadial(ctx, mx, my, 0, mx, my, rr);
       gr.addColorStop(0, `rgba(230,255,170,${0.6 + 0.4 * k})`); gr.addColorStop(0.5, `rgba(150,230,70,${0.5 * k + 0.2})`); gr.addColorStop(1, 'rgba(150,230,70,0)');
-      ctx.fillStyle = gr; ctx.fillRect(mx - rr, my - rr, rr * 2, rr * 2);
+      ctx.fillStyle = gr.p(ctx); ctx.fillRect(mx - rr, my - rr, rr * 2, rr * 2);
       if (k > 0.75 && Math.floor(time * 20) % 2) { ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(mx) - 1, Math.round(my) - 1, 3, 3); }
       ctx.restore();
     }
@@ -3646,7 +3919,7 @@ huskUp:[
     let sy = 1 + (e.jy || 0) + Math.sin(time * 4) * 0.04 + Math.sin(time * 9.3) * 0.012, sx = 1 / Math.sqrt(Math.max(0.3, sy)) * (1 + Math.max(0, -(e.jy || 0)) * 0.35);
     const W0 = 64, H0 = 50, cx = Math.round(e.x) & ~1, by = Math.round(e.y + 2 + ya - z) & ~1;
     drawShadow(e.x, e.y + 2, 30 * (1 - Math.min(0.55, z / 200)));
-    if (e.glow > 0 && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = ctx.createRadialGradient(cx, by - 24, 0, cx, by - 24, 50); gr.addColorStop(0, `rgba(160,255,90,${0.4 * e.glow})`); gr.addColorStop(1, 'rgba(160,255,90,0)'); ctx.fillStyle = gr; ctx.fillRect(cx - 50, by - 74, 100, 100); ctx.restore(); }
+    if (e.glow > 0 && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = dRadial(ctx, cx, by - 24, 0, cx, by - 24, 50); gr.addColorStop(0, `rgba(160,255,90,${0.4 * e.glow})`); gr.addColorStop(1, 'rgba(160,255,90,0)'); ctx.fillStyle = gr.p(ctx); ctx.fillRect(cx - 50, by - 74, 100, 100); ctx.restore(); }
     drawBlob(cx, by, W0 * sx, H0 * sy, C, { white, alpha: 0.9 * al, jelly: { lean: (e.jl || 0) + Math.sin(time * 2.6) * 0.04, wave: 0.035 + Math.min(0.08, Math.abs(e.jyv || 0) * 0.012), ph: e.x * 0.01 } });
     const lx = (e.jl || 0) * H0 * sy * 0.5; // 이후 장식은 기울기 따라 옮긴다
     if (white) return;
@@ -3706,14 +3979,14 @@ huskUp:[
   }
   const [floorM, fmg] = mkCanvas(W, H);
   function paintMeadowFloor(g) {
-    const sky = g.createLinearGradient(0, 0, 0, A.y0); sky.addColorStop(0, '#1e1830'); sky.addColorStop(0.55, '#4a2e48'); sky.addColorStop(1, '#8a5040');
-    g.fillStyle = sky; g.fillRect(0, 0, W, A.y0);
+    const sky = dLinear(g, 0, 0, 0, A.y0); sky.addColorStop(0, '#1e1830'); sky.addColorStop(0.55, '#4a2e48'); sky.addColorStop(1, '#8a5040');
+    g.fillStyle = sky.p(g, 0, 0, W, A.y0, 14); g.fillRect(0, 0, W, A.y0);
     // 지는 해
     g.fillStyle = 'rgba(255,170,90,.5)'; g.beginPath(); g.arc(CX + 100, A.y0 - 34, 22, 0, TAU); g.fill();
     g.fillStyle = 'rgba(255,200,120,.8)'; g.beginPath(); g.arc(CX + 100, A.y0 - 34, 14, 0, TAU); g.fill();
     g.fillStyle = '#1e3018'; g.fillRect(0, A.y0 - 40, W, H);
     for (let i = 0; i < 11000 * (W * (H - A.y0)) / (1152 * 630); i++) { g.fillStyle = pick(['#24401c', '#2a4820', '#22401a']); g.fillRect(randi(0, W), randi(A.y0 - 40, H), randi(1, 3), 1); }
-    for (let i = 0; i < 16; i++) { const x = rand(A.x0, A.x1), y = rand(A.y0, A.y1), r = rand(20, 60); const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(90,130,50,.18)'); gr.addColorStop(1, 'rgba(90,130,50,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
+    for (let i = 0; i < 16; i++) { const x = rand(A.x0, A.x1), y = rand(A.y0, A.y1), r = rand(20, 60); const gr = dRadial(g, x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(90,130,50,.18)'); gr.addColorStop(1, 'rgba(90,130,50,0)'); g.fillStyle = gr.p(g); g.fillRect(x - r, y - r, r * 2, r * 2); }
     // 풀 무더기
     for (let i = 0; i < 420 * (A.x1 - A.x0) * (A.y1 - A.y0) / 540000; i++) {
       const x = randi(A.x0 - 20, A.x1 + 20), y = randi(A.y0, A.y1 + 20);
@@ -4097,7 +4370,9 @@ huskUp:[
       r.obs = obs; r.nav = buildNav(obs);
       // 특수 지점
       const freeSpot = (cands) => cands.map(([u, v]) => U(u, v)).find(p => !obsHitL(obs, p.x, p.y, 34)) || U(.5, .5);
-      if (r.hasTele) r.tele = freeSpot([...(r.type === 'survive' || r.type === 'boss' ? [] : [[.5, .5]]), [.4, .62], [.6, .4], [.3, .5], [.7, .5], [.5, .3], [.5, .75], [.15, .2], [.85, .8]]);
+      if (r.hasTele) { // v1.90 방 가운데는 보상 상자·봉인 열쇠 자리 → 텔레포터는 비켜서 둠
+        const okT = p => !obsHitL(obs, p.x, p.y, 34) && Math.hypot(p.x - CX, p.y - (CY - 10)) > 90 && Math.hypot(p.x - CX, p.y - (CY + 44)) > 60;
+        r.tele = [[.25, .5], [.75, .5], [.3, .3], [.7, .7], [.7, .3], [.3, .7], [.5, .2], [.5, .82], [.15, .2], [.85, .8], [.15, .8], [.85, .2]].map(([u, v]) => U(u, v)).find(okT) || (() => { let best = null, bd = -1; for (let u = 0.15; u <= 0.86; u += 0.05) for (let v = 0.18; v <= 0.84; v += 0.06) { const q = U(u, v); if (obsHitL(obs, q.x, q.y, 34)) continue; const d = Math.min(Math.hypot(q.x - CX, q.y - (CY - 10)), Math.hypot(q.x - CX, q.y - (CY + 44)) + 30); if (d > bd) { bd = d; best = q; } } return best || freeSpot([[.25, .5], [.75, .5]]); })(); }
       if (SR_TELE[r.type]) r.tele = { x: CX + SR_TELE[r.type][0], y: CY + SR_TELE[r.type][1] }; // v1.11
       if (r.type === 'boss') { const far = q => !obsHitL(obs, q.x, q.y, 34) && (!r.tele || Math.hypot(q.x - r.tele.x, q.y - r.tele.y) > 80) && Math.hypot(q.x - CX, q.y - (CY - 10)) > 70; // v1.01 다음 스테이지 출구
         r.exitP = [[.5, .22], [.5, .78], [.3, .25], [.7, .25], [.22, .5], [.78, .5], [.3, .75], [.7, .75]].map(([u, v]) => U(u, v)).find(far) || U(.5, .22); }
@@ -4145,6 +4420,8 @@ huskUp:[
     if (!wmStart()) banner(`STAGE ${G.stage}`, `${STG().n} — ${SK().intro}`); // v1.69 챕터 시작 월드맵 → 끝나면 배너
   }
   function setMood(m) { if (G.mood !== m) { G.mood = m; window.AudioSys.setMood(m, true); } }
+  // v1.81: 챕터(1~4)마다 다른 칩튠 곡 — 탐험 '' · 봉인 'Survive' · 보스 'Boss' · 휴식 'Rest'
+  function stageMood(k) { return 's' + clamp((G && G.stage) | 0, 1, 4) + k; }
   const hiddenDoor = (R, d) => R.crack && R.crack.dir === d && !R.crack.broken;
   function enterRoom(R, entry, opt = {}) {
     const D = G.dun, P = G.player;
@@ -4183,7 +4460,7 @@ huskUp:[
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('상인', '골드로 보급품을 산다 · F'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
     if (R.type === 'secret' && !R.greeted) { R.greeted = true; banner('비밀 방', '숨겨진 보물이다'); }
-    { const s = G.stage; setMood(R.type === 'boss' && fresh ? (s === 3 ? 'orcboss' : s >= 2 ? 'citadelBoss' : 'boss') : R.type === 'survive' && fresh ? (s === 3 ? 'orcboss' : s >= 2 ? 'citadelSurvive' : 'survive') : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? (s >= 2 && s !== 3 ? 'citadelRest' : 'rest') : s === 3 ? 'orc' : s >= 2 ? 'citadel' : 'field'); }
+    setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
     updateCamera(0, true);
   }
   function restartRoom() { enterRoom(G.dun.cur, null); }
@@ -4902,13 +5179,14 @@ huskUp:[
     for (let i = 0; i < 12; i++) { const a = -time * 1.1 + i / 12 * TAU; ctx.fillStyle = i % 3 ? 'rgba(255,120,60,.9)' : 'rgba(255,230,160,.95)'; ctx.fillRect(Math.round(p.x + Math.cos(a) * (MC_W - 2)) & ~1, Math.round(p.y - 1 + Math.sin(a) * (MC_H - 1)) & ~1, 2, 2); }
     ctx.restore();
   }
+  const RGBAQ = new Map(); const rgbaQ = (c, a) => { const q = Math.round(a * 40), k = c + q; let v = RGBAQ.get(k); if (!v) { v = `rgba(${c},${q / 40})`; RGBAQ.set(k, v); } return v; }; // v1.78 색 문자열 캐시 (알파 1/40 단위)
   function drawExitPillar() {
     const R = G.dun && G.dun.cur; if (!R || !R.exit) return;
     const p = R.exit, H0 = 150, w0 = 44, pulse = 0.8 + 0.2 * Math.sin(time * 5);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     for (let y = 0; y < H0; y += 2) { const k = 1 - y / H0, hw = Math.round((w0 / 2) * (0.5 + 0.5 * k) + Math.sin(time * 7 + y * 0.25)) & ~1;
       for (let x = -hw; x < hw; x += 2) { const edge = Math.abs(x + 1) / hw, lv = Math.min(1, (0.35 + k) * (1 - edge * 0.7) * pulse); if (!dith((x + 64) >> 1, (y + Math.floor(time * 26)) >> 1, lv)) continue;
-        ctx.fillStyle = edge < 0.35 ? `rgba(255,236,190,${0.25 + 0.6 * k})` : `rgba(230,70,40,${0.25 + 0.5 * k})`; ctx.fillRect((Math.round(p.x) + x) & ~1, (Math.round(p.y - 2) - y) & ~1, 2, 2); } }
+        ctx.fillStyle = edge < 0.35 ? rgbaQ('255,236,190', 0.25 + 0.6 * k) : rgbaQ('230,70,40', 0.25 + 0.5 * k); ctx.fillRect((Math.round(p.x) + x) & ~1, (Math.round(p.y - 2) - y) & ~1, 2, 2); } }
     for (let i = 0; i < 3; i++) { const yy = (time * 60 + i * H0 / 3) % H0; ctx.fillStyle = `rgba(255,220,160,${0.55 * (1 - yy / H0)})`; ctx.fillRect((Math.round(p.x) - 10) & ~1, Math.round(p.y - 2 - yy) & ~1, 20, 2); }
     ctx.restore();
     if (Math.random() < 0.7) G.parts.push({ x: p.x + rand(-16, 16), y: p.y - rand(0, 8), vx: rand(-5, 5), vy: -rand(50, 110), t: rand(0.5, 1.0), c: pick(['#ffb060', '#ff6a3a', '#fff0c0']), g: 0, glow: true });
@@ -6745,9 +7023,71 @@ huskUp:[
     const cells = [[0, 2], [1, 3], [2, 2], [3, 1], [4, 0]], put = (c, col, o) => { ctx.fillStyle = col; for (const [cx, cy] of cells) { ctx.fillRect(x + cx * s - o, y + cy * s - o, s + o * 2, s + o * 2); ctx.fillRect(x + cx * s - o, y + (cy + 1) * s - o, s + o * 2, s + o * 2); } };
     put(cells, '#000', 1); put(cells, '#7dff9a', 0);
   }
+  const MM = { phT: -1, phH: 52, key: '', c: null }; // v1.78 미니맵 방 그림 캐시 (방 상태가 바뀔 때만 다시 그림)
+  // v1.90 방 바닥에 남은 아이템 → 지도 아이콘 (장비가 있으면 가장 높은 등급 색)
+  function roomLoot(r) {
+    const arr = r === G.dun.cur ? G.loot : r.loot; if (!arr || !arr.length) return null;
+    let n = 0, gi = -1;
+    for (const l of arr) { if (!(l.life > 0)) continue; n++; if (l.type === 'gear') gi = Math.max(gi, { common: 0, rare: 1, unique: 2, legend: 3 }[l.it.grade]); }
+    return n ? { n, c: gi >= 0 ? GRADES.find(g => g.k === ['common', 'rare', 'unique', 'legend'][gi]).c : '#f0e8c8' } : null;
+  }
+  // v1.92 TAB 지도: 방 바닥 아이템 종류별 [아이콘 그리는 함수, 개수]
+  function roomLootCats(r) {
+    const arr = (r === G.dun.cur ? G.loot : r.loot) || [];
+    const GI = { common: 0, rare: 1, unique: 2, legend: 3 }; let gear = null, gn = 0; const n = {}, key = {};
+    for (const l of arr) { if (!(l.life > 0)) continue; if (l.type === 'gear') { gn++; if (!gear || GI[l.it.grade] > GI[gear.grade]) gear = l.it; } else { const k = l.type === 'bigmeat' ? 'meat' : l.type; n[k] = (n[k] || 0) + 1; if (k === 'sealkey') key.l = l; } }
+    const out = [];
+    if (r.chest && !r.chest.opened) out.unshift([(x, y) => drawMapIcon(MAP_CHEST, x, y), 1]); // v1.93 열지 않은 보물상자
+    if (gear) out.push([(x, y) => drawMapIcon(MAP_SWORD, x, y), gn]); // v1.93 장비는 검 모양 하나로
+    if (n.pouch) out.push([(x, y) => drawSprite(LOOT.pouch.map, 'loot', 2, x, y, false), n.pouch]);
+    if (n.meat) out.push([(x, y) => drawSprite(LOOT.meat.map, 'loot', 2, x, y, false), n.meat]);
+    if (n.vial) out.push([(x, y) => drawSprite(LOOT.vial.map, 'loot', 2, x, y, false), n.vial]);
+    if (n.orb) out.push([(x, y) => drawSprite(LOOT.orb.map, 'loot', 2, x, y, false), n.orb]);
+    if (n.sealkey) out.push([(x, y) => drawSealKey(key.l, x, y), n.sealkey]);
+    return out;
+  }
+  // v1.93 지도용 작은 아이콘 (2px 칸, 아래 가운데 기준)
+  const MAP_SWORD = { rows: ['......wk', '.....wwk', '....wwk.', 'k..wwk..', 'kkwwk...', '.kgk....', 'kgkk....', 'kk......'], pal: { w: '#e8ecf4', k: '#1a1820', g: '#c8a050' } };
+  const MAP_CHEST = { rows: ['.kkkkkk.', 'kyyyyyyk', 'kbbybbbk', 'kkkgkkkk', 'kbbgbbbk', 'kbbbbbbk', '.kkkkkk.'], pal: { k: '#140c08', y: '#ffd34d', b: '#8a5a2a', g: '#ffe9a0' } };
+  function drawMapIcon(ic, x, y) {
+    const h = ic.rows.length, w = ic.rows[0].length, x0 = (Math.round(x) & ~1) - w, y0 = (Math.round(y) & ~1) - h * 2;
+    ic.rows.forEach((row, j) => { for (let i = 0; i < w; i++) { const c = ic.pal[row[i]]; if (!c) continue; ctx.fillStyle = c; ctx.fillRect(x0 + i * 2, y0 + j * 2, 2, 2); } });
+  }
+  function drawRoomLoot(cats, x, y, rw, rh) { // 아이콘(16px) + 개수 — 방 폭에 안 들어가면 개수부터 빼고, 그래도 넘치면 앞에서부터 들어가는 만큼 + 「+」
+    const avail = rw - 14, wOf = cnt => cats.reduce((a, c) => a + 16 + (cnt && c[1] > 1 ? 12 : 0), 0) + (cats.length - 1) * 4;
+    const cnt = wOf(true) <= avail; let list = cats, more = false;
+    if (!cnt && wOf(false) > avail) { const n = Math.max(1, Math.floor((avail - 8 + 4) / 20)); list = cats.slice(0, n); more = n < cats.length; }
+    const ws = list.map(c => 16 + (cnt && c[1] > 1 ? 12 : 0)), W = ws.reduce((a, b) => a + b, 0) + (list.length - 1) * 4 + (more ? 8 : 0), by = y + rh - 5;
+    let cx = Math.round(x + (rw - 12) / 2 - W / 2 + 2);
+    ctx.save(); ctx.font = '8px Galmuri7'; ctx.textAlign = 'left';
+    list.forEach(([draw, k], i) => {
+      draw(cx + 8, by);
+      if (cnt && k > 1) { ctx.fillStyle = '#000'; ctx.fillText('×' + k, cx + 18, by); ctx.fillStyle = '#f0e8d8'; ctx.fillText('×' + k, cx + 17, by - 1); }
+      cx += ws[i] + 4;
+    });
+    if (more) { ctx.fillStyle = '#000'; ctx.fillText('+', cx + 1, by); ctx.fillStyle = '#f0e8d8'; ctx.fillText('+', cx, by - 1); }
+    ctx.restore();
+  }
+  function drawLootMark(x, y, c, big) { // 작은 보석 모양 (검은 테두리)
+    const s = big ? 2 : 1;
+    ctx.fillStyle = '#000'; ctx.fillRect(x - s, y - 2 * s, 3 * s, 5 * s); ctx.fillRect(x - 2 * s, y - s, 5 * s, 3 * s);
+    ctx.fillStyle = c; ctx.fillRect(x, y - s, s, 3 * s); ctx.fillRect(x - s, y, 3 * s, s);
+  }
   function drawMinimap() {
     const D = G.dun; if (!D) return;
-    const ph = $('phase'), W0 = 140, H0 = 74, x0 = VW - 8 - W0, y0 = 8 + (ph && ph.offsetHeight ? ph.offsetHeight : 52) + 6, cw = 16, ch = 11, gap = 4; // v1.39 단계 패널 바로 아래 6px
+    if (!(time < MM.phT)) { const ph = $('phase'); MM.phH = ph && ph.offsetHeight ? ph.offsetHeight : 52; MM.phT = time + 0.5; } // v1.78 패널 높이는 0.5초마다만 읽음
+    const W0 = 140, H0 = 100, x0 = VW - 8 - W0, y0 = 8 + MM.phH + 6, cw = 30, ch = 20, gap = 8; // v1.39 단계 패널 바로 아래 6px · v1.91 방을 크게(16×11 → 30×20), 내 방 주변만
+    MM.bot = y0 + H0;
+    const key = D.cur.id + '|' + D.rooms.map(r => (r.seen ? 1 : 0) + (r.visited ? 2 : 0) + (r.cleared ? 4 : 0) + (r.tele ? 8 : 0) + (r.exit ? 16 : 0) + (r.chest && !r.chest.opened ? 32 : 0) + (r.crack && r.crack.broken ? 64 : 0) + (r.visited ? (((q) => q ? 'L' + q.n + q.c : '')(roomLoot(r))) : '')).join(',');
+    const blink = Math.floor(time * 4) % 2;
+    if (MM.key !== key || !MM.c || MM.dun !== D) { MM.key = key; MM.dun = D; const [mc, mg] = MM.c ? [MM.c, MM.g] : mkCanvas(W0, H0); MM.c = mc; MM.g = mg; mg.clearRect(0, 0, W0, H0);
+      const ctx0 = ctx; ctx = mg; try { drawMinimapRooms(D, 0, 0, W0, H0, cw, ch, gap); } finally { ctx = ctx0; } }
+    ctx.drawImage(MM.c, x0, y0);
+    ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; ctx.fillStyle = '#000'; ctx.fillText('TAB 지도', VW - 11, y0 + H0 + 10); ctx.fillStyle = '#8a8496'; ctx.fillText('TAB 지도', VW - 12, y0 + H0 + 9);
+    { const cur = D.cur, sf = shapeFit(cur), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), x = Math.round(x0 + W0 / 2 - rw / 2), y = Math.round(y0 + H0 / 2 - rh / 2);
+      ctx.save(); ctx.strokeStyle = blink ? '#ffe39a' : '#fff'; ctx.lineWidth = 1; ctx.strokeRect(x - 0.5, y - 0.5, rw + 1, rh + 1); ctx.restore(); }
+  }
+  function drawMinimapRooms(D, x0, y0, W0, H0, cw, ch, gap) {
     ctx.save();
     ctx.fillStyle = 'rgba(8,6,12,.72)'; ctx.fillRect(x0, y0, W0, H0);
     ctx.strokeStyle = 'rgba(201,162,74,.5)'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, W0 - 1, H0 - 1);
@@ -6755,20 +7095,19 @@ huskUp:[
     const cx = x0 + W0 / 2, cy = y0 + H0 / 2, cur = D.cur;
     const pos = r => ({ x: cx + (r.gx - cur.gx) * (cw + gap), y: cy + (r.gy - cur.gy) * (ch + gap) });
     ctx.fillStyle = '#6a6478';
-    for (const r of D.rooms) { if (!r.visited) continue; for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d)) continue; const o = D.rooms[id]; if (!o.seen) continue; const p = pos(r); ctx.fillRect(Math.round(p.x + DIRS[d][0] * (cw / 2 + gap / 2)) - 1, Math.round(p.y + DIRS[d][1] * (ch / 2 + gap / 2)) - 1, 2, 2); } }
+    for (const r of D.rooms) { if (!r.visited) continue; for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d)) continue; const o = D.rooms[id]; if (!o.seen) continue; const p = pos(r), q = pos(o); if (DIRS[d][0]) ctx.fillRect(Math.round(Math.min(p.x, q.x)), Math.round(p.y) - 1, Math.round(Math.abs(q.x - p.x)), 2); else ctx.fillRect(Math.round(p.x) - 1, Math.round(Math.min(p.y, q.y)), 2, Math.round(Math.abs(q.y - p.y))); } } // v1.91 통로를 선으로
     for (const r of D.rooms) {
       if (!r.seen) continue;
       const sf = shapeFit(r), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), p = pos(r), x = Math.round(p.x - rw / 2), y = Math.round(p.y - rh / 2);
       if (r.visited) { ctx.fillStyle = roomColor(r); ctx.fillRect(x, y, rw, rh); }
       else { ctx.fillStyle = r.type === 'boss' ? 'rgba(160,40,52,.35)' : 'rgba(40,36,48,.9)'; ctx.fillRect(x, y, rw, rh); ctx.strokeStyle = r.type === 'boss' ? '#a02a34' : '#5a5466'; ctx.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1); }
-      if (r === cur) { ctx.strokeStyle = Math.floor(time * 4) % 2 ? '#ffe39a' : '#fff'; ctx.strokeRect(x - 0.5, y - 0.5, rw + 1, rh + 1); }
-      if (r.visited && r.tele && r.cleared) { ctx.fillStyle = '#9fd2ff'; ctx.fillRect(x + rw - 4, y + 1, 3, 3); }
-      if (r.exit) { ctx.fillStyle = '#ff7a40'; ctx.fillRect(x + 1, y + 1, 3, 3); }
-      if (r.chest && !r.chest.opened && r.visited) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(x + 1, y + 1, 3, 3); }
+      if (r.visited && r.tele && r.cleared) { ctx.fillStyle = '#9fd2ff'; ctx.fillRect(x + rw - 6, y + 2, 4, 4); }
+      if (r.exit) { ctx.fillStyle = '#ff7a40'; ctx.fillRect(x + 2, y + 2, 4, 4); }
+      if (r.chest && !r.chest.opened && r.visited) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(x + 2, y + 2, 4, 4); }
       if (r.cleared && FIGHT_T.has(r.type)) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x, y, rw, rh); drawCheck(Math.round(p.x - 5), Math.round(p.y - 3), 2); }
+      if (r.visited) { const q = roomLoot(r); if (q) drawLootMark(x + rw - 4, y + rh - 4, q.c, true); } // v1.90 바닥 아이템 (오른쪽 아래 모서리)
     }
     ctx.restore();
-    ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; ctx.fillStyle = '#000'; ctx.fillText('TAB 지도', VW - 11, y0 + H0 + 10); ctx.fillStyle = '#8a8496'; ctx.fillText('TAB 지도', VW - 12, y0 + H0 + 9);
   }
   const teleRooms = () => G.dun.rooms.filter(r => r.visited && r.tele && r.cleared);
   function openMap() {
@@ -6779,9 +7118,12 @@ huskUp:[
   }
   function closeMap() { mode = 'play'; for (const k in pressed) pressed[k] = false; }
   function mapLayout() {
-    const D = G.dun, cw = 50, ch = 32, gap = 14, cols = D.bx1 - D.bx0 + 1, rows = D.by1 - D.by0 + 1;
-    const ox = VW / 2 - (cols * (cw + gap) - gap) / 2, oy = 70 + Math.max(0, (VH - 150 - rows * (ch + gap)) / 2);
-    return { cw, ch, gap, pos: r => ({ x: ox + (r.gx - D.bx0) * (cw + gap), y: oy + (r.gy - D.by0) * (ch + gap) }) };
+    const D = G.dun, cols = D.bx1 - D.bx0 + 1, rows = D.by1 - D.by0 + 1;
+    // v1.92~93 화면에 꽉 차게: 가로 728 · 세로 308(제목 아래 ~ 범례 위) 안에서 칸을 최대한 크게
+    const cw = Math.floor(clamp(728 / (cols * 1.3 - 0.3), 50, 120) / 2) * 2, gap = Math.round(cw * 0.3 / 2) * 2;
+    const ch = Math.floor(clamp(Math.min(cw * 0.64, 308 / (rows * 1.4 - 0.4)), 24, 80) / 2) * 2, gapY = Math.max(8, Math.round(ch * 0.4 / 2) * 2);
+    const ox = VW / 2 - (cols * (cw + gap) - gap) / 2, oy = 64 + Math.max(0, (308 - (rows * (ch + gapY) - gapY)) / 2);
+    return { cw, ch, gap, gapY, pos: r => ({ x: ox + (r.gx - D.bx0) * (cw + gap), y: oy + (r.gy - D.by0) * (ch + gapY) }) };
   }
   function updateMap() {
     if (take('tab') || take('escape') || take('m')) { closeMap(); return; }
@@ -6813,38 +7155,44 @@ huskUp:[
     ctx.fillText(`${ER().foe} ${D.eliteDone}/2 · ${sealHud()} · ${D.bossOpen ? '보스 방 열림' : '보스 방 봉인'} · 골드 ${G.gold}G`, VW / 2, 54);
     // 통로
     ctx.fillStyle = '#5a5466';
-    for (const r of D.rooms) { if (!r.visited) continue; const p = M.pos(r); for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d) || !D.rooms[id].seen) continue; const [dx, dy] = DIRS[d]; ctx.fillRect(Math.round(p.x + M.cw / 2 + dx * (M.cw / 2 + M.gap / 2) - (dx ? M.gap / 2 : 2)), Math.round(p.y + M.ch / 2 + dy * (M.ch / 2 + M.gap / 2) - (dy ? M.gap / 2 : 2)), dx ? M.gap : 4, dy ? M.gap : 4); } }
+    for (const r of D.rooms) { if (!r.visited) continue; const p = M.pos(r); for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d) || !D.rooms[id].seen) continue; const q = M.pos(D.rooms[id]), cx0 = p.x + M.cw / 2, cy0 = p.y + M.ch / 2, cx1 = q.x + M.cw / 2, cy1 = q.y + M.ch / 2; if (DIRS[d][0]) ctx.fillRect(Math.round(Math.min(cx0, cx1)), Math.round(cy0) - 2, Math.round(Math.abs(cx1 - cx0)), 4); else ctx.fillRect(Math.round(cx0) - 2, Math.round(Math.min(cy0, cy1)), 4, Math.round(Math.abs(cy1 - cy0))); } } // v1.93 통로 = 방 가운데끼리 잇는 선
     for (const r of D.rooms) {
       if (!r.seen) continue;
-      const sf = r.visited ? shapeFit(r) : { w: 0.82, h: 0.82 }, rw = Math.round(M.cw * sf.w), rh = Math.round(M.ch * sf.h), p0 = M.pos(r), x = Math.round(p0.x + (M.cw - rw) / 2), y = Math.round(p0.y + (M.ch - rh) / 2);
+      const lootCats = r.visited ? roomLootCats(r) : [];
+      const sf = r.visited ? shapeFit(r) : { w: 0.82, h: 0.82 }, needW = lootCats.length ? lootCats.reduce((a, c) => a + 20 + (c[1] > 1 ? 12 : 0), 0) + 14 : 0;
+      const rw = Math.min(M.cw, Math.max(Math.round(M.cw * sf.w), Math.round(M.cw * 0.55), needW)), rh = Math.min(M.ch, Math.max(Math.round(M.ch * sf.h), Math.round(M.ch * 0.55), lootCats.length ? 40 : 0)), p0 = M.pos(r), x = Math.round(p0.x + (M.cw - rw) / 2), y = Math.round(p0.y + (M.ch - rh) / 2); // v1.92 아이템이 있으면 방을 아이콘이 들어갈 만큼
       ctx.fillStyle = r.visited ? roomColor(r) : 'rgba(30,27,36,.95)'; ctx.fillRect(x, y, rw, rh);
       if (r.cleared && FIGHT_T.has(r.type)) { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x, y, rw, rh); }
       ctx.strokeStyle = r.visited ? 'rgba(255,255,255,.15)' : r.type === 'boss' ? '#a02a34' : '#5a5466'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1);
       ctx.font = '8px Galmuri7'; ctx.fillStyle = r.visited ? '#f0e8d8' : r.type === 'boss' ? '#ff8080' : '#6a6478';
-      ctx.fillText(r.visited || r.type === 'boss' ? roomTag(r.type) : '?', x + rw / 2, y + rh / 2 + 3);
+      if (!lootCats.length || rh >= 34) ctx.fillText(r.visited || r.type === 'boss' ? roomTag(r.type) : '?', x + rw / 2, lootCats.length ? y + 12 : y + rh / 2 + 3); // 낮은 방은 아이콘만 (방 종류는 색으로)
       if (r.visited && r.tele) { ctx.fillStyle = r.cleared ? '#9fd2ff' : '#4a4560'; ctx.fillRect(x + rw - 6, y + 2, 4, 4); }
-      if (r.visited && r.chest && !r.chest.opened) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(x + 2, y + 2, 4, 4); }
       if (r.cleared && FIGHT_T.has(r.type)) { drawCheck(x + rw - 5, y + rh - 6, 2); ctx.font = "8px Galmuri7"; }
+      if (lootCats.length) drawRoomLoot(lootCats, x, y, rw, rh); // v1.92 바닥 아이템을 실제 모양(장비·골드·물약…)으로
       if (r === D.cur) { ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 1, y - 1, rw + 2, rh + 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + rw / 2 - 2, y - 7, 4, 4); }
       if (r === G.mapSel) { ctx.strokeStyle = Math.floor(time * 5) % 2 ? '#9fd2ff' : '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, rw + 6, rh + 6); }
     }
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#8a8496';
     ctx.fillText(L.length ? '방향키·WASD 텔레포터 선택 · ENTER/클릭 순간이동 · TAB 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · TAB 닫기', VW / 2, VH - 26);
-    ctx.fillStyle = '#9fd2ff'; ctx.fillRect(VW / 2 - 150, VH - 44, 4, 4); ctx.fillStyle = '#8a8496'; ctx.textAlign = 'left'; ctx.fillText('텔레포터', VW / 2 - 143, VH - 40);
-    ctx.fillStyle = '#ffd34d'; ctx.fillRect(VW / 2 - 80, VH - 44, 4, 4); ctx.fillStyle = '#8a8496'; ctx.fillText('열지 않은 상자', VW / 2 - 73, VH - 40);
-    ctx.fillStyle = '#a02a34'; ctx.fillRect(VW / 2 + 10, VH - 44, 4, 4); ctx.fillStyle = '#8a8496'; ctx.fillText('보스', VW / 2 + 17, VH - 40);
-    ctx.fillStyle = '#5a5466'; ctx.fillRect(VW / 2 + 50, VH - 44, 4, 4); ctx.fillStyle = '#8a8496'; ctx.fillText('? 가 보지 않은 방', VW / 2 + 57, VH - 40);
-    drawCheck(VW / 2 + 140, VH - 46, 1); ctx.fillStyle = '#8a8496'; ctx.fillText('클리어', VW / 2 + 149, VH - 40);
+    ctx.textAlign = 'left'; const lg = (x, txt) => { ctx.fillStyle = '#8a8496'; ctx.fillText(txt, x, VH - 40); };
+    ctx.fillStyle = '#9fd2ff'; ctx.fillRect(VW / 2 - 196, VH - 44, 4, 4); lg(VW / 2 - 189, '텔레포터');
+    drawMapIcon(MAP_CHEST, VW / 2 - 134, VH - 36); lg(VW / 2 - 123, '보물상자');
+    drawMapIcon(MAP_SWORD, VW / 2 - 70, VH - 36); lg(VW / 2 - 59, '장비');
+    ctx.fillStyle = '#a02a34'; ctx.fillRect(VW / 2 - 28, VH - 44, 4, 4); lg(VW / 2 - 21, '보스');
+    ctx.fillStyle = '#5a5466'; ctx.fillRect(VW / 2 + 8, VH - 44, 4, 4); lg(VW / 2 + 15, '? 가 보지 않은 방');
+    drawCheck(VW / 2 + 98, VH - 46, 1); lg(VW / 2 + 107, '클리어');
+
     ctx.textAlign = 'left';
   }
   // ================================================================ v1.69 챕터 시작 월드맵
   // 240×160 도트 월드맵(4개 지역)을 화면 2px 칸으로 띄우고, 이번 챕터 지역만 밝히고(나머지는 어둡게),
   // 지나온 길을 이어 그은 뒤 금빛 테두리·노드 고리·챕터 이름 패찰을 보여 주고 게임으로 넘어간다. 아무 키나 누르면 건너뜀
-  const WM_IMG = 'data:image/png;base64,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';
-  const WM_REGI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACgCAMAAAAFBRFXAAADAFBMVEUAAAABAQECAgIDAwMEBAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJycoKCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6Ojo7Ozs8PDw9PT0+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tMTExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1eXl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7////isF19AAAB1klEQVR42u3aUZKDIBBFURbWC3sL64W5hPmY1CSBMSqCGPq+vxBjccoAbUFaRsavT1qWWGTAs4uHgxfAgBnDgFmWbguOVmlFKy09GNgBzw12wIAZw4ABAwYMGDDr8Bd7x4E9Ftg9FtiDgT0W2D0W2AHPDXbAgBnDgFmHAd+qtAQMGDCTFmAKD8C8PAAGDBgwszSFR8SXhyUcON7u4UAxG+IceeBQC2DOafGEAQMGDBgwYAqPlmD7TdnaSCypaFDReBnYXlI0nhdLOU8q2y4EW5a85aRYb8k+nhWnBt4yp8TaytVgs55i7Um9V6mL94C4xlsv1mGw7U2dWOoq1j7ws/t2JBVgHcjzN0e822Crz1Gw6rPbuwm2Zlm5uxplH/cBXu2UNc2/d1c38ds3fx/Sp05Z63T05uS1i9J6n6xD8rtLfcTr16TVTlmf9Hq8r+RPVyQbF40I4Mm9A8ECDBgwkxZgwIABM0sD/mbvMLBigaVYYAUDKxZYigUW4LnBAsxfGjDLEuB7V1qAqaUBAwbMpAWYwgMwYN6WeMKAWZZClpbhtlribabF2y4NuCHOSTwOiE8INsCAATNpAQYMGDBgliXA3yMeC7ZwYAsHNsCzgw0wYMbwmfwA20uUuZyD+bgAAAAASUVORK5CYII=';
+  const WM_IMG = 'data:image/png;base64,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';
+  const WM_REGI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACgCAMAAAAFBRFXAAADAFBMVEUAAAABAQECAgIDAwMEBAQFBQUGBgYHBwcICAgJCQkKCgoLCwsMDAwNDQ0ODg4PDw8QEBARERESEhITExMUFBQVFRUWFhYXFxcYGBgZGRkaGhobGxscHBwdHR0eHh4fHx8gICAhISEiIiIjIyMkJCQlJSUmJiYnJycoKCgpKSkqKiorKyssLCwtLS0uLi4vLy8wMDAxMTEyMjIzMzM0NDQ1NTU2NjY3Nzc4ODg5OTk6Ojo7Ozs8PDw9PT0+Pj4/Pz9AQEBBQUFCQkJDQ0NERERFRUVGRkZHR0dISEhJSUlKSkpLS0tMTExNTU1OTk5PT09QUFBRUVFSUlJTU1NUVFRVVVVWVlZXV1dYWFhZWVlaWlpbW1tcXFxdXV1eXl5fX19gYGBhYWFiYmJjY2NkZGRlZWVmZmZnZ2doaGhpaWlqampra2tsbGxtbW1ubm5vb29wcHBxcXFycnJzc3N0dHR1dXV2dnZ3d3d4eHh5eXl6enp7e3t8fHx9fX1+fn5/f3+AgICBgYGCgoKDg4OEhISFhYWGhoaHh4eIiIiJiYmKioqLi4uMjIyNjY2Ojo6Pj4+QkJCRkZGSkpKTk5OUlJSVlZWWlpaXl5eYmJiZmZmampqbm5ucnJydnZ2enp6fn5+goKChoaGioqKjo6OkpKSlpaWmpqanp6eoqKipqamqqqqrq6usrKytra2urq6vr6+wsLCxsbGysrKzs7O0tLS1tbW2tra3t7e4uLi5ubm6urq7u7u8vLy9vb2+vr6/v7/AwMDBwcHCwsLDw8PExMTFxcXGxsbHx8fIyMjJycnKysrLy8vMzMzNzc3Ozs7Pz8/Q0NDR0dHS0tLT09PU1NTV1dXW1tbX19fY2NjZ2dna2trb29vc3Nzd3d3e3t7f39/g4ODh4eHi4uLj4+Pk5OTl5eXm5ubn5+fo6Ojp6enq6urr6+vs7Ozt7e3u7u7v7+/w8PDx8fHy8vLz8/P09PT19fX29vb39/f4+Pj5+fn6+vr7+/v8/Pz9/f3+/v7////isF19AAAB1UlEQVR42u3cbW6DMBREUS/MC5uFvYV5CVVVtWkhFGJMbDx3/oGIlAP+eMhAKj0T708qxYsMeHZxd3ABDJg+DJhpaViwW6XlVlqGGTgAzw0OwIDpw4ABAwYMGDDz8I29/cDhBY7wAocZOLzAEV7gADw3OAADpg8DZh4GPFRpCRgwYAYtwBQegLl5AAwYMGBGaQoPx5uHYgf2Wz3sKGZBnEceeKgFMM9pcYUBAwYMGDBgCo87vV0qabVDq52zvD8sLXnSet88b4jrTxabZ8UDfgNAe5nrKw86knqvasD5MxeBpUvFqgKXLW/Viajx1opVCS5580ycu8R6IY/fvOKtBH+16ic51aZVn8Pe6ibdzKtGOcatbtK7eTtY/5cvPxuNm3Q/75K8dVDKzS9uL+9v8fYxqZWxxqvm2R/9Umkv7uc9kHToX+bTGQ7culWP6v0Gt+/Hg3ofTfrKFDfw0wCeHZwBAwYMmFEa8DBgmYHlBZa8wDIDywsseYEFeG6wANOkATMtAR670gJMLQ0YMGAGLcAUHoABc7fEFQbMtGRZWtottfgtpvktlxouiPMkngE424EzYMCAGbQAAwYMGDDTEuD7iPuCsx0424Ez4NnBGTBg+vCZfAA0Ld/zdJjdIwAAAABJRU5ErkJggg==';
   const WM_PATH = [[12,150],[13,149],[15,148],[16,148],[17,147],[18,146],[19,146],[20,145],[21,144],[22,144],[24,143],[25,142],[26,141],[27,141],[28,140],[29,139],[30,138],[31,138],[32,137],[33,136],[34,135],[35,134],[36,133],[37,132],[38,131],[39,131],[40,130],[41,129],[42,129],[43,128],[44,128],[45,128],[46,128],[48,128],[49,128],[50,128],[52,128],[53,129],[54,129],[56,129],[57,130],[59,130],[60,131],[62,131],[63,131],[65,132],[66,132],[68,132],[69,133],[71,133],[72,133],[74,133],[75,134],[77,134],[79,134],[80,135],[82,135],[84,135],[85,135],[87,135],[89,136],[90,136],[92,136],[94,136],[96,136],[97,136],[99,136],[101,136],[103,136],[105,136],[107,136],[109,136],[111,136],[113,136],[114,136],[116,136],[118,136],[119,136],[121,136],[122,136],[124,136],[125,136],[127,135],[128,135],[129,135],[130,135],[132,134],[133,134],[134,134],[135,134],[136,133],[137,133],[138,133],[139,132],[140,132],[142,131],[143,131],[145,130],[146,129],[148,128],[149,127],[151,127],[152,126],[153,125],[155,125],[156,124],[157,124],[158,123],[160,123],[162,122],[163,122],[164,122],[165,122],[167,122],[168,121],[170,121],[171,121],[173,121],[175,121],[177,120],[179,120],[181,120],[182,120],[184,120],[186,119],[187,119],[189,118],[190,118],[191,117],[192,117],[194,116],[195,116],[196,115],[197,114],[198,113],[199,113],[200,112],[201,111],[201,110],[202,109],[203,108],[204,107],[204,105],[204,103],[204,102],[204,100],[203,98],[202,96],[201,94],[200,93],[200,91],[199,90],[198,88],[198,87],[197,85],[196,84],[195,83],[194,82],[193,80],[192,79],[191,78],[190,77],[189,76],[188,75],[186,74],[185,73],[183,71],[182,71],[181,70],[180,70],[179,69],[178,68],[177,68],[176,67],[175,67],[174,66],[173,65],[172,65],[171,64],[170,63],[169,63],[168,62],[167,61],[166,61],[165,60],[164,59],[163,58],[162,58],[162,57],[161,56],[160,55],[159,54],[158,54],[157,53],[156,52],[156,51],[155,51],[154,50],[153,49],[152,47],[151,46],[150,44],[149,43],[148,42],[146,41],[145,40],[144,40],[143,40],[141,39],[139,39],[137,38],[135,38],[132,38],[130,37],[128,37],[125,37],[123,37],[121,36],[119,36],[117,36],[115,36],[113,36],[112,36],[111,36],[109,36],[108,37],[108,39],[108,40],[107,41],[106,42],[104,43],[103,43],[102,44],[101,45],[100,45],[98,46],[97,46],[96,47],[94,47],[93,48],[91,49],[90,49],[89,49],[87,50],[86,50],[85,50],[83,50],[82,51],[81,51],[79,51],[78,51],[77,51],[75,51],[74,51],[73,50],[72,50],[70,50],[69,50],[68,50],[67,50],[65,50],[63,50],[62,49],[60,49],[59,49],[58,49],[57,48]]; // 길 픽셀 [x, y] 순서대로 (시작 → 1 → 2 → 3 → 4)
+  const WM_FORGE = { 2: 90, 3: 156, 4: 221 }; // v1.89 2~4장 출발점 = 앞 장 끝의 출장 대장간 (길 번호)
   const WM_NODE = {"1":[44,128,30],"2":[164,122,111],"3":[168,62,181],"4":[56,48,266]}; // 스테이지 → [x, y, 길 번호]
-  const WM_W = 240, WM_H = 160, WM_S = 2, WM_X = (VW - WM_W * WM_S) / 2, WM_Y = 14, WM_T = 7.0; // v1.70 4.4→7초 (사용자 요청: 더 길게)
+  const WM_W = 240, WM_H = 160, WM_S = 2, WM_X = (VW - WM_W * WM_S) / 2, WM_Y = 14, WM_T = 6.0; // v1.70 4.4→7초 (사용자 요청: 더 길게) · v1.89 7→6초
   const WM = { ready: false, base: null, dim: {}, edge: {} };
   (function wmLoad() {
     const a = new Image(), b = new Image(); let n = 0;
@@ -6914,7 +7262,7 @@ huskUp:[
     if (dA > 0) { ctx.globalAlpha = A * dA; ctx.drawImage(WM.dim[s], X0, Y0, WM_W * S, WM_H * S); ctx.globalAlpha = A; }
     const P = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(X0 + x * S, Y0 + y * S, S, S); };
     // 지나온 길 (금빛) — 이번 구간은 이어 그어짐
-    const i0 = s > 1 ? WM_NODE[s - 1][2] : 0, i1 = WM_NODE[s][2];
+    const i0 = s > 1 ? (WM_FORGE[s] != null ? WM_FORGE[s] : WM_NODE[s - 1][2]) : 0, i1 = WM_NODE[s][2];
     const tp = clamp((t - 0.9) / 1.2, 0, 1), ep = 1 - (1 - tp) * (1 - tp);
     const cur = Math.round(i0 + (i1 - i0) * ep);
     for (let i = 0; i <= cur; i++) { if (i % 4 === 3) continue; const [x, y] = WM_PATH[i]; P(x, y, i <= i0 ? '#b08a3a' : '#ffd86a'); }
@@ -6959,7 +7307,7 @@ huskUp:[
   }
 
   function startPhase(p) {
-    window.AudioSys.setMood(p === 11 ? (G.stage === 3 ? 'orcboss' : G.stage === 2 ? 'citadelBoss' : 'boss') : p === 5 ? (G.stage === 2 ? 'citadelRest' : 'rest') : p === 10 ? (G.stage === 3 ? 'orcboss' : G.stage === 2 ? 'citadelSurvive' : 'survive') : G.stage === 3 ? 'orc' : G.stage === 2 ? 'citadel' : 'field', true);
+    window.AudioSys.setMood(stageMood(p === 11 ? 'Boss' : p === 5 ? 'Rest' : p === 10 ? 'Survive' : ''), true);
     G.phase = p; G.enemies = []; G.tele = []; G.hazards = []; G.proj = []; G.eproj = []; G.bonfire = null; G.vortex = null; G.boss = null;
     G.waveIdx = 0; G.spawning = 0; G.phaseT = 0; G.surviveT = 0; G.spawnT = 0; G.hazardT = 2;
     G.phaseState = 'intro';
@@ -7627,10 +7975,16 @@ huskUp:[
     for (let i = 0; i < 24; i++) { const x = rand(A.x0 + 40, A.x1 - 40), y = rand(A.y0 + 40, A.y1 - 40); if (obsHitL(G.obs, x, y, 16)) continue; const d = Math.hypot(x - P.x, y - P.y); if (d > bd && d < 420) { bd = d; best = { x, y }; } }
     if (!best) best = freePoint(CX, A.y0 + 60);
     invInit();
-    if (k === 'shrews') { const a2 = makeEnemy('shrewA', best.x - 18, best.y), b2 = makeEnemy('shrewB', best.x + 18, best.y); a2.bro = b2; b2.bro = a2; G.enemies.push(a2, b2); }
+    const rings = [best];
+    if (k === 'shrews') { // v1.88 형제는 플레이어를 가운데 두고 왼쪽(형)·오른쪽(아우)에서 동시에 등장
+      const side = sx => { for (const dd of [150, 130, 110, 90, 70, 50]) for (const dy of [0, -16, 16, -32, 32]) { const x = clamp(P.x + sx * dd, A.x0 + 30, A.x1 - 30), y = clamp(P.y + dy, A.y0 + 30, A.y1 - 30); if (Math.abs(x - P.x) >= 40 && !obsHitL(G.obs, x, y, 16)) return { x, y }; } return freePoint(P.x + sx * 100, P.y); };
+      const L = side(-1), Rt = side(1);
+      const a2 = makeEnemy('shrewA', L.x, L.y), b2 = makeEnemy('shrewB', Rt.x, Rt.y); a2.bro = b2; b2.bro = a2; G.enemies.push(a2, b2);
+      rings.length = 0; rings.push(L, Rt);
+    }
     else G.enemies.push(makeEnemy(k, best.x, best.y));
     banner('난입!', `${ELITE_NAMES[k]}이(가) 난입했다`); sfx('warn'); sfx('growl', 0.9); addShake(3);
-    G.fx.push({ kind: 'ring', x: best.x, y: best.y, r: 6, t: 0.6, max: 0.6, c: '#ff4030', grow: 160 });
+    for (const q of rings) G.fx.push({ kind: 'ring', x: q.x, y: q.y, r: 6, t: 0.6, max: 0.6, c: '#ff4030', grow: 160 });
   }
   function updateEnemy(e, dt) {
     const P = G.player;
@@ -9015,9 +9369,9 @@ huskUp:[
     const m = G.meteor; if (!m || m.fell) return;
     const k = m.t / m.dur, mx = m.x - (1 - k) * 160, my = m.y - (1 - k) * 420, R = 12 + k * 8;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const gr = ctx.createLinearGradient(mx - 120, my - 300, mx, my);
+    const gr = dLinear(ctx, mx - 120, my - 300, mx, my);
     gr.addColorStop(0, 'rgba(255,120,40,0)'); gr.addColorStop(1, 'rgba(255,170,80,.75)');
-    ctx.strokeStyle = gr; ctx.lineWidth = R * 1.6; ctx.lineCap = 'round';
+    ctx.strokeStyle = gr.p(ctx, mx - 64 - R * 1.6, my - 168 - R * 1.6, 64 + R * 3.2, 168 + R * 3.2); ctx.lineWidth = R * 1.6; ctx.lineCap = 'round';
     ctx.beginPath(); ctx.moveTo(mx - 64, my - 168); ctx.lineTo(mx, my); ctx.stroke();
     ctx.fillStyle = 'rgba(255,170,80,.6)'; ctx.beginPath(); ctx.arc(mx, my, R * 1.6, 0, TAU); ctx.fill();
     ctx.restore();
@@ -10080,6 +10434,14 @@ huskUp:[
     legend: { m: '#e8c060', l: '#fff0b0', d: '#a07820', t: '#ffe08a', a: '#ff6a2a', W: '#ffffff', w: '#fffbe6', h: '#8a4a20', k: '#0b0a0e' },
   };
   const gearIconCache = {};
+  const gearRimCache = {};
+  function drawGearRim(it, x, y, c, pulse) { // 아이콘 실루엣을 등급 색으로 한 칸씩 사방에 찍어 테두리
+    const k = it.slot === 'weapon' ? (it.cls || 'knight') : it.slot, key = k + ':' + it.grade + ':' + c;
+    let r = gearRimCache[key];
+    if (!r) { const src = gearIconCache[k + ':' + it.grade] || (gearIconCache[k + ':' + it.grade] = gCanvas(gOutline(fromRows(GEAR_ICON_MAP[k])), GEAR_ICON_PAL[it.grade]));
+      const [cv, g] = mkCanvas(src.width + 4, src.height + 4); for (const [dx, dy] of [[0, 2], [4, 2], [2, 0], [2, 4]]) g.drawImage(src, dx, dy); g.globalCompositeOperation = 'source-in'; g.fillStyle = c; g.fillRect(0, 0, cv.width, cv.height); r = gearRimCache[key] = cv; }
+    ctx.save(); ctx.globalAlpha = 0.55 + 0.45 * pulse; ctx.drawImage(r, (Math.round(x - r.width / 2) & ~1), (Math.round(y - r.height + 2) & ~1)); ctx.restore();
+  }
   function drawGearIcon(it, x, y) {
     const k = it.slot === 'weapon' ? (it.cls || 'knight') : it.slot, key = k + ':' + it.grade;
     const c = gearIconCache[key] || (gearIconCache[key] = gCanvas(gOutline(fromRows(GEAR_ICON_MAP[k])), GEAR_ICON_PAL[it.grade]));
@@ -10127,6 +10489,14 @@ huskUp:[
       if (it.set) { const sc = SETS[it.set].c.replace('#', '').match(/../g).map(x => parseInt(x, 16)).join(','); for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + time * 0.8; ctx.fillStyle = `rgba(${sc},0.8)`; ctx.fillRect(Math.round(l.x + Math.cos(a) * 9) & ~1, Math.round(l.y + 1 + Math.sin(a) * 4) & ~1, 2, 2); } }
       ctx.restore();
       if (it.curse && Math.random() < 0.35) G.parts.push({ x: l.x + rand(-6, 6), y: l.y - rand(0, 10), vx: rand(-5, 5), vy: -rand(15, 35), t: rand(0.4, 0.8), c: pick(['#2a1030', '#5a2070', '#14081a']), g: 0 });
+      { // v1.90 바닥 장비 더 잘 보이게: 등급 색 바닥 고리(퍼지는 고리 + 고정 고리) + 아이콘 둘레 등급 색 테두리
+        const ph = (time * 0.7 + l.bob / TAU) % 1, gx = Math.round(l.x) & ~1, gy = Math.round(l.y) & ~1;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = `rgba(${col},${0.9 * (1 - ph)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(gx, gy, 7 + ph * 16, (7 + ph * 16) * 0.45, 0, 0, TAU); ctx.stroke();
+        ctx.strokeStyle = `rgba(${col},0.75)`; ctx.beginPath(); ctx.ellipse(gx, gy, 9, 4, 0, 0, TAU); ctx.stroke();
+        ctx.restore();
+        drawGearRim(it, l.x, l.y - hover + 1, g.c, pulse);
+      }
       drawGearIcon(it, l.x, l.y - hover + 1);
       return;
     }
@@ -10151,7 +10521,7 @@ huskUp:[
     if (!G || mode !== 'play') return;
     takeBossItems(); commitRunMats(); persist();
     enterForge(); // v1.02: 대장간 창 대신 걸어 다니는 대장간 방
-    G.mood = null; setMood('rest');
+    G.mood = null; setMood('forge');
   }
   function nextStage() {
     const P = G.player;
@@ -11768,7 +12138,7 @@ huskUp:[
 
   // ---------------------------------------------------------------- 보상
   function bossDefeated(b) {
-    window.AudioSys.setMood('rest', true);
+    window.AudioSys.setMood('victory', true);
     slowmo = 1.6; flashT = 0.2; flashColor = '#ffffff';
     G.vortex = null; G.tele = []; G.akRings = [];
     G.enemies.forEach(e => { if (!e.dead && e !== b) killEnemy(e, true); });
@@ -11796,7 +12166,7 @@ huskUp:[
   let resultShowAll = false, resultWin = false;
   function showResult(win) {
     mode = 'result'; resultWin = win;
-    window.AudioSys.setMood(win ? 'rest' : 'title', true);
+    window.AudioSys.setMood(win ? 'victory' : 'title', true);
     G.lostItems = SAVE.inv.length;
     let opened = false;
     if (win) { takeBossItems(); commitRunMats(); SAVE.clears++; if (G.stage >= 3) SAVE.clears3 = (SAVE.clears3 || 0) + 1; if (G.stage >= 4) SAVE.clears4 = (SAVE.clears4 || 0) + 1; }
@@ -11970,10 +12340,10 @@ huskUp:[
     G.hazards = G.hazards.filter(h => h.t > 0);
     updateVortex(dt);
     for (const p of G.parts) {
-      p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * dt; p.vx *= 0.96;
-      if (p.floor && p.y > p.floor && p.g > 0) { if (p.c === '#8f1418' || p.c === '#a3161c') { dg.fillStyle = 'rgba(100,10,16,.6)'; dg.fillRect(Math.round(p.x), Math.round(p.y), 2, 1); } p.t = 0; }
+      p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt; p.vx *= 0.96; // v1.85 g 없는 파티클이 NaN 되던 것
+      if (p.floor && p.y > p.floor && p.g > 0) { if (p.c === '#8f1418' || p.c === '#a3161c') { dg.fillStyle = 'rgba(100,10,16,.6)'; dg.fillRect(Math.round(p.x) & ~1, Math.round(p.y) & ~1, 2, 2); } p.t = 0; }
     }
-    G.parts = G.parts.filter(p => p.t > 0);
+    { let j = 0; const A_ = G.parts; for (let i = 0; i < A_.length; i++) if (A_[i].t > 0) A_[j++] = A_[i]; A_.length = j; if (j > 420) A_.splice(0, j - 420); } // v1.78 새 배열 없이 정리 + 상한 420
     for (const n of G.nums) { n.t -= dt; n.pop = Math.max(0, (n.pop || 0) - dt); n.x += (n.vx || 0) * dt; n.vx = (n.vx || 0) * Math.pow(0.02, dt); n.vy = (n.vy == null ? -24 : Math.min(-14, n.vy + 160 * dt)); n.y += n.vy * dt; }
     if (G.combo && G.combo.n > 0) { G.combo.t -= dt; if (G.combo.t <= 0) G.combo.n = 0; }
     if (G.corpses) { for (const c of G.corpses) updateCorpse(c, dt); G.corpses = G.corpses.filter(c => c.t > 0); }
@@ -12186,9 +12556,9 @@ huskUp:[
       drawBlade(bl, hx, hy, b.bladeAng, 0.35 + 0.5 * b.glow, false, 1, 'lighter');
       const tx = hx + Math.cos(b.bladeAng) * bl.reach, ty = hy + Math.sin(b.bladeAng) * bl.reach;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const gr = ctx.createRadialGradient(tx, ty, 0, tx, ty, 10 + 14 * b.glow);
+      const gr = dRadial(ctx, tx, ty, 0, tx, ty, 10 + 14 * b.glow);
       gr.addColorStop(0, `rgba(240,200,255,${0.8 * b.glow})`); gr.addColorStop(1, 'rgba(180,90,255,0)');
-      ctx.fillStyle = gr; ctx.fillRect(tx - 30, ty - 30, 60, 60);
+      ctx.fillStyle = gr.p(ctx); ctx.fillRect(tx - 30, ty - 30, 60, 60);
       ctx.restore();
     }
     // 붉은 눈빛
@@ -12223,9 +12593,9 @@ huskUp:[
 
   function holdGlow(x, y, k, c) {
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const r = 6 + 10 * k, gr = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const r = 6 + 10 * k, gr = dRadial(ctx, x, y, 0, x, y, r);
     gr.addColorStop(0, `rgba(${c},${0.25 + 0.45 * k})`); gr.addColorStop(1, `rgba(${c},0)`);
-    ctx.fillStyle = gr; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    ctx.fillStyle = gr.p(ctx); ctx.fillRect(x - r, y - r, r * 2, r * 2);
     if (k > 0.75 && Math.floor(time * 24) % 2) { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(Math.round(x) - 1, Math.round(y) - 1, 2, 2); }
     ctx.restore();
   }
@@ -12552,9 +12922,9 @@ huskUp:[
       if (casting) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
         const hx = e.x + e.face * 3, hy = e.y - 18, rr = 3 + 7 * e.glow;
-        const gr = ctx.createRadialGradient(hx, hy, 0, hx, hy, rr * 2);
+        const gr = dRadial(ctx, hx, hy, 0, hx, hy, rr * 2);
         gr.addColorStop(0, 'rgba(255,230,230,.95)'); gr.addColorStop(0.4, 'rgba(255,40,60,.8)'); gr.addColorStop(1, 'rgba(255,40,60,0)');
-        ctx.fillStyle = gr; ctx.fillRect(hx - rr * 2, hy - rr * 2, rr * 4, rr * 4);
+        ctx.fillStyle = gr.p(ctx); ctx.fillRect(hx - rr * 2, hy - rr * 2, rr * 4, rr * 4);
         ctx.restore();
         if (Math.random() < 0.7) { const a = rand(0, TAU), r = rand(10, 18); G.parts.push({ x: e.x + Math.cos(a) * r, y: e.y - 18 + Math.sin(a) * r, vx: -Math.cos(a) * r * 4, vy: -Math.sin(a) * r * 4, t: 0.2, c: '#ff4050', g: 0, glow: true }); }
       }
@@ -12612,9 +12982,9 @@ huskUp:[
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       if (e.glow > 0) {
         const cx = e.x + e.face * 6, cy = e.y - 26 - lf, rr = 14 + 22 * e.glow;
-        const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+        const gr = dRadial(ctx, cx, cy, 0, cx, cy, rr);
         gr.addColorStop(0, `rgba(255,80,50,${0.55 * e.glow})`); gr.addColorStop(1, 'rgba(255,40,30,0)');
-        ctx.fillStyle = gr; ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
+        ctx.fillStyle = gr.p(ctx); ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
       }
       ctx.fillStyle = e.enraged ? 'rgba(255,60,40,.95)' : `rgba(220,240,110,${0.4 + 0.5 * e.glow})`;
       ctx.fillRect(Math.round(e.x + (e.face > 0 ? -1 : 1) * 3) - 3, Math.round(e.y - 34 - lf), 2, 2); ctx.fillRect(Math.round(e.x + (e.face > 0 ? -1 : 1) * 3) + 3, Math.round(e.y - 34 - lf), 2, 2);
@@ -12789,9 +13159,9 @@ huskUp:[
     } else if (f.kind === 'skybeam') {
       ctx.globalCompositeOperation = 'lighter';
       const w = f.w * (f.up ? 0.6 + 0.4 * Math.sin(p * Math.PI) : 1 - p * 0.85), a = f.up ? Math.sin(p * Math.PI) : 1 - p;
-      const gr = ctx.createLinearGradient(0, -20, 0, f.y);
+      const gr = dLinear(ctx, 0, -20, 0, f.y);
       gr.addColorStop(0, `rgba(${f.c},0)`); gr.addColorStop(1, `rgba(${f.c},${0.85 * a})`);
-      ctx.fillStyle = gr; ctx.fillRect(Math.round(f.x - w / 2), -20, Math.round(w), f.y + 20);
+      ctx.fillStyle = gr.p(ctx, f.x - w / 2, -20, w, f.y + 20); ctx.fillRect(Math.round(f.x - w / 2), -20, Math.round(w), f.y + 20);
       ctx.fillStyle = `rgba(255,255,255,${0.85 * a})`; ctx.fillRect(Math.round(f.x - w / 8), -20, Math.max(1, Math.round(w / 4)), f.y + 20);
       if (!f.up) { ctx.fillStyle = `rgba(${f.c},${0.7 * a})`; ctx.beginPath(); ctx.ellipse(f.x, f.y, w * 1.1, w * 0.4, 0, 0, TAU); ctx.fill(); }
     } else if (f.kind === 'alert') {
@@ -12870,9 +13240,9 @@ huskUp:[
       drawSprite(f.map || CL().map, f.pal || (f.tint ? CL().ghostPal : CL().pal), f.sc || 2, f.x, f.y + 2, f.face < 0, { rot: f.rot, alpha: (f.tint || f.map ? 0.55 : 0.3) * (1 - p), white: !f.tint && !f.map });
     } else if (f.kind === 'pillar') {
       const a = f.t / f.max, h = f.h * (0.4 + 0.6 * Math.min(1, p * 3));
-      const gr = ctx.createLinearGradient(0, f.y - h, 0, f.y);
+      const gr = dLinear(ctx, 0, f.y - h, 0, f.y);
       gr.addColorStop(0, 'rgba(255,220,120,0)'); gr.addColorStop(1, `rgba(255,220,120,${0.85 * a})`);
-      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr; ctx.fillRect(Math.round(f.x - 3), Math.round(f.y - h), 6, Math.round(h));
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = gr.p(ctx, f.x - 3, f.y - h, 6, h); ctx.fillRect(Math.round(f.x - 3), Math.round(f.y - h), 6, Math.round(h));
       ctx.fillStyle = `rgba(255,255,230,${a})`; ctx.fillRect(Math.round(f.x), Math.round(f.y - h), 1, Math.round(h));
     } else if (f.kind === 'xslash') {
       ctx.globalCompositeOperation = 'lighter';
@@ -12899,9 +13269,9 @@ huskUp:[
       drawLob(f, p);
     } else if (f.kind === 'boom') {
       ctx.globalCompositeOperation = 'lighter';
-      const r = f.r * (0.5 + 0.5 * easeOut(Math.min(1, p * 2.5))), gr = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, r);
+      const r = f.r * (0.5 + 0.5 * easeOut(Math.min(1, p * 2.5))), gr = dRadial(ctx, f.x, f.y, 0, f.x, f.y, r);
       gr.addColorStop(0, `rgba(255,240,200,${0.9 * (1 - p)})`); gr.addColorStop(0.45, `rgba(255,140,50,${0.7 * (1 - p)})`); gr.addColorStop(1, 'rgba(160,30,10,0)');
-      ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(f.x, f.y, r, r * 0.87, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = gr.p(ctx); ctx.beginPath(); ctx.ellipse(f.x, f.y, r, r * 0.87, 0, 0, TAU); ctx.fill();
     } else if (f.kind === 'tracer') {
       ctx.globalCompositeOperation = 'lighter';
       ctx.strokeStyle = `rgba(${f.c},${0.8 * (1 - p)})`; ctx.lineWidth = f.w * (1 - p * 0.6) + 1;
@@ -12984,9 +13354,9 @@ huskUp:[
   function drawVortexVignette() {
     const v = G && G.vortex; if (!v) return;
     const P = G.player, out = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r, k = out ? 0.55 + 0.35 * Math.sin(time * 12) : 0.18 + 0.08 * Math.sin(time * 4);
-    const gr = ctx.createRadialGradient(VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.85);
+    const gr = dRadial(ctx, VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.85);
     gr.addColorStop(0, 'rgba(120,0,20,0)'); gr.addColorStop(1, `rgba(150,0,30,${k})`);
-    ctx.fillStyle = gr; ctx.fillRect(0, 0, VW, VH);
+    ctx.fillStyle = gr.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     const shr = v.t < v.shrink, hold = !shr && v.t < v.shrink + v.hold;
     if (shr || hold) { const left = shr ? v.shrink - v.t + v.hold : v.shrink + v.hold - v.t, txt = (shr ? '잿빛 회오리가 조여 온다 ' : '잿빛 회오리 ') + left.toFixed(1) + 's'; ctx.font = '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(txt, VW / 2 + 1, 151); ctx.fillStyle = '#ff9aa8'; ctx.fillText(txt, VW / 2, 150); }
     if (out) { ctx.font = 'bold 12px Galmuri11'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('회오리 안으로!', VW / 2 + 1, 167); ctx.fillStyle = Math.floor(time * 6) % 2 ? '#ffffff' : '#ff6070'; ctx.fillText('회오리 안으로!', VW / 2, 166); }
@@ -13014,6 +13384,88 @@ huskUp:[
     g.fillRect(0, 0, R * 2, R * 2);
     if (LSTAMP.size > 400) LSTAMP.clear();
     st = { c: cv2, R }; LSTAMP.set(key, st); return st;
+  }
+  // v1.78 디더 빛 도장: 2px 칸 단위로 빛 세기를 단계(어둠 5단계 · 빛 색 12씩)로 끊고 4×4 바이어 디더로 섞음.
+  // 도장의 왼쪽 위를 월드 8px(=4칸) 격자에 맞춰 찍으므로 디더 무늬가 월드에 고정됨 (빛이 겹쳐도 무늬가 어긋나지 않음)
+  const LBAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  const bandQ = (s, t, W = 0.4) => { const b = Math.floor(s), r = s - b, lo = 0.5 - W / 2; return r < lo ? b : r > lo + W ? b + 1 : b + ((r - lo) / W > t ? 1 : 0); }; // 단계는 납작하게, 단계 가운데 폭 W만 디더 (평균 밝기 유지)
+  function lightStampD(r, a, c, ca) {
+    const Rc = Math.max(2, Math.ceil(r / 2 / 2) * 2), key = c ? 'd' + Rc + '|' + c + '|' + Math.round(ca * 25) : 'd' + Rc + '|' + Math.round(a * 20);
+    let st = LSTAMP.get(key); if (st) return st;
+    const n = Rc * 2 + 4, [cv2, g] = mkCanvas(n, n), im = g.createImageData(n, n), px = im.data, ctr = n / 2, R = r / 2, rc = R * 0.8;
+    const A = Math.round(a * 20) / 20, CA = Math.round(ca * 25) / 25, col = c ? c.split(',').map(v => +v) : null, Nd = 10; // v1.80 5 → 10단계 (단계 사이 차이가 작아 점이 덜 보임)
+    for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+      const d = Math.hypot(x + 0.5 - ctr, y + 0.5 - ctr), t = (LBAY[(y & 3) * 4 + (x & 3)] + 0.5) / 16, o = (y * n + x) * 4;
+      if (!c) { if (d >= R) continue; const q = d / R, f = q < 0.55 ? 1 - q / 0.55 * 0.45 : 0.55 * (1 - (q - 0.55) / 0.45), lv = Math.min(Nd, bandQ(f * Nd, t, 0.3)) / Nd; px[o + 3] = Math.round(A * lv * 255); }
+      else { if (d >= rc) continue; const v = CA * (1 - d / rc) * 255, qv = bandQ(v / 6, t, 0.3) * 6; if (qv <= 0) continue; px[o] = col[0]; px[o + 1] = col[1]; px[o + 2] = col[2]; px[o + 3] = Math.min(255, qv); }
+    }
+    g.putImageData(im, 0, 0);
+    if (LSTAMP.size > 1500) LSTAMP.clear();
+    st = { c: cv2, n, ctr }; LSTAMP.set(key, st); return st;
+  }
+  // 도장 찍기: 반 해상도 빛 지도(H.g, 월드 → ×0.5 변환)에 1칸 = 1px로, 왼쪽 위를 8px 격자에 맞춤
+  const stampAt = (g2, st, x, y) => { const X = Math.round((x - st.ctr * 2) / 8) * 8, Y = Math.round((y - st.ctr * 2) / 8) * 8; g2.drawImage(st.c, X, Y, st.n * 2, st.n * 2); };
+  // ================================================================ v1.78 조명 GL: 빛 지도를 GPU에서 계산하고 4×4 바이어 디더로 단계를 나눔
+  // 2px 칸(384×216) 기준, 디더 무늬는 월드 좌표에 고정(카메라가 움직여도 점이 기어다니지 않음). 어둠 5단계 · 빛 색 12씩 단계.
+  // 한 장의 GL 캔버스 왼쪽 절반 = 어둠(미리 곱한 알파), 오른쪽 절반 = 더할 빛 색. WebGL이 없거나 끊기면 예전 방식(v1.17)으로.
+  const LGL = (() => {
+    const W2 = VW / 2, H2 = VH / 2, MAXL = 64;
+    try {
+      const c = document.createElement('canvas'); c.width = W2 * 2; c.height = H2;
+      const gl = c.getContext('webgl', { premultipliedAlpha: true, preserveDrawingBuffer: true, antialias: false, alpha: true, depth: false, stencil: false });
+      if (!gl || gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS) < MAXL * 2 + 8) return null;
+      const VS = 'attribute vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }';
+      const FS = `#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+uniform vec4 L[${MAXL}]; uniform vec4 C[${MAXL}]; uniform int n; uniform vec2 cam; uniform vec3 dk; uniform float A0; uniform float N;
+float b2(vec2 v) { return 2.0 * v.x + 3.0 * v.y - 4.0 * v.x * v.y; }
+void main() {
+  vec2 fc = floor(gl_FragCoord.xy);
+  float hf = step(${W2}.0, fc.x); float x = fc.x - hf * ${W2}.0; float y = ${H2 - 1}.0 - fc.y;
+  vec2 w = cam + (vec2(x, y) + 0.5) * 2.0;
+  vec2 cell = vec2(x, y) + cam * 0.5;
+  float t = (4.0 * b2(mod(cell, 2.0)) + b2(mod(floor(cell * 0.5), 2.0)) + 0.5) / 16.0;
+  if (hf < 0.5) {
+    float a = A0;
+    for (int i = 0; i < ${MAXL}; i++) { if (i >= n) break; vec4 l = L[i]; float d = distance(w, l.xy); if (d < l.z) { float q = d / l.z; float f = q < 0.55 ? 1.0 - q / 0.55 * 0.45 : 0.55 * (1.0 - (q - 0.55) / 0.45); a *= 1.0 - l.w * f; } }
+    float lv = A0 > 0.0 ? min(N, floor(a / A0 * N + t)) / N * A0 : 0.0;
+    gl_FragColor = vec4(dk * lv, lv);
+  } else {
+    vec3 col = vec3(0.0);
+    for (int i = 0; i < ${MAXL}; i++) { if (i >= n) break; vec4 cc = C[i]; if (cc.w <= 0.0) continue; vec4 l = L[i]; float rc = l.z * 0.8; float d = distance(w, l.xy); if (d < rc) col += cc.rgb * cc.w * (1.0 - d / rc); }
+    col = min(floor(col * 255.0 / 12.0 + t) * 12.0 / 255.0, vec3(1.0));
+    gl_FragColor = vec4(col, 1.0);
+  }
+}`;
+      const sh = (type, src) => { const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+      const pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
+      if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+      gl.useProgram(pr);
+      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const ap = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(ap); gl.vertexAttribPointer(ap, 2, gl.FLOAT, false, 0, 0);
+      const U = {}; for (const k of ['L', 'C', 'n', 'cam', 'dk', 'A0', 'N']) U[k] = gl.getUniformLocation(pr, k);
+      gl.viewport(0, 0, W2 * 2, H2); gl.disable(gl.BLEND);
+      const st = { c, gl, U, W2, H2, MAXL, Lb: new Float32Array(MAXL * 4), Cb: new Float32Array(MAXL * 4), off: false };
+      c.addEventListener('webglcontextlost', e => { e.preventDefault(); st.off = true; });
+      return st;
+    } catch (err) { console.warn('조명 GL 사용 안 함:', err); return null; }
+  })();
+  const LGL_DK = { 1: [14, 10, 30], 3: [20, 6, 4], 4: [12, 10, 8] };
+  function renderLightingGL(vis) {
+    const S = LGL, gl = S.gl, n = Math.min(S.MAXL, vis.length);
+    if (vis.length > S.MAXL) vis = vis.slice().sort((a, b) => b.r * b.a - a.r * a.a); // 넘치면 크고 센 빛부터
+    let anyC = false;
+    for (let i = 0; i < n; i++) { const l = vis[i], j = i * 4; S.Lb[j] = l.x; S.Lb[j + 1] = l.y; S.Lb[j + 2] = l.r; S.Lb[j + 3] = l.a;
+      if (l.c) { anyC = true; const p = l.cRGB || (l.cRGB = l.c.split(',').map(v => +v / 255)); S.Cb[j] = p[0]; S.Cb[j + 1] = p[1]; S.Cb[j + 2] = p[2]; S.Cb[j + 3] = l.ca; } else S.Cb[j + 3] = 0; }
+    const dk = LGL_DK[G.stage] || [4, 3, 10];
+    gl.uniform4fv(S.U.L, S.Lb); gl.uniform4fv(S.U.C, S.Cb); gl.uniform1i(S.U.n, n); gl.uniform2f(S.U.cam, CAMX, CAMY);
+    gl.uniform3f(S.U.dk, dk[0] / 255, dk[1] / 255, dk[2] / 255); gl.uniform1f(S.U.A0, STG().dark); gl.uniform1f(S.U.N, 5);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    ctx.drawImage(S.c, 0, 0, S.W2, S.H2, CAMX, CAMY, VW, VH);
+    if (anyC) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(S.c, S.W2, 0, S.W2, S.H2, CAMX, CAMY, VW, VH); ctx.restore(); }
   }
   // 조명: 어둠을 깔고 광원 자리만 지운 뒤, 따뜻한 빛을 더한다
   function renderLighting() {
@@ -13073,15 +13525,16 @@ huskUp:[
     if (flashT > 0) lights.push({ x: cam.x + VW / 2, y: cam.y + VH / 2, r: 900, a: Math.min(1, flashT * 4) });
 
     const vis = lights.filter(l => l.x + l.r > cam.x && l.x - l.r < cam.x + VW && l.y + l.r > cam.y && l.y - l.r < cam.y + VH);
+    if (LGL && !LGL.off && LIGHT_GL) { renderLightingGL(vis); return; } // v1.78 GPU + 디더
     if (OPT) { // v1.17 빛 지도를 반 해상도로 (화면도 어차피 2px 칸으로 다시 뽑으므로 겉모습 같음) — 칠하는 넓이 1/4
       const H = LIGHTH, dark = `rgba(${G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${STG().dark})`;
       H.g.setTransform(1, 0, 0, 1, 0, 0); H.g.globalCompositeOperation = 'source-over'; H.g.clearRect(0, 0, VW / 2, VH / 2); H.g.fillStyle = dark; H.g.fillRect(0, 0, VW / 2, VH / 2);
       H.g.globalCompositeOperation = 'destination-out'; H.g.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
-      for (const l of vis) { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); }
+      for (const l of vis) { if (LIGHT_DITH) stampAt(H.g, lightStampD(l.r, l.a, null, 0), l.x, l.y); else { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); } }
       ctx.drawImage(H.c, 0, 0, VW / 2, VH / 2, CAMX, CAMY, VW, VH);
       let anyC = false; H.gg.setTransform(1, 0, 0, 1, 0, 0); H.gg.globalCompositeOperation = 'source-over'; H.gg.clearRect(0, 0, VW / 2, VH / 2);
       H.gg.globalCompositeOperation = 'lighter'; H.gg.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
-      for (const l of vis) if (l.c) { anyC = true; const st = lightStamp(l.r, 0, l.c, l.ca); H.gg.drawImage(st.c, l.x - st.R, l.y - st.R); }
+      for (const l of vis) if (l.c) { anyC = true; if (LIGHT_DITH) stampAt(H.gg, lightStampD(l.r, 0, l.c, l.ca), l.x, l.y); else { const st = lightStamp(l.r, 0, l.c, l.ca); H.gg.drawImage(st.c, l.x - st.R, l.y - st.R); } }
       if (anyC) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(H.gc, 0, 0, VW / 2, VH / 2, CAMX, CAMY, VW, VH); ctx.restore(); }
       return;
     }
@@ -13248,11 +13701,11 @@ huskUp:[
     if (G.bonfire && !(G.dun && G.dun.cur && G.dun.cur.type === 'rest')) drawBonfire(G.bonfire);
     for (const l of G.loot) drawLoot(l);
     drawMeteorMark(); drawMeteorAim();
-    for (const t of G.tele) if (!t.mark) drawTele(t);
+    { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) if (!t.mark) drawTele(t); DITHER_ON = dz; } // v1.79 공격 예고는 잘 보이게 디더 제외
     // 보스 전조(경고)는 보스·캐릭터 그래픽 아래에 (v0.74)
     drawArenaCrowd(); drawRiteGround();
     drawGearGround();
-    for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
+    { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.y, d: () => drawEnemyShk(e) }));
     if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
     ents.push({ y: G.player.y, d: drawPlayer });
@@ -13269,10 +13722,7 @@ huskUp:[
     for (const p of G.parts) { ctx.globalAlpha = Math.min(1, p.t * 3); ctx.fillStyle = p.c; ctx.fillRect(Math.round(p.x), Math.round(p.y), 2, 2); }
     ctx.globalAlpha = 1;
     if (G.dun) ambBack(); // v1.55
-    // 안개 (카메라보다 느리게 흘러 깊이감)
-    ctx.globalAlpha = 0.9;
-    const fx = ((time * 8 + cam.x * 0.5) % VW + VW) % VW, fy = cam.y;
-    ctx.drawImage(fog, Math.round(cam.x - fx), Math.round(fy)); ctx.drawImage(fog, Math.round(cam.x + VW - fx), Math.round(fy));
+    // v1.86 안개 제거 (7%로 옅어 거의 안 보이고, 도트 규칙의 예외였음)
     ctx.globalAlpha = 1;
     renderLighting();
     drawEProjs(); // 적 투사체는 어둠 위에 그려 항상 또렷하게
@@ -13295,22 +13745,22 @@ huskUp:[
     let danger = 0;
     if (!G.player.dead) for (const t of G.tele) if (t.shape !== 'spawn' && t.owner !== null && inShape(t, G.player.x, G.player.y, G.player.r)) danger = Math.max(danger, t.t / t.dur);
     if (danger > 0.35) {
-      const k = (danger - 0.35) / 0.65, vg = ctx.createRadialGradient(VW / 2, VH / 2, 180, VW / 2, VH / 2, 470);
+      const k = (danger - 0.35) / 0.65, vg = dRadial(ctx, VW / 2, VH / 2, 180, VW / 2, VH / 2, 470);
       vg.addColorStop(0, 'rgba(160,0,0,0)'); vg.addColorStop(1, `rgba(200,10,20,${(0.25 + 0.3 * k) * (0.7 + 0.3 * Math.sin(time * 30))})`);
-      ctx.fillStyle = vg; ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = vg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     }
     if (slowmo > 0) { ctx.fillStyle = 'rgba(30,50,90,.14)'; ctx.fillRect(0, 0, VW, VH); }
     if (G.press > 0.6 && !G.player.dead) {
-      const k = Math.min(1, (G.press - 0.6) / 3), vg = ctx.createRadialGradient(VW / 2, VH / 2, 200 - k * 50, VW / 2, VH / 2, 480);
+      const k = Math.min(1, (G.press - 0.6) / 3), vg = dRadial(ctx, VW / 2, VH / 2, 200 - k * 50, VW / 2, VH / 2, 480);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(8,2,6,${0.15 + 0.35 * k})`);
-      ctx.fillStyle = vg; ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = vg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     }
     if (G.player.hp / G.stats.hp < 0.3 && !G.player.dead) {
-      const vg = ctx.createRadialGradient(VW / 2, VH / 2, 170, VW / 2, VH / 2, 460);
+      const vg = dRadial(ctx, VW / 2, VH / 2, 170, VW / 2, VH / 2, 460);
       vg.addColorStop(0, 'rgba(120,0,0,0)'); vg.addColorStop(1, `rgba(140,0,0,${0.35 + Math.sin(time * 5) * 0.1})`);
-      ctx.fillStyle = vg; ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = vg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     }
-    drawMinimap();
+    if (mode !== 'map') drawMinimap(); // v1.92 TAB 지도를 열면 미니맵은 숨김
     drawCombo();
     if (flashT > 0) { ctx.globalAlpha = Math.min(0.6, flashT * 2.5); ctx.fillStyle = flashColor; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1; }
     if (mode === 'map') drawMapOverlay();
@@ -13328,7 +13778,7 @@ huskUp:[
   // 연속 타격 카운터 (화면 우측)
   function drawCombo() {
     const C = G.combo; if (!C || C.n < 3 || G.player.dead) return;
-    const s = C.pop > 0 ? 4 : 3, str = String(C.n), x = VW - 18, y = 170;
+    const s = C.pop > 0 ? 4 : 3, str = String(C.n), x = VW - 18, y = Math.max(170, (MM.bot || 140) + 30); // v1.91 미니맵이 커져서 아래로
     const col = C.n >= 50 ? '#ff5a3c' : C.n >= 25 ? '#ffb030' : C.n >= 10 ? '#ffe39a' : '#ffffff';
     ctx.globalAlpha = Math.min(1, C.t * 2);
     const w = str.length * 4 * s - s;
@@ -14279,7 +14729,7 @@ huskUp:[
   function touchHud() {
     const show = TOUCH.on && (mode === 'play' || mode === 'map');
     $('touch').classList.toggle('on', show);
-    document.body.classList.toggle('portrait', TOUCH.on && innerHeight > innerWidth);
+    document.body.classList.toggle('portrait', TOUCH.on && fitH > fitW); // v1.78 fit 때 잰 값
     if (!show) { for (const k in TOUCH.held) if (TOUCH.held[k]) { TOUCH.held[k] = false; keyEv('keyup', k); } for (const k in TOUCH.dirs) setDir(k, false); return; }
     if (G && TOUCH.iconCls !== G.cls) {
       TOUCH.iconCls = G.cls; const C = CL(), ic = C.icons || (G.cls === 'ranger' ? ['dual', 'shadow', 'storm'] : ['atk', 'skill', 'awaken']);
@@ -14291,7 +14741,7 @@ huskUp:[
   }
 
   // ---------------------------------------------------------------- 화면 맞춤
-  var fitW = 0, fitH = 0; // enableTouch가 먼저 fit을 부를 수 있어 var/function으로 끌어올린다
+  var fitW = 0, fitH = 0, fitTick = 0; // enableTouch가 먼저 fit을 부를 수 있어 var/function으로 끌어올린다
   function viewW() { return window.visualViewport ? visualViewport.width : innerWidth; }
   function viewH() { return window.visualViewport ? visualViewport.height : innerHeight; }
   function fit() {
@@ -14319,11 +14769,11 @@ huskUp:[
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     try { update(dt); } catch (err) { console.error(err); }
     try { render(); } catch (err) { console.error(err); }
-    try { hud(); updatePeek(); touchHud(); if (viewW() !== fitW || viewH() !== fitH) fit(); } catch (err) { console.error(err); }
+    try { hud(); updatePeek(); touchHud(); if (++fitTick % 30 === 0 && (viewW() !== fitW || viewH() !== fitH)) fit(); } catch (err) { console.error(err); } // v1.78 창 크기는 이벤트 + 30프레임마다만 (매 프레임 읽으면 레이아웃 재계산)
     requestAnimationFrame(frame);
   }
   titleMats();
   requestAnimationFrame(frame);
 
-  window.__proto = { wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genCart, genPillar, genRubble, genWallBlock, KING4, BELL4, CART4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed, forge: () => ({ furnace: gCanvas(genFurnace(), FORGE_PAL), rack: gCanvas(FORGE_DECO.rack(), FORGE_PAL), tools: gCanvas(FORGE_DECO.tools(), FORGE_PAL), ingots: gCanvas(FORGE_DECO.ingots(), FORGE_PAL) }) }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, openPick, takePick, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
+  window.__proto = { get dlv() { return DLV; }, set dlv(v) { DLV = v; DGC.clear(); }, dRadial: (...a) => dRadial(...a), get dither() { return DITHER_ON; }, set dither(v) { DITHER_ON = !!v; LIGHT_DITH = !!v; }, get lightDith() { return LIGHT_DITH; }, set lightDith(v) { LIGHT_DITH = !!v; }, get lightGL() { return !!(LGL && !LGL.off && LIGHT_GL); }, set lightGL(v) { LIGHT_GL = !!v; }, wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genCart, genPillar, genRubble, genWallBlock, KING4, BELL4, CART4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed, forge: () => ({ furnace: gCanvas(genFurnace(), FORGE_PAL), rack: gCanvas(FORGE_DECO.rack(), FORGE_PAL), tools: gCanvas(FORGE_DECO.tools(), FORGE_PAL), ingots: gCanvas(FORGE_DECO.ingots(), FORGE_PAL) }) }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, openPick, takePick, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
 })();
