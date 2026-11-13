@@ -314,6 +314,8 @@
   if (!SAVE.equipBy || !SAVE.equipBy.knight) SAVE.equipBy = { knight: Object.assign({}, SAVE.equip || {}), ranger: {} };
   for (const k of ['knight', 'ranger', 'mage', 'priest', 'gunner']) if (!SAVE.equipBy[k]) SAVE.equipBy[k] = {};
   SAVE.inv.forEach(it => { if (it.slot === 'weapon' && !it.cls) it.cls = 'knight'; if (it.lv == null) it.lv = 0; if (it.fail == null) it.fail = 0; });
+  if (!SAVE.weaponRolls) SAVE.weaponRolls = {};
+  SAVE.inv.forEach(it => { if (it.slot === 'weapon' && it.wk != null) { const k = `${it.cls || 'knight'}:${it.wk}`; if (!SAVE.weaponRolls[k]) SAVE.weaponRolls[k] = { val: it.val, opts: (it.opts || []).map(o => ({ ...o })) }; } });
   // v2.00 하트 방식: 방어구(투구·갑옷·장화) 삭제(사용자 결정), 목걸이 주 능력치 HP → 쿨타임 감소, HP·방어 옵션 삭제
   if (!SAVE.v200) {
     const gone = new Set(SAVE.inv.filter(it => ['helm', 'armor', 'boots'].includes(it.slot)).map(it => it.id));
@@ -1572,6 +1574,11 @@
     return { cells: g, w, h, px, py, pal, reach: Math.round(reach * 2), rot: {} };
   }
   const ROT_N = 96;
+  const ROT_WARM = { b: null, i: 0 };
+  function warmRot(b, per = 6) { // v2.19 무기를 바꾸면 96방향 회전 그림을 프레임당 몇 장씩 미리 만든다
+    if (!b || !b.cells) return; if (ROT_WARM.b !== b) { ROT_WARM.b = b; ROT_WARM.i = 0; }
+    for (let k = 0; k < per && ROT_WARM.i < ROT_N; k++, ROT_WARM.i++) rotW(b, (ROT_WARM.i + 0.01) / ROT_N * TAU);
+  }
   function rotW(b, ang, sc = 1) { // v1.05: sc 배율도 칸 단위 (1/8 단위로 끊음)
     sc = Math.max(0.25, Math.round(sc * 8) / 8);
     const flip = Math.cos(ang) < 0, step = ((Math.round(ang / TAU * ROT_N) % ROT_N) + ROT_N) % ROT_N, key = step + (flip ? 'f' : '') + (sc !== 1 ? 's' + sc : '');
@@ -1746,7 +1753,7 @@ WF.knight = (H) => {
   }));
 
   // 4 레어 — 사슬 분절검
-  add('rare', '사슬 분절검', '마디마디 사슬로 이어진 검', '3타에 마디가 풀려 채찍처럼 두 배 길이로', cellWeapon(35, 11, 3, 5, {
+  add('rare', '사슬 분절검', '마디마디 사슬로 이어진 검', '3타에 마디 사이가 벌어지며 검 모양 그대로 두 배 길이로', cellWeapon(35, 11, 3, 5, {
     h: '#3a2a3a', H: '#5a4256', G: '#8a8a94', g: '#c0c0c8', m: '#9aa2ae', l: '#c8d0da', w: '#eef2f6', d: '#545a66', c: '#6a6e78', C: '#3a3c44',
   }, put => {
     const cy = 5;
@@ -2118,7 +2125,7 @@ WF.knight = (H) => {
       const cy = 4; stock(put, cy, 's', 'S'); for (let x = 7; x < 20; x++) put(x, cy - 1, x % 5 === 0 ? 'B' : 'b');
       for (let x = 20; x <= 25; x++) { const hw = Math.round((x - 19) * 0.6); for (let y = cy - 1 - hw; y <= cy - 1 + hw; y++) put(x, y, x === 25 ? 'k' : y === cy - 1 - hw ? 'B' : 'b'); }
     }));
-    add('rare', '고래 작살총', '작살을 끼운 굵은 총', '맞은 적을 벽에 꽂아 1.5초 고정 · 한 발씩 — 작살을 주우면 바로 장전 (아니면 4초)', cw(33, 9, 6, 4, { s: '#5a4a3a', S: '#3a2e24', b: '#5a5e68', m: '#a8acb4', w: '#e8ecf0', r: '#c8b080', R: '#8a7450' }, put => {
+    add('rare', '고래 작살총', '작살을 끼운 굵은 총', '줄 달린 작살로 첫 적을 꿰어 끌어옴 (끌려오는 동안 무적·무력) · 큰 적은 경직 — 작살이 감겨 돌아오면 바로 다음 발', cw(33, 9, 6, 4, { s: '#5a4a3a', S: '#3a2e24', b: '#5a5e68', m: '#a8acb4', w: '#e8ecf0', r: '#c8b080', R: '#8a7450' }, put => {
       const cy = 4; stock(put, cy, 's', 'S'); for (let x = 7; x < 22; x++) { put(x, cy - 1, 'b'); put(x, cy - 2, x % 4 ? 'b' : 'm'); }
       for (let x = 22; x <= 28; x++) put(x, cy - 1, 'm'); for (const [x, y] of [[29, cy - 1], [30, cy - 1], [31, cy - 1], [32, cy - 1], [29, cy - 3], [29, cy + 1], [30, cy - 2], [30, cy], [31, cy - 1]]) put(x, y, 'w');
       for (const [x, y] of [[12, cy + 1], [13, cy + 2], [14, cy + 2], [15, cy + 1], [11, cy + 2], [16, cy + 2]]) put(x, y, (x + y) % 2 ? 'r' : 'R');
@@ -2356,6 +2363,7 @@ WF.knight = (H) => {
   // 무기 위에 등급 연출: 레어 — 칼날을 훑는 반짝임 / 유니크 — 보랏빛 맥동과 불티 / 레전더리 — 직업색 광채와 불꽃
   function weaponAura(tex, x, y, ang, cls, scale = 1) {
     const t = weaponTier(cls); if (!t || !G) return;
+    if (cls === 'knight' && wSkill() === 'bread') return; // v2.19 바게트는 반짝임·덧칠 없이 부러졌을 때와 같은 빵 색
     const fx = tierFx(cls), ux = Math.cos(ang), uy = Math.sin(ang), reach = tex.reach * scale;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     if (t >= 2) { ctx.globalAlpha = (t === 3 ? 0.12 : 0.16) + Math.sin(time * (t === 3 ? 7 : 4)) * (t === 3 ? 0.05 : 0.08); drawBlade(tex, x, y, ang, 1, false, scale, 'lighter'); ctx.globalAlpha = 1; } // v1.09: 레전더리 덧칠 0.3 → 0.12 (하얗게 날아가던 문제)
@@ -2364,11 +2372,20 @@ WF.knight = (H) => {
     ctx.restore();
     if (t >= 2 && Math.random() < (t === 3 ? 0.3 : 0.18)) { const k = rand(0.3, 1); G.parts.push({ x: x + ux * reach * k + rand(-2, 2), y: y + uy * reach * k + rand(-2, 2), vx: rand(-8, 8), vy: rand(-30, -10), t: rand(0.3, 0.6), c: pick(fx.p), g: 0, glow: true }); }
   }
+  // v2.19 피격 흰 번쩍임: ctx.filter('brightness') 대신 한 번 밝혀 둔 사본을 쓴다 (필터는 그릴 때마다 느림)
+  const WHITE_BLADE = new WeakMap(), brightHex = h => '#' + [1, 3, 5].map(i => Math.min(255, parseInt(h.slice(i, i + 2), 16) * 3).toString(16).padStart(2, '0')).join('');
+  function whiteBlade(b) {
+    let w = WHITE_BLADE.get(b); if (w) return w;
+    if (b.cells) { const pal = {}; for (const k in b.pal) pal[k] = typeof b.pal[k] === 'string' && b.pal[k][0] === '#' && b.pal[k].length >= 7 ? brightHex(b.pal[k]) : b.pal[k]; w = Object.assign({}, b, { pal, rot: {} }); }
+    else if (b.c) { const [c, g] = mkCanvas(b.c.width, b.c.height); g.filter = 'brightness(3)'; g.drawImage(b.c, 0, 0); w = Object.assign({}, b, { c }); }
+    else w = b; WHITE_BLADE.set(b, w); return w;
+  }
   function drawBlade(b, x, y, ang, alpha = 1, white, scale = 1, comp) {
     const ash = ASH_DRAW && !comp; if (ash) b = ashBlade(b); // v1.99 잿불 외형
+    if (white) b = whiteBlade(b);
     if (b.cells) { // v1.05: 배율도 칸 단위, 칸 경계를 2px 격자에 맞춤
       const r = rotW(b, ang, scale);
-      ctx.save(); ctx.globalAlpha = alpha; if (comp) ctx.globalCompositeOperation = comp; if (white) ctx.filter = 'brightness(3)';
+      ctx.save(); ctx.globalAlpha = alpha; if (comp) ctx.globalCompositeOperation = comp;
       if (ash && !white) { const A = auraOf(r.c, 2); ctx.drawImage(A.c, snap2(x) - r.o + 1 - A.p, snap2(y) - r.o + 1 - A.p); }
       ctx.drawImage(r.c, snap2(x) - r.o + 1, snap2(y) - r.o + 1); ctx.restore(); return; // r.o는 홀수 → 캔버스 원점이 짝수 좌표
     }
@@ -2378,7 +2395,6 @@ WF.knight = (H) => {
     ctx.translate(Math.round(x), Math.round(y));
     ctx.rotate(ang);
     ctx.scale(scale, Math.cos(ang) < 0 ? -scale : scale);
-    if (white) ctx.filter = 'brightness(3)';
     ctx.drawImage(b.c, -b.pivotX, -b.pivotY);
     ctx.restore();
   }
@@ -2577,14 +2593,16 @@ WF.knight = (H) => {
   const keys = {};
   const pressed = {};
   const mouse = { x: CX, y: CY, active: 0, down: false };
+  // v2.19 한글 입력 상태에서도 키가 먹게: 글자 대신 물리 키 위치(e.code)로 읽는다 (F가 'ㄹ'로 들어오던 문제)
+  function keyName(e) { const c = e.code || ''; if (/^Key[A-Z]$/.test(c)) return e.shiftKey ? c[3] : c[3].toLowerCase(); if (/^Digit[0-9]$/.test(c) && !e.shiftKey) return c[5]; return e.key; }
   addEventListener('keydown', e => {
     initAudio();
-    const k = e.key.toLowerCase();
+    const k = keyName(e).toLowerCase();
     if (!keys[k]) pressed[k] = e.shiftKey ? 'shift' : true; // v1.14 Shift와 같이 눌렸는지 기억 (테스트 키)
     keys[k] = true;
     if ([' ', 'arrowup', 'arrowdown', 'tab'].includes(k)) e.preventDefault();
   });
-  addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+  addEventListener('keyup', e => { keys[keyName(e).toLowerCase()] = false; keys[e.key.toLowerCase()] = false; });
   // v1.16 타이틀 음악: 브라우저는 첫 클릭·터치·키 입력 전엔 소리를 못 내게 막음 → 메뉴 버튼이 아니어도 화면 어디든 처음 누르는 순간 타이틀 음악 시작
   for (const t of ['pointerdown', 'touchstart']) addEventListener(t, () => initAudio(), { capture: true, passive: true });
   cv.addEventListener('mousemove', e => {
@@ -2600,34 +2618,34 @@ WF.knight = (H) => {
   const CLASSES = {
     knight: {
       dmgMul: 1.22, n: '기사', role: '탱커 · 그로기', map: 'knight', pal: 'knight', ghostPal: 'ghost', weapon: '대검',
-      base: { atk: 20, def: 0, hp: 8, crit: 0.10, spd: 88 }, skill: '돌진 참격', skillCd: 8, awaken: '성채의 맹세',
-      skillD: '돌진 후 크게 올려베며 푸른 검기를 날린다', awakenD: '금빛 회전베기 2회 → 빛의 거대검 내려찍기, 5초간 맞아도 30% 확률로 흘려냄',
-      atkD: '느리고 묵직한 대검 3타, 3타는 회전베기 · 근접 투지(15% 확률로 피격을 흘려냄, 처치하며 체력 회복)',
+      base: { atk: 20, def: 0, hp: 6, crit: 0.10, spd: 88 }, skill: '돌진 참격', skillCd: 8, awaken: '성채의 맹세',
+      skillD: '돌진 후 크게 올려베며 푸른 검기를 날린다', awakenD: '회전베기 2회 → 빛의 거대검 · 5초간 30% 흘려냄',
+      atkD: '묵직한 3타 · 3타 회전베기 · 투지(15% 흘려냄 · 처치 회복)',
     },
     ranger: {
       n: '어세신', role: '근접 연타 딜러', map: 'ranger', pal: 'ranger', ghostPal: 'rangerGhost', weapon: '쌍검',
       base: { atk: 18, def: 0, hp: 6, crit: 0.18, spd: 100 }, skill: '그림자 도약', skillCd: 7, awaken: '칼날 폭풍',
-      skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베기, 치명타 확정', awakenD: '3초간 쌍검 회오리를 두르고 이동하며 연속 베기, 맞아도 50% 확률로 흘려냄',
-      atkD: '빠른 쌍검 3타, 3타는 앞으로 파고드는 교차베기 · 근접 투지(15% 확률로 피격을 흘려냄, 처치하며 체력 회복)',
+      skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베기, 치명타 확정', awakenD: '3초간 쌍검 회오리 · 50% 흘려냄',
+      atkD: '빠른 3타 · 3타 교차베기 · 투지(15% 흘려냄 · 처치 회복)',
     },
     mage: {
       dmgMul: 0.88, n: '마법사', role: '원거리 광역 딜러', map: 'mage', pal: 'mage', ghostPal: 'mageGhost', weapon: '지팡이',
       base: { atk: 24, def: 0, hp: 6, crit: 0.12, spd: 90 }, skill: '화염구', skillCd: 10, awaken: '운석 낙하',
-      skillD: '폭발하는 화염구를 날린다. 범위 피해 + 3초 화상', awakenD: 'E로 조준한 뒤 클릭한 곳에 운석이 떨어진다(우클릭·E 취소). 초대형 광역 + 화상',
+      skillD: '폭발하는 화염구를 날린다. 범위 피해 + 3초 화상', awakenD: 'E 조준 → 클릭 지점에 운석 · 광역 + 화상',
       atkD: '마력탄 연사 · 3발마다 큰 탄', icons: ['bolt', 'fireball', 'meteor'],
     },
     priest: {
       n: '사제', role: '방패 · 버프', map: 'priest', pal: 'priest', ghostPal: 'priestGhost', weapon: '메이스',
-      base: { atk: 20, def: 0, hp: 8, crit: 0.08, spd: 90 }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
-      skillD: '빛의 방패 1칸(이 기술로는 1칸까지) + 주변 적을 빛으로 밀쳐낸다', awakenD: '3초 무적, 큰 빛기둥. 게이지가 차 있으면 쓰러질 때 반 칸×2로 일으켜 세움 (챕터당 1번)',
-      atkD: '메이스 3타, 3타는 땅을 내리쳐 빛의 충격파 · 근접 투지(15% 확률로 피격을 흘려냄, 처치하며 체력 회복)', icons: ['mace', 'heal', 'miracle'],
+      base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
+      skillD: '빛의 방패 1칸(이 기술로는 1칸까지) + 주변 적을 빛으로 밀쳐낸다', awakenD: '3초 무적 빛기둥 · 쓰러지면 부활 (챕터당 1번)',
+      atkD: '메이스 3타 · 3타 충격파 · 투지(15% 흘려냄 · 처치 회복)', icons: ['mace', 'heal', 'miracle'],
     },
     gunner: {
       dmgMul: 0.65,
       n: '거너', role: '원거리 단일 폭딜', map: 'gunner', pal: 'gunner', ghostPal: 'gunnerGhost', weapon: '머스킷',
       base: { atk: 28, def: 0, hp: 6, crit: 0.50, spd: 92 }, skill: '산탄 사격', skillCd: 8, awaken: '집중 저격',
       skillD: '근거리 부채꼴 산탄 + 강한 넉백, 즉시 재장전', awakenD: '2초 조준 후 모든 적을 꿰뚫는 대형탄. 보스 그로기 대량 누적',
-      atkD: '5발 사격 후 총을 두 바퀴 돌려 재장전 · 가까운 적은 개머리판 타격', icons: ['musket', 'shotgun', 'snipe'],
+      atkD: '5발 후 재장전 · 근접은 개머리판', icons: ['musket', 'shotgun', 'snipe'],
     },
   };
   // 삭제된 직업(예: 테스트했던 버서커)의 무기·장착 정보가 저장에 남아 있으면 정리한다
@@ -2658,12 +2676,12 @@ WF.knight = (H) => {
   const LEGEND_FX = {
     bulwark: { n: '태양 서약 대검', d: '돌진 참격 2회 충전 · 돌진한 길에 빛의 검기가 남아 터진다' },
     execsword: { n: '잿빛 왕의 처형검', d: '3타가 잿불 장판을 남기고, 각성 내려찍기 둘레가 잿불로 탄다' },
-    fangs: { n: '쌍둥이 송곳니', d: '퍼펙트 회피 시 그림자 도약 즉시 충전 · 도약 뒤 2초 동안 모습을 감춰 공격이 빗나감' },
-    kingrev: { n: '왕의 연발총', d: '6연발 · 마지막 탄이 폭발하고, 재장전할 때 실린더가 왕관처럼 돌며 주변 적을 밀쳐냄' },
-    spearrain: { n: '날개 달린 성창', d: '기적(각성) 동안 하늘에서 성창이 쏟아지고, 기적 중 적을 처치하면 기적이 0.5초 늘어남' },
-    hourglass: { n: '모래시계 지팡이', d: '각성이 시간 정지 3초 — 적·적 투사체가 멈추고, 풀리는 순간 그동안 넣은 피해의 절반이 한꺼번에 더 들어간다 (보스는 둔화)' },
-    nine: { n: '아홉 목숨', d: '쓰러지면 한 번 되살아남(런당 1) · 처치할 때마다 고양이 유령이 다음 적을 덮침' },
-    ashstar: { n: '잿빛 별의 홀', d: '화염구가 3갈래로 나뉜다 · 운석이 떨어진 둘레에 작은 운석 다섯이 이어 떨어진다' },
+    fangs: { n: '쌍둥이 송곳니', d: '퍼펙트 회피 시 그림자 도약 충전 · 도약 후 2초 은신' },
+    kingrev: { n: '왕의 연발총', d: '6연발 · 막탄 폭발 · 재장전 때 주변 밀쳐냄' },
+    spearrain: { n: '날개 달린 성창', d: '기적 중 성창 낙하 · 처치마다 기적 +0.5초' },
+    hourglass: { n: '모래시계 지팡이', d: '각성 = 시간 정지 3초 · 풀릴 때 넣은 피해 50% 추가 (보스는 둔화)' },
+    nine: { n: '아홉 목숨', d: '런당 1회 부활 · 처치마다 고양이 유령이 추격' },
+    ashstar: { n: '잿빛 별의 홀', d: '화염구 3갈래 · 운석 주위에 작은 운석 5개' },
     dawn: { n: '새벽 성가', d: '치유의 빛이 2초간 모든 피해를 막는 보호막도 부여' },
     undertaker: { n: '장의사의 머스킷', d: '그로기 상태의 적에게 집중 저격 피해 2배' },
     vigil: { n: '철야의 ', d: '퍼펙트 회피를 다섯 번 하면 체력 반 칸 회복' },
@@ -2689,7 +2707,7 @@ WF.knight = (H) => {
   const SETS = {
     slime: { n: '점액왕의 유산', pre: '점액왕의', c: '#9be060', b2: '최대 체력 +1칸', b4: '피격 시 50% 확률로 산성 폭발 — 주변 적에게 큰 피해' },
     order: { n: '타락한 기사단', pre: '기사단의', c: '#a8b8ff', b2: '챕터를 시작할 때마다 방패 +1', b4: '공격이 맞을 때 12% 확률로 망령 검이 내리꽂힘' },
-    orc: { n: '핏빛 엄니', pre: '엄니의', c: '#ff7a50', b2: '공격력 +12%', b4: '체력 절반 이하일 때 주는 피해 +30% · 처치 세 번마다 체력 반 칸 회복' },
+    orc: { n: '핏빛 엄니', pre: '엄니의', c: '#ff7a50', b2: '공격력 +12%', b4: '체력 절반 이하 피해 +30% · 3처치마다 반 칸 회복' },
   };
   const SET_BY_STAGE = { 1: 'slime', 2: 'order', 3: 'orc' };
   // v0.98 저주 장비: 강한 보너스 옵션 + 대가
@@ -2704,8 +2722,9 @@ WF.knight = (H) => {
   // v1.98 옵션 수치: 유니크는 범위 위쪽 절반, 레전더리는 최대값 (대장간 다시 굴리기도 같음)
   const optRoll = (o, g) => Math.round(randi(g.k === 'legend' ? o.r[1] : g.k === 'unique' ? Math.ceil((o.r[0] + o.r[1]) / 2) : o.r[0], o.r[1]) * (1 + (g.mul - 1) * 0.5));
   function makeItem(cls, force = {}) {
-    const g = force.grade ? GRADES.find(x => x.k === force.grade) : rollGrade(), slot = SLOTS[0]; // v2.07 장비는 무기만 (반지·목걸이 드랍 없음)
-    const val = Math.round(randi(slot.base[0], slot.base[1]) * g.mul);
+    let g = force.grade ? GRADES.find(x => x.k === force.grade) : rollGrade();
+    const slot = SLOTS[0]; // v2.07 장비는 무기만 (반지·목걸이 드랍 없음)
+    let val = Math.round(randi(slot.base[0], slot.base[1]) * g.mul);
     const nOpt = randi(g.opt[0], g.opt[1]);
     const pool = OPTS.slice(), opts = [];
     for (let i = 0; i < nOpt; i++) {
@@ -2713,10 +2732,39 @@ WF.knight = (H) => {
       opts.push({ k: o.k, v: optRoll(o, g) });
     }
     // 무기는 80% 확률로 지금 직업용, 아니면 다른 직업용
-    const wcls = slot.k === 'weapon' ? (force.slot || Math.random() < 0.8 ? cls : pick(Object.keys(CLASSES).filter(k => k !== cls))) : null;
+    const weaponPool = k => {
+      const seen = G && G.weaponAcquired && G.weaponAcquired[k] || [], owned = SAVE.inv.filter(it => it.slot === 'weapon' && it.cls === k).map(it => it.wk);
+      const reserved = G && G.weaponRolls && G.weaponRolls[k] || [];
+      return wcat(k).filter(o => !seen.includes(o.i) && !owned.includes(o.i) && !reserved.includes(o.i));
+    };
+    let W0 = null;
+    let wcls = null;
+    if (slot.k === 'weapon') {
+      if (force.wk != null) { wcls = force.wcls || cls; W0 = wcat(wcls)[force.wk] || null; }
+      else {
+        const classes = Object.keys(CLASSES), preferred = force.wcls || (Math.random() < 0.8 ? cls : pick(classes.filter(k => k !== cls)));
+        const available = weaponPool(preferred);
+        const choices = available.filter(o => o.grade === g.k);
+        const pool = choices.length ? choices : available;
+        if (pool.length) { wcls = preferred; W0 = pick(pool); }
+        else {
+          const alternatives = classes.filter(k => k !== preferred).flatMap(k => weaponPool(k).map(o => ({ cls: k, item: o })));
+          if (alternatives.length) { const choice = pick(alternatives); wcls = choice.cls; W0 = choice.item; }
+          else { wcls = preferred; W0 = pick(wcat(wcls).filter(o => o.grade === g.k)); }
+        }
+      }
+      if (W0 && G) { G.weaponRolls = G.weaponRolls || {}; G.weaponRolls[wcls] = G.weaponRolls[wcls] || []; if (!G.weaponRolls[wcls].includes(W0.i)) G.weaponRolls[wcls].push(W0.i); }
+    }
+    if (W0) {
+      g = GRADES.find(x => x.k === W0.grade) || g;
+      const key = `${wcls}:${W0.i}`;
+      let fixed = SAVE.weaponRolls[key];
+      if (!fixed) { fixed = SAVE.weaponRolls[key] = { val, opts: opts.map(o => ({ ...o })) }; }
+      val = fixed.val;
+      opts.splice(0, opts.length, ...fixed.opts.map(o => ({ ...o })));
+    }
     const sname = wcls ? CLASSES[wcls].weapon : slot.n;
     let name = `${g.pre} ${sname}`.trim(), fx = null;
-    const W0 = wcls ? (force.wk != null ? wcat(wcls)[force.wk] : pick(wcat(wcls).filter(o => o.grade === g.k))) : null; // v2.03 도감 무기
     if (g.k === 'legend') {
       fx = slot.k === 'weapon' ? WEAPON_FX[wcls] : force.legendFx && Math.random() < 0.5 ? force.legendFx : pick(['vigil', 'ember']);
       name = slot.k === 'weapon' ? LEGEND_FX[fx].n : LEGEND_FX[fx].n + slot.n;
@@ -2766,10 +2814,12 @@ WF.knight = (H) => {
   const WCAP = 3;
   const wOwned = cls => SAVE.inv.filter(i => i.slot === 'weapon' && i.cls === cls);
   const wFull = cls => wOwned(cls).length >= WCAP;
-  function dropWeapon(it, x, y) { if (!it || !G) return; unequipIt(G.cls, it); SAVE.inv = SAVE.inv.filter(i => i !== it); G.fieldItems = (G.fieldItems || []).filter(i => i !== it); spawnLoot('gear', x, y, it); const L = G.loot[G.loot.length - 1]; if (L) { L.t = -0.6; L.vz = 90; } }
+  function dropWeapon(it, x, y, noAuto) { if (!it || !G) return; const wasEq = isEq(G.cls, it); unequipIt(G.cls, it); SAVE.inv = SAVE.inv.filter(i => i !== it); G.fieldItems = (G.fieldItems || []).filter(i => i !== it); spawnLoot('gear', x, y, it); const L = G.loot[G.loot.length - 1]; if (L) { L.t = -0.6; L.vz = 90; }
+    if (wasEq && !noAuto && it.cls === G.cls) { const nx = invList().find(i => i.slot === 'weapon' && i.cls === G.cls && canEquip(i, G.cls)); if (nx) { equipIt(G.cls, nx); lootFeed(`<b style="color:${gradeOf(nx).c}">${nx.name}</b> 장착`, gradeOf(nx).c, 1400); } } // v2.19 버리면 1번 무기를 든다 · 가진 무기가 없을 때만 기본 무기
+  }
   function makeRoomFor(it, x, y) { // 새 무기를 받기 전에 칸 확보
     if (!G || it.slot !== 'weapon' || it.cls !== G.cls || !wFull(G.cls)) return null;
-    const out = eqWeapon(G.cls) || wOwned(G.cls)[0]; dropWeapon(out, x, y); return out;
+    const out = eqWeapon(G.cls) || wOwned(G.cls)[0]; dropWeapon(out, x, y, true); return out; // 바꿔 드는 중이라 새 무기가 손에 들어온다
   }
   const PCT_STAT = { crit: '치명 확률', cdr: '쿨타임 감소' };
 
@@ -2819,6 +2869,7 @@ WF.knight = (H) => {
     if (buffs.includes('stam')) s.stamRate = 1.4;
     if (buffs.includes('cd')) { s.cdr += 0.2; s.gaugeRate = 1.25; }
     if (G && cls === G.cls) s.hp += G.heartBonus || 0; // v2.02 하트 그릇·훈장·피의 제단
+    if (G && cls === G.cls && G.relics) { const R = G.relics; if (R.includes('finger')) atkP += 5; if (R.includes('crown')) atkP += 30; if (R.includes('boots')) spdP += 12; if (R.includes('eye')) s.crit += 0.10; if (R.includes('hourglass')) s.cdr += 0.10; } // v2.19 유물 능력치
     s.atk *= 1 + atkP / 100; s.hp = clamp(s.hp, 2, HEART_CAP); s.def = 0; s.spd *= 1 + spdP / 100; // v2.00 체력 = 반 칸 수, 방어력 없음
     s.cdr = Math.min(s.cdr, 0.5); s.crit = Math.min(s.crit, 0.8); s.critDmg = Math.min(s.critDmg, 2.5); /* v1.51 치명 피해 상한 250% */
     return s;
@@ -2841,14 +2892,14 @@ WF.knight = (H) => {
       cls: CUR, stage: 1, last: 4, gold: 0, committed: { gold: 0, iron: 0, crystal: 0 }, asc: Math.min(SAVE.asc.sel || 0, SAVE.asc.max || 0),
       phase: 1, buffs: [], retries: 0, enemies: [], tele: [], parts: [], nums: [], hazards: [], drops: [], fx: [], ash: [], lights: [],
       waves: [], waveIdx: 0, spawning: 0, phaseState: 'intro', phaseT: 0, surviveT: 0, spawnT: 0, hazardT: 0,
-      boss: null, bossTime: 300, proj: [], eproj: [], kills: 0, iron: 0, crystal: 0, newItems: [], loot: [], mproj: [], meteor: null, fieldItems: [], frenzyT: 0, bonfire: null, vortex: null, clear: false,
+      boss: null, bossTime: 300, proj: [], eproj: [], kills: 0, iron: 0, crystal: 0, newItems: [], loot: [], weaponRolls: {}, weaponAcquired: { knight: [], ranger: [], mage: [], priest: [], gunner: [] }, mproj: [], meteor: null, fieldItems: [], frenzyT: 0, bonfire: null, vortex: null, clear: false,
     };
     for (let i = 0; i < (G.stage === 4 ? 65 : 70); i++) G.ash.push(G.stage === 4 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-4, 4), vy: rand(5, 14), s: 2, a: rand(0.3, 0.8) } : G.stage === 3 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-5, 5), vy: -rand(8, 22), s: Math.random() < 0.25 ? 2 : 1, a: rand(0.3, 0.85), ff: rand(0, 6) } : G.stage === 1 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-8, 8), vy: rand(-4, 4), s: Math.random() < 0.3 ? 2 : 1, a: rand(0.3, 0.9), ff: rand(0, 6) } : { x: rand(0, VW), y: rand(0, VH), vx: rand(-6, 6), vy: rand(6, 16), s: Math.random() < 0.2 ? 2 : 1, a: rand(0.2, 0.6) });
     dg.clearRect(0, 0, W, H);
     G.stats = calcStats(G.buffs);
     G.player = makePlayer(); chapterArmor();
     SAVE.runs++; persist();
-    G.kg = true; G.kgT = 15; G.kgCls = null; // 시작하면 조작 안내를 띄운다
+    G.kg = true; G.kgT = 999; G.kgAuto = true; G.kgCls = null; // 시작하면 조작 안내를 띄운다 · v2.19 첫 방을 나가면 사라짐
     newDungeon();
   }
   function makePlayer() {
@@ -5076,6 +5127,7 @@ huskUp:[
   const hiddenDoor = (R, d) => R.crack && R.crack.dir === d && !R.crack.broken;
   function enterRoom(R, entry, opt = {}) {
     const D = G.dun, P = G.player;
+    if (G.kgAuto && D.cur && D.cur !== R) { G.kg = false; G.kgAuto = false; } // v2.19 다음 방으로 넘어가면 조작 안내를 접는다 (H로 다시)
     if (D.cur && D.cur !== R) D.cur.loot = G.loot.filter(l => l.life > 0);
     setArena(SHAPES[R.shape]);
     R.socks = sealSocks(R);
@@ -5182,6 +5234,12 @@ huskUp:[
     G.prompt = P.dead ? null : nearInteract();
     updateGearCmp();
     if (take('f') && G.prompt) doInteract(G.prompt);
+    { // v2.19 F 홀드: 주변에 상호작용할 것이 없으면 들고 있는 무기를 바닥에 내려놓는다 (장비창 안 열고)
+      const cw = eqWeapon(G.cls), ok = cw && !P.dead && !G.trans && !(G.dun && G.dun.cur && G.dun.cur.type === 'forge');
+      if (!keys['f']) G.dropHold = 0;
+      else if (G.prompt || !ok) G.dropHold = -1; // 상호작용으로 누른 F는 버리기로 이어지지 않게 (뗄 때까지 잠금)
+      else if (G.dropHold >= 0) { G.dropHold += dt; if (G.dropHold >= 0.7) { G.dropHold = -1; dropWeapon(cw, P.x + 16 * P.face, P.y + 8); G.stats = calcStats(G.buffs); P.hp = Math.min(P.hp, G.stats.hp); P.chainL = null; P.whipL = null; persist(); sfx('drop'); lootFeed(`「${cw.name}」 버림`, gradeOf(cw).c, 1400); } }
+    }
     // 비밀 벽 힌트: 가까이 가면 가끔 먼지가 떨어진다
     if (R.crack && !R.crack.broken) { const c = crackPoint(R); if (Math.hypot(P.x - c.x, P.y - c.y) < 220 && Math.random() < dt * 2.5) G.parts.push({ x: c.x + rand(-12, 12), y: c.y - rand(0, 20), vx: rand(-6, 6), vy: rand(10, 30), t: rand(0.4, 0.8), c: pick(['#6a6470', '#4d4858', '#8a8478']), g: 60 }); }
     // 텔레포터 위 F 안내는 nearInteract에서
@@ -5305,9 +5363,9 @@ huskUp:[
     return SAVE.inv.filter(i => !eqIds.has(i.id) && GRADE_I[i.grade] >= 1).sort((a, b) => GRADE_I[a.grade] - GRADE_I[b.grade] || (a.lv || 0) - (b.lv || 0))[0] || null;
   }
   function altarText(a) {
-    if (a.k === 'gear') { const f = altarFodder(); if (G.stats.hp >= HEART_CAP) return { t: 'F 피의 제단 — 하트가 이미 가득하다', ok: false };
-      return f ? { t: `F 피의 제단 — 「${f.name}」을 바치고 최대 하트 +1`, ok: true } : { t: 'F 피의 제단 — 바칠 장비가 없다 (장착하지 않은 레어 이상)', ok: false }; }
-    return G.stats.hp > 4 ? { t: 'F 피의 제단 — 최대 하트 한 칸을 바치고 레전더리 장비', ok: true } : { t: 'F 피의 제단 — 바칠 하트가 모자라다 (2칸은 남아야 한다)', ok: false };
+    if (a.k === 'gear') { const f = altarFodder(); if (G.stats.hp >= HEART_CAP) return { t: 'F 피의 제단 — 하트 가득', ok: false };
+      return f ? { t: `F 피의 제단 — 「${f.name}」 → 하트 +1`, ok: true } : { t: 'F 피의 제단 — 바칠 장비 없음', ok: false }; }
+    return G.stats.hp > 4 ? { t: 'F 피의 제단 — 하트 1칸 → 레전더리', ok: true } : { t: 'F 피의 제단 — 하트 부족', ok: false };
   }
   function useAltar(a) {
     const t = altarText(a); if (!t.ok) { sfx('block'); lootFeed(t.t.replace('F ', ''), '#ff7070'); return; }
@@ -5332,13 +5390,13 @@ huskUp:[
     }
     if (it.k === 'gear') { collectLoot(it.o); it.o.life = -1; G.loot = G.loot.filter(l => l !== it.o); gearCmpId = null; sfx('select'); return; }
     if (it.k === 'chest') {
-      const c = it.o; if (c.pending) { openPick(c.kind, c); return; }
+      const c = it.o; if (c.pending) { c.pending = false; spawnLoot('gear', c.x, c.y + 6, (c.pick && c.pick[0]) || rollChestWeapon(c.kind, c)); c.pick = null; return; } // 예전 저장의 보류 상자
       c.opened = true; c.openT = 0;
       sfx('drop'); sfx('coin'); addShake(3);
       G.fx.push({ kind: 'skybeam', x: c.x, y: c.y, w: 26, c: c.kind === 'secret' ? '200,140,255' : '255,210,120', t: 0.5, max: 0.5, up: true });
       spawnLoot('pouch', c.x, c.y + 6);
       if (c.kind === 'boss') { openBossChest(c); return; } // v0.98: 보스 장비는 상자에서
-      if (c.kind === 'reward' || c.kind === 'elite') { openPick(c.kind, c); return; } // v0.98: 장비 3개 중 하나를 고른다
+      if (c.kind === 'reward' || c.kind === 'elite') { const w = rollChestWeapon(c.kind, c); spawnLoot('gear', c.x, c.y + 6, w); if (w.grade === 'legend') sfx('legend'); return; } // v2.19 고르기 없이 무기 하나가 튀어나온다 (F로 줍기)
       const g = rollGradeW(c.kind === 'secret' ? [0, 66, 30, 4] : [40, 52, 7, 1]);
       spawnLoot('gear', c.x, c.y + 6, makeItem(G.cls, { grade: g }));
       if (c.kind === 'secret') { spawnLoot('orb', c.x, c.y + 6); spawnLoot('bigmeat', c.x, c.y + 6); spawnLoot('armor', c.x, c.y + 6); G.crystal++; lootFeed('정령의 결정 +1', '#9fd2ff'); }
@@ -5365,43 +5423,11 @@ huskUp:[
     const rows = INV_STATS.map(([k, n, f]) => { const dv = nx[k] - cur[k], tiny = ['crit', 'critDmg', 'cdr'].includes(k) ? 0.0005 : 0.5; if (Math.abs(dv) < tiny) return ''; return `<span class="${dv > 0 ? 'up' : 'dn'}">${n} ${dv > 0 ? '▲' : '▼'}${f(Math.abs(dv)).replace('%', '')}${['crit', 'critDmg', 'cdr'].includes(k) ? '%p' : ''}</span>`; }).join('');
     return `<div class="pkCmp"><i>${curIt ? `가방으로 · 「${curIt.name}」 대신 끼면` : '빈 칸 — 바로 장착'}</i>${rows || '<span>능력치 변화 없음</span>'}</div>`;
   }
-  // v1.00 지금 장착 중인 장비 6칸 요약 (3택1 화면)
-  function curGearStrip() {
-    const eq = eqOf(G.cls);
-    return '<div class="gcH">착용 중</div><div class="pcRow">' + EQ_KEYS.map(ek => { const sl = slotDef(ek), it = SAVE.inv.find(i => i.id === eq[ek]); if (!it) return `<div class="pc" style="--c:#3a2f40"><b>${sl.k === 'weapon' ? CLASSES[G.cls].weapon : sl.n}</b><i>빈 칸</i></div>`;
-      const g = gradeOf(it), v = itemVal(it); return `<div class="pc" style="--c:${g.c}"><b>${slotName(it)}</b><span>${it.name}${it.lv ? ` +${it.lv}` : ''}</span><i>${PCT_STAT[it.stat] ? `${it.stat === 'crit' ? '치명' : '쿨감'} +${v}%` : `${sl.label} +${v}`}${it.efx ? ` · ◆${EFX[it.efx].n}` : ''}${it.set ? ` · ⬢` : ''}</i></div>`; }).join('') + '</div>';
-  }
-  function openPick(kind, c) {
-    mode = 'pick'; const w = PICK_W[kind][G.stage] || PICK_W[kind][1], slots = SLOTS.map(x => x.k);
-    let ch = c && c.pick; // v1.19 보류했던 상자는 같은 세 장비를 다시 보여 준다
-    if (!ch) { const up = c && c.inv && ascOn(7); ch = []; for (let i = 0; i < 3; i++) { const sl = 'weapon'; /* v2.07 정예 방도 무기 */ let gk = rollGradeW(w); if (up) gk = GRADES[Math.min(3, GI[gk] + 1)].k; let ni = makeItem(G.cls, { grade: gk, slot: sl }); for (let tr = 0; tr < 6 && sl === 'weapon' && ch.some(o => o.wk === ni.wk); tr++) ni = makeItem(G.cls, { grade: gk, slot: sl }); ch.push(ni); /* v2.03 보상 방 = 무기 */ } // v1.97 침입자의 땅: 난입자 상자 등급 한 단계 위
-      if (kind === 'elite' && ascOn(3) && ch.every(it => it.grade === 'common')) { const j = randi(0, 2); ch[j] = makeItem(G.cls, { grade: rollGradeW([0, w[1] || 1, w[2] || 0, w[3] || 0]), slot: ch[j].slot }); } // v1.97 날 선 칼: 레어 이상 1개 보장
-      if (c) { c.pick = ch; c.pending = true; } }
-    G.pickCh = ch; G.pickChest = c || null; sfx('drop'); if (ch.some(it => it.grade === 'legend')) sfx('legend');
-    $('pkTitle').textContent = kind === 'elite' ? ER().loot : '보상 상자 — 무기';
-    $('pkChoices').innerHTML = ch.map((it, i) => { const g = gradeOf(it), sl = slotOf(it), v = itemVal(it);
-      return `<button class="pkCard pf" data-i="${i}" style="--c:${g.c}"><div class="gr">${g.n} · ${slotName(it)}${ascTag(it)}</div><div class="nm">${it.name}</div><div class="mn">${PCT_STAT[it.stat] ? `${PCT_STAT[it.stat]} +${v}%` : `${sl.label} +${v}`}</div>${it.opts.map(o => `<div>${optText(o)}</div>`).join('')}${it.fx ? `<div class="fx">★ ${LEGEND_FX[it.fx].d}</div>` : ''}${itemExtra(it, G.cls)}${pickCompare(it)}<span class="key">${i + 1}</span></button>`; }).join('');
-    $('pkChoices').querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => takePick(+b.dataset.i)));
-    $('pkCur').innerHTML = curGearStrip() + `<div class="gcH" style="margin-top:6px">무기 칸 ${wOwned(G.cls).length}/${WCAP}${wFull(G.cls) ? ' — 가득 참: 고른 무기를 들고, 지금 무기는 바닥에 내려놓는다' : ''}</div>`;
-    $('ovPick').classList.add('on');
-  }
-  // v1.19 고르지 않고 닫기: 상자는 열린 채로 남고, 다시 F를 누르면 같은 세 장비 중에서 고른다
-  function closePick() {
-    if (mode !== 'pick') return;
-    G.pickCh = null; G.pickChest = null; $('ovPick').classList.remove('on'); for (const k in pressed) pressed[k] = false; mode = 'play'; sfx('blip');
-    lootFeed('전리품을 보류했다 — 상자 앞에서 F로 다시 고를 수 있다', '#9a8f8a', 3200);
-  }
-  function takePick(i) {
-    const it = G.pickCh && G.pickCh[i]; if (!it) return;
-    const P = G.player, g = gradeOf(it);
-    { const sw = makeRoomFor(it, P.x + 14, P.y + 10); if (sw) lootFeed(`무기 칸 ${WCAP}/${WCAP} — 「${sw.name}」은 바닥에 내려놓았다 (F로 다시 바꿔 들 수 있다)`, '#c8b8a0', 3600); }
-    SAVE.inv.push(it); G.fieldItems.push(it);
-    const empty = canEquip(it, G.cls) && !eqCurFor(G.cls, it); // v1.19 빈 칸일 때만 바로 장착, 아니면 가방으로
-    if (empty) { const oldHp = G.stats.hp; equipIt(G.cls, it); G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp); }
-    if (G.pickChest) { G.pickChest.pending = false; G.pickChest.pick = null; G.pickChest = null; }
-    persist(); G.pickCh = null; $('ovPick').classList.remove('on'); for (const k in pressed) pressed[k] = false; mode = 'play'; sfx('select');
-    G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 10, grow: 160, t: 0.5, max: 0.5, c: g.c });
-    lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b> — ${empty ? '빈 칸이라 바로 장착' : '가방에 보관 (I)'}${it.set ? ` · ${SETS[it.set].n} ${setCount(it.set)}/4` : ''}`, g.c, 4200);
+  function rollChestWeapon(kind, c) { // v2.19 상자 무기 한 개 (예전 세 개 중 고르기와 같은 등급 규칙)
+    const w = PICK_W[kind][G.stage] || PICK_W[kind][1], up = c && c.inv && ascOn(7);
+    let gk = rollGradeW(w); if (up) gk = GRADES[Math.min(3, GI[gk] + 1)].k;
+    if (kind === 'elite' && ascOn(3) && gk === 'common') gk = rollGradeW([0, w[1] || 1, w[2] || 0, w[3] || 0]); // 날 선 칼: 레어 이상 보장
+    return makeItem(G.cls, { grade: gk, slot: 'weapon' });
   }
   // v0.98 보스 전리품 상자: 열면 장비가 튀어나와 등급 빛기둥을 세우고, 잠시 뒤 대장간(또는 결과 화면)으로
   function openBossChest(c) {
@@ -7875,7 +7901,7 @@ huskUp:[
       if (r === G.mapSel) { ctx.strokeStyle = Math.floor(time * 5) % 2 ? '#9fd2ff' : '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, rw + 6, rh + 6); }
     }
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#8a8496';
-    ctx.fillText(L.length ? '방향키·WASD 텔레포터 선택 · ENTER/클릭 순간이동 · TAB 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · TAB 닫기', VW / 2, VH - 26);
+    ctx.fillText(L.length ? '방향키 선택 · ENTER 이동 · TAB 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · TAB 닫기', VW / 2, VH - 26);
     ctx.textAlign = 'left'; const lg = (x, txt) => { ctx.fillStyle = '#8a8496'; ctx.fillText(txt, x, VH - 40); };
     ctx.fillStyle = '#9fd2ff'; ctx.fillRect(VW / 2 - 196, VH - 44, 4, 4); lg(VW / 2 - 189, '텔레포터');
     drawMapIcon(MAP_CHEST, VW / 2 - 134, VH - 36); lg(VW / 2 - 123, '보물상자');
@@ -9362,15 +9388,18 @@ huskUp:[
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
     const keep = -(censerIn() ? 0.2 : 0) + (RANGED() ? 1 : MELEE_DR) * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
     if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); return; }
+    if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1;
     if (s.curse.has('glass') && Math.random() < 0.25) dmg = 2;
     if (!dot && src && ascOn(3) && (src.type === 'boss' || isElite(src))) dmg = 2; // 잿불 3 날 선 칼
     if (!dot && ascOn(8) && Math.random() < 0.2) dmg = 2; // 잿불 8 피의 칼
+    if (!kill && hasRelic('crown')) dmg *= 2; // v2.19 깨진 왕관 조각
     if (kill) dmg = P.hp;
     if (G.dun && G.dun.cur && G.dun.cur.type === 'boss') G.bossClean = false; // v2.02 무피격 훈장 실패
     if (!kill && (P.armor || 0) > 0) { // 방패가 대신 깨진다
+      const holyHit = (P.holyArmor || 0) > 0; if (holyHit) P.holyArmor--; // 빛의 가호가 먼저 깨진다
       P.armor--; P.inv = Math.max(P.inv, 0.9); P.hurtT = 0.15; sfx('block'); hitstop = Math.max(hitstop, 0.06);
-      for (let i = 0; i < 10; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(6, 20), vx: rand(-60, 60), vy: rand(-70, -10), t: rand(0.3, 0.6), c: pick(['#c8d8e0', '#8a98a8', '#f0f4f8']), g: 120 });
+      for (let i = 0; i < 10; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(6, 20), vx: rand(-60, 60), vy: rand(-70, -10), t: rand(0.3, 0.6), c: holyHit ? pick(['#ffe9a0', '#ffd34d', '#fffbe6']) : pick(['#c8d8e0', '#8a98a8', '#f0f4f8']), g: 120 });
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 160, t: 0.35, max: 0.35, c: '#c8d8e0' });
       if (!dot) gearOnHurt();
       return;
@@ -9394,6 +9423,7 @@ huskUp:[
   function healHalves(n) {
     const P = G.player, s = G.stats; if (!P || P.dead || !(n > 0)) return 0;
     if (P.hp >= s.hp) { P.hpF = 0; return 0; }
+    if (hasRelic('pact')) n *= 0.5; // v2.19 피의 계약
     P.hpF = (P.hpF || 0) + n; const k = Math.floor(P.hpF + 1e-6); if (k <= 0) return 0;
     P.hpF -= k; const got = Math.min(k, s.hp - P.hp); P.hp += got; if (P.hp >= s.hp) P.hpF = 0;
     if (got > 0) G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 6, grow: 90, t: 0.35, max: 0.35, c: '#ff6a7a' });
@@ -9401,15 +9431,45 @@ huskUp:[
   }
   const healPct = p => healHalves(p * 10 * ASCF.heal());
   // v2.07 유물: 보스 처치 때 떨어짐 · 이번 런 동안 유지 · 효과는 나중에 더 늘림
-  const RELICS = {
-    emberheart: { n: '잿불 심장', d: '정예·준정예·보스를 처치하면 하트 반 칸 회복, 그 자리에 작은 잿불 폭발', c: '#ff8a3a' },
+  const RELICS = { // v2.19 보스가 아직 없는 것 중 무작위로 떨어뜨린다
+    finger: { n: '거인의 손가락뼈', d: '공격력 +5%', c: '#e8dcc0' },
+    boots: { n: '날쌘 장화 굽', d: '이동속도 +12%', c: '#a8d070' },
+    eye: { n: '사냥꾼의 눈', d: '치명 확률 +10%p', c: '#ffd34d' },
+    hourglass: { n: '모래시계 조각', d: '스킬 쿨타임 -10%', c: '#c8b080' },
+    emberheart: { n: '잿불 심장', d: '정예·보스 처치 시 반 칸 회복 + 잿불 폭발', c: '#ff8a3a' },
+    seal: { n: '녹슨 기사단 인장', d: '퍼펙트 회피 뒤 첫 공격은 확정 치명 + 그로기 2배', c: '#a8acb4' },
+    drum: { n: '전쟁 북 가죽', d: '각성 중 이동속도 +20%', c: '#c8563a' },
+    slimecore: { n: '분열하는 점액 핵', d: '처치한 적이 10% 확률로 터지며 주변 적에게 피해', c: '#7ad050' },
+    fang: { n: '붉은 엄니', d: '하트 1칸 이하일 때 공격력 +40%', c: '#e0303a' },
+    feather: { n: '수호 깃털', d: '5% 확률로 피격을 받지 않음', c: '#cfe6ff' },
+    greed: { n: '탐욕의 동전', d: '골드 획득 +50%', c: '#f0c040' },
+    crown: { n: '깨진 왕관 조각', d: '공격력 +30% · 받는 피해 2배', c: '#b898ff' },
+    pact: { n: '피의 계약', d: '처치할 때마다 투지 +10 · 회복량 절반', c: '#a3161c' },
   };
   const hasRelic = k => !!(G && G.relics && G.relics.includes(k));
+  const RELIC_SLOTS = 4; // v2.19 유물은 글 없이 칸으로 (챕터 보스마다 하나씩)
   function relicSlotsHTML() {
     const R = (G && G.relics) || [];
-    return `<div class="relicBox"><b>유물</b>${R.length ? R.map(k => `<div class="relicRow" style="--c:${RELICS[k].c}"><img class="px" src="${relicIconURL()}"><span>${RELICS[k].n}<i>${RELICS[k].d}</i></span></div>`).join('') : '<i>보스를 쓰러뜨리면 유물을 얻는다</i>'}</div>`;
+    return `<div class="relicSlots">${Array.from({ length: Math.max(RELIC_SLOTS, R.length) }, (_, i) => { const k = R[i], r = k && RELICS[k];
+      return r ? `<div class="relicRow" style="--c:${r.c}" data-name="${r.n}" data-tip="${r.d}"><img class="px" src="${relicIconURL()}"></div>` : `<div class="relicRow empty" data-name="빈 유물 칸" data-tip="보스를 쓰러뜨리면 유물을 얻는다"></div>`; }).join('')}</div>`;
   }
   let RELIC_URL = null;
+  // v2.19 도트 말풍선: #ui 안에 두어 다른 도트 안내문과 같은 배율·글꼴로 보인다
+  const pxTip = (() => { let el = null; const ui = () => document.getElementById('ui');
+    const get = () => { if (!el) { el = document.createElement('div'); el.className = 'pxTip pf glass'; ui().appendChild(el); } return el; };
+    const k = () => { const r = ui().getBoundingClientRect(); return { r, s: r.width / 768 || 1 }; };
+    return {
+      show(html, c) { const t = get(); t.innerHTML = html; t.style.setProperty('--c', c || 'var(--gold-l)'); t.classList.add('on'); },
+      at(cx, cy) { const t = get(), { r, s } = k(); let x = (cx - r.left) / s + 10, y = (cy - r.top) / s + 10; x = Math.min(x, 768 - t.offsetWidth - 4); y = Math.min(y, 432 - t.offsetHeight - 4); t.style.left = Math.max(4, x) + 'px'; t.style.top = Math.max(4, y) + 'px'; },
+      beside(node) { const t = get(), { r, s } = k(), b = node.getBoundingClientRect(); let x = (b.right - r.left) / s + 6, y = (b.top - r.top) / s; if (x + t.offsetWidth > 764) x = (b.left - r.left) / s - t.offsetWidth - 6; y = Math.min(y, 432 - t.offsetHeight - 4); t.style.left = Math.max(4, x) + 'px'; t.style.top = Math.max(4, y) + 'px'; },
+      hide() { if (el) el.classList.remove('on'); }, get el() { return get(); } };
+  })();
+  { // 유물 효과는 마우스를 올렸을 때만
+    const at = e => e.target.closest && e.target.closest('.relicRow[data-tip]');
+    addEventListener('mouseover', e => { const r = at(e); if (!r) return; pxTip.show(`<div class="tN">${r.dataset.name}</div><div class="tD">${r.dataset.tip}</div>`, getComputedStyle(r).getPropertyValue('--c').trim() || null); pxTip.at(e.clientX, e.clientY); });
+    addEventListener('mousemove', e => { if (at(e)) pxTip.at(e.clientX, e.clientY); });
+    addEventListener('mouseout', e => { const r = at(e); if (r && !r.contains(e.relatedTarget)) pxTip.hide(); });
+  }
   const relicIconURL = () => RELIC_URL || (RELIC_URL = (() => { const m = MAPS.relic, [c, g] = mkCanvas(m[0].length * 2, m.length * 2); m.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.' || !PAL.loot[ch]) return; g.fillStyle = PAL.loot[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })());
   const ARMOR_MAX = 4, HEART_CAP = 12; // v2.02 최대 하트 6칸
   // v2.02 최대 하트 +n칸 (반 칸 단위 2n). 늘어난 칸은 채워서 준다
@@ -9422,7 +9482,7 @@ huskUp:[
     hudPrev.heart = null;
   }
   function heartDown(n) { const P = G.player; G.heartBonus = (G.heartBonus || 0) - n * 2; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp, 1, G.stats.hp); hudPrev.heart = null; }
-  function addArmor(n) { const P = G.player; if (!P) return; P.armor = Math.min(ARMOR_MAX, (P.armor || 0) + n); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 6, grow: 110, t: 0.4, max: 0.4, c: '#c8d8e0' }); }
+  function addArmor(n, holy) { const P = G.player; if (!P) return; const a0 = P.armor || 0; P.armor = Math.min(ARMOR_MAX, a0 + n); if (holy) P.holyArmor = Math.min(P.armor, (P.holyArmor || 0) + (P.armor - a0)); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 6, grow: 110, t: 0.4, max: 0.4, c: holy ? '#ffe9a0' : '#c8d8e0' }); } // v2.19 holy: 사제의 빛의 가호 (방패 대신 빛 구슬로 표시)
   function chapterArmor() { const n = (G.cls === 'knight' ? 1 : 0) + ((G.stats.sets.order || 0) >= 2 ? 1 : 0); if (n) addArmor(n); } // 기사: 챕터마다 방패 +1, 기사단 2세트 +1
   // ================================================================ v2.03 기사 무기 기술
   function weaponOnHit(e, o, crit) {
@@ -9439,7 +9499,7 @@ huskUp:[
     if (sk === 'tuna' && o.basic) applySt(e, 'slow', 1.5, 0.55);
     if (sk === 'bell' && o.basic) { if (e.grogiMax) e.grogi += (o.grogi || 0) * 0.3; if (!P.bellDone) { P.bellDone = true; sfx('grogi', 0.7); G.fx.push({ kind: 'ring', x: e.x, y: e.y - 14, r: 6, grow: 220, t: 0.4, max: 0.4, c: '#e8c070' }); for (const q of nearFoes(e.x, e.y, 60, e)) if (q.grogiMax) q.grogi += 3; } }
     if (sk === 'fang' && o.basic) { if (!(e.bleedT > 0)) gxSpurt(e, 8, (o.ang == null ? -Math.PI / 2 : o.ang) - 0.4); e.bleedT = 3; if (!(e.bleedTick > 0)) e.bleedTick = 0.5; }
-    if (sk === 'bread' && o.basic) { G.breadN = (G.breadN || 0) + 1; if (G.breadN % 60 === 0) { G.breadBrk = 3; sfx('crunch', 0.8); banner('뚝!', '바게트가 반으로 부러졌다 — 3초간 반 토막 두 개로 연타'); for (let i = 0; i < 12; i++) G.parts.push({ x: P.x + rand(-8, 8), y: P.y - 14, vx: rand(-90, 90), vy: rand(-120, -40), t: 0.5, c: pick(['#e8b060', '#c8803a', '#fff0c0']), g: 300 }); } const BD = G.breadDrop = G.breadDrop || {}; if (G.breadN % 20 === 0 && (BD[G.stage] || 0) < 3) { BD[G.stage] = (BD[G.stage] || 0) + 1; spawnLoot('crumb', e.x, e.y); lootFeed('바게트가 부스러졌다 — 빵조각', '#e8b060'); } }
+    if (sk === 'bread' && o.basic) { G.breadN = (G.breadN || 0) + 1; if (G.breadN % 60 === 0) { G.breadBrk = 3; sfx('crunch', 0.8); banner('뚝!', '3초간 반 토막 쌍검'); for (let i = 0; i < 12; i++) G.parts.push({ x: P.x + rand(-8, 8), y: P.y - 14, vx: rand(-90, 90), vy: rand(-120, -40), t: 0.5, c: pick(['#e8b060', '#c8803a', '#fff0c0']), g: 300 }); } const BD = G.breadDrop = G.breadDrop || {}; if (G.breadN % 20 === 0 && (BD[G.stage] || 0) < 3) { BD[G.stage] = (BD[G.stage] || 0) + 1; spawnLoot('crumb', e.x, e.y); lootFeed('바게트가 부스러졌다 — 빵조각', '#e8b060'); } }
   }
   const BREADH = [];
   function breadHalf(k) { // v2.18 바게트 반 토막 두 개 (손잡이 쪽 / 끝 쪽)
@@ -9529,9 +9589,9 @@ huskUp:[
   }
   function priestTick(dt) {
     const P = G.player, sk = wSkill();
-    if (G.breadBrk > 0) { G.breadBrk -= dt; if (G.breadBrk <= 0) lootFeed('바게트가 다시 붙었다 (?)', '#e8b060'); }
+    if (G.breadBrk > 0) { G.breadBrk -= dt; if (G.breadBrk <= 0) lootFeed('바게트 복구 (?)', '#e8b060'); }
     if (sk === 'chain' && P.state === 'attack' && P.combo === 2 && !P.crackDone && P.t > SWING_CH[2].wind + SWING_CH[2].swing * 0.9 && P.chainL) { P.crackDone = true; const T = P.chainL[P.chainL.length - 1]; sparks(T.x, T.y, P.atkAng, '#eef2f6', 6); sfx('block', 1.4); }
-    if (G.harp && G.cls === 'gunner') { if (Math.hypot(G.harp.x - P.x, G.harp.y - P.y) < 18) { G.harp = null; P.reload = 0; P.ammo = gunMag(); sfx('reload'); lootFeed('작살 회수 — 바로 장전', '#cfe6ff', 1600); } else if (!(P.reload > 0) && P.ammo > 0) G.harp = null; }
+    if (G.harp) updateHarp(dt); // v2.19 작살: 뻗었다가 감겨 돌아옴
     if (G.cls === 'gunner') { const mv = P.moving || P.state === 'dodge'; P.stillT = mv ? 0 : (P.stillT || 0) + dt; if (sk === 'longrifle' && P.stillT > 0.5 && Math.random() < dt * (P.stillT > 1.5 ? 10 : 4)) { const m = muzzle(); G.parts.push({ x: m.x + rand(-3, 3), y: m.y + rand(-3, 3), vx: 0, vy: -20, t: 0.25, c: P.stillT > 1.5 ? '#ff6a2a' : '#ffd080', g: 0, glow: true }); } }
     if (G.smoke && G.smoke.length) { for (const c of G.smoke) { c.t -= dt; c.y -= dt * 2; } G.smoke = G.smoke.filter(c => c.t > 0); }
     if (G.cls !== 'priest' || P.dead) return;
@@ -9555,6 +9615,7 @@ huskUp:[
   function weaponTick(dt) {
     const P = G.player;
     priestTick(dt);
+    { const wt = weaponTex(G.cls); warmRot(wt && SAVE.skin === 'ash' && skinOpen() ? ashBlade(wt) : wt); } // v2.19 처음 휘두를 때 끊기지 않게 회전 그림 미리 만들기
     if (P && P.stealthT > 0) P.stealthT -= dt;
     // 시간 정지 해제 → 모은 피해
     if (G.tstopT > 0) { G.tstopT -= dt; if (G.tstopT <= 0) { sfx('blast', 1.2); flashT = 0.12; flashColor = '#fff0d0'; for (const e of G.enemies) if (!e.dead && e.st && e.st.bank > 0) { const b = e.st.bank; e.st.bank = 0; e.st.tsT = 0; damageEnemy(e, b / Math.max(1, G.stats.atk), { proc: true, bank: true, heavy: true, grogi: 10, ang: angTo(P, e), gauge: 0 }); G.fx.push({ kind: 'ring', x: e.x, y: e.y - 12, r: 6, grow: 180, t: 0.35, max: 0.35, c: '#ffd080' }); } } }
@@ -9607,7 +9668,7 @@ huskUp:[
   function perfectDodge() {
     { const P0 = G.player; if (G.stats.efx.has('nova')) { gxNova(P0.x, P0.y); for (const o of nearFoes(P0.x, P0.y, 92)) damageEnemy(o, 1.2, { proc: true, ang: angTo(P0, o), gauge: 2 }); } }
     const P = G.player;
-    P.perfectUsed = true; P.critNext = true;
+    P.perfectUsed = true; P.critNext = true; if (hasRelic('seal')) P.sealNext = true;
     slowmo = 1.0; flashT = 0.12; flashColor = '#cfe6ff';
     P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
     G.nums.push({ x: P.x, y: P.y - 30, v: '!', t: 0.8, c: '#9fd2ff', s: 2 });
@@ -9633,8 +9694,10 @@ huskUp:[
     } else showResult(false);
   }
 
+  const GROGI_DECAY = { wait: 1.5, rate: 0.12 }; // v2.19 마지막으로 그로기가 쌓인 뒤 1.5초 지나면 초당 최대치의 12%씩 빠진다 (가득 찬 게이지가 약 8초에 비워짐)
   function damageEnemy(e, coef, o = {}) {
     if (e.dead) return;
+    if (e.harpT) return; // v2.19 작살에 끌려오는 동안 회피 판정
     if (INV_MAP[e.type] && e.ps === 'dodge' && e.t < BLINK + 0.05) return; // v1.58 난입자 점멸 중 무적 (플레이어와 같음)
     const P = G.player, s = G.stats;
     if (e.type === 'boss' && e.shield) {
@@ -9648,7 +9711,7 @@ huskUp:[
     const shieldHit = e.type === 'aguard' && !o.dot && guardFront(e, P.x); // v1.24 근위병 방패
     const crit = !o.dot && (P.critNext || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
     if (P.critNext && !o.dot) { P.critNext = false; gxCrit(e, P.firstCrit); P.firstCrit = false; if (P.firstN > 0) { P.firstN--; P.critNext = true; P.firstCrit = true; } }
-    let dmg = s.atk * coef * (1 - e.def / (e.def + 500)) * (crit ? s.critDmg : 1) * (e.grogiT > 0 ? 1.5 : 1) * (G.frenzyT > 0 ? 1.3 : 1) * (CL().dmgMul || 1) * (s.fx.has('tusk') && (e.type === 'boss' || isElite(e) || isSemi(e)) ? 1.15 : 1) * (s.efx.has('exec') && e.hp < e.maxHp * 0.3 ? 1.25 : 1) * (s.set4.has('orc') && P.hp < s.hp * 0.5 ? 1.3 : 1);
+    let dmg = (hasRelic('fang') && P.hp <= 2 ? 1.4 : 1) * s.atk * coef * (1 - e.def / (e.def + 500)) * (crit ? s.critDmg : 1) * (e.grogiT > 0 ? 1.5 : 1) * (G.frenzyT > 0 ? 1.3 : 1) * (CL().dmgMul || 1) * (s.fx.has('tusk') && (e.type === 'boss' || isElite(e) || isSemi(e)) ? 1.15 : 1) * (s.efx.has('exec') && e.hp < e.maxHp * 0.3 ? 1.25 : 1) * (s.set4.has('orc') && P.hp < s.hp * 0.5 ? 1.3 : 1);
     dmg *= (P.penT > 0 ? 2 : 1) * (wSkill() === 'water' && (G.stage === 2 || G.stage === 4) ? 1.3 : 1); // v2.13 고해의 채찍 · 성수 물뿌리개
     if (!o.dot && mordredFrontHit(e, P.x)) { dmg *= 0.15; sfx('block', 1.1); sparks(e.x + e.face * 20, e.y - 20, Math.atan2(0, -e.face), '#ffd060', 6); mordredCounter(e); } // v1.30 근위의 맹세
     if (shieldHit) { dmg *= 0.4; if (Math.random() < 0.5) sfx('block', 1.2); sparks(e.x + e.face * 9, e.y - 12, Math.atan2(0, -e.face), '#e8e2d6', 4); }
@@ -9703,8 +9766,9 @@ huskUp:[
       e.holdAng = null; e.hop = null; e.z = 0;
       cancelTele(e); e.state = 'stun'; e.t = o.stagger; e.lean = 0.35 * (Math.cos(o.ang || 0) > 0 ? 1 : -1);
     }
+    const sealHit = !o.dot && P.sealNext; if (sealHit) P.sealNext = false; // 녹슨 기사단 인장: 퍼펙트 회피 뒤 첫 공격
     if (e.grogiMax && e.grogiT <= 0 && o.grogi && !(e.grogiLock > time)) {
-      e.grogi += o.grogi;
+      e.grogi += o.grogi * (sealHit ? 2 : 1); e.grogiHitT = time;
       if (e.grogi >= e.grogiMax) {
         e.grogi = 0; e.grogiT = e.type === 'boss' ? 5 : 3; cancelTele(e); e.state = 'grogi';
         if (e.type === 'boss') { banner('그로기!', '5초간 받는 피해 +50%'); e.grogiMax = Math.round(e.grogiMax * 1.5); } // v1.49 보스는 그로기마다 다음 그로기가 1.5배 어려워짐
@@ -9726,6 +9790,8 @@ huskUp:[
     if (silent) return;
     G.kills++;
     gearOnKill(e);
+    if (hasRelic('pact') && G.player) G.player.gauge = Math.min(100, G.player.gauge + 10); // v2.19 피의 계약
+    if (hasRelic('slimecore') && Math.random() < 0.1) { G.fx.push({ kind: 'ring', x: e.x, y: e.y - 8, r: 6, grow: 200, t: 0.35, max: 0.35, c: '#7ad050' }); for (let i = 0; i < 12; i++) { const a = rand(0, TAU), sp = rand(60, 140); G.parts.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.6 - 20, t: rand(0.3, 0.5), c: pick(['#7ad050', '#b8f070', '#3a7a2a']), g: 120 }); } sfx('blast', 1.3); for (const q of nearFoes(e.x, e.y, 56, e)) damageEnemy(q, 1.0, { proc: true, ang: angTo(e, q), kb: 140, grogi: 3, gauge: 1 }); } // v2.19 분열하는 점액 핵
     orcOnKill(e);
     sfx('kill'); sfx('crunch', rand(0.85, 1.15));
     // 쓰러진 적은 맞은 방향으로 튕겨 날아가며 사라진다
@@ -9742,7 +9808,7 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: e.x, y: e.y - 10, r: 8, t: 0.4, max: 0.4, c: '#fff0d0', grow: 420 });
     }
     const gold = e.type === 'boss' ? STG().bossGold : isElite(e) ? 40 : isSemi(e) ? randi(15, 20) : randi(3, 7);
-    G.gold += Math.round(gold * ASCF.gold());
+    G.gold += Math.round(gold * ASCF.gold() * (hasRelic('greed') ? 1.5 : 1));
     if (e.type === 'bloat' && !e.exploded) {
       e.exploded = true; const ex = e.x, ey = e.y, dmg = e.atk * 0.8;
       G.tele.push({ shape: 'circle', x: ex, y: ey, r: 44, t: 0, dur: 0.45, owner: {}, heavy: true, onFire: tt => bloatBlast(ex, ey, tt.r, dmg) });
@@ -9851,7 +9917,7 @@ huskUp:[
       else if (wantAtk || holdMelee) startAttack(P.comboWin > 0 ? P.combo : 0);
       else if (P.comboWin > 0) P.comboWin -= dt;
       const fast = isCalm(), sp = (fast ? 2 : 1) * (P.ashSlow ? 0.6 : 1);
-      P.x += mx * s.spd * sp * dt; P.y += my * s.spd * sp * dt;
+      { const dr = hasRelic('drum') && P.awakenT > 0 ? 1.2 : 1; P.x += mx * s.spd * sp * dr * dt; P.y += my * s.spd * sp * dr * dt; } // v2.19 전쟁 북 가죽
       if (ml) { P.walk += dt * 10 * sp; if (fast) runFx(dt, mx, my); else if (Math.random() < dt * 6) dust(P.x - mx * 4, P.y, 1); }
       if (G.cls === 'mage') P.blade = lerpAng(P.blade, (P.face > 0 ? -70 : -110) * DEG, dt * 10); // 지팡이를 세워 든다
       else if (G.cls === 'gunner') P.blade = P.reload > 0 ? P.ang + (1 - P.reload / (P.reloadMax || GUN_RELOAD)) * TAU * 2 : lerpAng(P.blade, P.ang, dt * 18); // 재장전 중 총을 두 바퀴 회전
@@ -10166,7 +10232,7 @@ huskUp:[
     if (G.cls === 'gunner') {
       const near = G.enemies.find(e => !e.dead && dist(e, P) < 30 + e.r && Math.abs(angDiff(angTo(P, e), P.ang)) < 1.3);
       if (near) return startButt();
-      if (P.reload > 0) return;
+      if (P.reload > 0 || G.harp) return; // 작살이 나가 있으면 못 쏜다
       if (P.ammo <= 0) { startReload(); return; }
       return fireMusket();
     }
@@ -10316,20 +10382,30 @@ huskUp:[
   }
   // v1.68 운석 마법진: 2px 칸으로 찍는 이중 고리 + 돌아가는 룬 띠 + 서로 반대로 도는 두 삼각형(육망성) + 안쪽 고리·문장. 회전은 1/96바퀴씩 칸 단위
   const MRUNE = [[[1, 0, 1], [0, 1, 0], [1, 0, 1]], [[1, 1, 1], [0, 1, 0], [0, 1, 0]], [[1, 0, 0], [1, 1, 0], [1, 0, 1]], [[0, 1, 0], [1, 1, 1], [0, 1, 0]], [[1, 1, 0], [0, 1, 1], [0, 0, 1]], [[1, 0, 1], [1, 1, 1], [1, 0, 1]]];
+  // v2.19 마법진의 움직이지 않는 부분(디더 채움·고리·가운데 표식)은 캔버스에 한 번 그려 두고 찍는다
+  const MC_CACHE = new Map();
+  function mcStatic(r, o) {
+    const fq = Math.round((o.fill || 0) * 10) / 10, lq = Math.round((o.fillLv || 0) * 20) / 20, /* 단계를 굵게 — 떨어지는 동안 다시 그리는 횟수를 줄인다 */ key = [r, fq, lq, o.c1, o.c2, o.c3, o.c4].join('|');
+    let st = MC_CACHE.get(key); if (st) return st; if (MC_CACHE.size > 48) MC_CACHE.clear();
+    const h = (Math.ceil(r / 2) + 8) * 2, [c, g] = mkCanvas(h * 2, h * 2), sq = 0.87;
+    const C = (x, y, col) => { g.fillStyle = col; g.fillRect(Math.round(x) & ~1, Math.round(y) & ~1, 2, 2); };
+    const ring = (R, col, dash) => { const n = Math.max(24, Math.round(TAU * R / 2)); for (let i = 0; i < n; i++) { if (dash && (i % dash) >= dash / 2) continue; const a = i / n * TAU; C(h + Math.cos(a) * R, h + Math.sin(a) * R * sq, col); } };
+    if (fq > 0) for (let y = -r * sq; y <= r * sq; y += 2) for (let x = -r; x <= r; x += 2) { const d = Math.hypot(x / r, y / (r * sq)); if (d <= fq && dith((h + x) >> 1, (h + y) >> 1, lq * (1 - d * 0.5))) C(h + x, h + y, o.c3); }
+    ring(r, o.c1); ring(r - 9, o.c1); ring(r + 4, o.c2, 6); ring(r * 0.36, o.c1); ring(r * 0.28, o.c2, 4);
+    C(h, h, o.c4); C(h - 2, h, o.c1); C(h + 2, h, o.c1); C(h, h - 2, o.c1); C(h, h + 2, o.c1);
+    st = { c, h }; MC_CACHE.set(key, st); return st;
+  }
   function magicCircle(cx, cy, r, o) {
     const C = (x, y, col) => { ctx.fillStyle = col; ctx.fillRect(Math.round(x) & ~1, Math.round(y) & ~1, 2, 2); }, sq = 0.87, q = a => Math.round(a / TAU * 96) / 96 * TAU;
     const ring = (R, col, dash) => { const n = Math.max(24, Math.round(TAU * R / 2)); for (let i = 0; i < n; i++) { if (dash && (i % dash) >= dash / 2) continue; const a = i / n * TAU; C(cx + Math.cos(a) * R, cy + Math.sin(a) * R * sq, col); } };
     const line = (x0, y0, x1, y1, col) => { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 2); for (let i = 0; i <= n; i++) C(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, col); };
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = o.alpha;
-    if (o.fill > 0) for (let y = -r * sq; y <= r * sq; y += 2) for (let x = -r; x <= r; x += 2) { const d = Math.hypot(x / r, y / (r * sq)); if (d <= o.fill && dith((cx + x) >> 1, (cy + y) >> 1, o.fillLv * (1 - d * 0.5))) C(cx + x, cy + y, o.c3); } // 떨어질 때까지 안쪽부터 차오름
-    ring(r, o.c1); ring(r - 9, o.c1); ring(r + 4, o.c2, 6);
+    { const st = mcStatic(r, o); ctx.drawImage(st.c, snap2(cx) - st.h, snap2(cy) - st.h); } // v2.19 바닥 채움·고리는 미리 그린 그림으로 (매 프레임 칸 수천 개 찍던 것)
     const rot = q(o.rot), rot2 = q(-o.rot * 1.6);
     for (let i = 0; i < 12; i++) { const a = rot + i / 12 * TAU, gx = cx + Math.cos(a) * (r - 4.5), gy = cy + Math.sin(a) * (r - 4.5) * sq, g = MRUNE[i % MRUNE.length];
       for (let j = 0; j < 3; j++) for (let k = 0; k < 3; k++) if (g[j][k]) C(gx + (k - 1) * 2, gy + (j - 1) * 2, (i + Math.floor(o.t * 6)) % 12 === 0 ? o.c4 : o.c2); }
     for (const [base, rr] of [[rot2, r * 0.74], [rot2 + Math.PI / 3, r * 0.74]]) { const p = [0, 1, 2].map(i => [cx + Math.cos(base + i / 3 * TAU) * rr, cy + Math.sin(base + i / 3 * TAU) * rr * sq]); for (let i = 0; i < 3; i++) line(...p[i], ...p[(i + 1) % 3], o.c2); }
-    ring(r * 0.36, o.c1); ring(r * 0.28, o.c2, 4);
     for (let i = 0; i < 4; i++) { const a = rot + i / 4 * TAU; line(cx + Math.cos(a) * r * 0.06, cy + Math.sin(a) * r * 0.06 * sq, cx + Math.cos(a) * r * 0.26, cy + Math.sin(a) * r * 0.26 * sq, o.c4); }
-    C(cx, cy, o.c4); C(cx - 2, cy, o.c1); C(cx + 2, cy, o.c1); C(cx, cy - 2, o.c1); C(cx, cy + 2, o.c1);
     ctx.restore();
   }
   function meteorTarget() { const P = G.player; let tx = mouse.x + cam.x, ty = mouse.y + cam.y; const d = Math.hypot(tx - P.x, ty - P.y); if (d > 280) { tx = P.x + (tx - P.x) / d * 280; ty = P.y + (ty - P.y) / d * 280; } return { x: clamp(tx, A.x0 + 20, A.x1 - 20), y: clamp(ty, A.y0 + 20, A.y1 - 20), out: d > 280 }; }
@@ -10368,7 +10444,7 @@ huskUp:[
     { wind: 0.05, swing: 0.1, rec: 0.16, a0: 105, a1: -110, reach: 40, coef: 1.0, grogi: 5, kb: 70, gauge: 4, lunge: 70 },
     { wind: 0.14, swing: 0.12, rec: 0.26, a0: -175, a1: 35, reach: 44, coef: 1.5, grogi: 12, kb: 160, gauge: 6, lunge: 50, heavy: true, stagger: 0.5, slam: true },
   ];
-  const SWING_PW = SWING_P.map((o, i) => Object.assign({}, o, { reach: 62, kb: 40, swing: o.swing + 0.03 }, [{ a0: -125, a1: 15 }, { a0: 115, a1: -15 }, { a0: -175, a1: 5 }][i])); // v2.18 고해의 채찍: 길게 감아 때림
+  const SWING_PW = SWING_P.map((o, i) => Object.assign({}, o, { reach: 62, kb: 40, swing: o.swing + 0.03 }, [{ a0: -125, a1: 15 }, { a0: 115, a1: -15 }, { a0: -180, a1: 200, swing: 0.34, slam: false, kb: 120 }][i])); // v2.18 고해의 채찍: 길게 감아 때림 · v2.19 3타는 한 바퀴 돌며 주변을 감싼다
   function holySlam(x, y) {
     const big = wSkill() === 'bellh', R = big ? 112 : 56; if (big) { G.fx.push({ kind: 'ring', x, y, r: 10, grow: 420, t: 0.4, max: 0.4, c: '#e8c070' }); sfx('grogi', 0.6); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; dust(x + Math.cos(a) * 80, y + Math.sin(a) * 40, 3); } }
     G.fx.push({ kind: 'ring', x, y, r: 6, grow: 200, t: 0.28, max: 0.28, c: '#ffe39a' });
@@ -10379,7 +10455,7 @@ huskUp:[
   }
   function castHeal() {
     const P = G.player, s = G.stats;
-    { const cap = wSkill() === 'reliq' ? 2 : 1; if ((P.armor || 0) < cap) addArmor(1); } // v2.15 치유의 빛: 하트 회복 대신 빛의 방패 (이 기술로는 1칸, 성유물함 2칸까지)
+    { const cap = wSkill() === 'reliq' ? 2 : 1; if ((P.holyArmor || 0) < cap && (P.armor || 0) < ARMOR_MAX) addArmor(1, true); } // v2.15 치유의 빛: 하트 회복 대신 빛의 방패 (이 기술로는 1칸, 성유물함 2칸까지)
     if (wSkill() === 'carrot') for (let i = 0; i < 3; i++) (G.wproj = G.wproj || []).push({ k: 'carrotm', x: P.x, y: P.y - 10, ang: P.ang + i * TAU / 3, t: 0.7, hit: new Set() }); // 당근 셋
     if (s.fx.has('dawn')) P.shieldT = 2;
     P.state = 'pray'; P.t = 0; P.prayDur = 0.38; P.iframe = Math.max(P.iframe, 0.2); P.combo = 0;
@@ -10401,7 +10477,7 @@ huskUp:[
     G.fx.push({ kind: 'ring', x: P.x, y: P.y - 6, r: 10, grow: 260, t: 0.6, max: 0.6, c: '#ffd34d' });
     for (let i = 0; i < 8; i++) G.fx.push({ kind: 'arcwave', x: P.x, y: P.y - 6, ang: i / 8 * TAU, arc: 40 * DEG, r0: 16, r1: 150, t: 0.4, max: 0.4, c: '255,225,140' });
     for (const e of G.enemies) if (!e.dead && dist(e, P) < 150 + e.r) damageEnemy(e, 3.0, { ang: angTo(P, e), grogi: 35, kb: 280, heavy: true, stagger: 1.0, gauge: 0 });
-    if (revive) banner('기적', '빛이 쓰러진 사제를 일으켜 세운다 (이번 챕터 1번)');
+    if (revive) banner('기적', '부활 — 챕터당 1번');
   }
   function updatePray(dt) {
     const P = G.player; P.t += dt;
@@ -10415,17 +10491,44 @@ huskUp:[
   const GUN_RATE = { revolver: 0.27, blunder: 0.8, cannon: 0.95, puffer: 0.7, longrifle: 0.64, kingrev: 0.534 };
   function gunRate() { return GUN_RATE[wSkill()] || 0.534; }
   function gunMag() { const k = wSkill(); return k === 'harpoon' ? 1 : k === 'blunder' ? 3 : k === 'revolver' ? 12 : k === 'kingrev' ? 6 : GUN_MAG; }
-  function startReload() { const P = G.player, k = wSkill(); P.reloadMax = k === 'revolver' ? 0.7 : k === 'harpoon' ? 4 : GUN_RELOAD; P.reload = P.reloadMax;
+  function startReload() { const P = G.player, k = wSkill(); P.reloadMax = k === 'revolver' ? 0.7 : k === 'harpoon' ? 0.3 : GUN_RELOAD; P.reload = P.reloadMax;
     if (k === 'kingrev') { sfx('grogi', 1.3); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 8, grow: 240, t: 0.35, max: 0.35, c: '#ffd34d' }); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; G.parts.push({ x: P.x + Math.cos(a) * 12, y: P.y - 10 + Math.sin(a) * 8, vx: Math.cos(a) * 160, vy: Math.sin(a) * 100, t: 0.3, c: '#ffd34d', g: 0, glow: true }); }
       for (const e of nearFoes(P.x, P.y, 72)) damageEnemy(e, 0.4, { proc: true, kb: 320, ang: angTo(P, e), grogi: 4, gauge: 1 }); } }
+  // v2.19 고래 작살총 재설계: 줄 달린 작살이 곧게 뻗어 첫 적을 꿰고, 줄을 감아 돌아온다
+  // 작은 적은 내 앞까지 끌려오며 그동안 회피 판정(맞지 않음·행동 불가) · 큰 적은 경직+그로기 · 작살이 돌아와야 다음 발
+  const HARP = { range: 230, out: 1150, back: 820, coef: 2.4 };
+  function launchHarp(m) { const P = G.player;
+    G.harp = { ph: 'out', ang: P.ang, len: 8, max: Math.min(HARP.range, rayEnd(m.x, m.y, P.ang, HARP.range)), e: null };
+    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 1.2, t: 0.1, max: 0.1 }); sfx('shot', 0.7);
+    P.x -= Math.cos(P.ang) * 6; P.y -= Math.sin(P.ang) * 6; }
+  function harpRelease(H, stun) { const e = H.e; if (!e) return; e.harpT = 0; if (!e.dead && stun) applySt(e, 'stun', stun); H.e = null; }
+  function updateHarp(dt) {
+    const H = G.harp, P = G.player;
+    if (G.cls !== 'gunner' || wSkill() !== 'harpoon' || P.dead) { harpRelease(H, 0.3); G.harp = null; if (G.cls === 'gunner' && P.ammo <= 0) startReload(); return; }
+    const m = muzzle(), ux = Math.cos(H.ang), uy = Math.sin(H.ang);
+    if (H.ph === 'out') {
+      const nl = Math.min(H.max, H.len + HARP.out * dt), hit = rayHits(m.x, m.y, H.ang, nl, 5).find(h => h.along >= H.len - 10 && !h.e.harpT);
+      if (hit) { const e = hit.e, big = e.type === 'boss' || isElite(e) || isSemi(e) || e.tall; H.len = Math.max(8, hit.along); H.ph = 'back';
+        damageEnemy(e, HARP.coef, { ang: H.ang, grogi: big ? 12 : 4.5, kb: 0, gauge: 5, stagger: big ? 0.6 : 0.3, heavy: true, basic: true });
+        sparks(m.x + ux * H.len, m.y + uy * H.len, H.ang + Math.PI, '#e8ecf0', 7); sfx('block', 0.7);
+        if (!e.dead) { if (big) { applySt(e, 'stun', 0.4); G.nums.push({ x: e.x, y: e.y - 30, v: '꿰뚫!', t: 0.6, c: '#cfe6ff', s: 1 }); }
+          else { H.e = e; H.oy = e.y - (m.y + uy * H.len); e.harpT = 1; applySt(e, 'stun', 0.5); } } }
+      else if (nl >= H.max) { H.len = H.max; H.ph = 'back'; if (H.max < HARP.range - 2) { sparks(m.x + ux * H.len, m.y + uy * H.len, H.ang + Math.PI, '#a8acb4', 4); sfx('block', 1.3); } }
+      else H.len = nl;
+      return;
+    }
+    H.len -= HARP.back * dt;
+    if (H.e) { const e = H.e, stop = 18 + (e.r || 8);
+      if (e.dead) harpRelease(H, 0);
+      else { const L = Math.max(H.len, stop), tx = m.x + ux * L, ty = m.y + uy * L + H.oy;
+        if (solidAt(tx, ty) || tx < A.x0 + 6 || tx > A.x1 - 6 || ty < A.y0 + 6 || ty > A.y1 - 6) harpRelease(H, 0.4); // 벽에 걸리면 놓친다
+        else { e.x = tx; e.y = ty; applySt(e, 'stun', 0.3); if (H.len <= stop) { harpRelease(H, 0.6); sfx('grogi', 1.4); } } } }
+    if (H.len <= 0) { G.harp = null; P.ammo = gunMag(); sfx('reload'); } // 돌아오면 바로 다음 발 (총 돌리는 장전 연출 없음)
+  }
   function gunHit(e, ang, coef) { // 한 발이 적에게 맞았을 때
     const k = wSkill(), P = G.player;
     damageEnemy(e, coef, { ang, grogi: 4.5, kb: 120, gauge: 5, stagger: 0.4, heavy: true, basic: true });
     if (e.dead) return;
-    if (k === 'harpoon') { const big = e.type === 'boss' || isElite(e) || isSemi(e), tx = e.x + Math.cos(ang) * 26, ty = e.y + Math.sin(ang) * 26;
-      const wall = segSolid(e.x, e.y, tx, ty, 6) || tx < A.x0 + 8 || tx > A.x1 - 8 || ty < A.y0 + 8 || ty > A.y1 - 8;
-      if (wall) { applySt(e, 'stun', 1.5); sparks(e.x, e.y - 10, ang, '#e8ecf0', 8); sfx('block', 0.6); G.nums.push({ x: e.x, y: e.y - 30, v: '고정!', t: 0.6, c: '#cfe6ff', s: 1 }); }
-      else if (!big) { e.x = tx; e.y = ty; applySt(e, 'stun', 0.25); } }
     if (k === 'match') addBurn(e, 3, 0.35);
     if (k === 'puffer') (G.wproj = G.wproj || []).push({ k: 'puffx', x: e.x, y: e.y - 10, t: 0.35 });
   }
@@ -10434,12 +10537,13 @@ huskUp:[
     for (const e of nearFoes(x, y, R)) damageEnemy(e, coef, { proc: true, ang: Math.atan2(e.y - y, e.x - x), kb: 220, grogi: 6, gauge: 2, heavy: true }); }
   function fireMusket() { rangedWave(); // v1.76 거너 그로기 절반 (사격 9→4.5, 산탄 10→5, 저격 60→30, 개머리판 6→4)
     const P = G.player, k = wSkill();
-    P.state = 'rattack'; P.t = 0; P.blade = P.ang; P.atkAng = P.ang; P.ammo = Math.max(0, P.ammo - 1); const last = P.ammo === 0; if (last) startReload(); P.recoil = 1;
+    P.state = 'rattack'; P.t = 0; P.blade = P.ang; P.atkAng = P.ang; P.ammo = Math.max(0, P.ammo - 1); const last = P.ammo === 0; if (last && k !== 'harpoon') startReload(); P.recoil = 1;
     P.gunN = (P.gunN || 0) + 1;
     const m = muzzle();
     if (k === 'puffer' && Math.random() < 0.1) { sfx('blip', 0.6); G.nums.push({ x: m.x, y: m.y - 14, v: '퉤!', t: 0.6, c: '#ffd34d', s: 1 }); for (let i = 0; i < 6; i++) G.parts.push({ x: m.x, y: m.y, vx: rand(-40, 40), vy: rand(-80, -30), t: 0.4, c: pick(['#ffe070', '#5a8a9a']), g: 260 }); P.x -= Math.cos(P.ang) * 8; P.y -= Math.sin(P.ang) * 8; return; } // 복어가 싫다고 튕겨 나옴
     if (k === 'cannon') { (G.wproj = G.wproj || []).push({ k: 'ball', x: m.x, y: m.y, ang: P.ang, t: 1.1 }); G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2, t: 0.1, max: 0.1 }); sfx('shotgun', 0.7); if (!segSolid(P.x, P.y, P.x - Math.cos(P.ang) * 18, P.y - Math.sin(P.ang) * 18)) { P.x -= Math.cos(P.ang) * 18; P.y -= Math.sin(P.ang) * 18; } return; }
     if (k === 'duck') { G.nums.push({ x: m.x, y: m.y - 12, v: '꽥', t: 0.4, c: '#ffe070', s: 1 }); if (P.gunN % 5 === 0) { (G.wproj = G.wproj || []).push({ k: 'duckb', x: m.x, y: m.y, ang: P.ang, t: 0.9 }); sfx('blip', 1.6); return; } }
+    if (k === 'harpoon') { launchHarp(m); return; }
     if (k === 'blunder') { for (const da of [-0.2, 0, 0.2]) { const a = P.ang + da, L0 = rayEnd(m.x, m.y, a, 150), h = rayHits(m.x, m.y, a, L0, 6); let L = L0; if (h.length) { L = h[0].along; gunHit(h[0].e, a, 1.1); } gunFx(m, a, L, 0.7); }
       P.x -= Math.cos(P.ang) * 9; P.y -= Math.sin(P.ang) * 9; sfx('shotgun', 1.2); return; }
     const pierce = k === 'longrifle', mul = k === 'longrifle' ? 1 + Math.min(P.stillT || 0, 1.5) * 0.6 : k === 'revolver' && P.gunN % 2 ? 0.5 : 1;
@@ -10449,7 +10553,6 @@ huskUp:[
     if (!inR.length) hitCrack(m.x + Math.cos(P.ang) * L, m.y + Math.sin(P.ang) * L + 10, 1, 34);
     if (inR.length) { if (pierce) { for (const h of inR) gunHit(h.e, P.ang, 2.2 * mul); } else { L = inR[0].along; gunHit(inR[0].e, P.ang, 2.2 * mul); } }
     gunFx(m, P.ang, L, mul > 1.3 ? 1.6 : 1);
-    if (k === 'harpoon') { const hx = m.x + Math.cos(P.ang) * Math.max(10, L - 6), hy = m.y + Math.sin(P.ang) * Math.max(10, L - 6) + 10; G.harp = { x: hx, y: hy, ang: P.ang }; } // v2.18 작살은 바닥에 남는다
     if (k === 'duck' && !inR.length && L < GUN_RANGE - 10) { // 한 번 튕김
       const ex = m.x + Math.cos(P.ang) * L, ey = m.y + Math.sin(P.ang) * L; let vx = Math.cos(P.ang), vy = Math.sin(P.ang);
       if (ex <= A.x0 || ex >= A.x1) vx = -vx; else if (ey <= A.y0 - 30 || ey >= A.y1) vy = -vy; else if (solidAt(ex + vx * 6, ey + 10)) { if (solidAt(ex + vx * 6, ey + 10 - vy * 6)) vx = -vx; else vy = -vy; } else vx = -vx;
@@ -10592,7 +10695,7 @@ huskUp:[
     const h = heroHand(), hy = h.y + bob;
     const behind = cls === 'priest' ? (P.state === 'idle' || P.state === 'dodge') : (Math.sin(P.blade) < -0.45 && P.state !== 'cast' && P.state !== 'butt');
     if (cls === 'priest' && P.state === 'attack' && !['water', 'whip'].includes(wSkill())) {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawTrail(P.trail, h.x, hy, 10, tex.reach, '255,226,150', P.combo === 2); ctx.restore();
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawTrail(P.trail, h.x, hy, 10, tex.reach, weaponTrailCol(tex, 0.4), P.combo === 2); ctx.restore(); // v2.19 무기 색
     }
     if (cls === 'gunner' && P.state === 'butt') drawTrail(P.trail, h.x, hy, 4, 30, '230,220,200', true);
     const wsk = cls === 'priest' ? wSkill() : null;
@@ -10914,21 +11017,70 @@ huskUp:[
     for (const [k, c] of cells) { const [x, y] = k.split(',').map(Number); ctx.fillStyle = c; ctx.fillRect(x, y, 2, 2); }
   }
   function lashStiff(st) { const P = G.player; if (P.state !== 'attack') return 0; const pr = (P.t - st.wind) / st.swing; if (P.t < st.wind) return 0.05; if (pr < 1) return 0.1 + 0.75 * pr * pr; return Math.max(0, 0.85 - (P.t - st.wind - st.swing) * 5); }
-  function drawWhip(hx, hy) { // 고해의 채찍
-    const P = G.player, a = P.blade, st = SWING_PW[P.combo] || SWING_PW[0], ex = hx + Math.cos(a) * 12, ey = hy + Math.sin(a) * 12;
-    drawCellPath([{ x: hx - Math.cos(a) * 2, y: hy - Math.sin(a) * 2 }, { x: ex, y: ey }], (i, t) => t < 0.2 ? '#8a8a94' : t > 0.8 ? '#5a2a20' : '#3a1a14');
-    const L = lashSim('whipL', ex, ey, a, 12, 4.2, lashStiff(st), P.y + 2); // 남는 줄은 바닥에 늘어진다
-    drawCellPath(L, (i, t) => i === 11 && t > 0.5 ? '#d8d0c0' : (i % 3 === 1 && t < 0.3) ? '#d8d0c0' : i % 2 ? '#7a3a24' : '#a0503a');
-    P.lashTip = L[L.length - 1];
+  function drawCellPaths(list) { // 여러 줄을 한 덩어리로 칸 그리기 (외곽선은 덩어리 바깥에만)
+    const cells = new Map();
+    for (const [pts, colAt] of list) for (let i = 0; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 2)); for (let s = 0; s <= n; s++) { const x = snap2(a.x + (b.x - a.x) * s / n), y = snap2(a.y + (b.y - a.y) * s / n), k = x + ',' + y; if (!cells.has(k)) cells.set(k, colAt(i, s / n)); } }
+    ctx.fillStyle = '#0b0a0e'; for (const k of cells.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2]]) if (!cells.has((x + dx) + ',' + (y + dy))) ctx.fillRect(x + dx, y + dy, 2, 2); }
+    for (const [k, c] of cells) { const [x, y] = k.split(',').map(Number); ctx.fillStyle = c; ctx.fillRect(x, y, 2, 2); }
   }
-  function drawChainBlade(hx, hy) { // 사슬 분절검 3타: 마디가 풀려 채찍처럼
-    const P = G.player, a = P.blade, st = SWING_CH[2], ex = hx + Math.cos(a) * 16, ey = hy + Math.sin(a) * 16;
-    drawCellPath([{ x: hx - Math.cos(a) * 4, y: hy - Math.sin(a) * 4 }, { x: ex, y: ey }], (i, t) => t < 0.2 ? '#c9a24a' : t < 0.75 ? '#5a3a22' : '#c9a24a');
-    const L = lashSim('chainL', ex, ey, a, 8, 12, lashStiff(st));
-    drawCellPath(L, () => '#4a4e58'); // 사슬
-    for (let i = 1; i < L.length; i++) { const p = L[i], q = L[i - 1], ang = Math.atan2(p.y - q.y, p.x - q.x), last = i === L.length - 1;
-      const pts = [{ x: p.x - Math.cos(ang) * 8, y: p.y - Math.sin(ang) * 8 }, { x: p.x + Math.cos(ang) * (last ? 6 : 1), y: p.y + Math.sin(ang) * (last ? 6 : 1) }];
-      drawCellPath(pts, (k, t) => t > 0.6 ? '#eef2f6' : '#a8acb4'); }
+  // v2.19 채찍 줄: 손잡이 끝에 고정, 마디가 앞 마디를 늦게 따라와 휘어지고(중력 거의 없음), 뻣뻣함이 오르면 쫙 펴진다
+  function whipSim(hx, hy, ang, n, seg, stiff, grav) {
+    const P = G.player, dt = Math.min(0.05, Math.max(0, time - (P.whipT || time))); P.whipT = time;
+    let L = P.whipL; if (!L || L.length !== n + 1 || Math.hypot(L[0].x - hx, L[0].y - hy) > 40) { L = P.whipL = []; for (let i = 0; i <= n; i++) L.push({ x: hx + Math.cos(ang) * seg * i, y: hy + Math.sin(ang) * seg * i }); }
+    L[0].x = hx; L[0].y = hy;
+    for (let i = 1; i <= n; i++) { const p = L[i], q = L[i - 1]; p.y += grav * dt; let dx = p.x - q.x, dy = p.y - q.y; const d = Math.hypot(dx, dy) || 1; let nx = q.x + dx / d * seg, ny = q.y + dy / d * seg;
+      const k = stiff * (0.35 + 0.65 * (1 - i / n)); /* 끝으로 갈수록 덜 펴져 휘어짐이 남는다 */ nx += (hx + Math.cos(ang) * seg * i - nx) * k; ny += (hy + Math.sin(ang) * seg * i - ny) * k; p.x = nx; p.y = ny; }
+    return L;
+  }
+  function whipExt(st) { const P = G.player; if (P.state !== 'attack') return 0; const t = P.t; // 0: 감김 → 1: 끝까지 뻗음
+    if (t < st.wind) return 0.2 * t / st.wind;
+    if (t < st.wind + st.swing * 0.6) return 0.2 + 0.8 * (t - st.wind) / (st.swing * 0.6);
+    if (t < st.wind + st.swing + 0.05) return 1;
+    return Math.max(0, 1 - (t - st.wind - st.swing - 0.05) / (st.rec * 0.7)); }
+  function whipStiff(st) { const P = G.player; if (P.state !== 'attack') return 0.32; const t = P.t, pr = (t - st.wind) / st.swing; // 휘두르는 동안 늘어지듯 따라오다 끝에서 쫙
+    if (t < st.wind) return 0.06; if (pr < 1) return 0.04 + 0.5 * pr * pr * pr; return Math.max(0.2, 0.54 - (t - st.wind - st.swing) * 3); } // v2.19 덜 뻣뻣하게 — 끝까지 적당히 휜 채로
+  function drawWhip(hx, hy) { // v2.19 고해의 채찍: 손잡이는 고정, 가죽 줄만 늘어나며 휘어 때린다
+    const P = G.player, a = P.blade, st = SWING_PW[P.combo] || SWING_PW[0], ux = Math.cos(a), uy = Math.sin(a), ex = hx + ux * 12, ey = hy + uy * 12;
+    const n = 12, len = 14 + (st.reach - 26) * whipExt(st), L = whipSim(ex, ey, a, n, len / n, whipStiff(st), P.state === 'attack' ? 0 : 90);
+    whipWrap(L, ex, ey, a, n, len);
+    const thick = L.slice(0, 5).map((p, i) => { const q = L[Math.min(n, i + 1)], b = L[Math.max(0, i - 1)], nx = -(q.y - b.y), ny = q.x - b.x, d = Math.hypot(nx, ny) || 1; return { x: p.x + nx / d * 2, y: p.y + ny / d * 2 }; }); // 손잡이 쪽은 두껍게
+    const lc = (i, t) => i >= n - 1 ? (i === n - 1 && t > 0.5 ? '#d8d0c0' : '#7a3a24') : (i % 2 ? '#7a3a24' : '#a0503a'); // 끝은 가는 끈 + 흰 매듭
+    drawCellPaths([[[{ x: hx - ux * 2, y: hy - uy * 2 }, { x: ex, y: ey }], (i, t) => t < 0.2 ? '#8a8a94' : t > 0.8 ? '#c0c0c8' : '#3a1a14'], [thick, () => '#5a2a20'], [L, lc]]);
+    P.lashTip = L[n];
+  }
+  // v2.19 채찍 3타: 손잡이를 중심으로 한 바퀴 돌 때 가죽 줄이 몸 둘레를 따라 둥글게 감긴다 (줄이 손잡이 뒤로 휘어 따라옴)
+  function whipWrap(L, hx, hy, a, n, len) {
+    const P = G.player, st = SWING_PW[2]; if (P.state !== 'attack' || P.combo !== 2) return;
+    const t = P.t - st.wind; if (t < -0.02 || t > st.swing + 0.06) return;
+    const dir = Math.sign(st.a1 - st.a0) * (P.sign || 1), cx = P.x, cy = P.y - 8, R = Math.max(18, Math.hypot(hx - cx, hy - cy) + 6), k = Math.min(1, (t + 0.02) / 0.08);
+    const a0 = Math.atan2(hy - cy, hx - cx);
+    for (let i = 1; i <= n; i++) { const s0 = i / n, r = R + (st.reach - R) * 0.55 * s0, th = a0 - dir * (len * s0) / ((R + r) / 2); // 몸 둘레를 따라 뒤로 감긴 호
+      const tx = cx + Math.cos(th) * r, ty = cy + Math.sin(th) * r * 0.8; L[i].x += (tx - L[i].x) * k; L[i].y += (ty - L[i].y) * k; }
+  }
+  // v2.19 사슬 분절검 3타: 검 모양 그대로 마디 사이가 벌어지며 곧게 늘어난다 (사슬은 틈에만 보임)
+  function chainPieces(tex) {
+    if (tex._chainP) return tex._chainP;
+    const cy = tex.py, cuts = [];
+    for (let x = 0; x < tex.w; x++) if (tex.cells[cy][x] === 'c') cuts.push(x);
+    const bounds = [], out = []; let s0 = 0; for (const c of cuts) { bounds.push([s0, c]); s0 = c + 1; } bounds.push([s0, tex.w - 1]);
+    for (const [a, b] of bounds) { const cells = tex.cells.map(r => r.slice(a, b + 1)), w = b - a + 1, px = a ? 0 : tex.px; // 첫 마디는 손잡이 기준, 나머지는 마디 시작점 기준
+      let reach = 0; cells.forEach((r, y) => r.forEach((c, x) => { if (c !== '.') reach = Math.max(reach, Math.hypot(x - px, y - tex.py)); }));
+      out.push({ cells, w, h: tex.h, px, py: tex.py, pal: tex.pal, reach: Math.round(reach * 2), rot: {}, x0: a, x1: b }); }
+    return (tex._chainP = out);
+  }
+  function chainExt() { const P = G.player, st = SWING_CH[2], t = P.t; // 0: 접힘 → 1: 최대로 늘어남
+    if (t < st.wind) return 0.25 * t / st.wind;
+    if (t < st.wind + st.swing * 0.35) return 0.25 + 0.75 * (t - st.wind) / (st.swing * 0.35);
+    if (t < st.wind + st.swing) return 1;
+    return Math.max(0, 1 - (t - st.wind - st.swing) / (st.rec * 0.7)); }
+  function drawChainBlade(hx, hy) {
+    const P = G.player, a = P.blade, tex = weaponTex('knight'), pcs = chainPieces(tex), n = pcs.length - 1;
+    const gap = n > 0 ? Math.max(0, (SWING_CH[2].reach - tex.reach) / n) : 0, e = chainExt(), ux = Math.cos(a), uy = Math.sin(a);
+    const off = k => (pcs[k].x0 - tex.px) * 2 + k * gap * e; // 각 마디의 시작점까지 거리
+    for (let k = 1; k <= n; k++) { const d0 = (pcs[k - 1].x1 - tex.px) * 2 + (k - 1) * gap * e, d1 = off(k) + 1; // 마디 사이 사슬 (틈에만)
+      if (d1 - d0 > 2) drawCellPath([{ x: hx + ux * d0, y: hy + uy * d0 }, { x: hx + ux * d1, y: hy + uy * d1 }], (i, t) => Math.floor(t * (d1 - d0) / 2) % 2 ? '#6a6e78' : '#3a3c44'); }
+    for (let k = 0; k <= n; k++) { const d = k ? off(k) : 0; drawBlade(pcs[k], hx + ux * d, hy + uy * d, a); }
+    const tip = off(n) + (pcs[n].w - 1) * 2; P.chainL = [{ x: hx, y: hy }, { x: hx + ux * tip, y: hy + uy * tip }];
   }
   function drawSmokeFloor() { // v2.13 향 연기: 발밑에 낮게 깔리는 성긴 뭉치 (디더 칸 · 캐릭터를 가리지 않음)
     if (!G.smoke || !G.smoke.length) return;
@@ -10936,9 +11088,11 @@ huskUp:[
       for (let k = 0; k < 5; k++) { const px = c.x + Math.cos(k * 1.7 + time * 0.6) * 24, py = c.y + Math.sin(k * 2.3 + time * 0.5) * 8, r = 7 + (k % 2) * 3;
         for (let dy = -r; dy <= r; dy += 2) for (let dx = -r * 1.6; dx <= r * 1.6; dx += 2) { const q = (dx * dx) / (r * r * 2.56) + (dy * dy) / (r * r); if (q > 1 || !dith((px + dx) >> 1, (py + dy) >> 1, a * (0.75 - q * 0.6))) continue; ctx.fillStyle = q < 0.3 ? '#d8d0e4' : '#9a90ac'; ctx.fillRect(snap2(px + dx), snap2(py + dy), 2, 2); } } }
   }
-  function drawHarp() { const H = G.harp; if (!H) return; const a = H.ang, x0 = H.x - Math.cos(a) * 14, y0 = H.y - Math.sin(a) * 6;
-    drawCellPath([{ x: x0, y: y0 }, { x: H.x, y: H.y }], (i, t) => t > 0.75 ? '#e8ecf0' : t < 0.15 ? '#c8b080' : '#a8acb4');
-    if (Math.floor(time * 3) % 2) { ctx.fillStyle = '#cfe6ff'; ctx.fillRect(snap2(H.x), snap2(H.y) - 10, 2, 2); } }
+  function drawHarp() { const H = G.harp; if (!H || G.cls !== 'gunner') return; const m = muzzle(), ux = Math.cos(H.ang), uy = Math.sin(H.ang), L = H.len, hl = Math.min(14, L);
+    if (L - hl > 2) drawCellPath([{ x: m.x, y: m.y }, { x: m.x + ux * (L - hl), y: m.y + uy * (L - hl) }], (i, t) => Math.floor(t * (L - hl) / 4) % 2 ? '#c8b080' : '#8a7450'); // 감기는 밧줄
+    drawCellPath([{ x: m.x + ux * (L - hl), y: m.y + uy * (L - hl) }, { x: m.x + ux * L, y: m.y + uy * L }], (i, t) => t > 0.7 ? '#e8ecf0' : '#a8acb4'); // 작살대·촉
+    const bx = m.x + ux * (L - 5), by = m.y + uy * (L - 5); // 미늘
+    for (const sgn of [-1, 1]) drawCellPath([{ x: bx, y: by }, { x: bx - ux * 4 - uy * 4 * sgn, y: by - uy * 4 + ux * 4 * sgn }], () => '#e8ecf0'); }
   function drawPenance() { // v2.13 고해: 플레이어 발밑 붉은 원 (버프는 바닥 원)
     const P = G.player; if (!(P && P.penT > 0)) return; const r = 18, ry = 7, n = 28;
     for (let i = 0; i < n; i++) { if ((i + Math.floor(time * 8)) % 4 === 0) continue; const a = i / n * TAU; ctx.fillStyle = P.penT < 2 && Math.floor(time * 8) % 2 ? '#5a0a10' : '#d02030'; ctx.fillRect(snap2(P.x + Math.cos(a) * r), snap2(P.y + Math.sin(a) * ry), 2, 2); }
@@ -10968,12 +11122,12 @@ huskUp:[
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     // 불길 점멸: 타오르는 바닥
     if (G.pfire) for (const f of G.pfire) {
-      const k = Math.min(1, f.t / 0.6), rx = 26, ry = 18, fl = Math.floor(time * 10);
+      const k = Math.min(1, f.t / 0.6), rx = 26, ry = 18, fl = Math.floor(time * 10), S0 = `rgba(255,220,120,${0.8 * k})`, S1 = `rgba(255,120,40,${0.65 * k})`, S2 = `rgba(170,40,16,${0.55 * k})`; // v2.19 색 문자열은 칸마다 만들지 않는다
       for (let yy = Math.round(f.y - ry) & ~1; yy <= f.y + ry; yy += 2) for (let xx = Math.round(f.x - rx) & ~1; xx <= f.x + rx; xx += 2) {
         const q = Math.hypot((xx - f.x) / rx, (yy - f.y) / ry); if (q >= 1) continue;
         const h = GX.hr(xx * 0.37 + yy * 1.91 + fl * 0.13), lv = (1 - q) * k;
         if (!dith(xx >> 1, yy >> 1, lv * 0.95)) continue;
-        ctx.fillStyle = h > 0.85 ? `rgba(255,220,120,${0.8 * k})` : h > 0.55 ? `rgba(255,120,40,${0.65 * k})` : `rgba(170,40,16,${0.55 * k})`;
+        ctx.fillStyle = h > 0.85 ? S0 : h > 0.55 ? S1 : S2;
         ctx.fillRect(xx, yy, 2, 2);
       }
     }
@@ -11365,7 +11519,7 @@ huskUp:[
     G.loot = []; G.drops = [];
     enterRoom(R, null);
     const P = G.player; P.x = CX; P.y = CY + 24; // v1.71 가운데(빈 자리)에서 시작
-    if (!G.forgeGreet) { G.forgeGreet = true; banner('곰 대장장이의 출장 대장간', `${STG().sub} · 용광로 = 분해 · 모루 = 강화 · 숫돌 = 재련 · 준비되면 붉은 출구로`); } else banner('출장 대장간', `${STG().sub} — STAGE ${G.stage} 돌파, 다음은 STAGE ${G.stage + 1}`);
+    if (!G.forgeGreet) { G.forgeGreet = true; banner('곰 대장장이의 출장 대장간', `${STG().sub} · 분해 · 강화 · 재련`); } else banner('출장 대장간', `${STG().sub} — STAGE ${G.stage} 돌파, 다음은 STAGE ${G.stage + 1}`);
     mode = 'play';
   }
   function leaveForge() { G.dun = null; applyClassUI(); nextStage(); }
@@ -11515,7 +11669,7 @@ huskUp:[
     if (l.type === 'carrot') { P.gauge = Math.min(100, P.gauge + 20); sfx('eat'); lootFeed('아삭한 당근 — 각성 게이지 +20', '#f08a2a'); return; }
     if (l.type === 'armor') { addArmor(1); sfx('select'); lootFeed('방패 조각 — 한 번 맞는 것을 막아 준다', '#c8d8e0'); return; }
     if (l.type === 'heartUp' || l.type === 'medal') { heartUp(1, L.n); return; }
-    if (l.type === 'relic') { const k = l.relic || 'emberheart'; (G.relics = G.relics || []).push(k); sfx('legend'); banner(RELICS[k].n, RELICS[k].d); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 220, t: 0.6, max: 0.6, c: RELICS[k].c }); return; }
+    if (l.type === 'relic') { const k = l.relic || 'emberheart'; (G.relics = G.relics || []).push(k); { const hp0 = G.stats.hp; G.stats = calcStats(G.buffs); G.player.hp = clamp(G.player.hp + Math.max(0, G.stats.hp - hp0), 1, G.stats.hp); } sfx('legend'); banner(RELICS[k].n, RELICS[k].d); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 220, t: 0.6, max: 0.6, c: RELICS[k].c }); return; }
     if (l.type === 'meat' || l.type === 'bigmeat') {
       healHalves((l.type === 'bigmeat' ? 2 : 1) * (s.curse.has('nopot') ? 0.5 : 1) * ASCF.heal()); P.poisonT = 0; sfx('heal'); // v2.00 물약 반 칸 · 대형 한 칸
       burst(P.x, P.y - 12, '#ff6a6a', 6);
@@ -11525,21 +11679,22 @@ huskUp:[
       burst(P.x, P.y - 12, '#ffd34d', 8);
       lootFeed(`${L.n} — 투지 +15`, L.c);
     } else if (l.type === 'pouch') {
-      const g = Math.round(randi(25, 45) * ASCF.gold()); G.gold += g; sfx('coin');
+      const g = Math.round(randi(25, 45) * ASCF.gold() * (hasRelic('greed') ? 1.5 : 1)); G.gold += g; sfx('coin');
       G.nums.push({ x: P.x, y: P.y - 34, v: '+' + g, t: 0.9, c: '#ffd34d', s: 2 });
       lootFeed(`${L.n} — 골드 +${g}`, L.c);
     } else if (l.type === 'sealkey') {
       const K = SK(); G.dun.keys++; sfx('perfect'); sfx('drop'); burst(P.x, P.y - 12, K.c, 12);
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 140, t: 0.4, max: 0.4, c: K.c });
-      lootFeed(`<b style="color:${K.c}">${K.key}</b> 획득 — 보스 방 앞 ${K.sockN}에 바쳐라 (F)`, K.c, 4000);
+      lootFeed(`<b style="color:${K.c}">${K.key}</b> 획득 — ${K.sockN}에 바치기`, K.c, 4000);
     } else if (l.type === 'vial') {
       G.frenzyT = 8; sfx('frenzy'); flashT = 0.06; flashColor = '#ff3040';
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 160, t: 0.35, max: 0.35, c: '#ff3040' });
       lootFeed(`${L.n} — 8초간 공격력 +30%`, L.c);
     } else if (l.type === 'gear') {
       const it = l.it, g = gradeOf(it);
-      const swapped = makeRoomFor(it, l.x, l.y); if (swapped) lootFeed(`무기 칸 ${WCAP}/${WCAP} — 「${swapped.name}」을 내려놓고 바꿔 들었다`, '#c8b8a0', 3200);
+      const swapped = makeRoomFor(it, l.x, l.y); if (swapped) lootFeed(`「${swapped.name}」 내려놓음`, '#c8b8a0', 3200);
       SAVE.inv.push(it); G.fieldItems.push(it);
+      if (it.wk != null && it.cls && G.weaponAcquired[it.cls] && !G.weaponAcquired[it.cls].includes(it.wk)) G.weaponAcquired[it.cls].push(it.wk);
       let equipped = false, cmp = '';
       if (canEquip(it, G.cls)) {
         const cur = eqCurFor(G.cls, it);
@@ -11553,7 +11708,7 @@ huskUp:[
       }
       persist(); sfx('drop');
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 10, grow: 120, t: 0.45, max: 0.45, c: g.c });
-      lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b>${cmp}${equipped ? ' — 즉시 장착!' : canEquip(it, G.cls) ? ' — 가방에 보관 (I)' : ' — 다른 직업 무기'}${it.efx ? ` · <span style="color:#7fd4ff">${EFX[it.efx].n}</span>` : ''}${it.set ? ` · <span style="color:${SETS[it.set].c}">${SETS[it.set].n}</span>` : ''}${it.curse ? ' · <span style="color:#ff6a6a">저주</span>' : ''}`, g.c, 4200);
+      lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b>${cmp}${equipped ? ' — 장착' : canEquip(it, G.cls) ? ' — 보관' : ' — 다른 직업'}${it.efx ? ` · <span style="color:#7fd4ff">${EFX[it.efx].n}</span>` : ''}${it.set ? ` · <span style="color:${SETS[it.set].c}">${SETS[it.set].n}</span>` : ''}${it.curse ? ' · <span style="color:#ff6a6a">저주</span>' : ''}`, g.c, 4200);
     }
   }
   function lootFeed(html, c, ms = 2600) {
@@ -11616,7 +11771,7 @@ huskUp:[
     else diff = `<span class="dn">${CLASSES[it.cls].n} 전용 무기 — 장착할 수 없음</span>`;
     const auto = canEquip(it, G.cls) && !it.curse && (!cur || itemVal(it) > itemVal(cur));
     const card = x => itemCard(x, false, false).replace(/(◆ [^—<]+) — [^<]*/, '$1').replace(/(☠ 저주) — ([^<]*)/, '$1: $2');
-    el.innerHTML = `<div class="gcCols"><div><div class="gcH">바닥</div>${card(it)}</div><div><div class="gcH">착용 중</div>${cur ? card(cur) : `<div class="item gcEmpty" style="--c:#3a2f40">${canEquip(it, G.cls) ? '빈 칸' : '—'}</div>`}</div></div><div class="pkCmp">${diff}</div><div class="gcKey"><span class="kb">F</span> ${wFull(G.cls) && canEquip(it, G.cls) ? `바꿔 들기 · 무기 칸 ${WCAP}/${WCAP}, 지금 무기는 바닥에` : '줍기'}${wFull(G.cls) && canEquip(it, G.cls) ? '' : auto ? ' · 바로 장착' : it.curse ? ' · 저주 장비는 가방으로' : ' · 가방으로'}</div>`;
+    el.innerHTML = `<div class="gcCols"><div><div class="gcH">바닥</div>${card(it)}</div><div><div class="gcH">착용 중</div>${cur ? card(cur) : `<div class="item gcEmpty" style="--c:#3a2f40">${canEquip(it, G.cls) ? '빈 칸' : '—'}</div>`}</div></div><div class="pkCmp">${diff}</div><div class="gcKey"><span class="kb">F</span> ${wFull(G.cls) && canEquip(it, G.cls) ? '바꿔 들기' : '줍기'}${wFull(G.cls) && canEquip(it, G.cls) ? '' : auto ? ' · 바로 장착' : it.curse ? ' · 저주 장비는 가방으로' : ' · 가방으로'}</div>`;
     CUR = prevCUR;
     el.classList.add('on');
   }
@@ -12674,7 +12829,7 @@ huskUp:[
   function krugashStage(b) {
     const pct = b.hp / b.maxHp;
     if (b.stage === 1 && pct <= 0.7) {
-      b.stage = 2; banner('2단계 — 전쟁 북 의식', '북이 울리는 동안 대족장이 받는 피해 -40% · 북을 부숴라'); bossRoar(b, '#ff4030'); cancelTele(b); b.steps = null; b.dash = null; b.air = null; b.z = 0; b.state = 'recover'; b.t = 1.0;
+      b.stage = 2; banner('2단계 — 전쟁 북 의식', '북을 부숴라 — 울리는 동안 피해 -40%'); bossRoar(b, '#ff4030'); cancelTele(b); b.steps = null; b.dash = null; b.air = null; b.z = 0; b.state = 'recover'; b.t = 1.0;
       const cs = [[A.x0 + 90, A.y0 + 80], [A.x1 - 90, A.y0 + 80], [A.x0 + 90, A.y1 - 70], [A.x1 - 90, A.y1 - 70]].sort((p, q) => Math.hypot(q[0] - b.x, q[1] - b.y) - Math.hypot(p[0] - b.x, p[1] - b.y)).slice(0, 2);
       for (const [x, y] of cs) {
         const dm = { x, y, hp: 5, max: 5, boss: true, beatT: rand(0.6, 1.2), drop: 0.55 }; G.drums.push(dm);
@@ -12753,7 +12908,7 @@ huskUp:[
     // 플레이어가 계속 움직이면 피할 수 있지만, 한곳에 머무르면 연속으로 몰린다.
     if (S3 && b.huntT <= 0) {
       b.huntT = 19; b.cd = 0;
-      oSeq(b, [[0, () => { banner('피의 사냥', '세 번의 붉은 표식이 차례로 떨어진다 · 계속 움직여라'); bossRoar(b, '#ff2020'); armTo(b, -145); glowFor(b, 1.1); sfx('warn', 1.2); }],
+      oSeq(b, [[0, () => { banner('피의 사냥', '붉은 표식 3번 — 계속 움직여라'); bossRoar(b, '#ff2020'); armTo(b, -145); glowFor(b, 1.1); sfx('warn', 1.2); }],
         [0.55, () => { const x = clamp(P.x, A.x0 + 58, A.x1 - 58), y = clamp(P.y, A.y0 + 58, A.y1 - 58); G.tele.push({ shape: 'circle', x, y, r: 54, t: 0, dur: 0.78, owner: b, heavy: true, onFire: tt => { if (!P.dead && inShape(tt, P.x, P.y, P.r)) hurtPlayer(b.atk * 0.9, b); debris(tt.x, tt.y, 18); addShake(7); sfx('blast', 0.8); } }); }],
         [0.82, () => { const x = clamp(P.x, A.x0 + 58, A.x1 - 58), y = clamp(P.y, A.y0 + 58, A.y1 - 58); G.tele.push({ shape: 'circle', x, y, r: 54, t: 0, dur: 0.78, owner: b, heavy: true, onFire: tt => { if (!P.dead && inShape(tt, P.x, P.y, P.r)) hurtPlayer(b.atk * 0.9, b); debris(tt.x, tt.y, 18); addShake(7); sfx('blast', 0.8); } }); }],
         [0.82, () => { const x = clamp(P.x, A.x0 + 58, A.x1 - 58), y = clamp(P.y, A.y0 + 58, A.y1 - 58); G.tele.push({ shape: 'circle', x, y, r: 54, t: 0, dur: 0.78, owner: b, heavy: true, onFire: tt => { if (!P.dead && inShape(tt, P.x, P.y, P.r)) hurtPlayer(b.atk * 0.9, b); debris(tt.x, tt.y, 18); addShake(7); sfx('blast', 0.8); } }); }],
@@ -13431,7 +13586,8 @@ huskUp:[
     if (take('escape')) { openPause(); return; }
     if (take('tab')) { openMap(); return; }
     if (take('i')) { if (!G.player.dead && !G.trans) openInv('play'); return; }
-    if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; sfx('blip'); }
+    for (const n of ['1', '2', '3']) if (take(n)) { swapWeapon(+n - 1); break; } // v2.19 숫자키로 무기 바꾸기 (장비창 오른쪽 칸 순서)
+    if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
     if (G.kg && G.kgT < 900) { G.kgT -= rdt; if (G.kgT <= 0) G.kg = false; }
     const dbgK = k => { if (pressed[k] !== 'shift') return false; pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T), 그냥 누르면 아무 일 없음
     if (dbgK('n') && !G.clear) debugClearRoom();
@@ -13466,7 +13622,7 @@ huskUp:[
     updateEProj(dt);
     updateOrcWorld(dt);
     for (const e of G.enemies) if (!e.dead && isDummy(e)) { stTick(e, dt); e.flash = Math.max(0, e.flash - dt); e.lean *= Math.pow(0.02, dt); e.x = e.hx; e.y = e.hy; e.vx = e.vy = 0; if (e.bleedT > 0) {} }
-    for (const e of G.enemies) if (!e.dead && !isDummy(e)) { stTick(e, dt); const edt = dt * stScale(e); /* v2.03 상태 효과 */ if (e.type === 'boss') { if (e.kind === 'slimeking') { updateSlimeKing(e, edt); slimeKingStage(e); } else if (e.kind === 'krugash') updateKrugash(e, edt); else if (e.kind === 'ashking') updateAshKing(e, edt); else { updateBoss(e, edt); bossStageCheck(e); } } else if (e.hitStun > 0 && e.state === 'chase') hitStunTick(e, edt); else { e.hitStun = 0; updateEnemy(e, edt); } }
+    for (const e of G.enemies) if (!e.dead && !isDummy(e)) { stTick(e, dt); if (e.grogiMax && e.grogi > 0 && !(e.grogiT > 0) && time - (e.grogiHitT || 0) > GROGI_DECAY.wait) e.grogi = Math.max(0, e.grogi - e.grogiMax * GROGI_DECAY.rate * dt); /* v2.19 그로기 게이지 자연 감소 */ const edt = dt * stScale(e); /* v2.03 상태 효과 */ if (e.type === 'boss') { if (e.kind === 'slimeking') { updateSlimeKing(e, edt); slimeKingStage(e); } else if (e.kind === 'krugash') updateKrugash(e, edt); else if (e.kind === 'ashking') updateAshKing(e, edt); else { updateBoss(e, edt); bossStageCheck(e); } } else if (e.hitStun > 0 && e.state === 'chase') hitStunTick(e, edt); else { e.hitStun = 0; updateEnemy(e, edt); } }
     weaponTick(dt); // v2.03 무기 기술
     const P = G.player;
     const live = G.enemies.filter(e => !e.dead && !isDummy(e)); // v2.04 허수아비는 밀리지 않음
@@ -13737,6 +13893,17 @@ huskUp:[
   }
   function drawShadow(x, y, w) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(x, y, w, w * 0.32, 0, 0, TAU); ctx.fill(); }
   // 칼날 잔상: 휘두른 궤적을 초승달 모양으로 채운다
+  // v2.19 휘두름 궤적 색 = 무기 도트에서 가장 많이 쓴 밝은 색 (흰빛을 섞어 궤적답게)
+  function weaponTrailCol(tex, white = 0.45) {
+    if (!tex) return '240,236,226'; const ck = '_trail' + white; if (tex[ck]) return tex[ck];
+    const cnt = new Map(), add = (r, g, b, n = 1) => { const L = 0.299 * r + 0.587 * g + 0.114 * b, mx = Math.max(r, g, b), mn = Math.min(r, g, b); if (L < 60) return; const w = n * (1 + (mx - mn) / 255 * 4); /* 채도 높은 색(무기 고유색)을 더 쳐준다 */ const k = (r >> 4) + ',' + (g >> 4) + ',' + (b >> 4); const o = cnt.get(k) || { r: 0, g: 0, b: 0, w: 0 }; o.r += r * w; o.g += g * w; o.b += b * w; o.w += w; cnt.set(k, o); };
+    if (tex.cells) { for (const row of tex.cells) for (const ch of row) { if (ch === '.') continue; const h = tex.pal[ch]; if (!h || h[0] !== '#') continue; add(parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)); } }
+    else if (tex.c) { const d = tex.c.getContext('2d').getImageData(0, 0, tex.c.width, tex.c.height).data; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 128) add(d[i], d[i + 1], d[i + 2]); }
+    let best = null; for (const o of cnt.values()) if (!best || o.w > best.w) best = o;
+    if (!best) return (tex[ck] = '240,236,226');
+    const m = c => Math.round(c / best.w * (1 - white) + 255 * white);
+    return (tex[ck] = `${m(best.r)},${m(best.g)},${m(best.b)}`);
+  }
   function drawTrail(trail, px, py, rin, rout, col, heavy) {
     if (trail.length < 2) return;
     ctx.save();
@@ -14206,7 +14373,7 @@ huskUp:[
     if (P.state === 'idle' && P.moving) sy = 1 + Math.sin(P.walk * 2) * 0.04;
     const fhx = P.x + P.face * 4, fhy = P.y - 9, bhx = P.x - P.face * 3, bhy = P.y - 10;
     const swinging = P.state === 'attack' || P.state === 'shadow' || storm;
-    const col = storm ? '120,255,180' : P.state === 'shadow' ? '190,140,255' : '200,255,225';
+    const col = storm ? '120,255,180' : P.state === 'shadow' ? '190,140,255' : weaponTrailCol(weaponTex('ranger'), 0.4); // v2.19 평타 궤적은 무기 색
     if (swinging) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       drawTrail(P.trail, fhx, fhy, 6, storm ? 34 : 42, col, true);
@@ -14241,7 +14408,7 @@ huskUp:[
     const lift = P.lift || 0;
     const hx = P.x + P.face * 2, hy = P.y - PIVOT_Y - lift;
     const holy = P.awakenT > 0 || P.state === 'awaken';
-    const brk = !holy && G.breadBrk > 0 && wSkill() === 'bread', tex = holy ? BLADES.holy : brk ? breadHalf(0) : weaponTex('knight');
+    const brk = !holy && G.breadBrk > 0 && wSkill() === 'bread', tex = brk ? breadHalf(0) : weaponTex('knight'); // v2.19 각성해도 들고 있는 무기 모양 그대로 (금빛은 덧칠로)
     const chainLash = !holy && wSkill() === 'chain' && P.state === 'attack' && P.combo === 2;
     if (P.dead) {
       drawShadow(P.x, P.y + 1, 8);
@@ -14268,7 +14435,7 @@ huskUp:[
     if (P.state === 'idle' && P.moving) sy = 1 + Math.sin(P.walk * 2) * 0.04;
     const swinging = P.state === 'attack' || P.state === 'skill' || P.state === 'awaken';
     const behind = !swinging && P.state !== 'charge';
-    const trailCol = P.state === 'skill' ? '170,220,255' : holy ? '255,214,120' : P.combo === 2 ? '255,214,150' : '240,236,226';
+    const trailCol = P.state === 'skill' ? '170,220,255' : holy ? '255,214,120' : weaponTrailCol(tex, P.combo === 2 ? 0.3 : 0.5); // v2.19 평타 궤적은 무기 색
     const giantK = P.state === 'awaken' ? (P.giant || 0) : 0;
     const rout = giantK > 0 ? tex.reach * (1 + 1.7 * giantK) : P.state === 'skill' ? SKILL.reach : tex.reach + 2;
     if (swinging) {
@@ -14279,8 +14446,9 @@ huskUp:[
     if (behind) { drawBlade(tex, hx - P.face * 2, hy + 2, P.blade, alpha); if (!holy && !brk) weaponAura(tex, hx - P.face * 2, hy + 2, P.blade, 'knight'); }
     drawSprite('knight', 'knight', 2, P.x, P.y + 2 + bob - lift, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     if (giantK > 0) {
-      drawBlade(BLADES.holy, hx, hy + 4, P.giantAng, 0.45 * giantK, false, 1 + 1.7 * giantK, 'lighter');
-      drawBlade(BLADES.holy, hx, hy + 4, P.giantAng, 0.8 * giantK, false, 1 + 1.7 * giantK);
+      { const sc = 1 + 1.7 * giantK; // v2.19 빛의 거대검도 들고 있는 무기 모양 · 배율마다 회전 그림을 새로 만들면 끊기므로 배율 1 그림을 늘려 그린다
+        const drawBig = (al, comp) => { if (!tex.cells) { drawBlade(tex, hx, hy + 4, P.giantAng, al, false, sc, comp); return; } const r = rotW(tex, P.giantAng); ctx.save(); ctx.globalAlpha = al; if (comp) ctx.globalCompositeOperation = comp; ctx.imageSmoothingEnabled = false; ctx.translate(snap2(hx), snap2(hy + 4)); ctx.scale(sc, sc); ctx.drawImage(r.c, -r.o + 1, -r.o + 1); ctx.restore(); };
+        drawBig(0.8 * giantK); drawBig(0.55 * giantK, 'lighter'); }
     } else if (chainLash) { drawChainBlade(hx, hy + 4);
     } else if (!behind) {
       if ((P.state === 'attack' || P.state === 'skill') && P.trail.length > 3) {
@@ -14879,7 +15047,7 @@ void main() {
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) if (!t.mark) drawTele(t); DITHER_ON = dz; } // v1.79 공격 예고는 잘 보이게 디더 제외
     // 보스 전조(경고)는 보스·캐릭터 그래픽 아래에 (v0.74)
     drawArenaCrowd(); drawRiteGround();
-    drawSoupFloor(); drawSmokeFloor(); drawHarp(); drawPenance(); drawGearGround();
+    drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.y, d: () => drawEnemyShk(e) }));
     if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
@@ -14890,6 +15058,10 @@ void main() {
     flushBubbles(); // v1.10 말주머니는 모든 물체 위에
     drawGearTop();
     drawWproj(); // v2.05
+    drawHarp(); // v2.19 작살은 캐릭터 위에
+    if (G.dropHold > 0.08 && G.player) { const P = G.player, k = Math.min(1, G.dropHold / 0.7), x = snap2(P.x - 12), y = snap2(P.y - 40); // v2.19 F 홀드 버리기 게이지
+      ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 2, y - 2, 28, 6); ctx.fillStyle = '#3a2f40'; ctx.fillRect(x, y, 24, 2); ctx.fillStyle = '#d02030'; ctx.fillRect(x, y, Math.round(24 * k / 2) * 2, 2);
+      ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#000'; fillTextW('무기 버리기', x + 13, y - 4); ctx.fillStyle = '#ff9a8a'; fillTextW('무기 버리기', x + 12, y - 5); }
     for (const d of G.drops) drawDrop(d);
     for (const f of G.fx) if (f.kind !== 'rockspike') drawFx(f);
     for (const pr of G.proj) drawProj(pr);
@@ -15310,9 +15482,8 @@ void main() {
     let html = `<div class="slot pf glass" id="p1">
       <div class="portrait"><img class="px" src="${portraitURL()}" alt=""><span class="pn">1P</span><span class="x">X</span></div>
       <div class="sinfo">
-        <div class="sname"><b>${CLASSES[CUR].n}</b><span id="p1hpt"></span></div>
+        <div class="sname"><b>${CLASSES[CUR].n}</b><span class="statusTags" id="p1status"></span><span id="p1hpt"></span></div>
         <div class="hearts1" id="p1hearts"></div>
-        <div class="pbar thin"><i class="gold" id="p1g"></i></div>
         <div class="tags" id="p1tags"></div>
       </div></div>`;
     for (let i = 2; i <= 4; i++) html += `<div class="slot pf glass dim empty" style="height:40px">
@@ -15386,7 +15557,7 @@ void main() {
       <div class="kh">공격 직전 점멸 = 퍼펙트 회피 · 화면을 탭하면 그쪽으로 공격</div>`;
     return `<div class="kt">조작 안내</div>
       <div class="kr">${k('WASD', '이동')}${k('LMB', '공격')}${k('RMB', C.skill)}${k('E', C.awaken)}${k('SPACE', '점멸')}</div>
-      <div class="kr">${k('F', '상호작용')}${k('TAB', '지도')}${k('I', '장비')}${k('ESC', '일시정지')}${k('M', '음악')}</div>
+      <div class="kr">${k('F', '상호작용')}${k('TAB', '지도')}${k('I', '장비')}${k('1~3', '무기')}${k('ESC', '일시정지')}${k('M', '음악')}</div>
       <div class="kh">공격 직전 점멸 = 퍼펙트 회피 · H 키로 이 안내를 다시 열고 닫기</div>`;
   }
   // v2.00 하트·방패 아이콘 (도트 7칸, 2배)
@@ -15395,14 +15566,15 @@ void main() {
     half: ['.kk.kk.', 'kWrkeek', 'krreeEk', '.kreEk.', '..kEk..', '...k...'],
     empty: ['.kk.kk.', 'keekeek', 'keeeeEk', '.keeEk.', '..kEk..', '...k...'],
     armor: ['kkkkkkk', 'kWnnnmk', 'knnYnmk', 'knYYYmk', '.knYmk.', '..kmk..', '...k...'],
+    holy: ['..kkk..', '.kYoYk.', 'kYwwwok', 'kowLwok', 'kYwwwok', '.kooYk.', '..kkk..'], // v2.19 사제 빛의 가호 — 빛 구슬
   };
-  const HEART_PAL = { k: '#0e0a0c', W: '#ffd0d0', r: '#e0303a', R: '#8a1020', e: '#3a2a30', E: '#241a1e', n: '#c8d8e0', m: '#7a8898', Y: '#ffd34d' };
+  const HEART_PAL = { o: '#c9952a', w: '#fff3b8', L: '#ffffff', k: '#0e0a0c', W: '#ffd0d0', r: '#e0303a', R: '#8a1020', e: '#3a2a30', E: '#241a1e', n: '#c8d8e0', m: '#7a8898', Y: '#ffd34d' };
   const HEART_URL = {};
   const heartURL = k => HEART_URL[k] || (HEART_URL[k] = (() => { const m = HEART_MAPS[k], [c, g] = mkCanvas(m[0].length * 2, m.length * 2); m.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; g.fillStyle = HEART_PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })());
-  function heartsHTML(hp, max, armor) {
+  function heartsHTML(hp, max, armor, holy = 0) {
     let h = ''; const n = Math.ceil(max / 2);
     for (let i = 0; i < n; i++) { const v = hp - i * 2; h += `<img class="px" src="${heartURL(v >= 2 ? 'full' : v === 1 ? 'half' : 'empty')}">`; }
-    for (let i = 0; i < armor; i++) h += `<img class="px ar" src="${heartURL('armor')}">`;
+    for (let i = 0; i < armor; i++) h += `<img class="px ar" src="${heartURL(i >= armor - holy ? 'holy' : 'armor')}">`;
     return h;
   }
   function hud() {
@@ -15413,12 +15585,13 @@ void main() {
     if (!show) { $('boss').style.display = 'none'; return; }
     const P = G.player, s = G.stats;
     // 1P
-    { const key = P.hp + '/' + s.hp + '/' + (P.armor || 0); if (hudPrev.heart !== key) { hudPrev.heart = key; $('p1hearts').innerHTML = heartsHTML(P.hp, s.hp, P.armor || 0); $('p1hpt').textContent = ''; } } // v2.00 하트
-    $('p1g').style.width = `${P.gauge}%`;
+    { const key = P.hp + '/' + s.hp + '/' + (P.armor || 0) + '/' + (P.holyArmor || 0); if (hudPrev.heart !== key) { hudPrev.heart = key; $('p1hearts').innerHTML = heartsHTML(P.hp, s.hp, P.armor || 0, Math.min(P.armor || 0, P.holyArmor || 0)); $('p1hpt').textContent = ''; } } // v2.00 하트
     $('p1').classList.toggle('dead', P.dead);
     $('p1').classList.toggle('hurt', P.hurtT > 0);
-    const tags = (G.relics || []).map(k => `<span class="tag" style="background:#5a2a14;color:#ffb070">${RELICS[k].n}</span>`).join('') + G.buffs.map(b => `<span class="tag">${BUFFS[b].t}</span>`).join('') + (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '');
-    if (tags !== hudPrev.tags) { $('p1tags').innerHTML = tags; hudPrev.tags = tags; }
+    const relicTags = (G.relics || []).map(k => `<span class="tag relicTag relicRow" style="--c:${RELICS[k].c}" data-name="${RELICS[k].n}" data-tip="${RELICS[k].d}"><img class="px" src="${relicIconURL()}"></span>`).join(''); /* 유물은 하트 아래, 이름에 마우스를 올리면 설명 */
+    const statusTags = G.buffs.map(b => `<span class="tag">${BUFFS[b].t}</span>`).join('') + (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '');
+    if (relicTags !== hudPrev.tags) { $('p1tags').innerHTML = relicTags; hudPrev.tags = relicTags; }
+    if (statusTags !== hudPrev.status) { $('p1status').innerHTML = statusTags; hudPrev.status = statusTags; }
     // 페이즈
     { const R = G.dun && G.dun.cur, rs = G.rs || {};
       $('phaseText').textContent = R ? `${G.stage} · ${roomName(R.type)}` : '';
@@ -15487,12 +15660,13 @@ void main() {
     i = (i + d + items.length) % items.length;
     items.forEach((x, k) => x.classList.toggle('sel', k === i)); sfx('blip');
   }
+  // v2.19 공용 팝업 (조작법 · 사운드) — 타이틀·일시정지에서 같은 크기로
+  let popOpen = null;
+  function openPop(name) { popOpen = name; syncVol(); $('tmHowto').classList.toggle('on', name === 'howto'); $('tmSound').classList.toggle('on', name === 'sound'); $('ovPop').classList.add('on'); }
+  function closePop() { if (!popOpen) return; popOpen = null; $('ovPop').classList.remove('on'); $('tmHowto').classList.remove('on'); $('tmSound').classList.remove('on'); sfx('blip'); }
   function showTitlePanel(name) {
     titlePanel = name;
     $('tmMain').style.display = name === 'main' ? '' : 'none';
-    $('tmHowto').style.display = name === 'howto' ? '' : 'none';
-    $('ovTitle').classList.toggle('howto', name === 'howto');
-    $('tmSound').style.display = name === 'sound' ? '' : 'none';
     resetArmed = false; $('tmMain').querySelector('[data-act="reset"]').textContent = '저장 초기화';
   }
   function activate(btn) {
@@ -15501,8 +15675,9 @@ void main() {
     sfx('select');
     if (act === 'start') openSelect();
     else if (act === 'forge') openForge('title');
-    else if (act === 'howto') showTitlePanel('howto');
-    else if (act === 'sound') showTitlePanel('sound');
+    else if (act === 'howto') openPop('howto');
+    else if (act === 'sound') openPop('sound');
+    else if (act === 'popClose') closePop();
     else if (act === 'back') showTitlePanel('main');
     else if (act === 'reset') {
       if (!resetArmed) { resetArmed = true; btn.textContent = '정말 지울까? 한 번 더 선택'; }
@@ -15551,8 +15726,9 @@ void main() {
   $('btnTitle').addEventListener('click', toTitle);
   $('btnInv').addEventListener('click', () => { resultShowAll = !resultShowAll; sfx('blip'); renderResultItems(resultWin); });
   addEventListener('keydown', e => {
-    const k = e.key;
+    const k = keyName(e);
     if (k === 'm' || k === 'M') { initAudio(); window.AudioSys.toggleMute(); return; }
+    if (popOpen) { if (k === 'Escape' || k === 'Enter') { e.preventDefault(); closePop(); } return; } // v2.19 팝업이 떠 있으면 닫기만
     if (mode === 'inv') { if (invKey(k)) e.preventDefault(); return; }
     if (mode === 'pause' && (k === 'i' || k === 'I')) { openInv('pause'); return; }
     if (mode === 'title' || mode === 'pause') {
@@ -15577,8 +15753,6 @@ void main() {
       }
     }
     else if (mode === 'rest' && ['1', '2', '3'].includes(k)) { const b = $('restChoices').children[+k - 1]; if (b) b.click(); }
-    else if (mode === 'pick' && ['1', '2', '3'].includes(k)) takePick(+k - 1);
-    else if (mode === 'pick' && k === 'Escape') closePick();
   });
 
   // ---------------------------------------------------------------- 장비 · 인벤토리 (v0.52)
@@ -15607,6 +15781,23 @@ void main() {
     const pal = { k: '#000', h: '#e8e2d4', l: '#a8a2ae', d: '#625c6c', D: '#2e2a36', w: '#a0703c', W: '#5a3a1e', y: '#f2d78c', Y: '#a8803a', g: gradeC, G: darkHex(gradeC) };
     return (iconCache[ck] = gCanvas(gOutline(g), pal).toDataURL());
   }
+  // v2.19 무기 아이콘은 실제 들고 있는 무기 도트를 45도로 세워서 (도감 무기 = 게임 속 무기와 같은 그림)
+  // v2.19 무기 아이콘: 게임 속 무기 도트를 45도로 세워 원본 크기 그대로 (확대·축소 없음) 맨 윗 끝부터 잘라낸 섬네일
+  const THUMB = 32;
+  function weaponIconURL(it) {
+    const cls = it.cls || 'knight', W0 = it.wk != null ? wcat(cls)[it.wk] : null, tex = W0 && W0.w;
+    if (!tex || !tex.cells) return null;
+    const ck = 'w:' + cls + ':' + it.wk; if (iconCache[ck]) return iconCache[ck];
+    const r = rotW(tex, -Math.PI / 4), src = r.c, d = src.getContext('2d').getImageData(0, 0, src.width, src.height).data;
+    let x0 = src.width, y0 = src.height, x1 = -1, y1 = -1;
+    for (let y = 0; y < src.height; y++) for (let x = 0; x < src.width; x++) if (d[(y * src.width + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return null;
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1, sx = (bw <= THUMB ? Math.round((x0 + x1 + 1 - THUMB) / 2) : x1 + 1 - THUMB) & ~1, sy = (bh <= THUMB ? Math.round((y0 + y1 + 1 - THUMB) / 2) : y0) & ~1, [c, g] = mkCanvas(THUMB, THUMB); // 무기 맨 윗 끝(오른쪽 위 촉·날끝)부터 보이게 · 작은 무기는 가운데
+    g.imageSmoothingEnabled = false; g.drawImage(src, sx, sy, THUMB, THUMB, 0, 0, THUMB, THUMB);
+    return (iconCache[ck] = c.toDataURL());
+  }
+  const itemIcon = it => (it.slot === 'weapon' && weaponIconURL(it)) || itemIconURL(iconKeyOf(it), gradeOf(it).c);
+  const iconImg = it => { const w = it.slot === 'weapon' && weaponIconURL(it); return w ? `<img class="thumb" src="${w}">` : `<img src="${itemIconURL(iconKeyOf(it), gradeOf(it).c)}">`; };
   const INV_TABS = [['all', '전체', () => true], ['weapon', '무기', it => it.slot === 'weapon']];
   const INV_STATS = [['atk', '공격력', v => v.toFixed(0)], ['hp', '최대 체력', v => (v / 2) + '칸'], ['crit', '치명 확률', v => (v * 100).toFixed(0) + '%'], ['critDmg', '치명 피해', v => (v * 100).toFixed(0) + '%'], ['cdr', '쿨타임 감소', v => (v * 100).toFixed(0) + '%'], ['spd', '이동 속도', v => v.toFixed(0)]];
   const INV_COLS = 10, GO = { legend: 0, unique: 1, rare: 2, common: 3 };
@@ -15631,16 +15822,29 @@ void main() {
     if (G) { const P = G.player, oldHp = G.stats.hp; G.stats = calcStats(G.buffs); if (P) P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp); }
     persist(); sfx(on ? 'select' : 'blip'); renderInv();
   }
+  const myWeapons = cls => invList().filter(i => i.slot === 'weapon' && i.cls === cls); // 장비창 오른쪽 세로 칸과 같은 순서
+  function swapWeapon(i) {
+    const P = G.player, it = myWeapons(G.cls)[i];
+    if (!P || P.dead || G.trans) return;
+    if (!it) { lootFeed(`${i + 1}번 칸 비어 있음`, '#8a8090', 1200); sfx('blip', 0.6); return; }
+    if (isEq(G.cls, it)) return;
+    if (!['idle', 'rattack'].includes(P.state)) { pressed[String(i + 1)] = true; return; } // 공격·기술 중이면 끝나고 바꾼다
+    equipIt(G.cls, it); const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
+    P.state = 'idle'; P.combo = 0; P.chainL = null; P.whipL = null;
+    if (G.cls === 'gunner') { P.ammo = 0; startReload(); } // 총을 바꾸면 새로 장전
+    persist(); sfx('select'); lootFeed(`<b style="color:${gradeOf(it).c}">[${i + 1}] ${it.name}</b>`, gradeOf(it).c, 1400);
+  }
   function openInv(from) {
     if (!G) return;
     invFrom = from || 'play'; mode = 'inv'; invTab = 'all';
     if (!invSel || !SAVE.inv.some(i => i.id === invSel)) invSel = null;
     $('ovPause').classList.remove('on'); $('ovInv').classList.add('on');
     for (const k in pressed) pressed[k] = false;
+    invHover = false; invKbd = false; invDropT = 0; clearInterval(invDropTimer); invDropTimer = setInterval(invDropTick, 50);
     sfx('blip'); renderInv();
   }
   function closeInv() {
-    $('ovInv').classList.remove('on'); for (const k in pressed) pressed[k] = false;
+    clearInterval(invDropTimer); pxTip.hide(); $('ovInv').classList.remove('on'); for (const k in pressed) pressed[k] = false;
     SAVE.inv.forEach(i => invSeen.add(i.id));
     if (invFrom === 'pause') openPause(); else { mode = 'play'; sfx('blip'); }
   }
@@ -15649,75 +15853,63 @@ void main() {
     $('ivGold').textContent = G ? G.gold : SAVE.gold; $('ivIron').textContent = G ? G.iron : SAVE.mats.iron; $('ivCrystal').textContent = G ? G.crystal : SAVE.mats.crystal;
     classPreview($('invPv'), cls);
     $('invCls').innerHTML = `${C.n}<small>${C.weapon}</small>`;
-    const slotHTML = sk => {
-      const sl = slotDef(sk), it = SAVE.inv.find(i => i.id === eq[sk]), sel = invSel === 'slot:' + sk || (it && invSel === it.id);
-      const ph = sk === 'weapon' ? ICON_OF_CLS[cls] : SLOT_ICON[sk === 'ring2' ? 'ring' : sk];
-      return `<button class="eqSlot ${sel ? 'sel' : ''}" data-slot="${sk}" style="--c:${it ? gradeOf(it).c : '#3a2f40'}"><div class="box">${it ? `<img src="${itemIconURL(iconKeyOf(it), gradeOf(it).c)}">${it.lv ? `<i class="lv">+${it.lv}</i>` : ''}` : `<img class="ph" src="${itemIconURL(ph, '#9a8ea5')}">`}</div><span>${sl.n}</span></button>`;
-    };
-    $('eqL').innerHTML = ['weapon'].map(slotHTML).join(''); // v2.07 무기 한 칸
-    $('eqR').innerHTML = '';
-    $('invStats').innerHTML = INV_STATS.map(([k, n, f]) => `<span>${n}</span><b>${f(s[k])}</b>`).join('');
-    const fx = [...s.fx];
-    $('invFx').innerHTML = (fx.length ? fx.map(k => `★ ${LEGEND_FX[k].n.trim()} — ${LEGEND_FX[k].d}`).join('<br>') : '<span class="no">레전더리 효과 없음</span>') + relicSlotsHTML(); // v2.07 유물은 능력치 아래
-    const all = SAVE.inv.length;
-    $('invTabs').innerHTML = INV_TABS.map(([k, n, f]) => `<button class="pbtn ${k === invTab ? 'sel' : ''}" data-tab="${k}">${n} ${SAVE.inv.filter(f).length}</button>`).join('') +
-      `<button class="pbtn" data-sort="1">${invSort === 'grade' ? '등급순' : '최신순'}</button><span class="cnt">무기 ${wOwned(cls).length}/${WCAP}</span>`;
-    const list = invList(), ids = new Set(Object.values(eq));
+    // v2.19 가방 칸 없앰 — 가진 무기(최대 3)를 캐릭터 창 오른쪽에 세로로
+    const list = myWeapons(cls), ids = new Set(Object.values(eq));
     if (invSel != null && typeof invSel === 'number' && !list.some(i => i.id === invSel)) invSel = null;
     if (invSel == null && list[0]) invSel = list[0].id;
-    $('invGrid').innerHTML = list.length ? list.map(it => {
-      const g = gradeOf(it);
-      return `<button class="ivCell ${it.id === invSel ? 'sel' : ''} ${canEquip(it, cls) ? '' : 'off'} ${invSeen.has(it.id) ? '' : 'new'}" data-id="${it.id}" style="--c:${g.c}" title="${it.name}"><img src="${itemIconURL(iconKeyOf(it), g.c)}">${it.lv ? `<i class="lv">+${it.lv}</i>` : ''}${ids.has(it.id) ? '<i class="eq">E</i>' : ''}</button>`;
-    }).join('') : `<div class="invEmpty">${all ? '이 탭에 장비가 없다.' : '아직 얻은 장비가 없다. 적·상자·상인·보스에게서 얻을 수 있다.'}</div>`;
-    $('eqL').parentElement.querySelectorAll('.eqSlot').forEach(b => b.addEventListener('click', () => {
-      const it = SAVE.inv.find(i => i.id === eq[b.dataset.slot]); sfx('blip');
-      if (it) { invTab = 'all'; invSel = it.id; } else { invTab = b.dataset.slot === 'weapon' ? 'weapon' : 'acc'; invSel = 'slot:' + b.dataset.slot; }
-      renderInv();
-    }));
-    $('invTabs').querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { invTab = b.dataset.tab; invSel = null; sfx('blip'); renderInv(); }));
-    $('invTabs').querySelector('[data-sort]').addEventListener('click', () => { invSort = invSort === 'grade' ? 'new' : 'grade'; sfx('blip'); renderInv(); });
-    $('invGrid').querySelectorAll('.ivCell').forEach(b => {
-      b.addEventListener('click', () => { const id = +b.dataset.id; invSel = id; sfx('blip'); renderInv(); });
-      b.addEventListener('dblclick', () => { const it = SAVE.inv.find(i => i.id === +b.dataset.id); if (it) equipNow(it, !isEq(cls, it)); });
+    const wcell = it => { const g = gradeOf(it), on = ids.has(it.id);
+      return `<button class="eqSlot wSlot ${it.id === invSel ? 'sel' : ''} ${canEquip(it, cls) ? '' : 'off'} ${invSeen.has(it.id) ? '' : 'new'}" data-id="${it.id}" style="--c:${g.c}"><div class="box">${iconImg(it)}${it.lv ? `<i class="lv">+${it.lv}</i>` : ''}${on ? '<i class="eq">E</i>' : ''}<i class="key">${list.indexOf(it) + 1}</i></div></button>`; };
+    $('eqL').innerHTML = '';
+    $('eqR').innerHTML = Array.from({ length: Math.max(WCAP, list.length) }, (_, i) => list[i] ? wcell(list[i]) : `<div class="eqSlot wSlot empty"><div class="box"></div></div>`).join('');
+    $('invStats').innerHTML = INV_STATS.map(([k, n, f]) => `<span>${n}</span><b>${f(s[k])}</b>`).join('');
+    $('invRelic').innerHTML = relicSlotsHTML(); // v2.19 레전더리 효과는 오른쪽 상세에만 (중복 제거) · 유물은 캐릭터 창 하단
+    $('eqR').querySelectorAll('.wSlot[data-id]').forEach(b => {
+      b.addEventListener('mouseenter', () => { invSel = +b.dataset.id; invHover = true; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); });
+      b.addEventListener('mouseleave', () => { invHover = false; invDropT = 0; pxTip.hide(); });
+      b.addEventListener('click', () => { const it = SAVE.inv.find(i => i.id === +b.dataset.id); if (it && !isEq(cls, it)) equipNow(it, true); });
     });
-    const sc = $('invGrid').querySelector('.ivCell.sel'); if (sc) sc.scrollIntoView({ block: 'nearest' });
-    renderInvDetail();
+    if (invHover || invKbd) invTipShow(); else pxTip.hide();
   }
-  function renderInvDetail() {
-    const d = $('invDetail'), cls = invCls(), eq = eqOf(cls), cur = G ? G.stats : calcStats([], cls);
-    if (typeof invSel === 'string') { const sk = invSel.slice(5), sl = slotDef(sk); d.innerHTML = `<div class="dl"><div class="nm" style="--c:var(--quiet)">${sl.n} — 비어 있음</div><div class="rp">가방에서 ${sk === 'weapon' ? CLASSES[cls].weapon : sl.n}을(를) 골라 장착한다. ${sl.label}이(가) 오른다.</div></div>`; return; }
-    const it = SAVE.inv.find(i => i.id === invSel);
-    if (!it) { d.innerHTML = '<div class="dl"><div class="rp">장비를 고르면 자세한 정보와 능력치 비교가 나온다.</div></div>'; return; }
-    const g = gradeOf(it), sl = slotOf(it), v = itemVal(it), on = isEq(cls, it), ok = canEquip(it, cls);
+  const invCanDrop = () => !!(G && invFrom === 'play' && G.dun && G.dun.cur && G.dun.cur.type !== 'forge');
+  function invTipShow() { const it = SAVE.inv.find(i => i.id === invSel), node = it && $('eqR').querySelector(`.wSlot[data-id="${it.id}"]`); if (!node) { pxTip.hide(); return; } pxTip.show(invTipHTML(it), gradeOf(it).c); pxTip.el.classList.add('wide'); pxTip.beside(node); }
+  function invTipHTML(it) {
+    const cls = invCls(), cur = G ? G.stats : calcStats([], cls);
+    const g = gradeOf(it), v = itemVal(it), on = isEq(cls, it), ok = canEquip(it, cls);
     const curIt = on ? null : eqCurFor(cls, it);
-    const main = PCT_STAT[it.stat] ? `${PCT_STAT[it.stat]} +${v}%` : `${sl.label} +${v}`;
+    const main = PCT_STAT[it.stat] ? `${PCT_STAT[it.stat]} +${v}%` : `${slotOf(it).label} +${v}`;
     let right = '';
     if (ok) {
       const nx = on ? statsIf(eqKeyOf(cls, it), null) : statsIf(eqTarget(cls, it), it.id);
       const rows = INV_STATS.map(([k, n, f]) => {
         const dv = nx[k] - cur[k], same = Math.abs(dv) < (['crit', 'critDmg', 'cdr'].includes(k) ? 0.0005 : 0.5);
         const ds = same ? '–' : (dv > 0 ? '+' : '−') + f(Math.abs(dv)).replace('%', '') + (['crit', 'critDmg', 'cdr'].includes(k) ? '%p' : '');
-        return `<span>${n}</span><b>${f(nx[k])}</b><em class="${same ? 'eq0' : dv > 0 ? 'up' : 'dn'}" style="font-style:normal">${ds}</em>`;
+        return `<span>${n}</span><b>${f(nx[k])}</b><em class="${same ? 'eq0' : dv > 0 ? 'up' : 'dn'}">${ds}</em>`;
       }).join('');
-      right = `<div class="dr"><div class="cmpT">${on ? '해제하면' : curIt ? `장착하면 (「${curIt.name}」 대신)` : '장착하면'}</div><div class="cmp">${rows}</div></div>`;
+      right = on ? '' : `<div class="dr"><div class="cmpT">${curIt ? `장착하면 (「${curIt.name}」 대신)` : '장착하면'}</div><div class="cmp">${rows}</div></div>`;
     }
-    const btn = ok ? `<button class="pbtn ${on ? '' : 'primary'}" id="ivEq">${on ? '해제' : '장착'} <span class="pcOnly">[ENTER]</span></button>` : `<span class="f7" style="color:var(--quiet)">${CLASSES[it.cls].n} 전용 무기 — 지금 직업은 쓸 수 없다</span>`;
-    d.innerHTML = `<div class="dl" style="--c:${g.c}"><div class="gr">${g.n} · ${slotName(it)}${ascTag(it)}${on ? ' · 장착 중' : ''}</div><div class="nm">${it.name}${it.lv ? ` <b>+${it.lv}</b>` : ''}</div>
+    const idx = myWeapons(cls).indexOf(it) + 1;
+    const K = t => `<span class="key">${t}</span>`; // 키보드·마우스 키는 네모 칸으로
+    const keys = [ok && !on ? `${K('LMB')} 장착` : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 — 지금 직업은 쓸 수 없다`, idx ? `${K(idx)} 게임 중 바꿔 들기` : '', invCanDrop() ? `${K('F')} 홀드 — 버리기` : '', `${K('I')} ${K('ESC')} 닫기`].filter(Boolean);
+    return `<div class="dl"><div class="gr">${g.n} · ${slotName(it)}${ascTag(it)}${on ? ' · 장착 중' : ''}</div><div class="nm">${it.name}${it.lv ? ` <b>+${it.lv}</b>` : ''}</div>
       <div class="mn">${main}</div>${it.opts.map(o => `<div class="op">${optText(o)}</div>`).join('')}${it.fx ? `<div class="fx">★ ${LEGEND_FX[it.fx].d}</div>` : ''}${itemExtra(it, cls)}
-      ${it.lv || it.fail ? `<div class="rp">강화 +${it.lv || 0}${it.fail ? ` · 장인의 숨결 +${2 * it.fail}%p` : ''}</div>` : ''}
-      <div class="row">${btn}${G && invFrom === 'play' && G.dun && G.dun.cur && G.dun.cur.type !== 'forge' ? ` <button class="pbtn" id="ivDrop">${invDropArm === it.id ? '정말 내려놓기? 한 번 더' : '바닥에 내려놓기'}</button>` : ''}</div></div>${right}`;
-    const b = $('ivEq'); if (b) b.addEventListener('click', () => equipNow(it, !on));
-    const bd = $('ivDrop'); if (bd) bd.addEventListener('click', () => { if (invDropArm !== it.id) { invDropArm = it.id; sfx('blip'); renderInvDetail(); return; } invDropArm = null; const P = G.player; dropWeapon(it, P.x + 16, P.y + 8); G.stats = calcStats(G.buffs); persist(); sfx('drop'); invSel = null; renderInv(); });
+      ${it.lv || it.fail ? `<div class="rp">강화 +${it.lv || 0}${it.fail ? ` · 장인의 숨결 +${2 * it.fail}%p` : ''}</div>` : ''}</div>${right}
+      <div class="tK">${keys.map(x => `<span class="kI">${x}</span>`).join('')}</div><div class="tDrop"><i></i></div>`;
+  }
+  // F 홀드: 마우스를 올린(또는 고른) 무기를 바닥에 내려놓는다
+  let invHover = false, invKbd = false, invDropT = 0, invDropTimer = null;
+  function invDropTick() {
+    if (mode !== 'inv') return; const it = SAVE.inv.find(i => i.id === invSel), on = (invHover || invKbd) && keys['f'] && it && invCanDrop();
+    invDropT = on ? invDropT + 0.05 : 0; const bar = pxTip.el.querySelector('.tDrop i'); if (bar) bar.style.width = Math.min(100, invDropT / 0.7 * 100) + '%';
+    if (on && invDropT >= 0.7) { invDropT = 0; keys['f'] = false; const P = G.player; dropWeapon(it, P.x + 16, P.y + 8); G.stats = calcStats(G.buffs); persist(); sfx('drop'); lootFeed(`「${it.name}」 버림`, gradeOf(it).c, 1400); invSel = null; invHover = false; invKbd = false; pxTip.hide(); renderInv(); }
   }
   function invKey(k) {
-    const list = invList();
+    const list = invList().filter(i => i.slot === 'weapon' && i.cls === invCls());
     if (k === 'Escape' || k === 'i' || k === 'I') { closeInv(); return true; }
-    if (k === 'q' || k === 'Q' || k === 'e' || k === 'E') { const i = INV_TABS.findIndex(t => t[0] === invTab), d = (k === 'q' || k === 'Q') ? -1 : 1; invTab = INV_TABS[(i + d + INV_TABS.length) % INV_TABS.length][0]; invSel = null; sfx('blip'); renderInv(); return true; }
     if (k === 'Enter' || k === ' ') { const it = SAVE.inv.find(i => i.id === invSel); if (it) equipNow(it, !isEq(invCls(), it)); return true; }
-    const dir = { ArrowLeft: -1, a: -1, A: -1, ArrowRight: 1, d: 1, D: 1, ArrowUp: -INV_COLS, w: -INV_COLS, W: -INV_COLS, ArrowDown: INV_COLS, s: INV_COLS, S: INV_COLS }[k];
+    const dir = { ArrowLeft: -1, a: -1, A: -1, ArrowRight: 1, d: 1, D: 1, ArrowUp: -1, w: -1, W: -1, ArrowDown: 1, s: 1, S: 1 }[k];
     if (dir && list.length) {
       let i = list.findIndex(x => x.id === invSel); if (i < 0) i = 0; else i = clamp(i + dir, 0, list.length - 1);
-      invSel = list[i].id; sfx('blip'); renderInv(); return true;
+      invSel = list[i].id; invKbd = true; sfx('blip'); renderInv(); return true;
     }
     return false;
   }
@@ -15725,20 +15917,23 @@ void main() {
 
   // ---------------------------------------------------------------- 직업 선택
   let selCls = CUR;
-  function classPreview(c, cls) {
-    const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.clearRect(0, 0, c.width, c.height);
+  function classPreview(c0, cls, base) { // base: 선택창 — 런은 맨손(기본 무기)으로 시작하니 기본 무기를 그린다 // v2.19 넓은 캔버스에 그린 뒤 캐릭터 중심을 맞춰 찍는다
+    const g0 = c0.getContext('2d'); g0.imageSmoothingEnabled = false; g0.clearRect(0, 0, c0.width, c0.height);
+    const PVX = 40, [c, g] = mkCanvas(c0.width + PVX * 2, c0.height); g.imageSmoothingEnabled = false;
     const C = CLASSES[cls], ash = SAVE.skin === 'ash' && skinOpen(), spr = sprite(C.map, ash ? ashPalKey(C.pal) : C.pal, 4); // v1.99 잿불 외형 미리보기
     const bx = c.width / 2, by = c.height - 6;
     g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(bx, by, 22, 6, 0, 0, TAU); g.fill();
     const drawW = (b, x, y, a, sc) => { if (ash) b = ashBlade(b); if (b.cells) { const r = rotW(b, a); g.save(); g.translate(Math.round(x), Math.round(y)); g.scale(2, 2); g.drawImage(r.c, -r.o, -r.o); g.restore(); return; } g.save(); g.translate(x, y); g.rotate(a); g.scale(sc, Math.cos(a) < 0 ? -sc : sc); g.drawImage(b.c, -b.pivotX, -b.pivotY); g.restore(); };
-    if (cls === 'knight') drawW(BLADES.great, bx + 8, by - 22, -0.9, 1.4);
-    else if (cls === 'ranger') { drawW(BLADES.dagger, bx - 12, by - 26, 2.88, 2); }
-    else if (cls === 'mage') drawW(TOOLS.staff, bx + 14, by - 18, -1.35, 1.5);
-    else if (cls === 'priest') drawW(TOOLS.mace, bx + 12, by - 24, -0.6, 1.5);
+    const WT = base ? WEAP[cls][0] : weaponTex(cls); // v2.19 장비창은 실제 들고 있는 무기 · 선택창은 시작 기본 무기
+    if (cls === 'knight') drawW(WT, bx + 8, by - 22, -0.9, 1.4);
+    else if (cls === 'ranger') { drawW(WT, bx - 12, by - 22, -2.3, 2); } // v2.19 쌍검을 양손에 세워 든 자세
+    else if (cls === 'mage') drawW(WT, bx + 14, by - 18, -1.35, 1.5);
+    else if (cls === 'priest') drawW(WT, bx + 12, by - 24, -0.6, 1.5);
     if (ash) { const A = auraOf(spr, 4); g.drawImage(A.c, Math.round(bx - spr.width / 2) - A.p, by - spr.height - A.p); }
     g.drawImage(spr, Math.round(bx - spr.width / 2), by - spr.height);
-    if (cls === 'ranger') drawW(BLADES.dagger, bx + 12, by - 24, 2.62, 2);
-    if (cls === 'gunner') drawW(TOOLS.musket, bx + 6, by - 18, -0.35, 1.4);
+    if (cls === 'ranger') drawW(WT, bx + 12, by - 22, -0.85, 2);
+    if (cls === 'gunner') drawW(WT, bx + 6, by - 18, -0.35, 1.4);
+    g0.drawImage(c, -PVX, 0); // 캐릭터를 창 가운데(이름 바로 위)에 · 넓게 그려서 긴 무기가 옆에서 잘리지 않게
   }
   function buildSelect() {
     const max = { atk: 30, def: 32, hp: 8, spd: 104, crit: 0.3 };
@@ -15753,7 +15948,7 @@ void main() {
           <span>치명</span><div class="pbar"><i class="gold" style="width:${C.base.crit / max.crit * 100}%"></i></div>
         </div>
       </div>`).join('');
-    $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv));
+    $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv, true));
     $('selCards').querySelectorAll('.selc').forEach(el => {
       el.addEventListener('mouseenter', () => { if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; sfx('blip'); renderSelect(); } });
       el.addEventListener('click', () => chooseClass(el.dataset.cls));
@@ -15770,7 +15965,7 @@ void main() {
     const open = skinOpen(), cur = SAVE.skin === 'ash' && open ? 'ash' : '';
     return `<div class="ascHead skinRow"><span class="ascT">외형</span><button class="ascB skinB${cur ? '' : ' on'}" data-skin="">기본</button><button class="ascB skinB${cur ? ' on' : ''}" data-skin="ash" ${open ? '' : 'disabled'}>잿불</button><span class="ascLock">${open ? '잿빛 몸·무기, 붉은 안광과 기운' + (ASH_SKIN_TEST ? ' · 테스트로 열림 (정식: 잿불 3 돌파)' : '') : '잿불 3을 돌파하면 열린다'}</span></div>`;
   }
-  function bindSkin(el) { el.querySelectorAll('.skinB').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; SAVE.skin = b.dataset.skin || undefined; persist(); sfx('blip'); renderAsc(); $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv)); })); }
+  function bindSkin(el) { el.querySelectorAll('.skinB').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; SAVE.skin = b.dataset.skin || undefined; persist(); sfx('blip'); renderAsc(); $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv, true)); })); }
   function renderAsc() {
     const A = SAVE.asc, el = $('ascRow'); if (!el) return;
     if (!A.max) { el.innerHTML = `<div class="ascHead"><span class="ascT">잿불 단계</span><span class="ascLock">첫 토벌(마지막 보스)을 마치면 열린다</span></div>` + skinRowHtml(); bindSkin(el); return; }
@@ -15800,7 +15995,7 @@ void main() {
   let forgeFrom = 'title', forgeSel = null, forgeCls = CUR, forgeMsg = null;
   function openForge(from, m) {
     $('ovForge').dataset.m = m || 'all'; $('fgTitle').textContent = { enh: '모루 — 강화', roll: '숫돌 — 재련 (옵션 다시 굴리기)', salv: '용광로 — 분해' }[m] || '대장간 — 강화';
-    forgeFrom = from; forgeCls = G ? G.cls : CUR; forgeMsg = from === 'between' ? `<span class="ok">STAGE ${G.stage} 클리어 — 보스 전리품이 들어왔다. 강화하고 다음 스테이지로</span>` : null; mode = 'forge';
+    forgeFrom = from; forgeCls = G ? G.cls : CUR; forgeMsg = from === 'between' ? `<span class="ok">STAGE ${G.stage} 클리어 — 보스 전리품 획득</span>` : null; mode = 'forge';
     if (from === 'between' && G.newItems[0]) forgeSel = G.newItems[0].id;
     ['ovTitle', 'ovResult'].forEach(id => $(id).classList.remove('on'));
     $('fgTabs').style.display = from === 'between' || from === 'station' ? 'none' : '';
@@ -15921,7 +16116,6 @@ void main() {
   }
   document.querySelectorAll('#fgTabs [data-cls]').forEach(b => b.addEventListener('click', () => { forgeCls = b.dataset.cls; forgeMsg = null; sfx('blip'); renderForge(); }));
   $('fgClose').addEventListener('click', closeForge);
-  { const b = $('pkClose'); if (b) b.addEventListener('click', closePick); } // index.html이 옛 버전이어도 멈추지 않게
 
 
   // ---------------------------------------------------------------- 모바일 터치 조작
@@ -16017,5 +16211,5 @@ void main() {
   titleMats();
   requestAnimationFrame(frame);
 
-  window.__proto = { get dlv() { return DLV; }, set dlv(v) { DLV = v; DGC.clear(); }, dRadial: (...a) => dRadial(...a), get dither() { return DITHER_ON; }, set dither(v) { DITHER_ON = !!v; LIGHT_DITH = !!v; }, get lightDith() { return LIGHT_DITH; }, set lightDith(v) { LIGHT_DITH = !!v; }, get lightGL() { return !!(LGL && !LGL.off && LIGHT_GL); }, set lightGL(v) { LIGHT_GL = !!v; }, wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genCart, genPillar, genRubble, genWallBlock, KING4, BELL4, CART4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed, forge: () => ({ furnace: gCanvas(genFurnace(), FORGE_PAL), rack: gCanvas(FORGE_DECO.rack(), FORGE_PAL), tools: gCanvas(FORGE_DECO.tools(), FORGE_PAL), ingots: gCanvas(FORGE_DECO.ingots(), FORGE_PAL) }) }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, openPick, takePick, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, asc: { ASC, get lv() { return ascLv(); }, set lv(v) { if (G) G.asc = v; }, F: ASCF, save: () => SAVE.asc, result: w => showResult(w), openSelect: () => openSelect(), rest: () => openRest() }, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
+  window.__proto = { get dlv() { return DLV; }, set dlv(v) { DLV = v; DGC.clear(); }, dRadial: (...a) => dRadial(...a), get dither() { return DITHER_ON; }, set dither(v) { DITHER_ON = !!v; LIGHT_DITH = !!v; }, get lightDith() { return LIGHT_DITH; }, set lightDith(v) { LIGHT_DITH = !!v; }, get lightGL() { return !!(LGL && !LGL.off && LIGHT_GL); }, set lightGL(v) { LIGHT_GL = !!v; }, wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genCart, genPillar, genRubble, genWallBlock, KING4, BELL4, CART4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed, forge: () => ({ furnace: gCanvas(genFurnace(), FORGE_PAL), rack: gCanvas(FORGE_DECO.rack(), FORGE_PAL), tools: gCanvas(FORGE_DECO.tools(), FORGE_PAL), ingots: gCanvas(FORGE_DECO.ingots(), FORGE_PAL) }) }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, asc: { ASC, get lv() { return ascLv(); }, set lv(v) { if (G) G.asc = v; }, F: ASCF, save: () => SAVE.asc, result: w => showResult(w), openSelect: () => openSelect(), rest: () => openRest() }, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
 })();

@@ -66,11 +66,14 @@
   .sname { display: flex; justify-content: space-between; align-items: baseline; }
   .sname b { font-family: 'Galmuri9'; font-size: 10px; font-weight: normal; color: var(--ink); }
   .sname span { font-family: 'Galmuri7'; font-size: 8px; color: var(--gold-l); }
-  .relicBox { margin-top: 8px; font-family: 'Galmuri9'; font-size: 10px; color: var(--gold-l); display: flex; flex-direction: column; gap: 4px; } .relicBox > i { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); font-style: normal; } .relicRow { display: flex; gap: 4px; align-items: flex-start; } .relicRow img { width: 14px; height: 14px; image-rendering: pixelated; flex: none; } .relicRow span { color: var(--c); flex: 1; min-width: 0; } .relicRow i { display: block; font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); font-style: normal; } /* v2.07 유물 */
-  .hearts1 { display: flex; flex-wrap: wrap; gap: 1px; margin: 2px 0 3px; min-height: 12px; } .hearts1 img { width: 14px; height: 12px; image-rendering: pixelated; } .hearts1 img.ar { height: 14px; margin-top: -1px; } /* v2.00 하트 */
+  .sname .statusTags { display: flex; justify-content: flex-end; gap: 2px; min-width: 0; height: 9px; }
+  .sname .statusTags .tag { line-height: 8px; padding: 0 2px; }
+  .relicBox { margin-top: 8px; font-family: 'Galmuri9'; font-size: 10px; color: var(--gold-l); display: flex; flex-direction: column; gap: 4px; } .relicBox > i { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); font-style: normal; } .relicRow { display: flex; gap: 4px; align-items: flex-start; } .relicRow img { width: 14px; height: 14px; image-rendering: pixelated; flex: none; } .relicRow span { color: var(--c); flex: 1; min-width: 0; } .relicRow { cursor: help; }  /* v2.07 유물 · v2.19 효과는 마우스를 올려야 */
+  .hearts1 { display: flex; flex-wrap: wrap; gap: 1px; margin: 0 0 1px; min-height: 12px; } .hearts1 img { width: 14px; height: 12px; image-rendering: pixelated; } .hearts1 img.ar { height: 14px; margin-top: -1px; } /* v2.00 하트 */
   .hptext { font-family: 'Galmuri7'; font-size: 8px; color: var(--ink); text-align: right; line-height: 8px; }
   .pbar.thin { height: 4px; }
-  .tags { display: flex; gap: 2px; height: 9px; }
+  .tags { display: flex; gap: 2px; height: 9px; white-space: nowrap; } .tag { white-space: nowrap; flex-shrink: 0; }
+  .tag.relicTag { padding: 0; width: 9px; height: 9px; display: inline-flex; align-items: center; justify-content: center; background: #0d0a10; box-shadow: inset 0 0 0 1px var(--c); pointer-events: auto; } .tag.relicTag img { width: 7px; height: 7px; }
   .tag { font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; padding: 0 2px; background: #2d2236; color: var(--gold-l); border: 1px solid #000; }
   .tag.aw { background: #6e5320; color: #fff3c0; animation: blink .5s steps(2) infinite; }
   .slot.empty .portrait { background: #0e0b11; }
@@ -135,6 +138,12 @@
     text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
   #banner .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; }
   #keyguide { left: 384px; top: 8px; max-width: 472px; transform: translateX(-50%); padding: 5px 9px 6px; opacity: 0; pointer-events: none; transition: opacity .3s steps(4); }
+  /* v2.19 일시정지 창 조작법 (HUD 조작 안내와 같은 모양) */
+    .kgBox { display: none; margin: 6px 0 8px; padding: 6px 8px; background: #120e15; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; } .kgBox.on { display: block; }
+  .kgBox .kt { font-family: 'Galmuri9'; font-size: 9px; color: var(--gold-l); text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
+  .kgBox .kr { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; } .kgBox .kr + .kr { margin-top: 4px; }
+  .kgBox .ki { display: flex; align-items: center; gap: 3px; font-family: 'Galmuri7'; font-size: 8px; color: var(--ink); white-space: nowrap; } .kgBox .ki .key { color: #1a1208; background: var(--gold-l); }
+  .kgBox .kh { font-family: 'Galmuri7'; font-size: 7px; color: var(--quiet); text-align: center; margin-top: 4px; }
   #keyguide .kt { font-family: 'Galmuri9'; font-size: 9px; color: var(--gold-l); text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
   #keyguide .kr { display: flex; justify-content: center; gap: 10px; white-space: nowrap; }
   #keyguide .kr + .kr { margin-top: 4px; }
@@ -182,6 +191,7 @@
   #ovTitle.howto .logo, #ovTitle.howto #titleInfo { display: none; }
   #ovTitle.howto #titleMenu { width: 500px; max-width: 94%; max-height: 404px; overflow-y: auto; }
   .keys span { color: var(--ink); }
+  #ovPop { z-index: 40; } .popWin { width: 500px; height: 330px; max-width: 94%; display: flex; flex-direction: column; } .popPane { display: none; flex: 1; min-height: 0; flex-direction: column; } .popPane.on { display: flex; } .popPane .keys { flex: 1; overflow-y: auto; align-content: start; } .popPane .vol { flex: 1; align-content: center; } .popPane > .menu { margin-top: auto; } .popWin:has(#tmSound.on) { width: 300px; height: auto; } .popWin:has(#tmSound.on) .vol { margin: 10px 0 12px; } /* v2.19 조작법 팝업 · 사운드는 작게 */
   .vol { display: grid; grid-template-columns: 54px 1fr 26px; gap: 6px 8px; align-items: center; margin: 8px 0; }
   .vol span { color: var(--ink); }
   .vol output { font-family: 'Galmuri7'; font-size: 8px; color: var(--gold-l); text-align: right; }
@@ -328,20 +338,23 @@
 
 
   /* 장비 · 인벤토리 (v0.52) */
-  .invWin { width: 724px; max-width: 724px; padding: 9px 12px 7px; }
-  .invBody { display: flex; gap: 10px; height: 352px; margin-top: 4px; }
+  .invWin .fgTop { flex-wrap: wrap; row-gap: 3px; } .invWin .fgMoney { width: 100%; justify-content: flex-start; } .invWin #ivClose { white-space: nowrap; }
+  .invWin { width: 300px; max-width: 300px; padding: 9px 12px 7px; }
+  .invBody { display: flex; gap: 10px; margin-top: 4px; }
   .invLeft { width: 270px; display: flex; flex-direction: column; gap: 6px; }
-  .invDoll { display: flex; justify-content: space-between; align-items: stretch; background: radial-gradient(circle at 50% 62%, #3b2d46, #120d16 72%); border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); padding: 6px; height: 176px; }
-  .eqCol { display: flex; flex-direction: column; justify-content: space-between; }
+  .invDoll { position: relative; display: flex; justify-content: space-between; align-items: stretch; background: radial-gradient(circle at 50% 62%, #3b2d46, #120d16 72%); border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); padding: 6px; height: 176px; }
+  .wSlot.empty .box { opacity: .45; } .wSlot .box .key { position: absolute; left: 1px; bottom: 0; font-style: normal; font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; color: var(--quiet); } .wSlot .box .eq { position: absolute; left: 1px; top: 1px; font-style: normal; font-family: 'Galmuri7'; font-size: 8px; line-height: 8px; background: var(--gold); color: #1a1208; padding: 0 1px; } .wSlot.off img { filter: grayscale(.8) brightness(.55); } .wSlot.new .box::after { content: ''; position: absolute; right: 2px; top: 2px; width: 3px; height: 3px; background: var(--blood); box-shadow: 0 0 0 1px #000; } .invDoll #eqR { justify-content: flex-start; gap: 6px; } .eqSlot.wSlot { height: auto; } /* v2.19 무기 3칸 세로 */
+  .eqCol { min-width: 44px; display: flex; flex-direction: column; justify-content: space-between; }
   .eqSlot { width: 44px; height: 52px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; background: none; border: none; padding: 0; color: var(--quiet); font: inherit; }
   .eqSlot .box { position: relative; width: 40px; height: 40px; background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--c, #3a2f40); display: flex; align-items: center; justify-content: center; }
-  .eqSlot .box img { width: 28px; height: 28px; image-rendering: pixelated; }
+  .eqSlot .box img { width: 28px; height: 28px; image-rendering: pixelated; } .eqSlot .box img.thumb, .ivCell img.thumb { width: 32px; height: 32px; } /* v2.19 무기 섬네일은 원본 크기 */
   .eqSlot .box .lv { position: absolute; right: 1px; bottom: 0; font-family: 'Galmuri7'; font-size: 8px; color: var(--gold-l); font-style: normal; }
   .eqSlot .box .ph { opacity: .22; filter: grayscale(1); }
   .eqSlot span { font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; }
   .eqSlot.sel .box { box-shadow: inset 0 0 0 1px var(--c, #3a2f40), 0 0 0 1px var(--gold-l); }
   .eqSlot.sel span { color: var(--gold-l); }
-  .invPv { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .invRelic { position: absolute; left: 8px; right: 8px; bottom: 6px; } .relicSlots { display: flex; gap: 4px; } .relicSlots .relicRow { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--c, #3a2f40); } .relicSlots .relicRow img { width: 14px; height: 14px; } .relicSlots .relicRow.empty { opacity: .6; } .relicSlots .relicRow:hover { box-shadow: inset 0 0 0 1px var(--gold-l); } /* v2.19 유물은 캐릭터 창 하단 */
+  .invPv { padding-bottom: 18px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
   .invPv canvas { width: 108px; height: 88px; }
   .invCls { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); margin-top: 6px; }
   .invCls small { display: block; text-align: center; font-family: 'Galmuri7'; font-weight: normal; font-size: 8px; color: var(--quiet); }
@@ -365,6 +378,19 @@
   .ivCell .eq { left: 1px; top: 1px; background: var(--gold); color: #1a1208; padding: 0 1px; }
   .ivCell.new::after { content: ''; position: absolute; right: 2px; top: 2px; width: 3px; height: 3px; background: var(--blood); box-shadow: 0 0 0 1px #000; }
   .invEmpty { grid-column: 1 / -1; color: var(--dim); padding: 6px; }
+  /* v2.19 도트 말풍선 (#ui 안 — 다른 안내문과 같은 배율) */
+  .pxTip { position: absolute; z-index: 60; display: none; max-width: 210px; padding: 7px 10px 8px; pointer-events: none; font-family: 'Galmuri9'; font-size: 10px; line-height: 1.5; color: var(--ink); }
+  .pxTip.on { display: block; } .pxTip.wide { max-width: 330px; }
+  .pxTip .tN { font-family: 'Galmuri11'; font-size: 12px; color: var(--c); margin-bottom: 3px; }
+  .pxTip .tD { color: var(--ink); }
+  .pxTip:has(.dl) { display: none; } .pxTip.on:has(.dl) { display: grid; grid-template-columns: 1fr auto; column-gap: 12px; }
+  .pxTip .dl { min-width: 150px; } .pxTip .dr { width: 130px; }
+  .pxTip .gr { font-family: 'Galmuri7'; font-size: 8px; color: var(--c); letter-spacing: 1px; }
+  .pxTip .nm { font-family: 'Galmuri11'; font-size: 12px; color: var(--c); margin-bottom: 3px; } .pxTip .nm b { color: var(--gold-l); font-weight: normal; }
+  .pxTip .mn, .pxTip .op { color: var(--ink); } .pxTip .fx { color: var(--legend); } .pxTip .rp { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); margin-top: 4px; }
+  .pxTip .cmp em { font-style: normal; }
+  .pxTip .tK { grid-column: 1 / -1; margin-top: 6px; padding-top: 5px; border-top: 1px solid #3a2f40; font-family: 'Galmuri7'; font-size: 8px; color: var(--gold-l); } .pxTip .tK { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--ink); } .pxTip .kI { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; } .pxTip .key { color: #1a1208; background: var(--gold-l); }
+  .pxTip .tDrop { grid-column: 1 / -1; height: 3px; margin-top: 3px; background: #0b080d; } .pxTip .tDrop i { display: block; height: 100%; width: 0; background: var(--blood); }
   .invDetail { flex: 1; background: #120e15; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; padding: 6px 9px; overflow-y: auto; display: flex; gap: 10px; }
   .invDetail .dl { flex: 1; min-width: 0; }
   .invDetail .dr { width: 170px; }
@@ -470,43 +496,6 @@
           <button class="mi" data-act="sound">사운드</button>
           <button class="mi danger" data-act="reset">저장 초기화</button>
         </div>
-        <div id="tmHowto" style="display:none">
-          <h2>조작법</h2>
-          <div class="keys pcOnly">
-            <span class="key">WASD</span><span>이동 · 마우스를 움직이면 커서 방향 조준</span>
-            <span class="key">LMB</span><span>공격 (마법사 평타는 마나 소모·회복, 거너는 5발마다 회전 재장전)</span>
-            <span class="key">RMB</span><span>특수기술 (직업별)</span>
-            <span class="key">E</span><span>각성기 (직업별, 투지 100)</span>
-            <span class="key">SPACE</span><span>점멸 — 공격 직전이면 퍼펙트 회피</span>
-            <span class="key">F</span><span>상호작용 — 상자 열기 · 상인 구매 · 모닥불 휴식 · 텔레포터</span>
-            <span class="key">TAB</span><span>지도 — 클리어한 방의 텔레포터로 순간이동</span>
-            <span class="key">I</span><span>장비 · 인벤토리 — 장착 장비·능력치 확인, 장비 비교·교체 (게임 멈춤)</span>
-            <span class="key">H</span><span>조작 안내 켜기/끄기 (시작할 때 자동 표시)</span>
-            <span class="key">M</span><span>음악 켜기/끄기</span>
-          </div>
-          <div class="keys touchOnly">
-            <span class="key">왼쪽 끌기</span><span>이동 — 화면 왼쪽 아래 아무 곳이나 누르면 그 자리에 조이스틱</span>
-            <span class="key">공격</span><span>가까운 적을 자동 조준 (마법사는 마나 소모·회복, 거너는 5발마다 회전 재장전)</span>
-            <span class="key">스킬</span><span>특수기술 (직업별)</span>
-            <span class="key">각성</span><span>각성기 (직업별, 투지 100)</span>
-            <span class="key">점멸</span><span>회피 — 공격 직전이면 퍼펙트 회피</span>
-            <span class="key">F</span><span>상호작용 — 상자 · 상인 · 모닥불 · 텔레포터 앞에서 나타남</span>
-            <span class="key">지도</span><span>클리어한 방의 텔레포터로 순간이동</span>
-            <span class="key">가방</span><span>장비 · 인벤토리 — 장비 비교·교체 (게임 멈춤)</span>
-            <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
-            <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
-          </div>
-          <p>팔을 치켜든 적과 붉은 장판은 곧 공격이 온다는 신호.<br>전투 방에 들어가면 문이 잠긴다. 엘리트가 떨어뜨린 봉인 열쇠(불씨·인장·엄니) 2개를 보스 방 앞 받침에 바치면(F) 보스 방이 열린다. 금 간 벽은 때려서 부술 수 있다.<br>오크에게 잡히면 공격을 연타하거나 점멸로 빠져나온다. 전쟁 북은 3번 때리면 찢어진다.</p>
-          <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
-        </div>
-        <div id="tmSound" style="display:none">
-          <h2>사운드</h2>
-          <div class="vol">
-            <span>배경음악</span><input type="range" min="0" max="100" class="volBgm"><output class="volBgmV"></output>
-            <span>효과음</span><input type="range" min="0" max="100" class="volSfx"><output class="volSfxV"></output>
-          </div>
-          <div class="menu"><button class="mi sel" data-act="back">돌아가기</button></div>
-        </div>
       </div>
       <div class="ver">PROTOTYPE v2.18 · ↑↓ 선택 · ENTER 결정</div>
     </div>
@@ -543,19 +532,10 @@
     </div>
 
     <!-- 휴식 -->
-    <div class="ov" id="ovPick">
-      <div class="pf win" style="max-width:720px">
-        <h2 id="pkTitle">보상 상자</h2>
-        <p>장비 셋 중 하나를 고른다 [1·2·3]. 빈 칸이면 바로 장착, 이미 끼고 있으면 가방으로 들어간다.</p>
-        <div class="pkRow" id="pkChoices"></div>
-        <div id="pkCur"></div>
-        <button class="pbtn" id="pkClose" style="margin-top:10px">나중에 고르기 [ESC]</button>
-      </div>
-    </div>
     <div class="ov" id="ovRest">
       <div class="pf win">
         <h2>모닥불 — 휴식</h2>
-        <p>HP가 모두 회복되었다. 이번 토벌 동안 유지되는 축복을 하나 고른다.</p>
+        <p>HP 회복 · 축복을 하나 고른다</p>
         <div class="choices" id="restChoices"></div>
       </div>
     </div>
@@ -585,32 +565,69 @@
               <div class="eqCol" id="eqL"></div>
               <div class="invPv"><canvas class="px" id="invPv" width="108" height="88"></canvas><div class="invCls" id="invCls"></div></div>
               <div class="eqCol" id="eqR"></div>
+              <div class="invRelic" id="invRelic"></div>
             </div>
             <div class="invStats" id="invStats"></div>
             <div class="invFx" id="invFx"></div>
           </div>
-          <div class="invRight">
-            <div class="invTabs" id="invTabs"></div>
-            <div class="invGrid" id="invGrid"></div>
-            <div class="invDetail" id="invDetail"></div>
-          </div>
         </div>
-        <div class="invHint f7"><span class="pcOnly">방향키 선택 · ENTER 장착/해제 · Q / E 탭 바꾸기 · I 또는 ESC 닫기</span><span class="touchOnly">칸을 눌러 고르고 장착 · 해제</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
+        <div class="invHint f7"><span class="pcOnly"></span><span class="touchOnly">칸을 눌러 고르고 장착 · 해제</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
       </div>
     </div>
 
     <!-- 일시정지 -->
     <div class="ov" id="ovPause">
-      <div class="pf win" style="width:240px">
+      <div class="pf win" style="width:240px" id="pmWin">
         <h2>일시정지</h2>
-        <div class="vol">
-          <span>배경음악</span><input type="range" min="0" max="100" class="volBgm"><output class="volBgmV"></output>
-          <span>효과음</span><input type="range" min="0" max="100" class="volSfx"><output class="volSfxV"></output>
-        </div>
         <div class="menu" id="pmMenu">
           <button class="mi sel" data-act="resume">계속하기</button>
           <button class="mi" data-act="inv">장비 · 인벤토리 [I]</button>
+          <button class="mi" data-act="howto">조작법</button>
+          <button class="mi" data-act="sound">사운드</button>
           <button class="mi danger" data-act="quit">토벌 포기</button>
+        </div>
+      </div>
+    </div>
+    <!-- v2.19 공용 팝업: 조작법 · 사운드 (타이틀·일시정지 같은 크기) -->
+    <div class="ov" id="ovPop">
+      <div class="pf win popWin">
+        <div id="tmHowto" class="popPane">
+          <h2>조작법</h2>
+          <div class="keys pcOnly">
+            <span class="key">WASD</span><span>이동 · 마우스를 움직이면 커서 방향 조준</span>
+            <span class="key">LMB</span><span>공격</span>
+            <span class="key">RMB</span><span>특수기술 (직업별)</span>
+            <span class="key">E</span><span>각성기 (직업별, 투지 100)</span>
+            <span class="key">SPACE</span><span>점멸 — 공격 직전이면 퍼펙트 회피</span>
+            <span class="key">F</span><span>상호작용</span>
+            <span class="key">1~3</span><span>무기 바꾸기 · <span class="key">F</span> 홀드 버리기</span>
+            <span class="key">TAB</span><span>지도 — 클리어한 방의 텔레포터로 순간이동</span>
+            <span class="key">I</span><span>장비</span>
+            <span class="key">H</span><span>조작 안내 켜기/끄기 (시작할 때 자동 표시)</span>
+            <span class="key">M</span><span>음악 켜기/끄기</span>
+          </div>
+          <div class="keys touchOnly">
+            <span class="key">왼쪽 끌기</span><span>이동</span>
+            <span class="key">공격</span><span>자동 조준</span>
+            <span class="key">스킬</span><span>특수기술 (직업별)</span>
+            <span class="key">각성</span><span>각성기 (직업별, 투지 100)</span>
+            <span class="key">점멸</span><span>회피 — 공격 직전이면 퍼펙트 회피</span>
+            <span class="key">F</span><span>상호작용</span>
+            <span class="key">지도</span><span>클리어한 방의 텔레포터로 순간이동</span>
+            <span class="key">가방</span><span>장비 · 인벤토리 — 장비 비교·교체 (게임 멈춤)</span>
+            <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
+            <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
+          </div>
+          <p>붉은 장판 = 곧 공격.<br>엘리트의 봉인 열쇠 2개 → 보스 방 열림. 금 간 벽은 부서진다.<br>오크에게 잡히면 연타·점멸로 탈출.</p>
+          <div class="menu"><button class="mi sel" data-act="popClose">닫기 [ESC]</button></div>
+        </div>
+        <div id="tmSound" class="popPane">
+          <h2>사운드</h2>
+          <div class="vol">
+            <span>배경음악</span><input type="range" min="0" max="100" class="volBgm"><output class="volBgmV"></output>
+            <span>효과음</span><input type="range" min="0" max="100" class="volSfx"><output class="volSfxV"></output>
+          </div>
+          <div class="menu"><button class="mi sel" data-act="popClose">닫기 [ESC]</button></div>
         </div>
       </div>
     </div>
