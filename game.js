@@ -179,7 +179,7 @@
     const ell = (x, y, rx, ry, rot, a0, a1, ccw) => {
       if (!(rx >= 0 && ry >= 0)) { bad = true; return; }
       let d = a1 - a0;
-      if (!ccw) { if (d >= TAU) d = TAU; else { d %= TAU; if (d < 0) d += TAU; } } else { if (-d >= TAU) d = -TAU; else { d %= TAU; if (d > 0) d -= TAU; } }
+      if (!ccw) { if (Math.abs(d) >= TAU) d = TAU; else { d %= TAU; if (d < 0) d += TAU; } } else { if (Math.abs(d) >= TAU) d = -TAU; else { d %= TAU; if (d > 0) d -= TAU; } } /* 브라우저처럼 0→TAU 역방향도 한 바퀴로 */
       const n = Math.max(6, Math.min(96, Math.ceil(Math.abs(d) * devR(rx, ry) / 3))), cr = Math.cos(rot), sr = Math.sin(rot);
       for (let i = 0; i <= n; i++) { const t = a0 + d * i / n, ex = rx * Math.cos(t), ey = ry * Math.sin(t); const [X, Y] = T(x + ex * cr - ey * sr, y + ex * sr + ey * cr); if (i === 0 && !cur) sub(X, Y); else add(X, Y); }
     };
@@ -15284,7 +15284,7 @@ huskUp:[
     const v = G.vortex; if (!v) return;
     const shrinking = v.t < v.shrink, hold = !shrinking && v.t < v.shrink + v.hold, P = G.player, outside = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r;
     ctx.save();
-    ctx.beginPath(); ctx.rect(cam.x - 40, cam.y - 40, VW + 80, VH + 80); ctx.arc(v.cx, v.cy, v.r, 0, TAU, true);
+    ctx.beginPath(); ctx.rect(cam.x - 40, cam.y - 40, VW + 80, VH + 80); ctx.moveTo(v.cx + v.r, v.cy); ctx.arc(v.cx, v.cy, v.r, 0, TAU, true);
     ctx.fillStyle = `rgba(36,8,22,${0.62 + 0.1 * Math.sin(time * 5)})`; ctx.fill('evenodd');
     ctx.clip('evenodd');
     // 디더링된 핏빛 안개 덩어리
@@ -15312,7 +15312,7 @@ huskUp:[
     const n = Math.max(24, Math.round(v.r / 7)), tooth = 7 + 3 * Math.sin(time * 6);
     ctx.fillStyle = `rgba(255,40,70,${0.75 * fl})`; ctx.beginPath();
     for (let i = 0; i <= n * 2; i++) { const a = i / (n * 2) * TAU + time * 0.6, r = i % 2 ? v.r - tooth : v.r + 2; const x = v.cx + Math.cos(a) * r, y = v.cy + Math.sin(a) * r; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-    ctx.arc(v.cx, v.cy, v.r + 4, 0, TAU, true); ctx.fill('evenodd');
+    ctx.closePath(); ctx.moveTo(v.cx + v.r + 4, v.cy); ctx.arc(v.cx, v.cy, v.r + 4, 0, TAU, true); ctx.fill('evenodd');
     ctx.strokeStyle = `rgba(255,50,80,${0.85 * fl})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(v.cx, v.cy, v.r, 0, TAU); ctx.stroke();
     ctx.strokeStyle = `rgba(255,230,235,${0.75 * fl})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(v.cx, v.cy, v.r + 3, 0, TAU); ctx.stroke();
     // 조여 드는 동안: 안쪽을 가리키는 경고 화살표가 가장자리를 따라 흐른다
@@ -15477,7 +15477,6 @@ void main() {
     gearLights(lights); forgeLights(lights);
     for (const f of G.fx) if (f.kind === 'skybeam') lights.push({ x: f.x, y: f.y - 20, r: 90, a: 0.7 * (f.t / f.max), c: f.c, ca: 0.25 * (f.t / f.max) });
     for (const t of G.tele) if (t.shape !== 'spawn') { const c = teleCenter(t), boss = t.mark || isBossTele(t); lights.push({ x: c.x, y: c.y, r: (t.shape === 'line' ? t.len * 0.5 : t.r) + 20, a: boss ? 0.45 : 0.35, c: t.mark ? '190,100,255' : boss ? '255,160,80' : '255,70,50', ca: 0.06 }); } // 바닥 경고가 어둠에 묻히지 않게
-    if (G.vortex) lights.push({ x: G.vortex.cx, y: G.vortex.cy, r: G.vortex.r + 30, a: 0.35, c: '255,60,90', ca: 0.05 });
     for (const h of G.hazards) lights.push({ x: h.x, y: h.y, r: 40, a: 0.35, c: '120,200,60', ca: 0.08 });
     for (const d of G.drops) if (d.t > 0.6) { const gr = gradeOf(d.it); lights.push({ x: d.x, y: d.y - 20, r: 90, a: 0.8, c: hexRgb(gr.c), ca: 0.25 }); }
     for (const l of G.loot) { const c = l.type === 'gear' ? hexRgb(gradeOf(l.it).c) : LOOT[l.type].light; lights.push({ x: l.x, y: l.y - 6, r: l.type === 'gear' ? 60 : 26, a: 0.55, c, ca: l.type === 'gear' ? 0.22 : 0.12 }); }
