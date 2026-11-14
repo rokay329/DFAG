@@ -58,6 +58,17 @@
   .portrait img { position: absolute; left: 3px; top: 3px; width: 28px; height: 28px; }
   .portrait .pn { position: absolute; left: 0; top: 0; padding: 0 2px; background: var(--gold); color: #1a1208; font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; }
   .portrait .x { position: absolute; inset: 0; display: none; color: var(--blood); font-family: 'Galmuri11'; font-size: 24px; line-height: 34px; text-align: center; }
+  /* 1P 패널: 초상 없이 이름 · 종족/직업 · 골드 · 하트 · 상태 */
+  #p1 { display: block; height: auto; padding: 5px 6px 5px; }
+  #p1 .pTop { display: flex; justify-content: space-between; align-items: baseline; }
+  #p1 .pName { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; line-height: 13px; color: var(--gold-l); }
+  #p1 .pGold { display: flex; align-items: center; gap: 3px; font-family: 'Galmuri9'; font-size: 10px; color: var(--gold-l); }
+  #p1 .pGold img { width: 7px; height: 7px; } #p1 .pGold em { font-style: normal; font-family: 'Galmuri7'; font-size: 8px; color: var(--gold); margin-left: -1px; }
+  #p1 .pSub { font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; color: var(--quiet); margin: 1px 0 4px; }
+  #p1 .hearts1 { margin: 0 0 3px; }
+  #p1 .pState { display: flex; flex-wrap: wrap; gap: 2px; min-height: 9px; } #p1 .pState .statusTags, #p1 .pState .tags { display: flex; gap: 2px; height: 9px; } #p1 .pState .tag:not(.relicTag) { line-height: 8px; padding: 0 2px; }
+  #p1 .pState .statusTags:empty, #p1 .pState .tags:empty { display: none; }
+  .slot.dead .pName { color: var(--blood) !important; } .slot.hurt { animation: hurt .25s steps(2) 2; }
   .slot.dead .portrait img { filter: grayscale(1) brightness(.5); }
   .slot.dead .portrait .x { display: block; }
   .slot.hurt .portrait { animation: hurt .25s steps(2) 2; }
@@ -253,7 +264,7 @@
 
   /* 직업 선택 */
   #ovSelect { background: radial-gradient(ellipse at 50% 45%, rgba(20,8,20,.4), rgba(3,2,5,.92) 75%); }
-  .selWrap { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .selWrap { display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .selTitle { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; color: var(--gold-l); letter-spacing: 3px;
     text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 0 4px 0 #5e0f16; }
   .selCards { display: flex; gap: 6px; }
@@ -262,17 +273,17 @@
   .stg.sel { opacity: 1; box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-l), 0 0 0 2px #000, 0 0 10px 2px rgba(242,215,140,.35); }
   .stg .sn { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); } .stg b { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); }
   .stg .sd { color: #ffd34d; font-size: 10px; } .stg .ss { grid-column: 1 / -1; font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
-  .selc { width: 136px; padding: 6px 7px; cursor: pointer; opacity: .55; transition: opacity .1s; }
+  .selc { width: 102px; padding: 6px 7px; cursor: pointer; opacity: .55; transition: opacity .1s; }
   .selc.sel { opacity: 1; box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-l), 0 0 0 2px #000, 0 0 10px 2px rgba(242,215,140,.35); }
-  .selc .pv { display: flex; justify-content: center; height: 88px; background: radial-gradient(circle at 50% 70%, #3b2d46, #120d16 70%); border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); margin-bottom: 6px; }
-  .selc .pv canvas { width: 108px; height: 88px; }
-  .selDetail { width: 700px; padding: 7px 12px; box-sizing: border-box; height: 89px; overflow: hidden; } /* v1.99 설명 길이와 상관없이 높이 고정 */
+  .selc .pv { display: flex; justify-content: flex-end; align-items: center; padding-right: 1px; height: 84px; background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); margin-bottom: 6px; }
+  .selc .pv canvas { width: 108px; height: 88px; } .selc .pv .pvArt { width: 60px; height: 78px; } /* 초상: 30×39를 2px 칸으로 */
+  .selDetail { width: 534px; padding: 7px 12px; box-sizing: border-box; height: 89px; overflow: hidden; } /* v1.99 설명 길이와 상관없이 높이 고정 */
   .selDetail .sdh { margin-bottom: 5px; } .selDetail .sdh b { font-family: 'Galmuri11'; font-weight: bold; color: var(--gold-l); font-size: 12px; } .selDetail .sdh span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
   .selDetail .sk2 i { color: var(--quiet); font-style: normal; }
   /* v1.96 잿불 단계 */
   .ascTag { color: #ffb040; font-family: 'Galmuri7'; font-size: 8px; } /* v1.97 잿불 장비 */
-  .ascRow { width: 700px; padding: 4px 12px; box-sizing: border-box; height: 82px; overflow: hidden; } /* v1.99 잠김·규칙 줄바꿈과 상관없이 높이 고정 */
-  .skinRow { margin-top: 3px; } .skinB.on { color: #ffb040; box-shadow: inset 0 0 0 1px #ff6a30; } .skinB[disabled] { opacity: .4; } /* v1.99 외형 */
+  .ascRow { width: 534px; padding: 5px 12px; box-sizing: border-box; } /* v1.99 잠김·규칙 줄바꿈과 상관없이 높이 고정 */
+  .skinRow { margin-left: auto; display: flex; align-items: center; gap: 6px; } .ascRow [data-atip] { cursor: help; } .ascEm i.lock { opacity: .45; } .ascEm i { cursor: help; } .skinB.on { color: #ffb040; box-shadow: inset 0 0 0 1px #ff6a30; } .skinB[disabled] { opacity: .4; } /* v1.99 외형 */
   .ascHead { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .ascT { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: #ffb040; margin-right: 4px; }
   .ascLock { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
@@ -285,7 +296,7 @@
   .ascR { font-family: 'Galmuri7'; font-size: 8px; color: var(--ink); } .ascR i { font-style: normal; color: #ff8a2a; margin-right: 3px; } .ascR.new { color: #ffd34d; }
   .selc h3 { margin: 0; font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); }
   .selc .role { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); margin: 2px 0 6px; }
-  .selc .st { display: grid; grid-template-columns: 30px 1fr; gap: 3px 6px; align-items: center; margin-bottom: 6px; }
+  .selc .st { display: grid; grid-template-columns: 22px 1fr; gap: 3px 6px; align-items: center; margin-bottom: 0; }
   .selc .st span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
   .selc .st .pbar { height: 5px; }
   .selDetail .sk2 { display: grid; grid-template-columns: auto 1fr; gap: 4px 6px; align-items: start; line-height: 1.45; }
