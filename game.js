@@ -4219,6 +4219,13 @@ huskUp:[
       stampBoth(g, DECO_MAPS[m], woodPal(), x, A.y1 - 16, 2);
       if (Math.random() < 0.6) stampBoth(g, DECO_MAPS[pick(['tuft1', 'tuft2'])], DECO, x + rand(-2, 4), A.y1 + 2, 2);
     }
+    // v2.21 위쪽 가로 울타리 (북쪽 문 자리는 비움) — 캐릭터보다 뒤라 바닥에만 찍음
+    for (let x = A.x0 - 6; x < A.x1; x += 22) {
+      if (DR.n != null && x + 22 > DOOR.n.x - 22 && x < DOOR.n.x + 22) continue;
+      const r = Math.random(), m = r < 0.6 ? 'fenceA' : r < 0.78 ? 'fenceB' : r < 0.92 ? 'fenceC' : 'fenceD';
+      stamp(g, DECO_MAPS[m], woodPal(), x, A.y0 - 18, 2);
+    }
+    if (DR.n != null) { stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x - 32, A.y0 - 18, 2); stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x + 22, A.y0 - 18, 2); }
     // 양옆 세로 울타리
     for (let y = A.y0 + 8; y < A.y1 - 20; y += 22) for (const x of [A.x0 - 10, A.x1 + 2]) {
       if (((x < CX && DR.w != null) || (x > CX && DR.e != null)) && y + 22 > CY - 24 && y < CY + 24) continue;
@@ -6137,7 +6144,7 @@ huskUp:[
       }
       for (let y = 0; y < H0; y++) for (let x = 0; x < W0; x++) if (gg[y][x] === '.' && y > H0 - 9 && x > 5 && x < 24) gg[y][x] = '_'; // 아래쪽 디더링 빈칸은 외곽선을 두르지 않음
       const og = gOutline(gg).map(r => r.map(c => c === '_' ? '.' : c));
-      gPaint(g, og, Object.assign({ q: '#1a2a14', K: '#050905', k: '#07100a' }, PATH_PAL, { h: TREE_PAL.green.h, l: TREE_PAL.green.l, d: TREE_PAL.green.d, D: TREE_PAL.green.D }), p.x - 30, p.y - 78);
+      if (false) gPaint(g, og, Object.assign({ q: '#1a2a14', K: '#050905', k: '#07100a' }, PATH_PAL, { h: TREE_PAL.green.h, l: TREE_PAL.green.l, d: TREE_PAL.green.d, D: TREE_PAL.green.D }), p.x - 30, p.y - 78); /* v2.21 사용자 결정: 초록 잎 터널(아치) 없앰 — 불기둥 + 울타리로 문 표시 */
       // 터널 안 어둠에서 시작해 문턱 아래 풀밭으로 흐려지는 흙길
       const ph = rand(0, 6), B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
       for (let y = (p.y - 58) & ~1; y < p.y + 30; y += 2) {
