@@ -10125,13 +10125,14 @@ huskUp:[
   const sigHit = f => { SIG_ON = true; try { f(); } finally { SIG_ON = false; } };
   function hitShape(t, dmg) { const P = G.player; if (inShape(t, P.x, P.y, P.r)) hurtPlayer(dmg, t.owner); }
 
+  const PD_WIN = () => (TOUCH.on ? 0.24 : 0.16); // v2.27 모바일 보정: 퍼펙트 회피 판정 0.24초 (PC 0.16)
   function hurtPlayer(raw, src, unblockable, dot) {
     const P = G.player;
     if (P.dead || mode !== 'play') return;
     if (P.grab && !unblockable) return;
     if (P.miracleT > 0 || P.shieldT > 0) { if (!dot) G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#ffe39a', s: 1 }); return; }
     if (!unblockable && !dot && P.iframe > 0) {
-      if (P.state === 'dodge' && P.dodgeT < 0.16 && !P.perfectUsed) perfectDodge();
+      if (P.state === 'dodge' && P.dodgeT < PD_WIN() && !P.perfectUsed) perfectDodge();
       return;
     }
     const kill = raw >= 999; // 즉사 기술
@@ -10162,7 +10163,7 @@ huskUp:[
     if (!dot) gearOnHurt();
     if (dot) { P.hurtT = 0.15; sfx('hurt'); flashT = Math.max(flashT, 0.05); flashColor = '#ff1a28'; }
     if (!dot) {
-      P.inv = 0.9; P.hurtT = 0.2; sfx('hurt'); buzz(35);
+      P.inv = TOUCH.on ? 1.2 : 0.9; P.hurtT = 0.2; sfx('hurt'); buzz(35); // v2.27 모바일 보정: 피격 뒤 무적 1.2초 (PC 0.9)
       addShake(7, src && src.x != null ? Math.atan2(P.y - src.y, P.x - src.x) : null);
       if (src && src.x != null && !unblockable) { const ka = Math.atan2(P.y - src.y, P.x - src.x); P.kx = Math.cos(ka) * 170; P.ky = Math.sin(ka) * 170; }
       hitstop = Math.max(hitstop, 0.07); zoomK = Math.max(zoomK, 0.02);
@@ -10477,6 +10478,7 @@ huskUp:[
     priestTick(dt);
     { const wt = weaponTex(G.cls); warmRot(wt && SAVE.skin === 'ash' && skinOpen() ? ashBlade(wt) : wt); } // v2.19 처음 휘두를 때 끊기지 않게 회전 그림 미리 만들기
     if (P && P.stealthT > 0) P.stealthT -= dt;
+    if (P && P.counterT > 0) P.counterT -= dt;
     if (P && P.surgeT > 0) { P.surgeT -= dt; if (Math.random() < dt * 14) { const a = rand(0, TAU); G.parts.push({ x: P.x + Math.cos(a) * 10, y: P.y - 4 - rand(0, 18), vx: -Math.sin(a) * 30, vy: -rand(10, 30), t: 0.35, c: pick(['#9fd2ff', '#c890ff', '#e4f2ff']), g: 0, glow: true }); } } // v2.24 마나 격류 표시
     // 시간 정지 해제 → 모은 피해
     if (G.tstopT > 0) { G.tstopT -= dt; if (G.tstopT <= 0) { sfx('blast', 1.2); flashT = 0.12; flashColor = '#fff0d0'; for (const e of G.enemies) if (!e.dead && e.st && e.st.bank > 0) { const b = e.st.bank; e.st.bank = 0; e.st.tsT = 0; damageEnemy(e, b / Math.max(1, G.stats.atk), { proc: true, bank: true, heavy: true, grogi: 10, ang: angTo(P, e), gauge: 0 }); G.fx.push({ kind: 'ring', x: e.x, y: e.y - 12, r: 6, grow: 180, t: 0.35, max: 0.35, c: '#ffd080' }); } } }
@@ -10526,13 +10528,16 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: b.x, y: b.y - 6, r: 6, grow: 150, t: 0.3, max: 0.3, c: '#ffd34d' }); sparks(b.x, b.y - 10, -Math.PI / 2, '#fff2b0', 6); sfx('bolt', 1.4);
       for (const e of nearFoes(b.x, b.y, 36)) damageEnemy(e, 0.8, { proc: true, grogi: 4, ang: angTo(b, e), gauge: 1 }); }
   }
+  const COUNTER_T = 2.5, COUNTER_MUL = 1.4;
   function perfectDodge() {
     { const P0 = G.player; if (G.stats.efx.has('nova')) { gxNova(P0.x, P0.y); for (const o of nearFoes(P0.x, P0.y, 92)) damageEnemy(o, 1.2, { proc: true, ang: angTo(P0, o), gauge: 2 }); } }
     const P = G.player;
-    P.perfectUsed = true; P.critNext = true; if (hasRelic('seal')) P.sealNext = true;
+    P.perfectUsed = true; if (hasRelic('seal')) P.sealNext = true;
+    P.counterT = COUNTER_T; // v2.27 반격 시간: 2.5초 동안 피해 +40% · 모든 공격 치명타
+    for (const o of nearFoes(P.x, P.y, 100)) { applySt(o, 'stun', 0.6); G.fx.push({ kind: 'ring', x: o.x, y: o.y - 10, r: 4, grow: 60, t: 0.2, max: 0.2, c: '#ffd34d' }); } // 주변 적 0.6초 경직 (보스·정예는 줄어듦)
     slowmo = 1.0; flashT = 0.12; flashColor = '#cfe6ff';
     P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
-    G.nums.push({ x: P.x, y: P.y - 30, v: '!', t: 0.8, c: '#9fd2ff', s: 2 });
+    G.nums.push({ x: P.x, y: P.y - 32, v: '반격!', t: 0.9, c: '#ffd34d', s: 2 }); addShake(2, 0);
     G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 6, t: 0.35, max: 0.35, c: '#9fd2ff' });
     if (G.stats.fx.has('vigil')) healPct(0.02);
     if (G.stats.fx.has('fangs')) P.chargeCd = [0, 0];
@@ -10571,13 +10576,13 @@ huskUp:[
     }
     if (e.type === 'queen' && e.blink && (e.fadeA == null ? 1 : e.fadeA) < 0.35) return; // v1.30 베일 걸음 중 흩어진 동안은 맞지 않음
     const shieldHit = e.type === 'aguard' && !o.dot && guardFront(e, P.x); // v1.24 근위병 방패
-    const crit = !o.dot && (P.critNext || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
+    const crit = !o.dot && (P.critNext || P.counterT > 0 || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
     if (P.critNext && !o.dot) { P.critNext = false; gxCrit(e, P.firstCrit); P.firstCrit = false; if (P.firstN > 0) { P.firstN--; P.critNext = true; P.firstCrit = true; } }
     let dmg = (hasRelic('fang') && P.hp <= 2 ? 1.4 : 1) * s.atk * coef * (1 - e.def / (e.def + 500)) * (crit ? s.critDmg : 1) * (e.grogiT > 0 ? 1.5 : 1) * (G.frenzyT > 0 ? 1.3 : 1) * (CL().dmgMul || 1) * (s.fx.has('tusk') && (e.type === 'boss' || isElite(e) || isSemi(e)) ? 1.15 : 1) * (s.efx.has('exec') && e.hp < e.maxHp * 0.3 ? 1.25 : 1) * (s.set4.has('orc') && P.hp < s.hp * 0.5 ? 1.3 : 1);
     dmg *= (P.penT > 0 ? 2 : 1) * (wSkill() === 'water' && (G.stage === 2 || G.stage === 4) ? 1.3 : 1); // v2.13 고해의 채찍 · 성수 물뿌리개
     if (!o.dot && mordredFrontHit(e, P.x)) { dmg *= 0.15; sfx('block', 1.1); sparks(e.x + e.face * 20, e.y - 20, Math.atan2(0, -e.face), '#ffd060', 6); mordredCounter(e); } // v1.30 근위의 맹세
     if (shieldHit) { dmg *= 0.4; if (Math.random() < 0.5) sfx('block', 1.2); sparks(e.x + e.face * 9, e.y - 12, Math.atan2(0, -e.face), '#e8e2d6', 4); }
-    dmg *= (e.vuln || 1) * (e.armorMul || 1) * pasDmgMul(e, o); // v2.22 보관 패시브
+    dmg *= (e.vuln || 1) * (e.armorMul || 1) * pasDmgMul(e, o) * (P.counterT > 0 && !o.dot ? COUNTER_MUL : 1); // v2.22 보관 패시브
     dmg = Math.max(1, Math.round(dmg));
     e.hitT = time;
     if (e.ward > 0) { e.barHit = time; const ab = Math.min(e.ward, dmg); e.ward -= ab; dmg -= ab; if (e.ward <= 0) { e.ward = 0; burst(e.x, e.y - 20, '#ff6060', 10); sfx('block', 1.3); } }
@@ -12019,10 +12024,15 @@ huskUp:[
       for (let i = 0; i < 4; i++) { const t = i / 4 * TAU + time * 1.3, x = P.x + Math.cos(t) * (R + 4), y = P.y + 1 + Math.sin(t) * (R + 4) * 0.45; ctx.fillStyle = `rgba(200,245,255,${0.9 * k})`; for (const [dx, dy] of [[0, -2], [-2, 0], [2, 0], [0, 2], [0, 0]]) ctx.fillRect((Math.round(x) & ~1) + dx, (Math.round(y) & ~1) + dy, 2, 2); }
     }
     // 선제·치명 준비: 금빛 조준 꺾쇠 4개
-    if (P.critNext && !P.dead) {
+    if ((P.critNext || P.counterT > 0) && !P.dead) {
       const R = 28 + Math.sin(time * 6) * 2, a = 0.7 + 0.3 * Math.sin(time * 9);
       for (let i = 0; i < 4; i++) { const t = i / 4 * TAU + Math.PI / 4 + time * 0.8, x = P.x + Math.cos(t) * R, y = P.y + 1 + Math.sin(t) * R * 0.45, ux = -Math.sign(Math.cos(t)) * 2, uy = -Math.sign(Math.sin(t)) * 2;
         ctx.fillStyle = `rgba(255,214,96,${a})`; for (let m = 0; m < 5; m++) { ctx.fillRect((Math.round(x) & ~1) + ux * m, Math.round(y) & ~1, 2, 2); ctx.fillRect(Math.round(x) & ~1, (Math.round(y) & ~1) + uy * m, 2, 2); } }
+    }
+    if (P.counterT > 0 && !P.dead) { // v2.27 반격 시간 남은 막대 (발밑, 금빛)
+      const w = Math.max(2, Math.round(28 * P.counterT / COUNTER_T / 2) * 2), x = snap2(P.x - 14), y = snap2(P.y + 8);
+      ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 2, y - 2, 32, 6); ctx.fillStyle = '#5a4214'; ctx.fillRect(x, y, 28, 2); ctx.fillStyle = Math.floor(time * 10) % 2 && P.counterT < 0.6 ? '#fff2c0' : '#ffd34d'; ctx.fillRect(x, y, w, 2);
+      if (Math.random() < 0.5) G.parts.push({ x: P.x + rand(-10, 10), y: P.y - rand(0, 24), vx: rand(-8, 8), vy: -rand(20, 45), t: 0.35, c: pick(['#ffd34d', '#fff2c0', '#ffb040']), g: 0, glow: true });
     }
     // 핏빛 엄니 4세트 분노 (HP 50% 이하): 붉은 톱니 고리 + 엄니 두 개
     if (s.set4.has('orc') && P.hp < s.hp * 0.5 && !P.dead) {
@@ -13183,7 +13193,7 @@ huskUp:[
       if (!D.done && !P.dead && Math.hypot(P.x - e.x, P.y - e.y) < e.r + P.r + 4) {
         D.done = true;
         if (D.grab) {
-          if (P.iframe > 0) { if (P.state === 'dodge' && P.dodgeT < 0.16 && !P.perfectUsed) perfectDodge(); }
+          if (P.iframe > 0) { if (P.state === 'dodge' && P.dodgeT < PD_WIN() && !P.perfectUsed) perfectDodge(); }
           else if (!P.grab && P.inv <= 0) { e.dash = null; startGrab(e, D.grab); return; }
         } else if (D.dmg) { const hp0 = P.hp; hurtPlayer(D.dmg, e); if (P.hp < hp0 && D.kb) { P.kx = Math.cos(D.ang) * D.kb; P.ky = Math.sin(D.ang) * D.kb; } if (D.onHit) D.onHit(); }
       }
@@ -17280,10 +17290,12 @@ void main() {
       if (TOUCH.awFull === false && g >= 100) flash(b); TOUCH.awFull = g >= 100; }
     { const b = $('tDodge'), n = skMax('D'); set(b.querySelector('.cdo'), '--p', P.stam > 0 ? '0' : Math.max(0, 1 - (P.stamT || 0) / 1.5).toFixed(3)); pips(b.querySelector('.pips'), n, P.stam);
       if (TOUCH.dgN !== undefined && P.stam > TOUCH.dgN && TOUCH.dgN === 0) flash(b); TOUCH.dgN = P.stam; }
+    { const C0 = CL(), M0 = SK_META[wSkill()] || {}, atk = G.cls === 'gunner' ? '사격' : G.cls === 'mage' ? '마력탄' : '공격', key = G.cls + '|' + wSkill();
+      if (TOUCH.lblKey !== key) { TOUCH.lblKey = key; $('tAtk').querySelector('span').textContent = atk; $('tSkill').querySelector('span').textContent = M0.K || C0.skill; $('tAwk').querySelector('span').textContent = M0.L || C0.awaken; } } // v2.26 글자만
     { const b = $('tF'), p = G.prompt; b.style.display = p ? '' : 'none';
       if (p) { let t = p.t.replace(/^F\s+/, ''); if (t.length > 11) t = t.slice(0, 10) + '…'; set(b.querySelector('.al'), 'txt', t); b.classList.toggle('bad', !!p.bad); } }
     { const b = $('tWep'), L = myWeapons(G.cls), cw = eqWeapon(G.cls); b.style.display = L.length > 1 && !P.dead ? '' : 'none';
-      const key = cw ? cw.id + '/' + L.length : ''; if (b._wk !== key) { b._wk = key; b.innerHTML = cw ? `${iconImg(cw)}<i class="wn">${L.indexOf(cw) + 1}/${L.length}</i>` : ''; } }
+      const key = cw ? cw.id + '/' + L.length : ''; if (b._wk !== key) { b._wk = key; b.innerHTML = cw ? `<span class="wl">무기</span><span class="wc">${L.indexOf(cw) + 1}/${L.length}</span>` : ''; } }
   }
   function touchHud() {
     const show = TOUCH.on && (mode === 'play' || mode === 'map');

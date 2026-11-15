@@ -473,6 +473,13 @@
   #tDodge { right: calc(var(--u) * 34px + env(safe-area-inset-right)); bottom: calc(var(--u) * 120px + env(safe-area-inset-bottom)); }
   #tWep { right: calc(var(--u) * 186px + env(safe-area-inset-right)); bottom: calc(var(--u) * 20px + env(safe-area-inset-bottom)); }
   #tF { right: calc(var(--u) * 104px + env(safe-area-inset-right)); bottom: calc(var(--u) * 164px + env(safe-area-inset-bottom)); }
+  /* v2.26 모바일 행동 버튼은 아이콘 없이 글자만 */
+  #touch .tb canvas, #touch .tb img { display: none !important; }
+  #touch .tb > span { word-break: keep-all; text-align: center; padding: 0 3px; }
+  #touch .tb.big > span { font-size: calc(var(--u) * 16px); }
+  #touch .tb.mid > span { font-size: calc(var(--u) * 11px); line-height: 1.15; }
+  #touch #tWep { flex-direction: column; gap: 0; } #touch #tWep .wl { font-size: calc(var(--u) * 9px); } #touch #tWep .wc { font-size: calc(var(--u) * 10px); color: var(--gold-l); }
+  #touch #tAwk.full > span { color: #ffe9a0; }
   /* 모바일: PC 키 안내 숨김 */
   body.touch #skills, body.touch #mute { display: none !important; }
   body.touch .pxTip.pin { pointer-events: auto; }
@@ -685,7 +692,7 @@
   <div class="tb mid" id="tSkill" data-k="k"><canvas width="32" height="32"></canvas><span>스킬</span><i class="cdo"></i><b class="cdn"></b><u class="pips"></u></div>
   <div class="tb mid" id="tAwk" data-k="e"><canvas width="32" height="32"></canvas><span>각성</span><i class="gfill"></i><b class="cdn"></b></div>
   <div class="tb mid" id="tDodge" data-k=" "><canvas width="32" height="32"></canvas><span>점멸</span><i class="cdo"></i><u class="pips blue"></u></div>
-  <div class="tb act" id="tF" data-k="f"><span class="ah">✋</span><span class="al">줍기</span></div>
+  <div class="tb act" id="tF" data-k="f"><span class="al">줍기</span></div>
   <div class="tb sm" id="tWep"></div>
   <div class="tb sm" id="tMap" data-k="Tab">지도</div>
   <div class="tb sm" id="tPause" data-k="Escape">❚❚</div>
