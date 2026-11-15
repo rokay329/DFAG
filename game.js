@@ -8639,7 +8639,7 @@ huskUp:[
       if (r === G.mapSel) { ctx.strokeStyle = Math.floor(time * 5) % 2 ? '#9fd2ff' : '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, rw + 6, rh + 6); }
     }
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#8a8496';
-    ctx.fillText(L.length ? '방향키 선택 · ENTER 이동 · TAB 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · TAB 닫기', VW / 2, VH - 26);
+    ctx.fillText(TOUCH.on ? (L.length ? '방을 탭하면 순간이동 · 지도 버튼으로 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · 지도 버튼으로 닫기') : L.length ? '방향키 선택 · ENTER 이동 · TAB 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · TAB 닫기', VW / 2, VH - 26);
     ctx.textAlign = 'left'; const lg = (x, txt) => { ctx.fillStyle = '#8a8496'; ctx.fillText(txt, x, VH - 40); };
     ctx.fillStyle = '#9fd2ff'; ctx.fillRect(VW / 2 - 196, VH - 44, 4, 4); lg(VW / 2 - 189, '텔레포터');
     drawMapIcon(MAP_CHEST, VW / 2 - 134, VH - 36); lg(VW / 2 - 123, '보물상자');
@@ -8763,7 +8763,7 @@ huskUp:[
       tl(st.sub, py0 + 66, '10px Galmuri9', '#a89a84');
     }
     ctx.globalAlpha = A;
-    if (t > 1.0 && t < WM_T - 0.7) { ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; ctx.fillStyle = '#000'; ctx.fillText('SPACE · 클릭 건너뛰기', VW - 9, VH - 7); ctx.fillStyle = '#8a8496'; ctx.fillText('SPACE · 클릭 건너뛰기', VW - 10, VH - 8); }
+    if (t > 1.0 && t < WM_T - 0.7) { ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; ctx.fillStyle = '#000'; ctx.fillText((TOUCH.on ? '탭해서 건너뛰기' : 'SPACE · 클릭 건너뛰기'), VW - 9, VH - 7); ctx.fillStyle = '#8a8496'; ctx.fillText((TOUCH.on ? '탭해서 건너뛰기' : 'SPACE · 클릭 건너뛰기'), VW - 10, VH - 8); }
     ctx.restore();
   }
   function drawTransition() {
@@ -11296,7 +11296,7 @@ huskUp:[
     for (let i = 0; i < 112; i++) { if (i % 2) continue; const a = i / 112 * TAU; ctx.fillRect(Math.round(P.x + Math.cos(a) * 280) & ~1, Math.round(P.y + Math.sin(a) * 280) & ~1, 2, 2); }
     ctx.restore();
     magicCircle(m.x, m.y, 120, { alpha: pulse + 0.3, rot: time * 0.5, t: time, fill: 1, fillLv: 0.14, c1: '#b898ff', c2: '#7ab8ff', c3: '#4a3a9a', c4: '#f0e8ff' });
-    ctx.save(); ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; fillTextW('클릭: 운석 낙하 · 우클릭/E: 취소', m.x + 1, m.y + 120 * 0.87 + 15); ctx.fillStyle = '#d8c8ff'; fillTextW('클릭: 운석 낙하 · 우클릭/E: 취소', m.x, m.y + 120 * 0.87 + 14); ctx.restore();
+    ctx.save(); ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; fillTextW((TOUCH.on ? '탭한 곳에 운석 낙하 · 각성 버튼: 취소' : '클릭: 운석 낙하 · 우클릭/E: 취소'), m.x + 1, m.y + 120 * 0.87 + 15); ctx.fillStyle = '#d8c8ff'; fillTextW((TOUCH.on ? '탭한 곳에 운석 낙하 · 각성 버튼: 취소' : '클릭: 운석 낙하 · 우클릭/E: 취소'), m.x, m.y + 120 * 0.87 + 14); ctx.restore();
   }
   function drawMeteorMark() { // 떨어지는 중: 주황·금빛으로 바뀌고 빨리 돌며 안쪽부터 불이 차오름, 마지막엔 하얗게
     const m = G.meteor; if (!m || m.fell) return;
@@ -13530,7 +13530,7 @@ huskUp:[
     if (P && P.grab) {
       const gr = P.grab, x = Math.round(P.x), y = Math.round(P.y - 46 - (P.lift || 0)), w = 34, k = gr.mash / gr.need, blink = Math.floor(time * 10) % 2;
       ctx.font = '8px Galmuri7'; ctx.textAlign = 'center';
-      const t = TOUCH.on ? '공격 연타 · 점멸로 탈출' : 'J 연타 · SPACE 탈출';
+      const t = TOUCH.on ? '공격 연타 · 점멸로 탈출' : (TOUCH.on ? '공격 연타 · 점멸로 탈출' : 'J 연타 · SPACE 탈출');
       ctx.fillStyle = '#000'; fillTextW(t, x + 1, y + 1); ctx.fillStyle = blink ? '#ffe9b0' : '#ff9a6a'; fillTextW(t, x, y);
       ctx.fillStyle = '#000'; ctx.fillRect(x - w / 2 - 1, y + 3, w + 2, 5); ctx.fillStyle = '#3a2a20'; ctx.fillRect(x - w / 2, y + 4, w, 3); ctx.fillStyle = '#9fd2ff'; ctx.fillRect(x - w / 2, y + 4, Math.round(w * k), 3);
     }
@@ -16880,7 +16880,7 @@ void main() {
     $('invStats').innerHTML = INV_STATS.map(([k, n, f]) => `<span>${n}</span><b>${f(s[k])}</b>`).join('');
     $('invRelic').innerHTML = relicSlotsHTML(); // v2.19 레전더리 효과는 오른쪽 상세에만 (중복 제거) · 유물은 캐릭터 창 하단
     $('eqR').querySelectorAll('.wSlot[data-id]').forEach(b => {
-      b.addEventListener('mouseenter', () => { invSel = +b.dataset.id; invHover = true; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); });
+      b.addEventListener('mouseenter', () => { if (TOUCH.on) return; invSel = +b.dataset.id; invHover = true; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); });
       b.addEventListener('mouseleave', () => { invHover = false; invDropT = 0; pxTip.hide(); });
       b.addEventListener('click', () => { const it = SAVE.inv.find(i => i.id === +b.dataset.id);
         if (TOUCH.on && !(invKbd && invSel === +b.dataset.id)) { invSel = +b.dataset.id; invKbd = true; TOUCH.tipEl = null; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); sfx('blip'); return; } // v2.26 모바일: 첫 탭은 설명, 다음 탭은 장착
@@ -17220,14 +17220,16 @@ void main() {
     touchStripAll(); new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') touchStrip(m.target); else for (const n of m.addedNodes) touchStripAll(n); } }).observe(document.body, { subtree: true, childList: true, characterData: true });
   }
   // v2.26 모바일: PC 키 표기 지우기 ([ESC] · [I] · [F] · TAB 지도 …) — 화면에 새 글자가 생길 때마다
-  const KEY_RX = [[/\s*\[(?:ESC|Esc|I|F|TAB|Tab|H|M|E|Q|ENTER|Enter|SPACE|Space)\]/g, ''], [/TAB 지도/g, '지도'], [/\s*·\s*전체 조작 \[H\]/g, ''], [/E 조준 → 클릭 지점에/g, '조준 → 탭한 곳에'], [/좌클릭/g, '공격 버튼'], [/우클릭/g, '스킬 버튼']];
+  const KEY_RX = [[/\s*\[(?:ESC|Esc|I|F|TAB|Tab|H|M|E|Q|ENTER|Enter|SPACE|Space)\]/g, ''], [/TAB 지도/g, '지도'], [/\s*·\s*전체 조작 \[H\]/g, ''], [/E 조준 → 클릭 지점에/g, '조준 → 탭한 곳에'], [/좌클릭/g, '공격 버튼'], [/우클릭/g, '스킬 버튼'], [/\bRMB\b/g, '스킬 버튼'], [/\bLMB\b/g, '공격 버튼'], [/SPACE/g, '점멸']];
   function touchStrip(n) { if (!n || n.nodeType !== 3 || !n.nodeValue || (n.parentNode && n.parentNode.closest && n.parentNode.closest('#touch'))) return; let v = n.nodeValue; for (const [r, t] of KEY_RX) v = v.replace(r, t); if (v !== n.nodeValue) n.nodeValue = v; }
   function touchStripAll(root) { root = root || document.body; if (root.nodeType === 3) { touchStrip(root); return; } if (root.nodeType !== 1) return; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) touchStrip(n); }
   const buzz = ms => { if (TOUCH.on && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {} }; // 안드로이드 진동 (아이폰은 무시)
   { // v2.26 모바일: 유물·잿불 설명은 탭하면 보이고, 다른 곳을 탭하면 닫힘
     addEventListener('click', e => { if (!TOUCH.on) return; const r = e.target.closest && e.target.closest('.relicRow[data-tip], [data-atip]');
       if (r) { const nm = r.dataset.name || r.dataset.aname, d = r.dataset.tip || r.dataset.atip; pxTip.show(`<div class="tN">${nm}</div><div class="tD">${d}</div>`, getComputedStyle(r).getPropertyValue('--c').trim() || r.dataset.ac || null); pxTip.el.classList.remove('wide'); pxTip.beside(r); TOUCH.tipEl = r; return; }
-      if (TOUCH.tipEl && !(e.target.closest && e.target.closest('.pxTip'))) { TOUCH.tipEl = null; if (!(mode === 'inv' && invKbd)) pxTip.hide(); else invTipShow(); } }, true);
+      if (e.target.closest && (e.target.closest('.pxTip') || e.target.closest('.wSlot[data-id]'))) return;
+      if (TOUCH.tipEl) { TOUCH.tipEl = null; pxTip.hide(); return; }
+      if (mode === 'inv' && (invKbd || invHover)) { invKbd = false; invHover = false; pxTip.hide(); } }, true); // v2.27 빈 곳을 탭하면 설명 닫기
   }
   if (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches) setTimeout(enableTouch, 0); /* 스크립트 끝까지 읽은 뒤 (fit이 아래 상수를 씀) */
   addEventListener('touchstart', () => enableTouch(), { passive: true });
