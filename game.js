@@ -2187,13 +2187,139 @@ WF.knight = (H) => {
   };
 })();
 
+  // ================================================================ v2.20 직업별 커먼 무기 3종 추가 (기술 없음 · 도트와 능력치만 다름) — 도감 번호 11~13
+  // st.val = 공격력 범위, st.opts = 고정 옵션 (랜덤 옵션 대신)
+  const COMMON_EXTRA = (() => {
+    const cw = cellWeapon, E = {};
+    const grip = (put, x0, x1, cy, a = 'h', b = 'H') => { for (let x = x0; x <= x1; x++) put(x, cy, x % 2 ? a : b); };
+    E.knight = [
+      { name: '무쇠 클레이모어', look: '폭이 넓고 두꺼운 양손검', st: { val: [10, 11], opts: [] }, w: cw(34, 11, 3, 5, {
+        G: '#5a5e66', g: '#8a8e96', h: '#3a2a1c', H: '#6a4e34', m: '#868c94', l: '#b4bac2', w: '#e2e6ea', d: '#4a5058', D: '#686e76',
+      }, put => {
+        const cy = 5; put(0, cy, 'g'); put(0, cy - 1, 'G'); put(0, cy + 1, 'G'); put(1, cy, 'G'); grip(put, 2, 5, cy);
+        for (let y = 1; y <= 9; y++) put(6, y, 'G'); put(5, 0, 'g'); put(5, 10, 'g'); put(6, 0, 'G'); put(6, 10, 'G'); for (let y = 3; y <= 7; y++) put(7, y, 'G');
+        for (let t = 0; t < 26; t++) { const x = 8 + t, hw = t < 20 ? 3 : t < 23 ? 2 : t < 25 ? 1 : 0;
+          for (let y = cy - hw; y <= cy + hw; y++) put(x, y, y === cy - hw ? 'l' : y === cy + hw && hw ? 'd' : y === cy && hw === 3 && t > 1 && t < 17 ? 'D' : 'm');
+          if (t > 3 && t < 22 && hw >= 2) put(x, cy - hw + 1, t % 5 === 2 ? 'w' : 'm'); if (t === 25) put(x, cy, 'w'); }
+      }) },
+      { name: '용병의 팔치온', look: '끝으로 갈수록 넓어지는 외날 칼', st: { val: [7, 8], opts: [{ k: 'critDmg', v: 12 }] }, w: cw(31, 12, 3, 5, {
+        G: '#7a5a2a', g: '#b08a48', h: '#2a2018', H: '#4a3a2a', m: '#9aa0a8', l: '#c4c9d0', w: '#eef0f3', d: '#50565e',
+      }, put => {
+        const cy = 5; put(0, cy, 'g'); put(1, cy, 'G'); grip(put, 2, 5, cy);
+        for (let y = cy - 2; y <= cy + 2; y++) put(6, y, 'G'); put(7, cy - 1, 'g'); put(7, cy, 'G'); put(7, cy + 1, 'G');
+        for (let t = 0; t < 21; t++) { const x = 8 + t, top = cy - 1 + (t > 16 ? t - 16 : 0), bot = cy + 1 + Math.min(4, Math.floor(t / 4)) - (t > 17 ? (t - 17) * 2 : 0);
+          for (let y = top; y <= bot; y++) put(x, y, y === top ? 'd' : y === bot ? 'w' : y === bot - 1 ? 'l' : 'm'); }
+      }) },
+      { name: '순찰대 장검', look: '가늘고 긴 한손 장검', st: { val: [6, 7], opts: [{ k: 'spd', v: 6 }] }, w: cw(34, 9, 3, 4, {
+        G: '#6a6e78', g: '#a8acb4', h: '#2a3448', H: '#4a5a78', m: '#a0a6ae', l: '#cdd2d8', w: '#f4f6f8', d: '#5a6068',
+      }, put => {
+        const cy = 4; put(0, cy, 'g'); put(1, cy, 'G'); grip(put, 2, 6, cy);
+        for (let y = cy - 3; y <= cy + 3; y++) put(7, y, Math.abs(y - cy) === 3 ? 'g' : 'G'); put(8, cy, 'G');
+        for (let t = 0; t < 25; t++) { const x = 9 + t, hw = t < 22 ? 1 : 0;
+          for (let y = cy - hw; y <= cy + hw; y++) put(x, y, hw === 0 ? 'w' : y === cy - 1 ? 'l' : y === cy + 1 ? 'd' : t % 6 === 3 ? 'w' : 'm'); }
+      }) },
+    ];
+    E.ranger = [
+      { name: '뼈 손잡이 단검', look: '짐승 뼈를 깎은 손잡이 · 곧은 날', st: { val: [9, 10], opts: [] }, w: cw(15, 7, 2, 4, {
+        b: '#e8dcc0', B: '#b8a888', G: '#6a6a70', m: '#9aa0a8', l: '#c8ccd4', w: '#f0f2f6',
+      }, put => {
+        const cy = 4; put(0, cy, 'B'); put(0, cy - 1, 'b'); put(0, cy + 1, 'B'); for (let x = 1; x < 5; x++) put(x, cy, x % 2 ? 'b' : 'B');
+        for (let y = cy - 1; y <= cy + 1; y++) put(5, y, 'G');
+        for (let x = 6; x < 14; x++) { put(x, cy - 1, x > 11 ? 'w' : 'l'); if (x < 13) put(x, cy, x === 12 ? 'w' : 'm'); } put(14, cy - 1, 'w');
+      }) },
+      { name: '톱니 단검', look: '등에 톱니가 난 넓은 날', st: { val: [7, 8], opts: [{ k: 'crit', v: 4 }] }, w: cw(15, 8, 2, 4, {
+        h: '#3a2418', H: '#5a3a24', G: '#7a5a2a', m: '#8d939b', l: '#bcc1c8', w: '#eceef2', d: '#4e545c',
+      }, put => {
+        const cy = 4; put(0, cy, 'G'); grip(put, 1, 3, cy); for (let y = cy - 1; y <= cy + 1; y++) put(4, y, 'G');
+        for (let x = 5; x < 14; x++) { put(x, cy - 1, 'l'); put(x, cy, x > 11 ? 'w' : 'm'); if (x < 12) put(x, cy + 1, x === 11 ? 'w' : 'm'); if (x % 2 === 0 && x < 12) put(x, cy - 2, 'd'); }
+        put(14, cy - 1, 'w');
+      }) },
+      { name: '스틸레토', look: '송곳처럼 가는 찌르기 단검', st: { val: [6, 7], opts: [{ k: 'spd', v: 7 }] }, w: cw(17, 7, 2, 3, {
+        h: '#1a1a22', H: '#34343e', G: '#a8acb4', g: '#d8dce2', m: '#b0b6be', w: '#ffffff',
+      }, put => {
+        const cy = 3; put(0, cy, 'g'); grip(put, 1, 4, cy); put(5, cy - 2, 'g'); put(5, cy - 1, 'G'); put(5, cy, 'G'); put(5, cy + 1, 'G'); put(5, cy + 2, 'g');
+        for (let x = 6; x < 17; x++) put(x, cy, x > 14 ? 'w' : x % 3 === 0 ? 'w' : 'm');
+      }) },
+    ];
+    E.mage = [
+      { name: '참나무 지팡이', look: '옹이가 많은 굵은 참나무 · 끝에 매듭', st: { val: [10, 11], opts: [] }, w: cw(26, 11, 5, 5, {
+        h: '#6b4a2a', H: '#4a3018', k: '#8a6a3e', l: '#5a8a3a', L: '#3a6a2a',
+      }, put => {
+        const cy = 5; for (let x = 0; x < 19; x++) { put(x, cy, x % 5 === 2 ? 'k' : 'h'); put(x, cy + 1, x % 4 === 1 ? 'k' : 'H'); }
+        for (const [x, y] of [[7, cy - 1], [13, cy + 2], [16, cy - 1]]) put(x, y, 'H');
+        for (const [x, y] of [[19, cy - 1], [20, cy - 2], [21, cy - 2], [22, cy - 1], [23, cy], [23, cy + 1], [22, cy + 2], [21, cy + 2], [20, cy + 1], [19, cy], [19, cy + 1], [21, cy], [24, cy]]) put(x, y, (x + y) % 2 ? 'h' : 'k');
+        put(21, cy - 3, 'l'); put(22, cy - 4, 'l'); put(20, cy - 4, 'L'); put(22, cy - 3, 'L');
+      }) },
+      { name: '수정 막대', look: '쇠 자루 끝에 박힌 맑은 수정', st: { val: [7, 8], opts: [{ k: 'cdr', v: 6 }] }, w: cw(26, 9, 5, 4, {
+        m: '#5a5e68', M: '#8a8e98', c: '#3aa8c8', C: '#8ae0f0', W: '#e8fbff', G: '#a8acb4',
+      }, put => {
+        const cy = 4; for (let x = 0; x < 17; x++) put(x, cy, x % 4 === 0 ? 'M' : 'm'); for (let y = cy - 1; y <= cy + 1; y++) put(17, y, 'G'); put(18, cy - 2, 'G'); put(18, cy + 2, 'G');
+        for (let x = 18; x <= 25; x++) { const hw = x < 21 ? x - 18 : Math.max(0, 25 - x); for (let y = cy - hw; y <= cy + hw; y++) put(x, y, y < cy ? 'C' : y === cy ? (x > 22 ? 'W' : 'C') : 'c'); }
+        put(21, cy - 2, 'W'); put(20, cy - 1, 'W');
+      }) },
+      { name: '부엉이 깃 지팡이', look: '갈고리 끝에 깃털을 매단 목동 지팡이', st: { val: [6, 7], opts: [{ k: 'critDmg', v: 12 }] }, w: cw(25, 11, 5, 5, {
+        h: '#7a5a3a', H: '#5a3e24', f: '#c8a878', F: '#8a6a48', w: '#f0e8d8', k: '#2a1a10', r: '#a8282a',
+      }, put => {
+        const cy = 5; for (let x = 0; x < 20; x++) put(x, cy, x % 3 === 0 ? 'H' : 'h');
+        for (const [x, y] of [[20, cy], [21, cy - 1], [21, cy - 2], [22, cy - 3], [23, cy - 3], [24, cy - 2], [24, cy - 1], [23, cy]]) put(x, y, 'h');
+        put(19, cy + 1, 'r'); put(20, cy + 1, 'r');
+        for (const [x, y, c] of [[19, cy + 2, 'f'], [19, cy + 3, 'f'], [19, cy + 4, 'k'], [20, cy + 2, 'w'], [20, cy + 3, 'F'], [21, cy + 2, 'F'], [21, cy + 3, 'f'], [21, cy + 4, 'w']]) put(x, y, c);
+      }) },
+    ];
+    E.priest = [
+      { name: '쇠 전쟁망치', look: '네모난 쇠 머리를 단 망치', st: { val: [10, 11], opts: [] }, w: cw(18, 9, 2, 4, {
+        G: '#6a6a70', h: '#5a3e24', m: '#7a7e88', l: '#b8bcc4', d: '#44484e', w: '#e0e4ea',
+      }, put => {
+        const cy = 4; put(0, cy, 'G'); for (let x = 1; x < 11; x++) put(x, cy, x === 1 || x === 9 ? 'G' : 'h');
+        for (let x = 11; x <= 16; x++) for (let y = cy - 3; y <= cy + 3; y++) put(x, y, y === cy - 3 ? 'l' : y === cy + 3 ? 'd' : x === 16 ? 'w' : x === 11 ? 'd' : 'm');
+        put(17, cy - 1, 'w'); put(17, cy, 'w'); put(17, cy + 1, 'w');
+      }) },
+      { name: '가시 곤봉', look: '못을 박은 굵은 나무 곤봉', st: { val: [7, 8], opts: [{ k: 'crit', v: 4 }] }, w: cw(19, 10, 2, 5, {
+        h: '#7a5432', H: '#5a3a20', k: '#9a7448', n: '#b8bcc4', N: '#6a6e76', b: '#4a3a2a',
+      }, put => {
+        const cy = 5; put(0, cy, 'b'); put(1, cy, 'b');
+        for (let x = 2; x < 17; x++) { const hw = x < 7 ? 0 : x < 11 ? 1 : 2; for (let y = cy - hw; y <= cy + hw; y++) put(x, y, y === cy - hw && hw ? 'k' : y === cy + hw && hw ? 'H' : 'h'); }
+        put(17, cy - 1, 'h'); put(17, cy, 'h'); put(17, cy + 1, 'H');
+        for (const [x, y] of [[10, cy - 2], [12, cy - 3], [15, cy - 3], [11, cy + 2], [14, cy + 3], [16, cy + 3], [18, cy]]) put(x, y, y < cy ? 'n' : 'N');
+      }) },
+      { name: '순례자의 철퇴', look: '긴 자루 끝 둥근 쇠공', st: { val: [6, 7], opts: [{ k: 'cdr', v: 6 }] }, w: cw(20, 9, 2, 4, {
+        G: '#c9a24a', h: '#6b4a2a', m: '#8a8e96', l: '#d0d4da', d: '#4a4e56', w: '#ffffff',
+      }, put => {
+        const cy = 4; put(0, cy, 'G'); for (let x = 1; x < 14; x++) put(x, cy, x === 1 || x === 12 || x === 6 ? 'G' : 'h');
+        for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 10) put(16 + x, cy + y, x + y < -2 ? 'l' : x + y > 2 ? 'd' : 'm');
+        put(15, cy - 2, 'w'); put(19, cy, 'G');
+      }) },
+    ];
+    E.gunner = [
+      { name: '사냥꾼 카빈', look: '짧고 굵은 총열의 기병총', st: { val: [10, 11], opts: [] }, w: cw(23, 7, 6, 4, {
+        s: '#6b4a2a', S: '#4a3020', b: '#6e727c', B: '#3e424a', k: '#3a3a40', g: '#9a9ea8',
+      }, put => {
+        const cy = 4; for (let x = 0; x < 6; x++) { put(x, cy - 1, 's'); put(x, cy, 's'); put(x, cy + 1, 'S'); } put(0, cy + 2, 'S'); for (let x = 6; x < 11; x++) put(x, cy, 's');
+        for (let x = 7; x < 22; x++) { put(x, cy - 1, x % 7 === 0 ? 'g' : 'b'); put(x, cy - 2, x > 9 ? 'B' : 'b'); } put(22, cy - 1, 'k'); put(22, cy - 2, 'k'); put(8, cy + 1, 'k');
+      }) },
+      { name: '해군 머스킷', look: '놋쇠 띠를 감은 긴 총열', st: { val: [7, 8], opts: [{ k: 'critDmg', v: 12 }] }, w: cw(31, 6, 6, 3, {
+        s: '#8a5a32', S: '#5a3820', b: '#9aa0a8', B: '#d0a040', k: '#3a3a40',
+      }, put => {
+        const cy = 3; for (let x = 0; x < 6; x++) { put(x, cy - 1, 's'); put(x, cy, 's'); put(x, cy + 1, 'S'); } for (let y = cy - 1; y <= cy + 1; y++) put(0, y, 'B'); for (let x = 6; x < 12; x++) put(x, cy, 's');
+        for (let x = 7; x < 30; x++) put(x, cy - 1, [11, 17, 23, 28].includes(x) ? 'B' : 'b'); put(29, cy - 2, 'B'); put(8, cy + 1, 'k'); put(7, cy - 2, 'k');
+      }) },
+      { name: '리피터 카빈', look: '레버 고리를 당겨 장전하는 연발 기병총 · 속을 파낸 개머리판', st: { val: [6, 7], opts: [{ k: 'spd', v: 7 }] }, w: cw(28, 6, 6, 3, {
+        s: '#a07a4a', S: '#6a4a2a', b: '#b8bcc4', k: '#3a3a40', r: '#c03030', L: '#c9a24a',
+      }, put => {
+        const cy = 3; for (let x = 0; x < 6; x++) { put(x, cy - 1, 's'); put(x, cy + 1, 'S'); } put(0, cy, 's'); put(5, cy, 's'); for (let x = 6; x < 10; x++) put(x, cy, 's');
+        for (let x = 7; x < 27; x++) put(x, cy - 1, 'b'); for (let x = 10; x < 22; x++) put(x, cy, x % 4 === 1 ? 'S' : 's'); /* 총열 아래 탄창관 */ put(26, cy - 2, 'r'); put(12, cy - 2, 'k');
+        for (const [x, y] of [[7, cy + 1], [7, cy + 2], [8, cy + 2], [9, cy + 2], [10, cy + 2], [10, cy + 1]]) put(x, y, 'L'); /* 레버 고리 */
+      }) },
+    ];
+    return E;
+  })();
   const WSK = { knight: [null, 'cleaver', 'tuna', 'chain', 'bell', 'windmill', 'fang', 'gate', 'bread', 'sun', 'exec'], ranger: [null, 'claw', 'mackerel', 'sickle', 'fan', 'needle', 'kusari', 'yarn', 'moons', 'fangs2', 'nine'], mage: [null, 'candle', 'rod', 'crystal', 'broom', 'skull', 'lrod', 'ladle', 'mirror', 'ashstar2', 'hourglass'], priest: [null, 'censer', 'pan', 'water', 'carrot', 'bellh', 'reliq', 'whip', 'mochi', 'dawn', 'spear'], gunner: [null, 'blunder', 'harpoon', 'duck', 'longrifle', 'revolver', 'cannon', 'puffer', 'match', 'undertaker', 'kingrev'] }; // 구현된 기술 (다른 직업은 준비 중)
   const WCAT_C = {};
   const stripEmoji = t => t.replace(/\s*[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+/gu, '').trim();
   function wcat(cls) {
     if (WCAT_C[cls]) return WCAT_C[cls];
     const H = { cellWeapon, WEAP };
-    return (WCAT_C[cls] = WF[cls](H).map((o, i) => ({ ...o, name: stripEmoji(o.name), i, sk: (WSK[cls] || [])[i] || null, fx: i === 9 ? WEAPON_FX[cls] : i === 10 ? ({ knight: 'execsword', ranger: 'nine', mage: 'hourglass', priest: 'spearrain', gunner: 'kingrev' })[cls] || null : null })));
+    return (WCAT_C[cls] = WF[cls](H).concat((COMMON_EXTRA[cls] || []).map(o => ({ grade: 'common', name: o.name, look: o.look, skill: '—', w: o.w, st: o.st }))).map((o, i) => ({ ...o, name: stripEmoji(o.name), i, sk: (WSK[cls] || [])[i] || null, fx: i === 9 ? WEAPON_FX[cls] : i === 10 ? ({ knight: 'execsword', ranger: 'nine', mage: 'hourglass', priest: 'spearrain', gunner: 'kingrev' })[cls] || null : null })));
   }
   const eqWeapon = cls => { const id = (SAVE.equipBy[cls] || {}).weapon; return id != null ? SAVE.inv.find(i => i.id === id) : null; };
   const wSkill = () => { if (!G) return null; const it = eqWeapon(G.cls); return it && it.wk != null && canEquip(it, G.cls) ? (wcat(G.cls)[it.wk] || {}).sk || null : null; };
@@ -2757,15 +2883,14 @@ WF.knight = (H) => {
     if (slot.k === 'weapon') {
       if (force.wk != null) { wcls = force.wcls || cls; W0 = wcat(wcls)[force.wk] || null; }
       else {
-        const classes = Object.keys(CLASSES), preferred = force.wcls || (Math.random() < 0.8 ? cls : pick(classes.filter(k => k !== cls)));
+        const preferred = force.wcls || cls; // v2.20 무기는 지금 직업용만 드랍
         const available = weaponPool(preferred);
         const choices = available.filter(o => o.grade === g.k);
         const pool = choices.length ? choices : available;
         if (pool.length) { wcls = preferred; W0 = pick(pool); }
-        else {
-          const alternatives = classes.filter(k => k !== preferred).flatMap(k => weaponPool(k).map(o => ({ cls: k, item: o })));
-          if (alternatives.length) { const choice = pick(alternatives); wcls = choice.cls; W0 = choice.item; }
-          else { wcls = preferred; W0 = pick(wcat(wcls).filter(o => o.grade === g.k && !(o.i === 10 && !hasClearedChar(wcls)))); }
+        else { // v2.20 이번 런에 나올 무기를 다 봤으면 같은 직업 무기에서 다시 (다른 직업 무기로 넘어가지 않음)
+          const all = wcat(preferred).filter(o => !(o.i === 10 && !hasClearedChar(preferred))), same = all.filter(o => o.grade === g.k);
+          wcls = preferred; W0 = pick(same.length ? same : all);
         }
       }
       if (W0 && G) { G.weaponRolls = G.weaponRolls || {}; G.weaponRolls[wcls] = G.weaponRolls[wcls] || []; if (!G.weaponRolls[wcls].includes(W0.i)) G.weaponRolls[wcls].push(W0.i); }
@@ -2774,7 +2899,7 @@ WF.knight = (H) => {
       g = GRADES.find(x => x.k === W0.grade) || g;
       const key = `${wcls}:${W0.i}`;
       let fixed = SAVE.weaponRolls[key];
-      if (!fixed) { fixed = SAVE.weaponRolls[key] = { val, opts: opts.map(o => ({ ...o })) }; }
+      if (!fixed) { fixed = SAVE.weaponRolls[key] = W0.st ? { val: randi(W0.st.val[0], W0.st.val[1]), opts: W0.st.opts.map(o => ({ ...o })) } /* v2.20 추가 커먼: 정해진 능력치 */ : { val, opts: opts.map(o => ({ ...o })) }; }
       val = fixed.val;
       opts.splice(0, opts.length, ...fixed.opts.map(o => ({ ...o })));
     }
