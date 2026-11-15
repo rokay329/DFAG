@@ -8363,7 +8363,8 @@ huskUp:[
     }
   }
   function drawPrompt() {
-    const p = G.prompt; if (!p || mode !== 'play') return;
+    const p0 = G.prompt; if (!p0 || mode !== 'play') return;
+    const p = TOUCH.on ? Object.assign({}, p0, { t: p0.t.replace(/^F\s+/, '') }) : p0; // v2.26 모바일은 F 없이 (오른쪽 행동 버튼)
     ctx.font = '9px Galmuri9'; ctx.textAlign = 'center';
     const w = ctx.measureText(p.t).width + 10, x = Math.round(p.x), y = Math.round(p.y + Math.sin(time * 4) * 1.5);
     ctx.fillStyle = 'rgba(10,8,14,.85)'; ctx.fillRect(x - w / 2, y - 10, w, 14);
@@ -8548,7 +8549,7 @@ huskUp:[
     if (MM.key !== key || !MM.c || MM.dun !== D) { MM.key = key; MM.dun = D; const [mc, mg] = MM.c ? [MM.c, MM.g] : mkCanvas(W0, H0); MM.c = mc; MM.g = mg; mg.clearRect(0, 0, W0, H0);
       const ctx0 = ctx; ctx = mg; try { drawMinimapRooms(D, 0, 0, W0, H0, cw, ch, gap); } finally { ctx = ctx0; } }
     ctx.drawImage(MM.c, x0, y0);
-    ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; ctx.fillStyle = '#000'; ctx.fillText('TAB 지도', VW - 11, y0 + H0 + 10); ctx.fillStyle = '#8a8496'; ctx.fillText('TAB 지도', VW - 12, y0 + H0 + 9);
+    ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; if (!TOUCH.on) { ctx.fillStyle = '#000'; ctx.fillText('TAB 지도', VW - 11, y0 + H0 + 10); ctx.fillStyle = '#8a8496'; ctx.fillText('TAB 지도', VW - 12, y0 + H0 + 9); }
     { const cur = D.cur, sf = shapeFit(cur), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), x = Math.round(x0 + W0 / 2 - rw / 2), y = Math.round(y0 + H0 / 2 - rh / 2);
       ctx.save(); ctx.strokeStyle = blink ? '#ffe39a' : '#fff'; ctx.lineWidth = 1; ctx.strokeRect(x - 0.5, y - 0.5, rw + 1, rh + 1); ctx.restore(); }
   }
@@ -10161,7 +10162,7 @@ huskUp:[
     if (!dot) gearOnHurt();
     if (dot) { P.hurtT = 0.15; sfx('hurt'); flashT = Math.max(flashT, 0.05); flashColor = '#ff1a28'; }
     if (!dot) {
-      P.inv = 0.9; P.hurtT = 0.2; sfx('hurt');
+      P.inv = 0.9; P.hurtT = 0.2; sfx('hurt'); buzz(35);
       addShake(7, src && src.x != null ? Math.atan2(P.y - src.y, P.x - src.x) : null);
       if (src && src.x != null && !unblockable) { const ka = Math.atan2(P.y - src.y, P.x - src.x); P.kx = Math.cos(ka) * 170; P.ky = Math.sin(ka) * 170; }
       hitstop = Math.max(hitstop, 0.07); zoomK = Math.max(zoomK, 0.02);
@@ -10218,7 +10219,7 @@ huskUp:[
       show(html, c) { const t = get(); t.innerHTML = html; t.style.setProperty('--c', c || 'var(--gold-l)'); t.classList.add('on'); },
       at(cx, cy) { const t = get(), { r, s } = k(); let x = (cx - r.left) / s + 10, y = (cy - r.top) / s + 10; x = Math.min(x, 768 - t.offsetWidth - 4); y = Math.min(y, 432 - t.offsetHeight - 4); t.style.left = Math.max(4, x) + 'px'; t.style.top = Math.max(4, y) + 'px'; },
       beside(node) { const t = get(), { r, s } = k(), b = node.getBoundingClientRect(); let x = (b.right - r.left) / s + 6, y = (b.top - r.top) / s; if (x + t.offsetWidth > 764) x = (b.left - r.left) / s - t.offsetWidth - 6; y = Math.min(y, 432 - t.offsetHeight - 4); t.style.left = Math.max(4, x) + 'px'; t.style.top = Math.max(4, y) + 'px'; },
-      hide() { if (el) el.classList.remove('on'); }, get el() { return get(); } };
+      hide() { if (el) el.classList.remove('on', 'pin'); }, get el() { return get(); } };
   })();
   { // 유물 효과는 마우스를 올렸을 때만
     const at = e => e.target.closest && e.target.closest('.relicRow[data-tip]');
@@ -10536,7 +10537,7 @@ huskUp:[
     if (G.stats.fx.has('vigil')) healPct(0.02);
     if (G.stats.fx.has('fangs')) P.chargeCd = [0, 0];
     if (pasO('pdInvis')) P.stealthT = Math.max(P.stealthT || 0, pasV('pdInvis')); // v2.22
-    sfx('perfect');
+    sfx('perfect'); buzz([12, 40, 12]);
   }
   function playerDie() {
     const P = G.player;
@@ -10723,6 +10724,7 @@ huskUp:[
     const charges = skMax('K');
     for (let i = 0; i < charges; i++) P.chargeCd[i] = Math.max(0, P.chargeCd[i] - dt);
     let mx = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0), my = (keys['s'] ? 1 : 0) - (keys['w'] ? 1 : 0);
+    if (TOUCH.on && TOUCH.mv && TOUCH.stick) { mx = TOUCH.mv.x; my = TOUCH.mv.y; } // v2.26 모바일 아날로그 스틱
     const ml = Math.hypot(mx, my); if (ml) { mx /= ml; my /= ml; }
     P.moving = ml > 0;
     mouse.active = Math.max(0, mouse.active - dt);
@@ -16870,12 +16872,15 @@ void main() {
     $('eqR').querySelectorAll('.wSlot[data-id]').forEach(b => {
       b.addEventListener('mouseenter', () => { invSel = +b.dataset.id; invHover = true; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); });
       b.addEventListener('mouseleave', () => { invHover = false; invDropT = 0; pxTip.hide(); });
-      b.addEventListener('click', () => { const it = SAVE.inv.find(i => i.id === +b.dataset.id); if (it && !isEq(cls, it)) equipNow(it, true); });
+      b.addEventListener('click', () => { const it = SAVE.inv.find(i => i.id === +b.dataset.id);
+        if (TOUCH.on && !(invKbd && invSel === +b.dataset.id)) { invSel = +b.dataset.id; invKbd = true; TOUCH.tipEl = null; $('eqR').querySelectorAll('.wSlot').forEach(x => x.classList.toggle('sel', x === b)); invTipShow(); sfx('blip'); return; } // v2.26 모바일: 첫 탭은 설명, 다음 탭은 장착
+        if (it && !isEq(cls, it)) equipNow(it, true); });
     });
     if (invHover || invKbd) invTipShow(); else pxTip.hide();
   }
   const invCanDrop = () => !!(G && invFrom === 'play' && G.dun && G.dun.cur && G.dun.cur.type !== 'forge');
-  function invTipShow() { const it = SAVE.inv.find(i => i.id === invSel), node = it && $('eqR').querySelector(`.wSlot[data-id="${it.id}"]`); if (!node) { pxTip.hide(); return; } pxTip.show(invTipHTML(it), gradeOf(it).c); pxTip.el.classList.add('wide'); pxTip.beside(node); }
+  function invTipShow() { const it = SAVE.inv.find(i => i.id === invSel), node = it && $('eqR').querySelector(`.wSlot[data-id="${it.id}"]`); if (!node) { pxTip.hide(); return; } pxTip.show(invTipHTML(it), gradeOf(it).c); pxTip.el.classList.add('wide'); pxTip.beside(node);
+    if (TOUCH.on) { pxTip.el.classList.add('pin'); const hb = pxTip.el.querySelector('.tHold'); if (hb) { const on = e => { e.preventDefault(); TOUCH.dropHold = true; }, off = () => { TOUCH.dropHold = false; }; hb.addEventListener('touchstart', on, { passive: false }); hb.addEventListener('touchend', off); hb.addEventListener('touchcancel', off); hb.addEventListener('mousedown', on); hb.addEventListener('mouseup', off); hb.addEventListener('mouseleave', off); } } }
   const PN = x => +x.toFixed(2);
   const PAS_D = { // 보관 패시브 설명 (툴팁)
     atkP: q => `공격력 +${q.v}%`, crit: q => `치명타 확률 +${q.v}%p`, critDmg: q => `치명타 피해 +${q.v}%p`, spd: q => `이동 속도 +${q.v}%`, cdr: q => `재사용 대기 −${q.v}%`, gauge: q => `각성 게이지 충전 +${q.v}%`,
@@ -16914,18 +16919,18 @@ void main() {
     }
     const idx = myWeapons(cls).indexOf(it) + 1;
     const K = t => `<span class="key">${t}</span>`; // 키보드·마우스 키는 네모 칸으로
-    const keys = [ok && !on ? `${K('LMB')} 장착` : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 — 지금 직업은 쓸 수 없다`, idx ? `${K(idx)} 게임 중 바꿔 들기` : '', invCanDrop() ? `${K('F')} 홀드 — 버리기` : '', `${K('I')} ${K('ESC')} 닫기`].filter(Boolean);
+    const keys = TOUCH.on ? [ok && !on ? '한 번 더 탭 — 장착' : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 — 지금 직업은 쓸 수 없다`] : [ok && !on ? `${K('LMB')} 장착` : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 — 지금 직업은 쓸 수 없다`, idx ? `${K(idx)} 게임 중 바꿔 들기` : '', invCanDrop() ? `${K('F')} 홀드 — 버리기` : '', `${K('I')} ${K('ESC')} 닫기`].filter(Boolean);
     return `<div class="dl"><div class="gr">${g.n} · ${slotName(it)}${ascTag(it)}${on ? ' · 장착 중' : ''}</div><div class="nm">${it.name}${it.lv ? ` <b>+${it.lv}</b>` : ''}</div>
       <div class="mn">${main}</div>${it.opts.map(o => `<div class="op">${optText(o)}</div>`).join('')}${it.fx ? `<div class="fx">★ ${LEGEND_FX[it.fx].d}</div>` : ''}${itemExtra(it, cls)}${pasLine(it, cls)}
       ${it.lv || it.fail ? `<div class="rp">강화 +${it.lv || 0}${it.fail ? ` · 장인의 숨결 +${2 * it.fail}%p` : ''}</div>` : ''}</div>${right}
-      <div class="tK">${keys.map(x => `<span class="kI">${x}</span>`).join('')}</div><div class="tDrop"><i></i></div>`;
+      <div class="tK">${keys.map(x => `<span class="kI">${x}</span>`).join('')}</div>${TOUCH.on && invCanDrop() ? '<button class="tHold"><i></i>길게 눌러 버리기</button>' : '<div class="tDrop"><i></i></div>'}`;
   }
   // F 홀드: 마우스를 올린(또는 고른) 무기를 바닥에 내려놓는다
   let invHover = false, invKbd = false, invDropT = 0, invDropTimer = null;
   function invDropTick() {
-    if (mode !== 'inv') return; const it = SAVE.inv.find(i => i.id === invSel), on = (invHover || invKbd) && keys['f'] && it && invCanDrop();
-    invDropT = on ? invDropT + 0.05 : 0; const bar = pxTip.el.querySelector('.tDrop i'); if (bar) bar.style.width = Math.min(100, invDropT / 0.7 * 100) + '%';
-    if (on && invDropT >= 0.7) { invDropT = 0; keys['f'] = false; const P = G.player; dropWeapon(it, P.x + 16, P.y + 8); G.stats = calcStats(G.buffs); persist(); sfx('drop'); lootFeed(`「${it.name}」 버림`, gradeOf(it).c, 1400); invSel = null; invHover = false; invKbd = false; pxTip.hide(); renderInv(); }
+    if (mode !== 'inv') return; const it = SAVE.inv.find(i => i.id === invSel), on = (invHover || invKbd) && (keys['f'] || (TOUCH.on && TOUCH.dropHold)) && it && invCanDrop();
+    invDropT = on ? invDropT + 0.05 : 0; const bar = pxTip.el.querySelector('.tDrop i, .tHold i'); if (bar) bar.style.width = Math.min(100, invDropT / 0.7 * 100) + '%';
+    if (on && invDropT >= 0.7) { invDropT = 0; keys['f'] = false; TOUCH.dropHold = false; const P = G.player; dropWeapon(it, P.x + 16, P.y + 8); G.stats = calcStats(G.buffs); persist(); sfx('drop'); lootFeed(`「${it.name}」 버림`, gradeOf(it).c, 1400); invSel = null; invHover = false; invKbd = false; pxTip.hide(); renderInv(); }
   }
   function invKey(k) {
     const list = invList().filter(i => i.slot === 'weapon' && i.cls === invCls());
@@ -17015,7 +17020,8 @@ void main() {
     });
     $('selCards').querySelectorAll('.selc').forEach(el => {
       el.addEventListener('mouseenter', () => { if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; sfx('blip'); renderSelect(); } });
-      el.addEventListener('click', () => chooseClass(el.dataset.cls));
+      el.addEventListener('touchstart', () => { el._wasSel = selCls === el.dataset.cls; }, { passive: true });
+      el.addEventListener('click', () => { if (TOUCH.on && !el._wasSel) { el._wasSel = true; if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; renderSelect(); } sfx('blip'); return; } chooseClass(el.dataset.cls); }); // v2.26 모바일: 첫 탭은 살펴보기, 다음 탭은 출정
     });
   }
   function renderStages() {
@@ -17059,9 +17065,9 @@ void main() {
     $('selCards').querySelectorAll('.selc').forEach(el => el.classList.toggle('sel', el.dataset.cls === selCls));
     const C = CLASSES[selCls];
     $('selDetail').innerHTML = `<div class="sdh"><b>${C.n}</b> <span>${C.role} · ${C.weapon}</span></div><div class="sk2">
-      <span class="key">LMB</span><span>${C.atkD}</span>
-      <span class="key">RMB</span><span><b>${C.skill}</b> — ${C.skillD} <i>(쿨 ${C.skillCd}초)</i></span>
-      <span class="key">E</span><span><b>${C.awaken}</b> — ${C.awakenD}</span></div>`;
+      <span class="key">${TOUCH.on ? '공격' : 'LMB'}</span><span>${C.atkD}</span>
+      <span class="key">${TOUCH.on ? '스킬' : 'RMB'}</span><span><b>${C.skill}</b> — ${C.skillD} <i>(쿨 ${C.skillCd}초)</i></span>
+      <span class="key">${TOUCH.on ? '각성' : 'E'}</span><span><b>${C.awaken}</b> — ${C.awakenD}</span></div>`;
   }
   function openSelect() { mode = 'select'; selCls = CUR; $('ovTitle').classList.remove('on'); buildSelect(); renderSelect(); $('ovSelect').classList.add('on'); }
   function closeSelect() { pxTip.hide(); $('ovSelect').classList.remove('on'); mode = 'title'; $('ovTitle').classList.add('on'); }
@@ -17201,6 +17207,17 @@ void main() {
   function enableTouch() {
     if (TOUCH.on) return; TOUCH.on = true; document.body.classList.add('touch'); fit();
     if (G) { G.kgCls = null; }
+    touchStripAll(); new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') touchStrip(m.target); else for (const n of m.addedNodes) touchStripAll(n); } }).observe(document.body, { subtree: true, childList: true, characterData: true });
+  }
+  // v2.26 모바일: PC 키 표기 지우기 ([ESC] · [I] · [F] · TAB 지도 …) — 화면에 새 글자가 생길 때마다
+  const KEY_RX = [[/\s*\[(?:ESC|Esc|I|F|TAB|Tab|H|M|E|Q|ENTER|Enter|SPACE|Space)\]/g, ''], [/TAB 지도/g, '지도'], [/\s*·\s*전체 조작 \[H\]/g, ''], [/E 조준 → 클릭 지점에/g, '조준 → 탭한 곳에'], [/좌클릭/g, '공격 버튼'], [/우클릭/g, '스킬 버튼']];
+  function touchStrip(n) { if (!n || n.nodeType !== 3 || !n.nodeValue || (n.parentNode && n.parentNode.closest && n.parentNode.closest('#touch'))) return; let v = n.nodeValue; for (const [r, t] of KEY_RX) v = v.replace(r, t); if (v !== n.nodeValue) n.nodeValue = v; }
+  function touchStripAll(root) { root = root || document.body; if (root.nodeType === 3) { touchStrip(root); return; } if (root.nodeType !== 1) return; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) touchStrip(n); }
+  const buzz = ms => { if (TOUCH.on && navigator.vibrate) try { navigator.vibrate(ms); } catch (e) {} }; // 안드로이드 진동 (아이폰은 무시)
+  { // v2.26 모바일: 유물·잿불 설명은 탭하면 보이고, 다른 곳을 탭하면 닫힘
+    addEventListener('click', e => { if (!TOUCH.on) return; const r = e.target.closest && e.target.closest('.relicRow[data-tip], [data-atip]');
+      if (r) { const nm = r.dataset.name || r.dataset.aname, d = r.dataset.tip || r.dataset.atip; pxTip.show(`<div class="tN">${nm}</div><div class="tD">${d}</div>`, getComputedStyle(r).getPropertyValue('--c').trim() || r.dataset.ac || null); pxTip.el.classList.remove('wide'); pxTip.beside(r); TOUCH.tipEl = r; return; }
+      if (TOUCH.tipEl && !(e.target.closest && e.target.closest('.pxTip'))) { TOUCH.tipEl = null; if (!(mode === 'inv' && invKbd)) pxTip.hide(); else invTipShow(); } }, true);
   }
   if (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches) setTimeout(enableTouch, 0); /* 스크립트 끝까지 읽은 뒤 (fit이 아래 상수를 씀) */
   addEventListener('touchstart', () => enableTouch(), { passive: true });
@@ -17208,7 +17225,8 @@ void main() {
   function stickTo(dx, dy) {
     const d = Math.hypot(dx, dy), R = 40, k = d > R ? R / d : 1;
     $('tKnob').style.transform = `translate(${dx * k}px,${dy * k}px)`;
-    const dead = 12, a = Math.atan2(dy, dx), on = d > dead;
+    const dead = 10, a = Math.atan2(dy, dx), on = d > dead;
+    TOUCH.mv = on ? { x: Math.cos(a), y: Math.sin(a) } : null; // v2.26 아날로그 이동: 8방향이 아니라 스틱 방향 그대로
     // 8방향: 각 축은 ±67.5° 안이면 켠다
     setDir('d', on && Math.cos(a) > 0.38); setDir('a', on && Math.cos(a) < -0.38);
     setDir('s', on && Math.sin(a) > 0.38); setDir('w', on && Math.sin(a) < -0.38);
@@ -17224,18 +17242,20 @@ void main() {
   zone.addEventListener('touchend', stickEnd); zone.addEventListener('touchcancel', stickEnd);
   document.querySelectorAll('#touch .tb[data-k]').forEach(b => {
     const k = b.dataset.k;
-    const dn = e => { e.preventDefault(); b.classList.add('dn'); TOUCH.held[k] = true; keyEv('keydown', k); };
+    const dn = e => { e.preventDefault(); b.classList.add('dn'); TOUCH.held[k] = true; keyEv('keydown', k); if (k !== 'j') buzz(8); };
     const up = e => { e.preventDefault(); b.classList.remove('dn'); if (TOUCH.held[k]) { TOUCH.held[k] = false; keyEv('keyup', k); } };
     b.addEventListener('touchstart', dn, { passive: false }); b.addEventListener('touchend', up); b.addEventListener('touchcancel', up);
     b.addEventListener('mousedown', dn); b.addEventListener('mouseup', up); b.addEventListener('mouseleave', up);
   });
+  { const b = $('tWep'), go = e => { e.preventDefault(); if (!G || mode !== 'play') return; const L = myWeapons(G.cls), i = L.indexOf(eqWeapon(G.cls)); if (L.length > 1) { b.classList.add('dn'); setTimeout(() => b.classList.remove('dn'), 90); swapWeapon((i + 1) % L.length); buzz(8); } };
+    b.addEventListener('touchstart', go, { passive: false }); b.addEventListener('mousedown', go); } // v2.26 모바일 무기 바꾸기 (숫자키 대신)
   $('tFull').addEventListener('click', () => { const d = document.documentElement; if (!document.fullscreenElement) { (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d); try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) { } } else document.exitFullscreen && document.exitFullscreen(); });
   if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) $('tFull').style.display = 'none';
   // 조준 보조: 터치로 공격·기술을 쓰면 가까운 적을 향한다 (마우스로 조준 중이면 그대로)
   function touchAim() { // v2.25 모바일 자동 조준: 목표 고정 · 이동 방향 우선 · 벽 너머·허수아비 제외 · 무기 사거리
     if (!TOUCH.on || mouse.active > 0 || !G) return null;
     const P = G.player, R = G.cls === 'gunner' ? 360 : G.cls === 'mage' ? 300 : 260;
-    const mvx = (TOUCH.dirs.d ? 1 : 0) - (TOUCH.dirs.a ? 1 : 0), mvy = (TOUCH.dirs.s ? 1 : 0) - (TOUCH.dirs.w ? 1 : 0), mv = mvx || mvy ? Math.atan2(mvy, mvx) : null;
+    const mvx = (TOUCH.dirs.d ? 1 : 0) - (TOUCH.dirs.a ? 1 : 0), mvy = (TOUCH.dirs.s ? 1 : 0) - (TOUCH.dirs.w ? 1 : 0), mv = TOUCH.mv && TOUCH.stick ? Math.atan2(TOUCH.mv.y, TOUCH.mv.x) : mvx || mvy ? Math.atan2(mvy, mvx) : null;
     const ok = (e, r) => !e.dead && e.type !== 'flag' && Math.hypot(e.x - P.x, e.y - P.y) < r && !segSolid(P.x, P.y - 8, e.x, e.y - 8);
     const score = e => { const d = Math.hypot(e.x - P.x, e.y - P.y); return mv == null ? d : d * (1 + 0.8 * Math.abs(angDiff(Math.atan2(e.y - P.y, e.x - P.x), mv)) / Math.PI); };
     const live = G.enemies.filter(e => ok(e, R)), real = live.filter(e => !isDummy(e)), pool = real.length ? real : live;
@@ -17249,6 +17269,22 @@ void main() {
     ctx.fillStyle = Math.floor(time * 4) % 2 ? '#ffd34d' : '#fff2c0';
     for (const [cx, cy, sx, sy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]) { ctx.fillRect(sx > 0 ? cx : cx - a, sy > 0 ? cy : cy - 2, a, 2); ctx.fillRect(sx > 0 ? cx : cx - 2, sy > 0 ? cy : cy - a, 2, a); }
   }
+  function touchCd() { // v2.26 모바일 버튼: 쿨타임·충전·각성 게이지·상황 행동·무기
+    const P = G.player, s = G.stats, set = (el, k, v) => { if (el._v === undefined) el._v = {}; if (el._v[k] !== v) { el._v[k] = v; if (k === 'txt') el.textContent = v; else el.style.setProperty(k, v); } };
+    const pips = (el, n, on) => { const key = n + '/' + on; if (el._pk === key) return; el._pk = key; el.innerHTML = n > 1 ? Array.from({ length: n }, (_, i) => `<i class="${i < on ? '' : 'off'}"></i>`).join('') : ''; };
+    const flash = el => { el.classList.remove('rdy'); void el.offsetWidth; el.classList.add('rdy'); };
+    { const b = $('tSkill'), n = skMax('K'), total = Math.max(0.1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd'))), cds = P.chargeCd.slice(0, n), rd = cds.filter(c => c <= 0).length, mn = Math.min(...cds);
+      set(b.querySelector('.cdo'), '--p', rd ? '0' : Math.min(1, mn / total).toFixed(3)); set(b.querySelector('.cdn'), 'txt', rd ? '' : String(Math.ceil(mn))); b.classList.toggle('cding', !rd); pips(b.querySelector('.pips'), n, rd);
+      if (TOUCH.skRd !== undefined && rd > TOUCH.skRd) flash(b); TOUCH.skRd = rd; }
+    { const b = $('tAwk'), g = Math.min(100, P.gauge || 0); set(b.querySelector('.gfill'), '--g', (g / 100).toFixed(3)); b.classList.toggle('full', g >= 100); set(b.querySelector('.cdn'), 'txt', g >= 100 ? '' : Math.floor(g) + '%');
+      if (TOUCH.awFull === false && g >= 100) flash(b); TOUCH.awFull = g >= 100; }
+    { const b = $('tDodge'), n = skMax('D'); set(b.querySelector('.cdo'), '--p', P.stam > 0 ? '0' : Math.max(0, 1 - (P.stamT || 0) / 1.5).toFixed(3)); pips(b.querySelector('.pips'), n, P.stam);
+      if (TOUCH.dgN !== undefined && P.stam > TOUCH.dgN && TOUCH.dgN === 0) flash(b); TOUCH.dgN = P.stam; }
+    { const b = $('tF'), p = G.prompt; b.style.display = p ? '' : 'none';
+      if (p) { let t = p.t.replace(/^F\s+/, ''); if (t.length > 11) t = t.slice(0, 10) + '…'; set(b.querySelector('.al'), 'txt', t); b.classList.toggle('bad', !!p.bad); } }
+    { const b = $('tWep'), L = myWeapons(G.cls), cw = eqWeapon(G.cls); b.style.display = L.length > 1 && !P.dead ? '' : 'none';
+      const key = cw ? cw.id + '/' + L.length : ''; if (b._wk !== key) { b._wk = key; b.innerHTML = cw ? `${iconImg(cw)}<i class="wn">${L.indexOf(cw) + 1}/${L.length}</i>` : ''; } }
+  }
   function touchHud() {
     const show = TOUCH.on && (mode === 'play' || mode === 'map');
     $('touch').classList.toggle('on', show);
@@ -17256,10 +17292,10 @@ void main() {
     if (!show) { for (const k in TOUCH.held) if (TOUCH.held[k]) { TOUCH.held[k] = false; keyEv('keyup', k); } for (const k in TOUCH.dirs) setDir(k, false); return; }
     if (G && TOUCH.iconCls !== G.cls) {
       TOUCH.iconCls = G.cls; const C = CL(), ic = C.icons || (G.cls === 'ranger' ? ['dual', 'shadow', 'storm'] : ['atk', 'skill', 'awaken']);
-      drawIcon32($('tAtk').querySelector('canvas'), ic[0]); drawIcon32($('tSkill').querySelector('canvas'), ic[1]); drawIcon32($('tAwk').querySelector('canvas'), ic[2]);
+      drawIcon32($('tAtk').querySelector('canvas'), ic[0]); drawIcon32($('tSkill').querySelector('canvas'), ic[1]); drawIcon32($('tAwk').querySelector('canvas'), ic[2]); drawIcon32($('tDodge').querySelector('canvas'), 'blink');
       
     }
-    if (G && G.player) { const P = G.player, sk = P.chargeCd.some((c, i) => c <= 0 && i < skMax('K')); $('tSkill').classList.toggle('cd', !sk); $('tAwk').classList.toggle('cd', P.gauge < 100); $('tDodge').classList.toggle('cd', P.stam <= 0); $('tF').style.display = G.prompt ? '' : 'none'; }
+    if (G && G.player) { const P = G.player, sk = P.chargeCd.some((c, i) => c <= 0 && i < skMax('K')); $('tSkill').classList.toggle('cd', !sk); $('tAwk').classList.toggle('cd', P.gauge < 100); $('tDodge').classList.toggle('cd', P.stam <= 0); touchCd(); }
     if (mode !== 'play' && (gearCmpId !== null || $('gearCmp').classList.contains('on'))) { $('gearCmp').classList.remove('on'); gearCmpId = null; }
   }
 

@@ -430,22 +430,54 @@
   #touch .stick { position: absolute; width: 104px; height: 104px; margin: -52px 0 0 -52px; border-radius: 50%; border: 2px solid rgba(201,162,74,.55); background: rgba(10,7,14,.35); display: none; }
   #touch .stick.on { display: block; }
   #touch .knob { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(242,215,140,.55); border: 2px solid #000; }
-  #touch .tb { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--gold-d), 0 2px 0 rgba(0,0,0,.6);
-    background: rgba(26,20,31,.72); color: var(--ink); display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 11px; line-height: 1.1; text-shadow: 1px 1px 0 #000; }
-  #touch .tb canvas { width: 30px; height: 30px; image-rendering: pixelated; margin-bottom: 1px; }
-  #touch .tb.dn { background: rgba(93,26,30,.85); transform: translateY(1px); }
-  #touch .tb.cd { opacity: .45; }
+  #touch .tb { position: absolute; pointer-events: auto; border-radius: 50%; border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--gold-d), 0 3px 0 rgba(0,0,0,.6);
+    background: rgba(26,20,31,.74); color: var(--ink); display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 11px; line-height: 1.1; text-shadow: 1px 1px 0 #000; overflow: visible;
+    transition: transform .06s, filter .06s; -webkit-tap-highlight-color: transparent; }
+  #touch .tb canvas { width: 30px; height: 30px; image-rendering: pixelated; margin-bottom: 1px; position: relative; z-index: 2; }
+  #touch .tb span { position: relative; z-index: 2; }
+  /* v2.26 누름 반응: 살짝 눌리고 밝아짐 */
+  #touch .tb.dn { background: rgba(120,34,38,.9); transform: scale(.9); filter: brightness(1.25); box-shadow: inset 0 0 0 2px var(--gold-l), 0 1px 0 rgba(0,0,0,.6); }
+  #touch .tb.cd canvas, #touch .tb.cd span { opacity: .55; }
+  /* 쿨타임: 시계 방향으로 걷히는 어둠 + 남은 초 */
+  #touch .cdo { position: absolute; inset: 2px; border-radius: 50%; z-index: 3; pointer-events: none; background: conic-gradient(rgba(5,3,8,.72) calc(var(--p, 0) * 1turn), transparent 0); }
+  #touch .cdn { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; font: normal calc(var(--u) * 15px) 'Galmuri11'; color: #fff3d8; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
+  #touch .cdn:empty { display: none; }
+  #touch #tSkill.cding > span { visibility: hidden; } /* 쿨타임 숫자가 보일 땐 글자 숨김 */
+  #touch #tAwk .cdn { align-items: flex-start; padding-top: calc(var(--u) * 5px); font-size: calc(var(--u) * 9px); font-family: 'Galmuri7'; color: #ffd890; }
+  /* 각성: 아래에서 차오르는 게이지 */
+  #touch .gfill { position: absolute; inset: 2px; border-radius: 50%; z-index: 1; pointer-events: none; background: linear-gradient(to top, rgba(255,170,60,.55) calc(var(--g, 0) * 100%), transparent 0); }
+  #touch #tAwk.full { box-shadow: inset 0 0 0 2px #ffd34d, 0 0 0 2px #000, 0 0 10px 2px rgba(255,190,80,.7); animation: tbGlow .8s steps(2) infinite; }
+  @keyframes tbGlow { 50% { filter: brightness(1.35); } }
+  /* 충전 횟수 점 */
+  #touch .pips { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * -9px); display: flex; justify-content: center; gap: 3px; z-index: 4; text-decoration: none; }
+  #touch .pips i { width: 6px; height: 6px; background: #ffd34d; border: 1px solid #000; }
+  #touch .pips.blue i { background: #8fd0ff; } #touch .pips i.off { background: #3a3340; }
+  /* 다시 쓸 수 있게 되면 한 번 번쩍 */
+  #touch .tb.rdy { animation: tbRdy .35s steps(3); } @keyframes tbRdy { 0% { transform: scale(1.18); filter: brightness(1.8); } 100% { transform: scale(1); } }
+  /* 상황 행동 버튼 (F 대신): 할 수 있는 것을 글자로 */
+  #touch .tb.act { border-radius: 8px; height: calc(var(--u) * 34px); padding: 0 calc(var(--u) * 10px); flex-direction: row; gap: 5px; font-size: calc(var(--u) * 12px); white-space: nowrap;
+    background: rgba(58,40,14,.88); box-shadow: inset 0 0 0 2px #ffd34d, 0 3px 0 rgba(0,0,0,.6); color: #ffe9b0; animation: tbAct 1s steps(2) infinite; }
+  #touch .tb.act.bad { box-shadow: inset 0 0 0 2px #a04040, 0 3px 0 rgba(0,0,0,.6); color: #ff9a9a; background: rgba(40,14,16,.88); animation: none; }
+  #touch .tb.act .ah { font-size: calc(var(--u) * 13px); } @keyframes tbAct { 50% { filter: brightness(1.2); } }
+  #touch #tWep img { width: calc(var(--u) * 28px); height: calc(var(--u) * 28px); image-rendering: pixelated; position: relative; z-index: 2; }
+  #touch #tWep .wn { position: absolute; right: -3px; top: -3px; font: 8px 'Galmuri7'; background: #000; color: var(--gold-l); padding: 0 2px; z-index: 4; }
   /* 버튼 크기·위치는 화면 높이에 비례(--u, game.js fit에서 설정) */
   #touch { --u: 1; }
-  #touch .tb.big { width: calc(var(--u) * 76px); height: calc(var(--u) * 76px); right: calc(var(--u) * 22px + env(safe-area-inset-right)); bottom: calc(var(--u) * 20px + env(safe-area-inset-bottom)); font-size: calc(var(--u) * 12px); }
-  #touch .tb.big canvas { width: calc(var(--u) * 36px); height: calc(var(--u) * 36px); }
-  #touch .tb.mid { width: calc(var(--u) * 52px); height: calc(var(--u) * 52px); font-size: calc(var(--u) * 11px); }
+  #touch .tb.big { width: calc(var(--u) * 86px); height: calc(var(--u) * 86px); right: calc(var(--u) * 20px + env(safe-area-inset-right)); bottom: calc(var(--u) * 18px + env(safe-area-inset-bottom)); font-size: calc(var(--u) * 12px); }
+  #touch .tb.big canvas { width: calc(var(--u) * 40px); height: calc(var(--u) * 40px); }
+  #touch .tb.mid { width: calc(var(--u) * 58px); height: calc(var(--u) * 58px); font-size: calc(var(--u) * 11px); }
   #touch .tb.mid canvas { width: calc(var(--u) * 26px); height: calc(var(--u) * 26px); }
-  #touch .tb.sm { width: calc(var(--u) * 36px); height: calc(var(--u) * 36px); font-size: calc(var(--u) * 10px); }
-  #tSkill { right: calc(var(--u) * 106px + env(safe-area-inset-right)); bottom: calc(var(--u) * 14px + env(safe-area-inset-bottom)); }
-  #tAwk { right: calc(var(--u) * 100px + env(safe-area-inset-right)); bottom: calc(var(--u) * 78px + env(safe-area-inset-bottom)); }
-  #tDodge { right: calc(var(--u) * 34px + env(safe-area-inset-right)); bottom: calc(var(--u) * 108px + env(safe-area-inset-bottom)); }
-  #tF { right: calc(var(--u) * 160px + env(safe-area-inset-right)); bottom: calc(var(--u) * 64px + env(safe-area-inset-bottom)); }
+  #touch .tb.sm { width: calc(var(--u) * 38px); height: calc(var(--u) * 38px); font-size: calc(var(--u) * 10px); }
+  #tSkill { right: calc(var(--u) * 116px + env(safe-area-inset-right)); bottom: calc(var(--u) * 14px + env(safe-area-inset-bottom)); }
+  #tAwk { right: calc(var(--u) * 104px + env(safe-area-inset-right)); bottom: calc(var(--u) * 90px + env(safe-area-inset-bottom)); }
+  #tDodge { right: calc(var(--u) * 34px + env(safe-area-inset-right)); bottom: calc(var(--u) * 120px + env(safe-area-inset-bottom)); }
+  #tWep { right: calc(var(--u) * 186px + env(safe-area-inset-right)); bottom: calc(var(--u) * 20px + env(safe-area-inset-bottom)); }
+  #tF { right: calc(var(--u) * 104px + env(safe-area-inset-right)); bottom: calc(var(--u) * 164px + env(safe-area-inset-bottom)); }
+  /* 모바일: PC 키 안내 숨김 */
+  body.touch #skills, body.touch #mute { display: none !important; }
+  body.touch .pxTip.pin { pointer-events: auto; }
+  .pxTip .tHold { display: block; width: 100%; margin-top: 6px; padding: 4px 0; font: 10px 'Galmuri9'; color: #ffb0a0; background: #2a1418; border: 1px solid #a04040; position: relative; overflow: hidden; }
+  .pxTip .tHold i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255,90,70,.35); }
   /* 작은 버튼: 기본은 미니맵 아래 가로줄, 게임 화면 옆에 여백이 있으면 그 여백 위쪽에 세로로 */
   #tPause { right: calc(var(--u) * 8px + env(safe-area-inset-right)); top: 38%; }
   #tMap { right: calc(var(--u) * 50px + env(safe-area-inset-right)); top: 38%; }
@@ -511,7 +543,7 @@
           <button class="mi danger" data-act="reset">저장 초기화</button>
         </div>
       </div>
-      <div class="ver">PROTOTYPE v2.18 · ↑↓ 선택 · ENTER 결정</div>
+      <div class="ver">PROTOTYPE v2.18<span class="pcOnly"> · ↑↓ 선택 · ENTER 결정</span><span class="touchOnly"> · 탭해서 선택</span></div>
     </div>
 
     <!-- 직업 선택 -->
@@ -522,7 +554,7 @@
         <div class="selCards" id="selCards"></div>
         <div class="selDetail pf" id="selDetail"></div>
         <div class="ascRow pf" id="ascRow"></div>
-        <div class="selHint f7">← → 직업 · ↑ ↓ 잿불 단계 · ENTER 출정 · ESC 돌아가기</div>
+        <div class="selHint f7"><span class="pcOnly">← → 직업 · ↑ ↓ 잿불 단계 · ENTER 출정 · ESC 돌아가기</span><span class="touchOnly">카드를 탭해 살펴보고 · 한 번 더 탭하면 출정</span></div>
       </div>
     </div>
 
@@ -585,7 +617,7 @@
             <div class="invFx" id="invFx"></div>
           </div>
         </div>
-        <div class="invHint f7"><span class="pcOnly"></span><span class="touchOnly">칸을 눌러 고르고 장착 · 해제</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
+        <div class="invHint f7"><span class="pcOnly"></span><span class="touchOnly">칸을 탭하면 설명 · 한 번 더 탭하면 장착</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
       </div>
     </div>
 
@@ -649,11 +681,12 @@
 </div>
 <div id="touch">
   <div class="zone" id="tZone"><div class="stick" id="tStick"><div class="knob" id="tKnob"></div></div></div>
-  <div class="tb big" id="tAtk" data-k="j"><canvas width="32" height="32"></canvas>공격</div>
-  <div class="tb mid" id="tSkill" data-k="k"><canvas width="32" height="32"></canvas><span>스킬</span></div>
-  <div class="tb mid" id="tAwk" data-k="e"><canvas width="32" height="32"></canvas><span>각성</span></div>
-  <div class="tb mid" id="tDodge" data-k=" ">점멸</div>
-  <div class="tb sm" id="tF" data-k="f" style="border-radius:50%">F</div>
+  <div class="tb big" id="tAtk" data-k="j"><canvas width="32" height="32"></canvas><span>공격</span><i class="ring"></i></div>
+  <div class="tb mid" id="tSkill" data-k="k"><canvas width="32" height="32"></canvas><span>스킬</span><i class="cdo"></i><b class="cdn"></b><u class="pips"></u></div>
+  <div class="tb mid" id="tAwk" data-k="e"><canvas width="32" height="32"></canvas><span>각성</span><i class="gfill"></i><b class="cdn"></b></div>
+  <div class="tb mid" id="tDodge" data-k=" "><canvas width="32" height="32"></canvas><span>점멸</span><i class="cdo"></i><u class="pips blue"></u></div>
+  <div class="tb act" id="tF" data-k="f"><span class="ah">✋</span><span class="al">줍기</span></div>
+  <div class="tb sm" id="tWep"></div>
   <div class="tb sm" id="tMap" data-k="Tab">지도</div>
   <div class="tb sm" id="tPause" data-k="Escape">❚❚</div>
   <div class="tb sm" id="tFull">전체</div>
