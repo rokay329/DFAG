@@ -10197,12 +10197,15 @@ huskUp:[
     crown: { n: '깨진 왕관 조각', d: '공격력 +30% · 받는 피해 2배', c: '#b898ff' },
     pact: { n: '피의 계약', d: '처치할 때마다 투지 +10 · 회복량 절반', c: '#a3161c' },
   };
+  // v2.21 유물마다 고유 도트 (9×9칸) — MAPS·PAL에 'relic_키'로 등록해 바닥 드랍·HUD·캐릭터 창에 같이 쓴다
+  const RELIC_ART = {'finger': {'rows': ['......kkk', '.....kwWk', '....kwWDk', '...kkDkk.', '..kwWk...', '.kwWDk...', 'kkDkk....', 'kwWk.....', 'kkk......'], 'pal': {'w': '#f0e6cc', 'W': '#c8b890', 'D': '#8a7a5a', 'k': '#0b0a0e'}}, 'boots': {'rows': ['..kkkk...', '..kbBk...', '..kbBk.g.', '..kbBkgG.', '.kkbBkkg.', 'kbbbbBBk.', 'kbbbbbBBk', 'kSSSSSSSk', '.kkkkkkk.'], 'pal': {'b': '#8a5a32', 'B': '#5a3a1e', 'S': '#3a2a1a', 'g': '#c8f080', 'G': '#78b040', 'k': '#0b0a0e'}}, 'eye': {'rows': ['.........', '..kkkkk..', '.kwwwwwk.', 'kwwYYYwwk', 'kwYkKkYwk', 'kwwYYYwwk', '.kwwwwwk.', '..kkkkk..', '.........'], 'pal': {'w': '#e8e4dc', 'Y': '#e8b830', 'k': '#0b0a0e', 'K': '#ffffff'}}, 'hourglass': {'rows': ['kkkkkkkkk', '.kGGGGGk.', '..kssSk..', '...kSk...', '....k....', '...kSk...', '..ksSSk..', '.kGGGGGk.', 'kkkkkkkkk'], 'pal': {'G': '#a07840', 's': '#f0d898', 'S': '#c8a058', 'k': '#0b0a0e'}}, 'emberheart': {'rows': ['.kk...kk.', 'kRRk.kRRk', 'kRhRkRRRk', 'kRhYRRRRk', 'kRRYWYRRk', '.kRRYRRk.', '..kRRRk..', '...kRk...', '....k....'], 'pal': {'R': '#c03a1a', 'h': '#ff8a5a', 'Y': '#ffb040', 'W': '#fff0a0', 'k': '#0b0a0e'}}, 'seal': {'rows': ['..kkkkk..', '.kgGGGgk.', 'kgGkkkGgk', 'kGkrrrkGk', 'kGkrWrkGk', 'kGkrrrkGk', 'kgGkkkGgk', '.kgGGGgk.', '..kkkkk..'], 'pal': {'g': '#5a5864', 'G': '#a8acb4', 'r': '#8a5a2a', 'W': '#d8a860', 'k': '#0b0a0e'}}, 'drum': {'rows': ['.kkkkkkk.', 'kwwwwwwwk', 'kWwwwwwWk', 'kRkRkRkRk', 'kRRkRkRRk', 'kRkRkRkRk', 'kDRRRRRDk', '.kkkkkkk.', 'k.......k'], 'pal': {'w': '#e8d8b0', 'W': '#c8b088', 'R': '#c8563a', 'D': '#7a2a1a', 'k': '#0b0a0e'}}, 'slimecore': {'rows': ['...kkk...', '..kgggk..', '.kgGgggk.', 'kgGgYggGk', 'kgggYYggk', 'kggGYggGk', '.kgggggk.', '..kkkkk..', '.........'], 'pal': {'g': '#5ab838', 'G': '#a8f070', 'Y': '#f0f8c0', 'k': '#0b0a0e'}}, 'fang': {'rows': ['kk.......', 'kWWk.....', '.kwWWk...', '..kwwWk..', '...kwwWk.', '....kRwk.', '.....kRRk', '......kRk', '.......k.'], 'pal': {'W': '#fff4e0', 'w': '#d8c8a8', 'R': '#c0202a', 'k': '#0b0a0e'}}, 'feather': {'rows': ['......kk.', '.....kwwk', '....kwbwk', '...kwbwbk', '..kwbwbk.', '.kwbwbk..', '.kbwbk...', '.kkkk....', 'kq.......'], 'pal': {'w': '#ffffff', 'b': '#a8c8f0', 'q': '#8a8aa0', 'k': '#0b0a0e'}}, 'greed': {'rows': ['..kkkkk..', '.kYYYYYk.', 'kYyYWYyYk', 'kYyWYWyYk', 'kYyyWyyYk', 'kYyWYWyYk', 'kYyYWYyYk', '.kYYYYYk.', '..kkkkk..'], 'pal': {'Y': '#f0c040', 'y': '#c08a18', 'W': '#fff4a0', 'k': '#0b0a0e'}}, 'crown': {'rows': ['.k...k...', 'kGk.kGk.k', 'kGGkGGkGk', 'kGPGGPGGk', 'kGGGGGGk.', 'kgggggk..', '.kkkkk...', '.........', '.........'], 'pal': {'G': '#d8c0ff', 'g': '#8a6ac8', 'P': '#ff5a8a', 'k': '#0b0a0e'}}, 'pact': {'rows': ['....k....', '...kRk...', '...kRk...', '..kRhRk..', '.kRhRRRk.', '.kRRRRRk.', '.kRRRRDk.', '..kRDDk..', '...kkk...'], 'pal': {'R': '#a3161c', 'h': '#ff6a6a', 'D': '#5a0a0e', 'k': '#0b0a0e'}}};
+  for (const k in RELIC_ART) { MAPS['relic_' + k] = RELIC_ART[k].rows; PAL['relic_' + k] = RELIC_ART[k].pal; }
   const hasRelic = k => !!(G && G.relics && G.relics.includes(k));
   const RELIC_SLOTS = 4; // v2.19 유물은 글 없이 칸으로 (챕터 보스마다 하나씩)
   function relicSlotsHTML() {
     const R = (G && G.relics) || [];
     return `<div class="relicSlots">${Array.from({ length: Math.max(RELIC_SLOTS, R.length) }, (_, i) => { const k = R[i], r = k && RELICS[k];
-      return r ? `<div class="relicRow" style="--c:${r.c}" data-name="${r.n}" data-tip="${r.d}"><img class="px" src="${relicIconURL()}"></div>` : `<div class="relicRow empty" data-name="빈 유물 칸" data-tip="보스를 쓰러뜨리면 유물을 얻는다"></div>`; }).join('')}</div>`;
+      return r ? `<div class="relicRow" style="--c:${r.c}" data-name="${r.n}" data-tip="${r.d}"><img class="px" src="${relicIconURL(k)}"></div>` : `<div class="relicRow empty" data-name="빈 유물 칸" data-tip="보스를 쓰러뜨리면 유물을 얻는다"></div>`; }).join('')}</div>`;
   }
   let RELIC_URL = null;
   // v2.19 도트 말풍선: #ui 안에 두어 다른 도트 안내문과 같은 배율·글꼴로 보인다
@@ -10258,7 +10261,8 @@ huskUp:[
     addEventListener('mousemove', e => { if (skAt(e)) pxTip.at(e.clientX, e.clientY); });
     addEventListener('mouseout', e => { const s = skAt(e); if (s && !s.contains(e.relatedTarget)) pxTip.hide(); });
   }
-  const relicIconURL = () => RELIC_URL || (RELIC_URL = (() => { const m = MAPS.relic, [c, g] = mkCanvas(m[0].length * 2, m.length * 2); m.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.' || !PAL.loot[ch]) return; g.fillStyle = PAL.loot[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })());
+  const RELIC_URLS = {};
+  const relicIconURL = key => { const k = RELIC_ART[key] ? key : 'emberheart'; return RELIC_URLS[k] || (RELIC_URLS[k] = (() => { const A = RELIC_ART[k], m = A.rows, [c, g] = mkCanvas(m[0].length * 2, m.length * 2); m.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.' || !A.pal[ch]) return; g.fillStyle = A.pal[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })()); };
   const ARMOR_MAX = 4, HEART_CAP = 12; // v2.02 최대 하트 6칸
   // v2.02 최대 하트 +n칸 (반 칸 단위 2n). 늘어난 칸은 채워서 준다
   function heartUp(n, why) {
@@ -12604,6 +12608,7 @@ huskUp:[
       return;
     }
     if (l.type === 'sealkey') { drawSealKey(l, l.x, l.y - hover + 1); return; }
+    if (l.type === 'relic' && l.relic && RELIC_ART[l.relic]) { drawSprite('relic_' + l.relic, 'relic_' + l.relic, 2, l.x, l.y - hover + 1, false); return; } // v2.21 유물별 도트
     drawSprite(L.map, 'loot', L.sc, l.x, l.y - hover + 1, false);
   }
 
@@ -16509,7 +16514,7 @@ void main() {
     if (hudPrev.gold !== G.gold) { hudPrev.gold = G.gold; $('p1gold').textContent = G.gold; }
     $('p1').classList.toggle('dead', P.dead);
     $('p1').classList.toggle('hurt', P.hurtT > 0);
-    const relicTags = (G.relics || []).map(k => `<span class="tag relicTag relicRow" style="--c:${RELICS[k].c}" data-name="${RELICS[k].n}" data-tip="${RELICS[k].d}"><img class="px" src="${relicIconURL()}"></span>`).join(''); /* 유물은 하트 아래, 이름에 마우스를 올리면 설명 */
+    const relicTags = (G.relics || []).map(k => `<span class="tag relicTag relicRow" style="--c:${RELICS[k].c}" data-name="${RELICS[k].n}" data-tip="${RELICS[k].d}"><img class="px" src="${relicIconURL(k)}"></span>`).join(''); /* 유물은 하트 아래, 이름에 마우스를 올리면 설명 */
     const statusTags = G.buffs.map(b => `<span class="tag">${BUFFS[b].t}</span>`).join('') + (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '');
     /* 유물은 패널에 표시하지 않음 (장비창에서 확인) */
     if (statusTags !== hudPrev.status) { $('p1status').innerHTML = statusTags; hudPrev.status = statusTags; }
