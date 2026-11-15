@@ -4122,9 +4122,9 @@ huskUp:[
   };
   const TRUNK = { k: '#07070a', t: '#3a2a1c', T: '#22180e', w: '#d8d0c0', x: '#2a2420', c: '#0b0a0e', e: '#c03030' };
   function genTree(kind) {
-    const Wd = kind === 'pine' ? 17 : kind === 'dead' ? 19 : kind === 'birch' ? 15 : 21, Ht = kind === 'pine' ? 34 : kind === 'dead' ? 28 : kind === 'birch' ? 32 : 30;
+    const Wd = kind === 'pine' ? 17 : kind === 'dead' ? 21 : kind === 'birch' ? 17 : 25, Ht = kind === 'pine' ? 34 : kind === 'dead' ? 30 : kind === 'birch' ? 34 : 32; // v2.21 잎 덩어리가 칸 밖으로 나가 좌우·위가 잘리던 것 → 칸을 넓히고 덩어리는 외곽선 1칸까지 안쪽에
     const g = Array.from({ length: Ht }, () => Array(Wd).fill('.')), cx = Math.floor(Wd / 2);
-    const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && x < Wd && y >= 0 && y < Ht) g[y][x] = c; };
+    const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 1 && x < Wd - 1 && y >= 1 && y < Ht) g[y][x] = c; }; // 가장자리 1칸은 외곽선 자리
     const shade = (dx, dy, r) => { const v = (dx + dy) / (r * 1.4) + rand(-0.25, 0.25); return v < -0.55 ? 'h' : v < -0.05 ? 'l' : v < 0.5 ? 'd' : 'D'; };
     if (kind === 'dead') {
       const branch = (x, y, ang, len, dep) => {
@@ -4148,9 +4148,9 @@ huskUp:[
       for (let y = Ht - tH; y < Ht; y++) { set(cx, y, birch ? 'w' : 't'); set(cx + 1, y, birch ? (y % 4 === 0 ? 'x' : 'w') : 'T'); if (!birch) set(cx - 1, y, 't'); if (birch && y % 5 === 2) set(cx, y, 'x'); }
       if (!birch) { set(cx - 2, Ht - 1, 't'); set(cx + 2, Ht - 1, 'T'); set(cx + 3, Ht - 1, 'T'); }
       const blobs = [], n = birch ? 3 : randi(4, 6);
-      { const r0 = birch ? rand(4, 5) : rand(5.5, 7.5); blobs.push({ x: cx + 0.5 + rand(-1, 1), y: Ht - tH - r0 * 0.6, r: r0 }); } // v1.53 첫 덩어리는 줄기 끝에 붙이고
+      { const r0 = birch ? rand(4, 5) : rand(5.5, 7.5); blobs.push({ x: cx + 0.5 + rand(-1, 1), y: Math.max(r0 + 1, Ht - tH - r0 * 0.6), r: r0 }); } // v1.53 첫 덩어리는 줄기 끝에 붙이고
       for (let i = 1; i < n; i++) { const p = pick(blobs), r = birch ? rand(3.5, 5) : rand(4.5, 7.5), a = -Math.PI / 2 + rand(-1.3, 1.3) * (birch ? 0.6 : 1), d = p.r * rand(0.45, 0.85); // 나머지는 이미 있는 덩어리에 겹쳐 이어 붙여 잎이 떨어져 보이지 않게
-        blobs.push({ x: clamp(p.x + Math.cos(a) * d, r * 0.6, Wd - 1 - r * 0.6), y: Math.max(r * 0.8, p.y + Math.sin(a) * d), r }); }
+        blobs.push({ x: clamp(p.x + Math.cos(a) * d, r + 1, Wd - 2 - r), y: Math.max(r + 1, p.y + Math.sin(a) * d), r }); }
       for (let y = 0; y < Ht; y++) for (let x = 0; x < Wd; x++) for (const b of blobs) {
         const dx = x - b.x, dy = y - b.y;
         if (dx * dx + dy * dy <= b.r * b.r) { set(x, y, shade(dx, dy, b.r)); break; }
@@ -4195,12 +4195,22 @@ huskUp:[
     return c;
   }
   function stampTree(g, c, x, y, flip) { x = Math.round(x / 2) * 2; y = Math.round(y / 2) * 2; if (flip) { g.save(); g.translate(x + c.width, y); g.scale(-1, 1); g.drawImage(c, 0, 0); g.restore(); } else g.drawImage(c, x, y); }
+  // v2.21 문으로 이어지는 길 위에는 나무를 두지 않음 (나무 그림 사각형이 길 폭 ±20px과 겹치면 건너뜀)
+  function onDoorPath(tx, ty, w, h) {
+    const R = CUR_ROOM, D = R && G ? R.doors : null; if (!D) return false;
+    const open = d => D[d] != null && !(R.crack && R.crack.dir === d && !R.crack.broken), PW = 20;
+    if (open('s') && tx < DOOR.s.x + PW && tx + w > DOOR.s.x - PW && ty + h > A.y1) return true;
+    if (open('w') && tx < A.x0 && ty < DOOR.w.y + PW && ty + h > DOOR.w.y - PW) return true;
+    if (open('e') && tx + w > A.x1 && ty < DOOR.e.y + PW && ty + h > DOOR.e.y - PW) return true;
+    return false;
+  }
   function paintTreeline(g) {
     const row = (yBase, dim, step) => {
       for (let x = -20; x < W + 20; x += randi(step[0], step[1])) {
         const r = Math.random(), kind = r < 0.38 ? 'round' : r < 0.66 ? 'pine' : r < 0.82 ? 'birch' : 'dead';
         const palK = kind === 'pine' ? (Math.random() < 0.5 ? 'deep' : 'green') : kind === 'birch' ? 'birch' : kind === 'dead' ? 'green' : pick(['green', 'green', 'deep', 'autumn', 'gold', 'dusk']);
-        const c = treeCv(kind, palK, '#140e22', dim, randi(0, 3)), y = yBase - c.height + randi(-6, 6);
+        const c = treeCv(kind, palK, '#140e22', dim, randi(0, 3)), y = Math.max(12, yBase - c.height + randi(-6, 6)); // v2.21 바닥 캔버스 위 끝(카메라 최상단)에서 나무 꼭대기가 잘리지 않게
+        if (onDoorPath(x - c.width * 0.2, y, c.width * 0.4, c.height)) continue; // 잎 가운데 40%만 판정
         stampTree(g, c, x - c.width / 2, y, Math.random() < 0.5);
       }
     };
@@ -4820,12 +4830,12 @@ huskUp:[
   function stampBoth(g, map, pal, x, y, sc, flip) { stamp(g, map, pal, x, y, sc, flip); if (g === fmg) stamp(ffg, map, pal, x, y, sc, flip); }
   function paintForestBorder(g) {
     g.fillStyle = '#0a140a';
-    g.fillRect(0, A.y0 - 6, A.x0 - 4, H); g.fillRect(A.x1 + 4, A.y0 - 6, W - A.x1, H); g.fillRect(0, A.y1 + 4, W, H - A.y1);
-    g.fillStyle = '#070d07'; { const F = 96; if (A.x0 - F > 0) g.fillRect(0, A.y0 - 6, A.x0 - F, H); g.fillRect(A.x1 + F, A.y0 - 6, W, H); g.fillRect(0, A.y1 + F, W, H); } // 먼 숲 바닥은 한 단계 더 어둡게 (망점 없이)
+    g.fillRect(0, A.y0 + 12, A.x0 - 4, H); g.fillRect(A.x1 + 4, A.y0 + 12, W - A.x1, H); g.fillRect(0, A.y1 + 4, W, H - A.y1); // v2.21 위쪽 나무 줄 밑동을 덮어 잘라먹지 않게 A.y0+12부터
+    g.fillStyle = '#070d07'; { const F = 96; if (A.x0 - F > 0) g.fillRect(0, A.y0 + 12, A.x0 - F, H); g.fillRect(A.x1 + F, A.y0 + 12, W, H); g.fillRect(0, A.y1 + F, W, H); } // 먼 숲 바닥은 한 단계 더 어둡게 (망점 없이)
     if (CUR_ROOM && G) paintMeadowDoorPaths(g, CUR_ROOM); // 문 길은 숲 나무보다 먼저
     const pts = [];
     const band = (x0, x1, y0, y1) => { for (let y = y0; y < y1; y += 30) for (let x = x0; x < x1; x += 26) pts.push({ x: x + rand(-8, 8), y: y + rand(-8, 8) }); };
-    band(A.x0 - 230, A.x0 - 6, A.y0 + 10, A.y1 + 200); band(A.x1 + 10, A.x1 + 240, A.y0 + 10, A.y1 + 200); band(A.x0 - 6, A.x1 + 10, A.y1 + 30, A.y1 + 200);
+    band(Math.min(A.x0 - 230, -10), A.x0 - 6, A.y0 + 10, A.y1 + 200); band(A.x1 + 10, Math.max(A.x1 + 240, W + 10), A.y0 + 10, A.y1 + 200); /* v2.21 좁은 방에서도 화면 끝까지 숲이 차게 */ band(A.x0 - 6, A.x1 + 10, A.y1 + 30, A.y1 + 200);
     const D0 = CUR_ROOM && G ? CUR_ROOM.doors : {}, onDoor = p => (D0.s != null && Math.abs(p.x - DOOR.s.x) < 26 && p.y > A.y1) || (D0.w != null && Math.abs(p.y - CY) < 26 && p.x < A.x0) || (D0.e != null && Math.abs(p.y - CY) < 26 && p.x > A.x1);
     pts.sort((a, b) => a.y - b.y);
     for (const p of pts) {
@@ -4836,6 +4846,8 @@ huskUp:[
       const fl = Math.random() < 0.5; let tx = p.x - c.width / 2, ty = p.y - c.height;
       // 울타리 안쪽(놀이 공간)으로 가지가 넘어오지 않게 밀어냄: 양옆은 세로 울타리 바깥, 아래는 가로 울타리 아래
       if (p.x < A.x0) tx = Math.min(tx, A.x0 - 12 - c.width); else if (p.x > A.x1) tx = Math.max(tx, A.x1 + 12); else ty = Math.max(ty, A.y1 + 10);
+      ty = Math.max(ty, 12); // v2.21 위 끝에서 꼭대기가 잘리지 않게
+      if (onDoorPath(tx + c.width * 0.3, ty + c.height * 0.2, c.width * 0.4, c.height * 0.8)) continue;
       stampTree(g, c, tx, ty, fl);
       if (g === fmg && ty + c.height > A.y1 + 6) stampTree(ffg, c, tx, ty, fl); // 아래쪽 숲 나무는 앞 레이어에도
     }
@@ -6105,15 +6117,31 @@ huskUp:[
     ctx.restore();
     if (Math.random() < 0.6) G.parts.push({ x: p.x + rand(-14, 14), y: p.y - rand(0, 8), vx: rand(-4, 4), vy: -rand(40, 90), t: rand(0.5, 1.0), c: pick(['#bfe2ff', '#9fd2ff', '#ffffff']), g: 0, glow: true });
   }
+  // v2.21 2~4장 좌우 문: 벽을 뚫고 밖으로 이어지는 통로 (위 벽면·바닥 타일·아래 벽 윗면 + 문턱 계단, 밖으로 갈수록 어둠)
+  function genSideGate(d, wood) {
+    const wc = 40, hc = 28, g = mkGrid(wc, hc);
+    for (let y = 0; y < hc; y++) for (let x = 0; x < wc; x++) {
+      const dist = d === 'w' ? wc - 1 - x : x; let c;
+      if (y <= 3) { // 위쪽 벽면
+        c = y === 0 ? 'h' : wood ? ((dist % 4 === 0) ? 'D' : dist % 4 === 1 ? 'h' : 'l') : (((dist + (y % 2) * 3) % 6 === 0) ? 'D' : y === 1 ? 'l' : 'd');
+      } else if (y === 4) c = 'D'; // 벽 그늘
+      else if (y <= 23) { // 바닥
+        const r = y - 5, off = (Math.floor(r / 5) % 2) * 3;
+        c = wood ? ((dist % 5 === 4) ? 'D' : r % 7 === 0 ? 'l' : 'd') : (r % 5 === 4 || (dist + off) % 6 === 5) ? 'D' : r % 5 === 0 ? 'l' : 'd';
+        if (dist <= 1) c = dist === 0 ? 'h' : 'l'; // 문턱 돌
+        else if (dist === 8 || dist === 16) c = wood ? 'l' : 'h'; else if (dist === 9 || dist === 17) c = 'D'; // 내려가는 계단 두 단
+      } else c = y === 24 ? 'h' : y === 25 ? 'l' : 'D'; // 아래 벽 윗면
+      const t = dist / wc, lv = clamp((t - 0.12) / 0.7, 0, 1);
+      if (dith(x, y, lv)) c = 'K'; else if (lv > 0.55 && c !== 'K') c = 'D';
+      g[y][x] = c;
+    }
+    return g;
+  }
   function paintDoorCastle(g, d) {
     const p = DOOR[d];
     if (d === 'n') { gPaint(g, genArch(), STONE, p.x - 27, p.y - 70); return; }
     if (d === 's') { gPaint(g, genFloorExit(20, 36, 's'), STONE, p.x - 20, p.y); gPaint(g, genDoorPost(14), STONE, p.x - 30, p.y - 2); gPaint(g, genDoorPost(14), STONE, p.x + 20, p.y - 2); return; }
-    const x0 = d === 'w' ? p.x - 80 : p.x;
-    gPaint(g, genFloorExit(40, 20, d), STONE, x0, p.y - 20);
-    const post = mkGrid(17, 5); for (let x = 1; x < 16; x++) for (let y = 1; y < 4; y++) post[y][x] = y === 1 ? 'h' : x % 5 === 0 ? 'D' : 'l';
-    const po = gOutline(post), px = d === 'w' ? p.x - 32 : p.x - 2;
-    gPaint(g, po, STONE, px, p.y - 30); gPaint(g, po, STONE, px, p.y + 20);
+    gPaint(g, genSideGate(d, false), STONE, d === 'w' ? p.x - 80 : p.x, p.y - 28); // v2.21
   }
   function paintMeadowDoorPaths(g, R) {
     const curve = (d) => {
@@ -6147,7 +6175,7 @@ huskUp:[
       if (false) gPaint(g, og, Object.assign({ q: '#1a2a14', K: '#050905', k: '#07100a' }, PATH_PAL, { h: TREE_PAL.green.h, l: TREE_PAL.green.l, d: TREE_PAL.green.d, D: TREE_PAL.green.D }), p.x - 30, p.y - 78); /* v2.21 사용자 결정: 초록 잎 터널(아치) 없앰 — 불기둥 + 울타리로 문 표시 */
       // 터널 안 어둠에서 시작해 문턱 아래 풀밭으로 흐려지는 흙길
       const ph = rand(0, 6), B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-      for (let y = (p.y - 58) & ~1; y < p.y + 30; y += 2) {
+      for (let y = (p.y - 58) & ~1; false && y < p.y + 30; y += 2) { /* v2.21 북문 바깥 흙길 없앰 */
         const c = Math.round((p.x + Math.sin(y * 0.06 + ph) * 3) / 2) * 2, f = Math.min(1, (y - (p.y - 60)) / 34, (p.y + 30 - y) / 26), hw = Math.round((4 + 6 * clamp((y - (p.y - 50)) / 60, 0, 1)) / 2) * 2;
         for (let o = -14; o <= 14; o += 2) {
           const x = c + o; if (y < p.y - 2 && Math.abs(x - p.x) > 18) continue;
@@ -6213,11 +6241,14 @@ huskUp:[
   // --- 동적: 잠긴 문 · 금 간 벽 · 텔레포터 · 상자 · 상인 -----------------
   function drawRoomBack() {
     const R = G.dun.cur;
+    const sa0 = G.sealAnim || 0;
     G.sealAnim = Math.min(1, (G.sealAnim || 0) + (G.sealed ? 1 : -1) * 0.08);
     if (!G.sealed && G.sealAnim < 0) G.sealAnim = 0;
+    if (sa0 < 1 && G.sealAnim >= 1 && G.stage >= 2) { sfx('block'); addShake(2); for (const d of ['w', 'e']) if (R.doors[d] != null && !hiddenDoor(R, d)) { const q = doorIn(d, 2); dust(q.x, q.y, 10); for (let i = 0; i < 6; i++) G.parts.push({ x: q.x, y: q.y + rand(-4, 4), vx: rand(-60, 60), vy: rand(-80, -20), t: rand(0.2, 0.4), c: pick(['#ffd080', '#ffffff', '#ff9a40']), g: 300, glow: true }); } } // v2.21 문짝이 맞물리는 순간
     for (const d in DIRS) {
       const st = doorState(R, d); if (st === 'none') continue;
       if (st === 'crack') drawCrack(R, d);
+      else if (G.stage >= 2 && (d === 'w' || d === 'e')) drawSideLeaves(d, st === 'boss' ? gateK() : G.sealAnim); // v2.21 좌우 문은 문짝이 여닫힘
       else if (st === 'boss') drawSeal(d, gateK());
       else if (G.sealAnim > 0) drawSeal(d, G.sealAnim);
       if (R.doors[d] != null && G.dun.rooms[R.doors[d]].type === 'boss' && st !== 'crack') drawBossSigil(d, st === 'boss');
@@ -6225,6 +6256,26 @@ huskUp:[
     if (R.tele && R.cleared) drawMagicCircle(R.tele);
     if (R.exit) drawExit(R.exit);
     drawAshClouds();
+  }
+  // v2.21 2~4장 좌우 문: 경첩 달린 두 짝 문 — 열려 있으면 통로 벽에 붙어 바깥을 향하고, 봉쇄되면 안쪽으로 닫혀 가운데서 맞물린다 (k: 0 열림 → 1 닫힘)
+  const LEAF_PAL = { 2: { k: '#0b0a0e', h: '#7a5a3a', l: '#5a3e26', d: '#3e2a18', b: '#4a4656', B: '#8a8498' }, 3: { k: '#0b0806', h: '#9a6a40', l: '#7a5030', d: '#553620', b: '#3a2a1a', B: '#c8a070' } };
+  function drawSideLeaves(d, k) {
+    const p = DOOR[d], pal = LEAF_PAL[G.stage === 3 ? 3 : 2], e = k * k * (3 - 2 * k), out = d === 'w' ? Math.PI : 0, one = G.stage !== 3, L = one ? 19 : 10; // 2·4장은 외짝 문(21칸, 위 경첩) · 3장은 두 짝(11칸씩)
+    for (const s of one ? [-1] : [-1, 1]) { // 위 짝(s=-1) · 아래 짝(s=1)
+      const hx = p.x, hy = p.y + s * 18, closed = s < 0 ? Math.PI / 2 : -Math.PI / 2, a = out + (((closed - out + Math.PI * 3) % TAU) - Math.PI) * e;
+      const ca = Math.cos(a), sa = Math.sin(a), cells = new Map();
+      for (let i = 0; i < L; i++) for (let j = -1; j <= 2; j++) {
+        const cx = Math.round((hx + ca * i * 2 - sa * j * 2) / 2), cy = Math.round((hy + sa * i * 2 + ca * j * 2) / 2);
+        cells.set(cx + ',' + cy, i % 4 === 1 ? (j === -1 ? 'B' : 'b') : j === -1 ? 'h' : j === 2 ? 'd' : (i + j) % 5 === 0 ? 'd' : 'l');
+      }
+      ctx.fillStyle = pal.k;
+      for (const key of cells.keys()) { const [x, y] = key.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!cells.has((x + dx) + ',' + (y + dy))) ctx.fillRect((x + dx) * 2, (y + dy) * 2, 2, 2); }
+      for (const [key, c] of cells) { const [x, y] = key.split(',').map(Number); ctx.fillStyle = pal[c]; ctx.fillRect(x * 2, y * 2, 2, 2); }
+      // 경첩 축: 문짝이 도는 쇠 기둥 (위에서 본 둥근 머리 + 아래로 보이는 몸통)
+      const ax = (Math.round(hx / 2) - 2) * 2, ay = (Math.round(hy / 2) - 3) * 2;
+      const AX = ['.kkk.', 'kWBbk', 'kBBbk', 'kbbdk', 'kbbdk', 'kbbdk', '.kkk.'], AP = { k: pal.k, W: '#e8e4f0', B: pal.B, b: pal.b, d: '#1a1820' };
+      AX.forEach((r, yy) => { for (let xx = 0; xx < 5; xx++) { const c = AP[r[xx]]; if (c && r[xx] !== '.') { ctx.fillStyle = c; ctx.fillRect(ax + xx * 2, ay + yy * 2, 2, 2); } } });
+    }
   }
   // 봉쇄: 성채는 쇠창살이 내려오고, 초원은 가시덤불이 자라난다 (k: 0→1)
   function drawSeal(d, k) {
@@ -7986,7 +8037,7 @@ huskUp:[
     const ph = ROOMSTYLE.ph || 0;
     if (vert) {
       const amp = pathStyle === 'straight' ? 5 : Math.min(22, w * 0.075), center = y => { const edge = clamp(Math.min(y - A.y0, A.y1 - y) / 140, 0, 1), env = edge * edge * (3 - 2 * edge); return CX + (Math.sin(y * 0.012 + ph) * amp + Math.sin(y * 0.028 + ph * 1.7) * 5) * env; };
-      const main = { vert: true, kind, at: center, a: doors.includes('n') ? A.y0 - 2 : A.y0 + h * ea, b: doors.includes('s') ? A.y1 + 2 : A.y1 - h * eb, fadeA: !doors.includes('n'), fadeB: !doors.includes('s') };
+      const main = { vert: true, kind, at: center, a: doors.includes('n') ? A.y0 + 10 : A.y0 + h * ea, b: doors.includes('s') ? A.y1 + 2 : A.y1 - h * eb, fadeA: true, fadeB: !doors.includes('s') }; /* v2.21 위로 가는 길은 북문에 닿기 전에 디더로 사라짐 */
       out.push(main);
       // 좌우 문에서는 문턱에서 중앙 세로길까지 짧게 연결한다.
       for (const d of ['w', 'e']) if (doors.includes(d)) {
@@ -8001,8 +8052,8 @@ huskUp:[
     out.push(main);
     // 위아래 문에서 주 오솔길까지 연결되는 가지길.
     for (const d of ['n', 's']) if (doors.includes(d)) {
-      const xDoor = DOOR[d].x, yRoad = center(xDoor), y0 = d === 'n' ? A.y0 - 2 : yRoad, y1 = d === 'n' ? yRoad : A.y1 + 2;
-      if (Math.abs(yRoad - (d === 'n' ? A.y0 : A.y1)) > 5) out.push({ vert: true, kind, at: y => xDoor + Math.sin((y - y0) / Math.max(1, y1 - y0) * Math.PI) * 3, a: y0, b: y1, fadeA: false, fadeB: false });
+      const xDoor = DOOR[d].x, yRoad = center(xDoor), y0 = d === 'n' ? A.y0 + 10 : yRoad, y1 = d === 'n' ? yRoad : A.y1 + 2;
+      if (Math.abs(yRoad - (d === 'n' ? A.y0 : A.y1)) > 5) out.push({ vert: true, kind, at: y => xDoor + Math.sin((y - y0) / Math.max(1, y1 - y0) * Math.PI) * 3, a: y0, b: y1, fadeA: d === 'n', fadeB: false }); /* v2.21 북문 쪽 끝은 디더로 사라짐 */
     }
     return out;
   }
@@ -13927,10 +13978,7 @@ huskUp:[
       return;
     }
     if (d === 's') { gPaint(g, genFloorExit(20, 36, 's'), WOODPAL, p.x - 20, p.y); gPaint(g, genDoorPost(16), WOODPAL, p.x - 30, p.y - 6); gPaint(g, genDoorPost(16), WOODPAL, p.x + 20, p.y - 6); return; }
-    const x0 = d === 'w' ? p.x - 80 : p.x;
-    gPaint(g, genFloorExit(40, 20, d), WOODPAL, x0, p.y - 20);
-    const px = d === 'w' ? p.x - 8 : p.x - 2;
-    gPaint(g, genDoorPost(14), WOODPAL, px, p.y - 46); gPaint(g, genDoorPost(14), WOODPAL, px, p.y + 16);
+    gPaint(g, genSideGate(d, true), WOODPAL, d === 'w' ? p.x - 80 : p.x, p.y - 28); // v2.21
   }
   // 토템: 얼굴을 깎아 쌓은 통나무, 꼭대기에 뿔
   function genTotem() {
