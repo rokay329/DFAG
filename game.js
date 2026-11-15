@@ -16887,7 +16887,7 @@ void main() {
     if (TOUCH.on) return; TOUCH.on = true; document.body.classList.add('touch'); fit();
     if (G) { G.kgCls = null; }
   }
-  if (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches) enableTouch();
+  if (matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches) setTimeout(enableTouch, 0); /* 스크립트 끝까지 읽은 뒤 (fit이 아래 상수를 씀) */
   addEventListener('touchstart', () => enableTouch(), { passive: true });
   function setDir(k, on) { if (TOUCH.dirs[k] === on) return; TOUCH.dirs[k] = on; keyEv(on ? 'keydown' : 'keyup', k); }
   function stickTo(dx, dy) {
