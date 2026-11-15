@@ -11071,6 +11071,7 @@ huskUp:[
   const GUN_RELOAD = 1.2, GUN_MAG = 5, GUN_RANGE = 400;        // 거너: 5발 발사 후 총을 두 바퀴 돌려 장전
   const MAGE_MANA_MAX = 100, MAGE_BOLT_COST = 20, MAGE_MANA_REGEN = 32;
   const MELEE_DR = 0.9;                                        // v2.23~24 직업 패시브: 피격 10% 흘려냄 · 처치 회복 없음
+  const RANGED_HB = 5; // v2.25 원거리(거너 탄·마법사 탄)만 적 판정 +5px
   const SURGE_T = 3; // v2.24 마법사 마나 격류: 점멸 뒤 3초
   const meleeKeep = () => { const P = G.player, c = G.cls; if (c === 'mage') return P.surgeT > 0 ? MELEE_DR : 1; if (c === 'ranger') return P.state === 'attack' ? MELEE_DR : 1; return MELEE_DR; }; // 기사 흘려내기 · 사제 신의 가호 · 거너 교활(상시) · 어세신 베어내기(평타 중) · 마법사 마나 격류(점멸 뒤)
   const heroHand = () => { const P = G.player; return { x: P.x + P.face * 3 - Math.cos(P.blade) * (P.recoil || 0) * 4, y: P.y - 8 - Math.sin(P.blade) * (P.recoil || 0) * 4 }; };
@@ -11083,7 +11084,7 @@ huskUp:[
       if (e.dead) continue;
       const ey = e.y - (e.tall ? e.tall * 0.3 : e.type === 'boss' ? 18 : isElite(e) ? 12 : 8);
       const dx = e.x - x, dy = ey - y, along = dx * ux + dy * uy, perp = Math.abs(dx * uy - dy * ux);
-      if (along > -4 && along < len && perp < w + e.r) out.push({ e, along });
+      if (along > -4 && along < len && perp < w + e.r + RANGED_HB) out.push({ e, along }); // v2.25 원거리 판정 여유
     }
     return out.sort((a, b) => a.along - b.along);
   }
@@ -11219,7 +11220,7 @@ huskUp:[
       const fire = pr.kind === 'fireball';
       if (Math.random() < (fire ? 1 : 0.6)) G.parts.push({ x: pr.x + rand(-2, 2), y: pr.y + rand(-2, 2), vx: -Math.cos(pr.ang) * 30 + rand(-15, 15), vy: -Math.sin(pr.ang) * 30 + rand(-25, 0), t: rand(0.2, 0.4), c: fire ? pick(['#ffb060', '#ff6a2a', '#ffe0a0']) : pick(['#c890ff', '#f0d8ff', '#8a5aa8']), g: 0, glow: true });
       let hitE = null;
-      for (const e of G.enemies) if (!e.dead && Math.hypot(e.x - pr.x, e.y - 8 - pr.y) < pr.r + e.r) { hitE = e; break; }
+      for (const e of G.enemies) if (!e.dead && Math.hypot(e.x - pr.x, e.y - 8 - pr.y) < pr.r + e.r + RANGED_HB) { hitE = e; break; } // v2.25 원거리 판정 여유
       const wall = pr.x < A.x0 || pr.x > A.x1 || pr.y < A.y0 - 20 || pr.y > A.y1 || segSolid(ox, oy + 8, pr.x, pr.y + 8);
       if (wall) hitCrack(pr.x, pr.y + 8, fire ? 3 : 1, fire ? 60 : 34);
       if (wall && !hitE && !fire && !pr.refl && (wSkill() === 'crystal' || pasRoll('bounce'))) { // v2.08 수정 원석 홀: 한 번 반사
@@ -15948,6 +15949,7 @@ void main() {
     ents.push({ y: G.player.y, d: drawPlayer });
     roomEnts(ents); gearEnts(ents); forgeEnts(ents);
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
+    if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
     ents.sort((a, b) => a.y - b.y).forEach(o => o.d());
     if (FRONT_ON && G.stage === 1 && !(G.dun && G.dun.forge)) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     enemySays();
@@ -17230,11 +17232,22 @@ void main() {
   $('tFull').addEventListener('click', () => { const d = document.documentElement; if (!document.fullscreenElement) { (d.requestFullscreen || d.webkitRequestFullscreen || (() => {})).call(d); try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) { } } else document.exitFullscreen && document.exitFullscreen(); });
   if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)) $('tFull').style.display = 'none';
   // 조준 보조: 터치로 공격·기술을 쓰면 가까운 적을 향한다 (마우스로 조준 중이면 그대로)
-  function touchAim() {
+  function touchAim() { // v2.25 모바일 자동 조준: 목표 고정 · 이동 방향 우선 · 벽 너머·허수아비 제외 · 무기 사거리
     if (!TOUCH.on || mouse.active > 0 || !G) return null;
-    const P = G.player; let best = null, bd = 260;
-    for (const e of G.enemies) { if (e.dead) continue; const d = Math.hypot(e.x - P.x, e.y - P.y); if (d < bd) { bd = d; best = e; } }
-    return best;
+    const P = G.player, R = G.cls === 'gunner' ? 360 : G.cls === 'mage' ? 300 : 260;
+    const mvx = (TOUCH.dirs.d ? 1 : 0) - (TOUCH.dirs.a ? 1 : 0), mvy = (TOUCH.dirs.s ? 1 : 0) - (TOUCH.dirs.w ? 1 : 0), mv = mvx || mvy ? Math.atan2(mvy, mvx) : null;
+    const ok = (e, r) => !e.dead && e.type !== 'flag' && Math.hypot(e.x - P.x, e.y - P.y) < r && !segSolid(P.x, P.y - 8, e.x, e.y - 8);
+    const score = e => { const d = Math.hypot(e.x - P.x, e.y - P.y); return mv == null ? d : d * (1 + 0.8 * Math.abs(angDiff(Math.atan2(e.y - P.y, e.x - P.x), mv)) / Math.PI); };
+    const live = G.enemies.filter(e => ok(e, R)), real = live.filter(e => !isDummy(e)), pool = real.length ? real : live;
+    let best = null, bs = Infinity; for (const e of pool) { const v = score(e); if (v < bs) { bs = v; best = e; } }
+    const L = TOUCH.lock;
+    if (L && G.enemies.includes(L) && ok(L, R * 1.1) && (!real.length || !isDummy(L)) && !(best && best !== L && bs < score(L) * 0.7)) return L; // 다른 적이 30% 넘게 더 나을 때만 바꿈
+    TOUCH.lock = best; return best;
+  }
+  function drawAimMark(e) { // 고정한 적 발밑 조준 표시 (깜빡이는 네 귀퉁이)
+    const w = Math.round(e.r + 6) * 2, h = Math.round(e.r * 0.5 + 4) * 2, x = snap2(e.x - w / 2), y = snap2(e.y - h / 2 + 2), a = 4;
+    ctx.fillStyle = Math.floor(time * 4) % 2 ? '#ffd34d' : '#fff2c0';
+    for (const [cx, cy, sx, sy] of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]) { ctx.fillRect(sx > 0 ? cx : cx - a, sy > 0 ? cy : cy - 2, a, 2); ctx.fillRect(sx > 0 ? cx : cx - 2, sy > 0 ? cy : cy - a, 2, a); }
   }
   function touchHud() {
     const show = TOUCH.on && (mode === 'play' || mode === 'map');
