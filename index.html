@@ -273,9 +273,12 @@
   .stg.sel { opacity: 1; box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-l), 0 0 0 2px #000, 0 0 10px 2px rgba(242,215,140,.35); }
   .stg .sn { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); } .stg b { font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); }
   .stg .sd { color: #ffd34d; font-size: 10px; } .stg .ss { grid-column: 1 / -1; font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
-  .selc { width: 102px; padding: 6px 7px; cursor: pointer; opacity: .55; transition: opacity .1s; }
-  .selc.sel { opacity: 1; box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-l), 0 0 0 2px #000, 0 0 10px 2px rgba(242,215,140,.35); }
-  .selc .pv { display: flex; justify-content: flex-end; align-items: center; padding-right: 1px; height: 84px; background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); margin-bottom: 6px; }
+  .selc { width: 102px; padding: 6px 7px; cursor: pointer; }
+  .selc { transition: transform .08s steps(2); }
+  .selc.sel { transform: translateY(-6px); background: #2e2234; box-shadow: inset 1px 1px 0 #8a6e96, inset -1px -1px 0 var(--lo), 0 0 0 2px var(--gold-l), 0 0 0 3px #000, 0 0 0 4px var(--gold), 0 0 0 5px #000; } /* v2.21 고른 카드: 6px 떠오름 · 밝은 바탕 · 금빛 2중 테두리 */
+  .selc.sel h3 { color: #fff3b8; }
+  .selc.sel::before { content: ''; position: absolute; left: 50%; top: -14px; margin-left: -5px; width: 10px; height: 6px; background: var(--gold-l); clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 1px 0 #000); } /* 위 화살표 */
+  .selc .pv { display: flex; justify-content: flex-end; align-items: flex-end; padding: 0 4px 4px 0; height: 86px; background: #0d0a10 center / 100% 100% no-repeat; image-rendering: pixelated; margin-bottom: 6px; } /* v2.21 직업색 디더 배경 + 액자(.pvFrame) — 초상은 액자 안쪽 아래에 붙임 */
   .selc .pv canvas { width: 108px; height: 88px; } .selc .pv .pvArt { width: 60px; height: 78px; } /* 초상: 30×39를 2px 칸으로 */
   .selDetail { width: 534px; padding: 7px 12px; box-sizing: border-box; height: 89px; overflow: hidden; } /* v1.99 설명 길이와 상관없이 높이 고정 */
   .selDetail .sdh { margin-bottom: 5px; } .selDetail .sdh b { font-family: 'Galmuri11'; font-weight: bold; color: var(--gold-l); font-size: 12px; } .selDetail .sdh span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
