@@ -5545,14 +5545,15 @@ huskUp:[
   function altarText(a) {
     if (a.k === 'gear') { const f = altarFodder(); if (G.stats.hp >= HEART_CAP) return { t: 'F 피의 제단 — 하트 가득', ok: false };
       return f ? { t: `F 피의 제단 — 「${f.name}」 → 하트 +1`, ok: true } : { t: 'F 피의 제단 — 바칠 장비 없음', ok: false }; }
-    return G.stats.hp > 4 ? { t: 'F 피의 제단 — 하트 1칸 → 레전더리', ok: true } : { t: 'F 피의 제단 — 하트 부족', ok: false };
+    return G.stats.hp > 4 ? { t: 'F 피의 제단 — 하트 2칸 → 무기 (레어 20% · 유니크 70% · 레전더리 10%)', ok: true } : { t: 'F 피의 제단 — 하트 부족 (3칸 이상)', ok: false }; // v2.21 하트 2칸, 등급은 확률
   }
   function useAltar(a) {
     const t = altarText(a); if (!t.ok) { sfx('block'); lootFeed(t.t.replace('F ', ''), '#ff7070'); return; }
-    a.used = true; flashT = 0.15; flashColor = '#a01218'; sfx('boss'); burst(a.x, a.y - 14, '#a3161c', 18);
+    const R0 = G.dun && G.dun.cur; if (R0 && R0.altars) for (const o of R0.altars) o.used = true; // v2.21 두 제단 중 하나만 — 하나를 쓰면 다른 쪽도 닫힘
+    flashT = 0.15; flashColor = '#a01218'; sfx('boss'); burst(a.x, a.y - 14, '#a3161c', 18);
     G.fx.push({ kind: 'skybeam', x: a.x, y: a.y - 6, w: 22, c: '200,30,40', t: 0.6, max: 0.6, up: true });
     if (a.k === 'gear') { const f = altarFodder(); SAVE.inv = SAVE.inv.filter(i => i !== f); G.fieldItems = G.fieldItems.filter(i => i !== f); persist(); heartUp(1, `「${f.name}」을 바쳤다`); }
-    else { heartDown(1); spawnLoot('gear', a.x, a.y - 4, makeItem(G.cls, { grade: 'legend' })); lootFeed('하트 한 칸을 바쳤다 — 레전더리 장비', '#ff9a2e', 3000); }
+    else { heartDown(2); const r = Math.random() * 100, gk = r < 20 ? 'rare' : r < 90 ? 'unique' : 'legend', owned = new Set(SAVE.inv.filter(i => i.cls === G.cls && i.wk != null).map(i => i.wk)), cands = wcat(G.cls).filter(o => o.grade === gk && o.i !== 10), fresh = cands.filter(o => !owned.has(o.i)), pickW = pick(fresh.length ? fresh : cands), it = makeItem(G.cls, pickW ? { grade: gk, wk: pickW.i } : { grade: gk }); /* 확률 그대로 (잿불 단계 보정 없음) */ spawnLoot('gear', a.x, a.y - 4, it); lootFeed(`하트 두 칸을 바쳤다 — ${gradeOf(it).n} 무기`, gradeOf(it).c, 3000); }
   }
   const SHOP_N = { heartUp: '빈 하트 그릇', meat: '하트 반 칸', orb: '투지 구슬', vial: '핏빛 영약', gear: '장비 꾸러미', iron: '철광석 3개', armor: '방패 조각' };
   function rollGradeW(w) { w = ascGradeW(w); let r = Math.random() * w.reduce((a, b) => a + b, 0); const ks = ['common', 'rare', 'unique', 'legend']; for (let i = 0; i < 4; i++) { if (r < w[i]) return ks[i]; r -= w[i]; } return 'common'; }
