@@ -2760,32 +2760,32 @@ WF.knight = (H) => {
       dmgMul: 1.22, n: '기사', name: '알드릭', sub: '??? 기사', role: '탱커 · 그로기', map: 'knight', pal: 'knight', ghostPal: 'ghost', weapon: '대검',
       base: { atk: 20, def: 0, hp: 6, crit: 0.10, spd: 88 }, tier: { atk: '상', crit: '하', spd: '하' }, skill: '돌진 참격', skillCd: 8, awaken: '성채의 맹세',
       skillD: '돌진 후 크게 올려베며 푸른 검기를 날린다', awakenD: '회전베기 2회 → 빛의 거대검 · 5초간 30% 흘려냄',
-      atkD: '묵직한 3타 · 3타 회전베기 · 투지(15% 흘려냄 · 처치 회복)',
+      atkD: '묵직한 3타 · 3타 회전베기 · 흘려내기(피격 10% 흘려냄)',
     },
     ranger: {
       n: '어세신', name: '네로', sub: '고양이 어세신', role: '근접 연타 딜러', map: 'ranger', pal: 'ranger', ghostPal: 'rangerGhost', weapon: '쌍검',
       base: { atk: 18, def: 0, hp: 6, crit: 0.18, spd: 100 }, tier: { atk: '중', crit: '중', spd: '상' }, skill: '그림자 도약', skillCd: 7, awaken: '칼날 폭풍',
       skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베기, 치명타 확정', awakenD: '3초간 쌍검 회오리 · 50% 흘려냄',
-      atkD: '빠른 3타 · 3타 교차베기 · 투지(15% 흘려냄 · 처치 회복)',
+      atkD: '빠른 3타 · 3타 교차베기 · 베어내기(평타 중 피격 10% 베어냄)',
     },
     mage: {
       dmgMul: 0.88, n: '마법사', name: '세리안', sub: '여우 마법사', role: '원거리 광역 딜러', map: 'mage', pal: 'mage', ghostPal: 'mageGhost', weapon: '지팡이',
-      base: { atk: 24, def: 0, hp: 4, crit: 0.12, spd: 90 }, tier: { atk: '상', crit: '중', spd: '중' }, skill: '화염구', skillCd: 10, awaken: '운석 낙하',
+      base: { atk: 24, def: 0, hp: 5, crit: 0.12, spd: 90 }, tier: { atk: '상', crit: '중', spd: '중' }, skill: '화염구', skillCd: 10, awaken: '운석 낙하',
       skillD: '폭발하는 화염구를 날린다. 범위 피해 + 3초 화상', awakenD: 'E 조준 → 클릭 지점에 운석 · 광역 + 화상',
-      atkD: '마력탄 연사 · 3발마다 큰 탄', icons: ['bolt', 'fireball', 'meteor'],
+      atkD: '마력탄 연사 · 3발마다 큰 탄 · 마나 격류(점멸 뒤 3초 피격 10% 흘려냄)', icons: ['bolt', 'fireball', 'meteor'],
     },
     priest: {
       n: '사제', name: '미레아', sub: '토끼 사제', role: '방패 · 버프', map: 'priest', pal: 'priest', ghostPal: 'priestGhost', weapon: '메이스',
       base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, tier: { atk: '중', crit: '하', spd: '중' }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
       skillD: '빛의 방패 1칸(이 기술로는 1칸까지) + 주변 적을 빛으로 밀쳐낸다', awakenD: '3초 무적 빛기둥 · 쓰러지면 부활 (챕터당 1번)',
-      atkD: '메이스 3타 · 3타 충격파 · 투지(15% 흘려냄 · 처치 회복)', icons: ['mace', 'heal', 'miracle'],
+      atkD: '메이스 3타 · 3타 충격파 · 신의 가호(피격 10% 막아냄)', icons: ['mace', 'heal', 'miracle'],
     },
     gunner: {
       dmgMul: 0.65,
       n: '거너', name: '그레이브', sub: '늑대 총잡이', role: '원거리 단일 폭딜', map: 'gunner', pal: 'gunner', ghostPal: 'gunnerGhost', weapon: '머스킷',
-      base: { atk: 28, def: 0, hp: 4, crit: 0.50, spd: 92 }, tier: { atk: '상', crit: '상', spd: '중' }, skill: '파열탄', skillCd: 8, awaken: '마력응축탄',
+      base: { atk: 28, def: 0, hp: 5, crit: 0.50, spd: 92 }, tier: { atk: '상', crit: '상', spd: '중' }, skill: '파열탄', skillCd: 8, awaken: '마력응축탄',
       skillD: '발사 시 부채꼴로 파열 + 강한 넉백, 즉시 재장전', awakenD: '2초 조준 후 모든 적을 꿰뚫는 대형탄. 보스 그로기 대량 누적',
-      atkD: '5발 후 재장전 · 근접은 개머리판', icons: ['musket', 'shotgun', 'snipe'],
+      atkD: '5발 후 재장전 · 근접은 개머리판 · 교활(적 공격 10% 빗나감)', icons: ['musket', 'shotgun', 'snipe'],
     },
   };
   // 삭제된 직업(예: 테스트했던 버서커)의 무기·장착 정보가 저장에 남아 있으면 정리한다
@@ -10139,8 +10139,8 @@ huskUp:[
     const s = G.stats;
     // v2.00 하트 방식: 한 번 맞으면 반 칸. 장판·독·화상은 2.5초에 반 칸. 방어력 없음
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
-    const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + (RANGED() ? 1 : MELEE_DR) * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
-    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); return; }
+    const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
+    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; const lb = { knight: '흘려냄', ranger: '베어냄', priest: '가호', gunner: '빗나감', mage: '격류' }[G.cls] || '0'; G.nums.push({ x: P.x, y: P.y - 26, v: lb, t: 0.6, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 1 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
     if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1;
     if (s.curse.has('glass') && Math.random() < 0.25) dmg = 2;
@@ -10476,6 +10476,7 @@ huskUp:[
     priestTick(dt);
     { const wt = weaponTex(G.cls); warmRot(wt && SAVE.skin === 'ash' && skinOpen() ? ashBlade(wt) : wt); } // v2.19 처음 휘두를 때 끊기지 않게 회전 그림 미리 만들기
     if (P && P.stealthT > 0) P.stealthT -= dt;
+    if (P && P.surgeT > 0) { P.surgeT -= dt; if (Math.random() < dt * 14) { const a = rand(0, TAU); G.parts.push({ x: P.x + Math.cos(a) * 10, y: P.y - 4 - rand(0, 18), vx: -Math.sin(a) * 30, vy: -rand(10, 30), t: 0.35, c: pick(['#9fd2ff', '#c890ff', '#e4f2ff']), g: 0, glow: true }); } } // v2.24 마나 격류 표시
     // 시간 정지 해제 → 모은 피해
     if (G.tstopT > 0) { G.tstopT -= dt; if (G.tstopT <= 0) { sfx('blast', 1.2); flashT = 0.12; flashColor = '#fff0d0'; for (const e of G.enemies) if (!e.dead && e.st && e.st.bank > 0) { const b = e.st.bank; e.st.bank = 0; e.st.tsT = 0; damageEnemy(e, b / Math.max(1, G.stats.atk), { proc: true, bank: true, heavy: true, grogi: 10, ang: angTo(P, e), gauge: 0 }); G.fx.push({ kind: 'ring', x: e.x, y: e.y - 12, r: 6, grow: 180, t: 0.35, max: 0.35, c: '#ffd080' }); } } }
     // 먼지 구름(빗자루) · 수프 웅덩이(국자) · 작은 운석(잿빛 별)
@@ -10643,7 +10644,7 @@ huskUp:[
     e.dead = true; cancelTele(e);
     if (INV_LINES[e.type] && !isDummy(e)) { e.say = null; (G.deadSays = G.deadSays || []).push({ text: INV_LINES[e.type].last && !(e.bro && !e.bro.dead) ? INV_LINES[e.type].last : INV_LINES[e.type].out, x: e.x, y: e.y - 34, until: time + 3.6 }); } // 난입자 처치 대사
     if (e.ash === 'husk') { (G.ashClouds = G.ashClouds || []).push({ x: e.x, y: e.y, r: 30, t: 1.6, max: 1.6 }); } // v1.24 재 망자는 부서지며 재 구름
-    { const P = G.player; if (!RANGED() && P && !P.dead && e.type !== 'ghost' && e.type !== 'flag' && !e.ffKill) { healPct(MELEE_KILL_HEAL * (isElite(e) || e.type === 'boss' ? 3 : 1)); } } // 근접 투지
+    // v2.23 근접 처치 회복 삭제 (사용자 결정)
     const big = e.type === 'boss' ? 3 : isElite(e) ? 2 : 1;
     for (let i = 0; i < 16 * big; i++) G.parts.push({ x: e.x + rand(-6, 6) * big, y: e.y - rand(0, 26) * big, vx: rand(-14, 14), vy: rand(-40, -10), t: rand(0.5, 1.1), c: pick(['#3a3540', '#5b5560', '#1e1b22', '#7a2a1c']), g: -10 });
     burst(e.x, e.y - 8, bloodOf(e), 8 * big);
@@ -10745,7 +10746,7 @@ huskUp:[
     const free = P.state === 'idle' || P.state === 'attack' || P.state === 'rattack';
 
     if (wantDodge && P.stam > 0 && (free || P.state === 'butt' || P.state === 'pray' || (P.state === 'skill' && P.t > SKILL.wind + SKILL.swing))) {
-      P.stam--; P.state = 'dodge'; P.t = 0; P.dodgeT = 0; P.iframe = 0.22; P.perfectUsed = false; P.combo = 0; P.queued = false; P.blinkEnd = false;
+      P.stam--; if (G.cls === 'mage') P.surgeT = SURGE_T; P.state = 'dodge'; P.t = 0; P.dodgeT = 0; P.iframe = 0.22; P.perfectUsed = false; P.combo = 0; P.queued = false; P.blinkEnd = false;
       if (G.tut && G.tut.step === 4) { G.tut.dashN++; if (G.tut.dashN < 3) P.stam = Math.max(P.stam, 1); }
       const da = ml ? Math.atan2(my, mx) : P.ang;
       P.dvx = Math.cos(da); P.dvy = Math.sin(da);
@@ -11066,10 +11067,12 @@ huskUp:[
 
   // ================================================================ 마법사 · 사제 · 거너
   const RANGED = () => G.cls === 'mage' || G.cls === 'gunner';
-  // v0.72 직업 밸런스: 원거리는 안전한 대신 화력을 낮추고, 근접은 「근접 투지」로 버티게
+  // v0.72 직업 밸런스: 원거리는 안전한 대신 화력을 낮추고, 근접은 직업 패시브로 버티게 (v2.23 기사 흘려내기 · 어세신 베어내기 · 사제 신의 가호)
   const GUN_RELOAD = 1.2, GUN_MAG = 5, GUN_RANGE = 400;        // 거너: 5발 발사 후 총을 두 바퀴 돌려 장전
   const MAGE_MANA_MAX = 100, MAGE_BOLT_COST = 20, MAGE_MANA_REGEN = 32;
-  const MELEE_DR = 0.85, MELEE_KILL_HEAL = 0.02;               // 근접 투지: 받는 피해 -15%, 적 처치 시 최대 HP 3% 회복
+  const MELEE_DR = 0.9;                                        // v2.23~24 직업 패시브: 피격 10% 흘려냄 · 처치 회복 없음
+  const SURGE_T = 3; // v2.24 마법사 마나 격류: 점멸 뒤 3초
+  const meleeKeep = () => { const P = G.player, c = G.cls; if (c === 'mage') return P.surgeT > 0 ? MELEE_DR : 1; if (c === 'ranger') return P.state === 'attack' ? MELEE_DR : 1; return MELEE_DR; }; // 기사 흘려내기 · 사제 신의 가호 · 거너 교활(상시) · 어세신 베어내기(평타 중) · 마법사 마나 격류(점멸 뒤)
   const heroHand = () => { const P = G.player; return { x: P.x + P.face * 3 - Math.cos(P.blade) * (P.recoil || 0) * 4, y: P.y - 8 - Math.sin(P.blade) * (P.recoil || 0) * 4 }; };
   function staffTip() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 30, y: h.y + Math.sin(P.blade) * 30 }; }
   function muzzle() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 37, y: h.y - 2 + Math.sin(P.blade) * 37 }; }
