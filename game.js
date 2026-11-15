@@ -10735,7 +10735,7 @@ huskUp:[
     updatePoison(dt); updateBurn(dt); updateAshClouds(dt); updateAshShots(dt);
     if (Math.abs(Math.cos(P.ang)) > 0.15 && P.state !== 'charge' && P.state !== 'attack' && P.state !== 'shadow' && P.state !== 'storm' && P.state !== 'butt') P.face = Math.cos(P.ang) > 0 ? 1 : -1;
 
-    if (pressed['j'] || pressed['k'] || pressed['e'] || pressed['l'] || (RANGED() && keys['j'])) { const te = touchAim(); if (te) P.ang = Math.atan2(te.y - (isElite(te) || te.type === 'boss' ? 20 : 8) - (P.y - 10), te.x - P.x); }
+    if (pressed['j'] || pressed['k'] || pressed['e'] || pressed['l'] || RANGED()) { const te = touchAim(); /* v2.25 모바일 원딜: 누르기 전에도 조준선이 고정한 적을 가리킴 */ if (te) P.ang = Math.atan2(te.y - (isElite(te) || te.type === 'boss' ? 20 : 8) - (P.y - 10), te.x - P.x); }
     let wantAtk = take('j'), wantSkill = take('k'), wantAwk = take('l') || take('e'); const wantDodge = take(' ');
     if (G.meteorAim) { // v1.68 운석 조준: 클릭한 곳에 떨어뜨림, 우클릭·E로 취소
       if (G.cls !== 'mage' || P.gauge < 100 || P.dead) G.meteorAim = false;
