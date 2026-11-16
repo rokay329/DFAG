@@ -5384,7 +5384,7 @@ huskUp:[
     D.cur = R; R.visited = true; R.seen = true;
     for (const d in R.doors) if (R.doors[d] != null && !hiddenDoor(R, d)) D.rooms[R.doors[d]].seen = true;
     G.meteorAim = false; G.wproj = []; G.dustC = []; G.soup = []; G.smoke = []; G.harp = null; G.mmet = []; G.tstopT = 0; G.enemies = []; G.tele = []; G.hazards = []; G.ashClouds = []; G.ashShots = []; G.proj = []; G.eproj = []; G.mproj = []; G.meteor = null; G.vortex = null; G.boss = null; G.bonfire = null;
-    G.fx = []; G.parts = []; G.nums = []; G.corpses = []; G.spawning = 0;
+    G.fx = []; G.parts = []; G.nums = []; G.corpses = R.keepC ? R.keepC.slice() : []; G.spawning = 0; // v2.38 난입자 시체는 방에 남음
     G.drums = R.drum ? [R.drum] : []; G.shocks = []; P.grab = null; P.thrown = null; P.lift = 0;
     G.loot = R.loot || []; R.loot = []; G.pfire = [];
     if (G.stats && G.stats.efx.has('first') && !R.cleared && ['combat', 'elite', 'survive', 'boss'].includes(R.type)) { P.critNext = true; P.firstCrit = true; P.firstN = 2; } /* v1.51 첫 적중 + 2번 더 */
@@ -10895,7 +10895,9 @@ huskUp:[
     else if (e.type !== 'boss' && e.type !== 'bigslime' && e.type !== 'bloat') {
       const ka = e.lastAng != null ? e.lastAng : angTo(G.player, e), el = isElite(e), sp = el ? rand(70, 100) : rand(170, 230);
       if (!G.corpses) G.corpses = [];
-      G.corpses.push({ e, t: el ? 0.75 : 0.55, max: el ? 0.75 : 0.55, vx: Math.cos(ka) * sp, vy: Math.sin(ka) * sp * 0.6, z: 0, vz: el ? 120 : 170, rot: 0, vr: (Math.cos(ka) >= 0 ? 1 : -1) * (el ? 3 : rand(9, 13)), bounced: false });
+      const keep = !!INV_LINES[e.type]; // v2.38 난입자 시체는 남는다
+      G.corpses.push({ e, keep, t: el ? 0.75 : 0.55, max: el ? 0.75 : 0.55, vx: Math.cos(ka) * sp, vy: Math.sin(ka) * sp * 0.6, z: 0, vz: el ? 120 : 170, rot: 0, vr: (Math.cos(ka) >= 0 ? 1 : -1) * (el ? 3 : rand(9, 13)), bounced: false });
+      if (keep && G.dun && G.dun.cur) { const R = G.dun.cur; (R.keepC = R.keepC || []).push(G.corpses[G.corpses.length - 1]); }
     }
     // 웨이브의 마지막 한 마리: 짧은 슬로모션 마무리
     if (e.type !== 'boss' && !G.enemies.some(x => !x.dead && !isDummy(x)) && G.spawning <= 0 && !G.tele.some(t => t.shape === 'spawn')) {
@@ -11933,7 +11935,7 @@ huskUp:[
   }
   function updateCorpse(c, dt) {
     const e = c.e;
-    c.t -= dt;
+    c.t -= dt; if (c.keep && c.t < c.max * 0.6) { c.t = c.max * 0.6; if (c.bounced && c.z <= 0) { c.vx = c.vy = 0; c.vr = 0; } } // 난입자: 쓰러진 모습으로 멈춤
     e.x = clamp(e.x + c.vx * dt, A.x0 + 4, A.x1 - 4); e.y = clamp(e.y + c.vy * dt, A.y0 + 4, A.y1 - 4);
     c.vx *= Math.pow(c.bounced ? 0.004 : 0.3, dt); c.vy *= Math.pow(c.bounced ? 0.004 : 0.3, dt);
     c.z += c.vz * dt; c.vz -= 900 * dt; c.rot += c.vr * dt;
