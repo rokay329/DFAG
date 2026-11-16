@@ -53,6 +53,34 @@
   /* 파티 패널 */
   /* v1.39 HUD 격자: 바깥 여백 8px · 왼쪽/오른쪽 기둥 폭 140px(파티 · 단계·미니맵) · 가운데 요소는 화면 중앙(384px) · 요소 간격 6px */
   #party { left: 8px; top: 8px; width: 140px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; }
+  /* v2.35 색 되찾기 팔레트 — 캐릭터 패널 아래 따로, 막대마다 픽셀 장식 틀 */
+  #p1pal { display: flex; flex-direction: column; gap: 6px; padding: 6px 7px 7px; } /* v2.35 다른 패널과 같은 .pf.glass 틀 */
+  #p1pal:empty { display: none; }
+  .palRow { display: flex; flex-direction: column; gap: 3px; pointer-events: auto; cursor: default; }
+  .palRow .pTopL, .palRow .pBot { display: flex; align-items: center; gap: 4px; }
+  .palRow .pTopL { height: 10px; } .palRow .pBot { height: 9px; padding: 0 2px 0 3px; }
+  .palRow .gem { width: 9px; height: 9px; flex: none; image-rendering: pixelated; filter: drop-shadow(0 1px 0 #000); }
+  .palRow .pn { flex: 1; font: 9px Galmuri9; color: var(--hc); text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000; }
+  /* 막대 틀: 검은 외곽 · 보랏빛 안쪽 테 · 네 모서리 금 리벳 · 칸 무늬 */
+  .palRow .pb { position: relative; flex: 1; height: 5px; background: #0b080d; border: 1px solid #000; box-shadow: inset 0 1px 0 #000, 0 0 0 1px #3a2f40, 0 0 0 2px #000; }
+  .palRow .pb::before { content: ''; position: absolute; inset: -3px; pointer-events: none; background:
+      linear-gradient(var(--gold-d), var(--gold-d)) 0 0 / 2px 2px no-repeat, linear-gradient(var(--gold-d), var(--gold-d)) 100% 0 / 2px 2px no-repeat,
+      linear-gradient(var(--gold-d), var(--gold-d)) 0 100% / 2px 2px no-repeat, linear-gradient(var(--gold-d), var(--gold-d)) 100% 100% / 2px 2px no-repeat; }
+  .palRow .pb::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 4px, rgba(0,0,0,.35) 4px 5px); pointer-events: none; z-index: 2; }
+  .palRow .pb b { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(var(--hl) 0 1px, var(--hc) 1px 3px, var(--hd) 3px); transition: width .25s steps(4); }
+  .palRow .pb b::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: #fff; opacity: .85; }
+  .palRow .pb b[style*="width:0%"]::after { display: none; }
+  /* 단계 눈금: 막대 위아래로 삐져나온 작은 쐐기 — 닿으면 금빛 */
+  .palRow .pb u { position: absolute; top: -3px; bottom: -3px; width: 1px; background: linear-gradient(#5e5466 0 2px, #000 2px calc(100% - 2px), #5e5466 calc(100% - 2px)); z-index: 3; }
+  .palRow .pb u.on { background: linear-gradient(var(--gold-l) 0 2px, #000 2px calc(100% - 2px), var(--gold-l) calc(100% - 2px)); }
+  .palRow .pv { min-width: 14px; text-align: right; flex: none; font: 9px Galmuri9; color: var(--ink); text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000; }
+  /* 단계 보석 3칸: 빈 홈 → 색 보석 */
+  .palRow .pt { display: flex; gap: 1px; flex: none; }
+  .palRow .pt i { width: 5px; height: 5px; background: #000; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); position: relative; }
+  .palRow .pt i::after { content: ''; position: absolute; inset: 1px; background: #2a2232; clip-path: inherit; }
+  .palRow .pt i.on::after { background: var(--hc); box-shadow: inset 0 1px 0 var(--hl); }
+  .palRow.up .pb { animation: palUp .5s steps(5); }
+  @keyframes palUp { 0%, 40% { box-shadow: inset 0 1px 0 #000, 0 0 0 1px var(--hl), 0 0 0 2px #000, 0 0 6px var(--hc); } 100% { box-shadow: inset 0 1px 0 #000, 0 0 0 1px #3a2f40, 0 0 0 2px #000; } }
   .slot { display: flex; gap: 5px; padding: 4px; height: 46px; }
   .portrait { width: 34px; height: 34px; flex: 0 0 34px; position: relative; background: radial-gradient(circle at 50% 40%, #3b2d46, #120d16 70%); border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); overflow: hidden; }
   .portrait img { position: absolute; left: 3px; top: 3px; width: 28px; height: 28px; }
