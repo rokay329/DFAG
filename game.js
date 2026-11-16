@@ -10210,7 +10210,7 @@ huskUp:[
     // v2.00 하트 방식: 한 번 맞으면 반 칸. 장판·독·화상은 2.5초에 반 칸. 방어력 없음
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
     const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
-    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; const lb = { knight: '흘려냄', ranger: '베어냄', priest: '가호', gunner: '빗나감', mage: '격류' }[G.cls] || '0'; rec('ev_' + G.cls); G.nums.push({ x: P.x, y: P.y - 26, v: lb, t: 0.6, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 1 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
+    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; const lb = { knight: '흘려냄', ranger: '베어냄', priest: '신의 가호', gunner: '빗나감', mage: '마나 격류' }[G.cls] || '0'; rec('ev_' + G.cls); G.nums.push({ x: P.x, y: P.y - 30, v: lb, t: 0.8, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 2 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
     if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1;
     if (s.curse.has('glass') && Math.random() < 0.25) dmg = 2;
@@ -10260,7 +10260,7 @@ huskUp:[
     eye: { n: '사냥꾼의 눈', d: '치명 확률 +10%p', c: '#ffd34d' },
     hourglass: { n: '모래시계 조각', d: '스킬 쿨타임 -10%', c: '#c8b080' },
     emberheart: { n: '잿불 심장', d: '정예·보스 처치 시 반 칸 회복 + 잿불 폭발', c: '#ff8a3a' },
-    seal: { n: '녹슨 기사단 인장', d: '반격 시간 동안 그로기 누적 2배', c: '#a8acb4' },
+    seal: { n: '녹슨 기사단 인장', d: '역습 동안 그로기 누적 2배', c: '#a8acb4' },
     drum: { n: '전쟁 북 가죽', d: '각성 중 이동속도 +20%', c: '#c8563a' },
     slimecore: { n: '분열하는 점액 핵', d: '처치한 적이 10% 확률로 터지며 주변 적에게 피해', c: '#7ad050' },
     fang: { n: '붉은 엄니', d: '하트 1칸 이하일 때 공격력 +40%', c: '#e0303a' },
@@ -10269,11 +10269,11 @@ huskUp:[
     crown: { n: '깨진 왕관 조각', d: '공격력 +30% · 받는 피해 2배', c: '#b898ff' },
     pact: { n: '피의 계약', d: '처치할 때마다 투지 +10 · 회복량 절반', c: '#a3161c' },
     // v2.29 해금 유물 (기록 보관소에서 조건 확인)
-    mirror: { n: '깨진 거울', d: '반격 시간 +0.6초', c: '#b8d8f0' },
+    mirror: { n: '깨진 거울', d: '역습 시간 +0.6초', c: '#b8d8f0' },
     glove: { n: '도둑의 장갑', d: '상자를 열면 골드 +30', c: '#8a7aa0' },
     oldmap: { n: '낡은 지도', d: '비밀 방 위치가 지도에 보인다', c: '#e8d8a8' },
     gravedirt: { n: '무덤 흙 한 줌', d: '보스 방에 들어가면 방패 +1', c: '#8a6a50' },
-    horn: { n: '사냥 나팔', d: '정예 처치 후 3초간 공격력 +25%', c: '#f0e0b0' },
+    horn: { n: '사냥꾼의 나팔', d: '정예 처치 후 3초간 공격력 +25%', c: '#f0e0b0' },
     coal: { n: '모닥불 숯', d: '모닥불 축복 선택지 +1', c: '#ff9a3a' },
     twincoin: { n: '쌍둥이 동전', d: '챕터마다 상점 물건 하나 50% 할인', c: '#f0c040' },
     cloak: { n: '잿빛 깃털 망토', d: '점멸 거리 +20%', c: '#b0b0b8' },
@@ -10629,7 +10629,7 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: b.x, y: b.y - 6, r: 6, grow: 150, t: 0.3, max: 0.3, c: '#ffd34d' }); sparks(b.x, b.y - 10, -Math.PI / 2, '#fff2b0', 6); sfx('bolt', 1.4);
       for (const e of nearFoes(b.x, b.y, 36)) damageEnemy(e, 0.8, { proc: true, grogi: 4, ang: angTo(b, e), gauge: 1 }); }
   }
-  const COUNTER_T = 2.5, COUNTER_MUL = 1.15; // v2.33 피해 +40% → +15% let CNT_COL = null, CNT_MK = null, CNT_OC = null;
+  const COUNTER_T = 2.5, COUNTER_MUL = 1.15; /* v2.33 피해 +40% → +15% */ let CNT_COL = null, CNT_MK = null, CNT_OC = null;
   function perfectDodge() {
     { const P0 = G.player; if (G.stats.efx.has('nova')) { gxNova(P0.x, P0.y); for (const o of nearFoes(P0.x, P0.y, 92)) damageEnemy(o, 1.2, { proc: true, ang: angTo(P0, o), gauge: 2 }); } }
     const P = G.player;
@@ -10638,7 +10638,7 @@ huskUp:[
     for (const o of nearFoes(P.x, P.y, 100)) { applySt(o, 'stun', 0.6); G.fx.push({ kind: 'ring', x: o.x, y: o.y - 10, r: 4, grow: 60, t: 0.2, max: 0.2, c: '#ffd34d' }); } // 주변 적 0.6초 경직 (보스·정예는 줄어듦)
     slowmo = 1.0; flashT = 0.12; flashColor = '#cfe6ff';
     P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
-    G.nums.push({ x: P.x, y: P.y - 32, v: '반격!', t: 0.9, c: '#ffd34d', s: 2 }); addShake(2, 0);
+    G.nums.push({ x: P.x, y: P.y - 32, v: '역습!', t: 0.9, c: '#ffd34d', s: 2 }); addShake(2, 0);
     G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 6, t: 0.35, max: 0.35, c: '#9fd2ff' });
     if (G.stats.fx.has('vigil')) healPct(0.02);
     if (G.stats.fx.has('fangs')) P.chargeCd = [0, 0];
@@ -10761,7 +10761,7 @@ huskUp:[
     if (silent) return;
     G.kills++;
     gearOnKill(e);
-    if (!isDummy(e) && isElite(e)) { rec('elite'); if (hasRelic('horn')) { G.hornT = time + 3; G.nums.push({ x: G.player.x, y: G.player.y - 34, v: '나팔!', t: 0.7, c: '#f0e0b0', s: 1 }); } } // v2.29
+    if (!isDummy(e) && isElite(e)) { rec('elite'); if (hasRelic('horn')) { G.hornT = time + 3; G.nums.push({ x: G.player.x, y: G.player.y - 34, v: '사냥꾼의 나팔', t: 0.7, c: '#f0e0b0', s: 1 }); } } // v2.29
     if (G.cls === 'knight' && G.player.counterT > 0 && !isDummy(e)) rec('k_counter');
     if (!isDummy(e)) rec('kill_' + G.cls); // v2.31 직업별 처치 (무기 해금)
     pasOnKill(e); // v2.22 보관 패시브
@@ -11455,7 +11455,7 @@ huskUp:[
   }
   function startMiracle(revive) {
     const P = G.player, s = G.stats;
-    P.gauge = 0; P.miracleT = 3 + pasV('miracle'); // v2.15 하트 회복 없음 P.state = 'pray'; P.t = 0; P.prayDur = 0.7; P.combo = 0;
+    P.gauge = 0; P.miracleT = 3 + pasV('miracle'); /* v2.15 하트 회복 없음 */ P.state = 'pray'; P.t = 0; P.prayDur = 0.7; P.combo = 0;
     slowmo = 0.8; flashT = 0.25; flashColor = '#fffbe6'; sfx('awaken'); sfx('heal'); addShake(6);
     G.eproj = [];
     for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; G.fx.push({ kind: 'skybeam', x: P.x + Math.cos(a) * 74, y: P.y + Math.sin(a) * 44, w: 16, c: '255,230,150', t: 0.9, max: 0.9 }); }
@@ -16138,7 +16138,7 @@ void main() {
     } }
     { const t0 = PERF.on ? performance.now() : 0; pixelPass(); if (PERF.on) PERF.pp += performance.now() - t0; } // v1.05 화면 도트화 (글자·프롬프트·숫자는 이 뒤)
     drawPrompt();
-    for (const n of G.nums) { ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt) { ctx.font = '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(n.v, Math.round(n.x) + 1, Math.round(n.y) + 1); ctx.fillStyle = n.c; ctx.fillText(n.v, Math.round(n.x), Math.round(n.y)); } else drawNumber(n.v, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); }
+    for (const n of G.nums) { ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt || (typeof n.v === 'string' && /[^0-9+\-]/.test(n.v))) { /* v2.33 글자(흘려냄·반격! 등)는 숫자 글꼴로 안 그려져 보이지 않던 문제 → 글자로, 외곽선 */ const big = (n.s || 1) >= 2, x = Math.round(n.x), y = Math.round(n.y) - (n.pop > 0 ? 2 : 0); ctx.font = big ? '11px Galmuri11' : '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1]]) ctx.fillText(n.v, x + dx, y + dy); ctx.fillStyle = n.c; ctx.fillText(n.v, x, y); } else drawNumber(n.v, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); }
     ctx.globalAlpha = 1;
     ctx.restore();
 
