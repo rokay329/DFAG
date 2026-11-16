@@ -345,8 +345,8 @@
   .ascR { font-family: 'Galmuri7'; font-size: 8px; color: var(--ink); } .ascR i { font-style: normal; color: #ff8a2a; margin-right: 3px; } .ascR.new { color: #ffd34d; }
   .selc h3 { margin: 0; font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: var(--gold-l); }
   .selc .role { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); margin: 2px 0 6px; }
-  .selc .st { display: grid; grid-template-columns: 22px 1fr; gap: 3px 6px; align-items: center; margin-bottom: 0; }
-  .selc .st span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
+  .selc .st { display: grid; grid-template-columns: auto 1fr; gap: 3px 6px; align-items: center; margin-bottom: 0; }
+  .selc .st span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); white-space: nowrap; }
   .selc .st .pbar { height: 5px; }
   .selDetail .sk2 { display: grid; grid-template-columns: auto 1fr; gap: 4px 6px; align-items: start; line-height: 1.45; }
   .selDetail .sk2 b { color: var(--gold-l); font-weight: normal; }
@@ -564,13 +564,13 @@
       <div class="top"><canvas class="px" id="bossIcon" width="7" height="7"></canvas><span id="bossName">타락 기사단장 발도르</span><canvas class="px" id="bossIcon2" width="7" height="7"></canvas></div>
       <div class="pbar" id="bossbar"><i class="back" id="bossback"></i><i class="boss" id="bossfill"></i><span class="mk" style="left:70%"></span><span class="mk" style="left:35%"></span></div>
       <div class="pbar" id="grogi"><i class="grogi" id="grogifill"></i></div>
-      <div class="t"><span id="bossTime"></span><span id="shieldtag">보호막 — 망령 기사를 먼저 처치</span><span id="bossStage"></span></div>
+      <div class="t"><span id="bossTime"></span><span id="shieldtag">보호막: 망령 기사를 먼저 처치해야 합니다.</span><span id="bossStage"></span></div>
     </div>
 
     <!-- 하단: 스킬 -->
     <div class="hud pf glass" id="skills">
-      <div class="sk" id="skA"><div class="ic"><canvas class="px" width="32" height="32"></canvas><div class="sweep"></div><div class="num"></div><div class="pips" id="comboPips"><b></b><b></b><b></b></div></div><span class="key">LMB</span><span class="skn">공격</span></div>
-      <div class="sk" id="skK"><div class="ic"><canvas class="px" width="16" height="16"></canvas><div class="sweep"></div><div class="num"></div><div class="pips"></div></div><span class="key">RMB</span><span class="skn">돌진 참격</span></div>
+      <div class="sk" id="skA"><div class="ic"><canvas class="px" width="32" height="32"></canvas><div class="sweep"></div><div class="num"></div><div class="pips" id="comboPips"><b></b><b></b><b></b></div></div><span class="key">좌클릭</span><span class="skn">공격</span></div>
+      <div class="sk" id="skK"><div class="ic"><canvas class="px" width="16" height="16"></canvas><div class="sweep"></div><div class="num"></div><div class="pips"></div></div><span class="key">우클릭</span><span class="skn">돌진 참격</span></div>
       <div class="sk" id="skL"><div class="ic"><canvas class="px" width="16" height="16"></canvas><div class="fill"></div><div class="num"></div></div><span class="key">E</span><span class="skn">각성</span></div>
       <div class="sk" id="skD"><div class="ic"><canvas class="px" width="16" height="16"></canvas><div class="sweep"></div><div class="pips blue"><b></b><b></b></div></div><span class="key">SPACE</span><span class="skn">점멸</span></div>
     </div>
@@ -608,7 +608,7 @@
         <div class="selCards" id="selCards"></div>
         <div class="selDetail pf" id="selDetail"></div>
         <div class="ascRow pf" id="ascRow"></div>
-        <div class="selHint f7"><span class="pcOnly">← → 직업 · ENTER 출정 · ESC 돌아가기</span><span class="touchOnly">카드를 탭해 살펴보고 · 한 번 더 탭하면 출정</span></div>
+        <div class="selHint f7"><span class="pcOnly">← → 직업 · ENTER 출정 · ESC 돌아가기</span><span class="touchOnly">카드를 탭하면 살펴보고, 한 번 더 탭하면 출정합니다.</span></div>
       </div>
     </div>
 
@@ -635,7 +635,7 @@
     <div class="ov" id="ovRest">
       <div class="pf win">
         <h2>모닥불 — 휴식</h2>
-        <p>HP 회복 · 축복을 하나 고른다</p>
+        <p>하트를 회복하고, 축복을 하나 고릅니다.</p>
         <div class="choices" id="restChoices"></div>
       </div>
     </div>
@@ -671,7 +671,7 @@
             <div class="invFx" id="invFx"></div>
           </div>
         </div>
-        <div class="invHint f7"><span class="pcOnly"></span><span class="touchOnly">칸을 탭하면 설명 · 한 번 더 탭하면 장착</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
+        <div class="invHint f7"><span class="pcOnly"></span><span class="touchOnly">칸을 탭하면 설명이 나오고, 한 번 더 탭하면 장착합니다.</span><button class="pbtn" id="ivClose">닫기 [ESC]</button></div>
       </div>
     </div>
 
@@ -694,31 +694,31 @@
         <div id="tmHowto" class="popPane">
           <h2>조작법</h2>
           <div class="keys pcOnly">
-            <span class="key">WASD</span><span>이동 · 마우스를 움직이면 커서 방향 조준</span>
-            <span class="key">LMB</span><span>공격</span>
-            <span class="key">RMB</span><span>특수기술 (직업별)</span>
-            <span class="key">E</span><span>각성기 (직업별, 투지 100)</span>
-            <span class="key">SPACE</span><span>점멸 — 공격 직전이면 퍼펙트 회피</span>
-            <span class="key">F</span><span>상호작용</span>
-            <span class="key">1~3</span><span>무기 바꾸기 · <span class="key">F</span> 홀드 버리기</span>
-            <span class="key">TAB</span><span>지도 — 클리어한 방의 텔레포터로 순간이동</span>
-            <span class="key">I</span><span>장비</span>
-            <span class="key">H</span><span>조작 안내 켜기/끄기 (시작할 때 자동 표시)</span>
-            <span class="key">M</span><span>음악 켜기/끄기</span>
+            <span class="key">WASD</span><span>이동합니다. 마우스를 움직이면 커서 방향으로 조준합니다.</span>
+            <span class="key">좌클릭</span><span>공격합니다.</span>
+            <span class="key">우클릭</span><span>직업별 특수 기술을 씁니다.</span>
+            <span class="key">E</span><span>투지가 100이 되면 직업별 각성기를 씁니다.</span>
+            <span class="key">SPACE</span><span>점멸합니다. 적의 공격 직전에 쓰면 퍼펙트 회피가 됩니다.</span>
+            <span class="key">F</span><span>가까운 대상과 상호작용합니다.</span>
+            <span class="key">1~3</span><span>무기를 바꿉니다. <span class="key">F</span>를 길게 누르면 무기를 버립니다.</span>
+            <span class="key">TAB</span><span>지도를 엽니다. 클리어한 방의 텔레포터로 순간 이동할 수 있습니다.</span>
+            <span class="key">I</span><span>장비 창을 엽니다.</span>
+            <span class="key">H</span><span>조작 안내를 켜거나 끕니다. 시작할 때 자동으로 표시됩니다.</span>
+            <span class="key">M</span><span>음악을 켜거나 끕니다.</span>
           </div>
           <div class="keys touchOnly">
-            <span class="key">왼쪽 끌기</span><span>이동</span>
-            <span class="key">공격</span><span>자동 조준</span>
-            <span class="key">스킬</span><span>특수기술 (직업별)</span>
-            <span class="key">각성</span><span>각성기 (직업별, 투지 100)</span>
-            <span class="key">점멸</span><span>회피 — 공격 직전이면 퍼펙트 회피</span>
-            <span class="key">F</span><span>상호작용</span>
-            <span class="key">지도</span><span>클리어한 방의 텔레포터로 순간이동</span>
-            <span class="key">가방</span><span>장비 · 인벤토리 — 장비 비교·교체 (게임 멈춤)</span>
-            <span class="key">❚❚</span><span>일시정지 · <b style="color:var(--gold-l);font-weight:normal">전체</b> 전체화면 (지원 기기)</span>
-            <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
+            <span class="key">왼쪽 끌기</span><span>이동합니다.</span>
+            <span class="key">공격</span><span>가까운 적을 자동으로 조준해 공격합니다.</span>
+            <span class="key">스킬</span><span>직업별 특수 기술을 씁니다.</span>
+            <span class="key">각성</span><span>투지가 100이 되면 직업별 각성기를 씁니다.</span>
+            <span class="key">점멸</span><span>회피합니다. 적의 공격 직전에 쓰면 퍼펙트 회피가 됩니다.</span>
+            <span class="key">F</span><span>가까운 대상과 상호작용합니다.</span>
+            <span class="key">지도</span><span>지도를 엽니다. 클리어한 방의 텔레포터로 순간 이동할 수 있습니다.</span>
+            <span class="key">가방</span><span>장비를 비교하고 바꿉니다. 여는 동안 게임이 멈춥니다.</span>
+            <span class="key">❚❚</span><span>게임을 일시정지합니다. <b style="color:var(--gold-l);font-weight:normal">전체</b>를 누르면 전체화면이 됩니다(지원하는 기기만).</span>
+            <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격합니다.</span>
           </div>
-          <p>붉은 장판 = 곧 공격.<br>엘리트의 봉인 열쇠 2개 → 보스 방 열림. 금 간 벽은 부서진다.<br>오크에게 잡히면 연타·점멸로 탈출.</p>
+          <p>붉은 장판은 곧 공격이 떨어진다는 뜻입니다.<br>정예가 떨어뜨리는 봉인 열쇠 2개를 모으면 보스 방이 열립니다. 금 간 벽은 부술 수 있습니다.<br>오크에게 잡히면 연타하거나 점멸해서 빠져나옵니다.</p>
           <div class="menu"><button class="mi sel" data-act="popClose">닫기 [ESC]</button></div>
         </div>
         <div id="tmArchive" class="popPane">
@@ -751,7 +751,7 @@
   <div class="tb sm" id="tFull">전체</div>
   <div class="tb sm" id="tInv" data-k="i">가방</div>
 </div>
-<div id="rotate"><b>⟳</b>가로로 돌려 주세요<span style="font-size:11px;color:var(--quiet)">잿빛 왕관 토벌대는 가로 화면에서 플레이해요</span></div>
+<div id="rotate"><b>⟳</b>가로로 돌려 주세요<span style="font-size:11px;color:var(--quiet)">잿빛 왕관 토벌대는 가로 화면에서 플레이합니다.</span></div>
 
 <script>/* 오류 표시: 휴대폰 등 콘솔을 볼 수 없는 기기에서 첫 오류를 화면에 띄움 */
 (function(){var shown=0;function show(m){if(shown++>2)return;var b=document.getElementById('errBox');if(!b){b=document.createElement('pre');b.id='errBox';b.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;margin:0;padding:8px 10px;background:#2a0d12;color:#ffd7d7;border:2px solid #e05060;font:12px/1.4 monospace;white-space:pre-wrap;max-height:45vh;overflow:auto';(document.body||document.documentElement).appendChild(b);}b.textContent+=m+'\n';}
