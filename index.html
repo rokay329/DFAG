@@ -265,6 +265,9 @@
   .choice canvas { width: 32px; height: 32px; margin-bottom: 4px; }
   .choice b { display: block; font-family: 'Galmuri11'; font-size: 12px; font-weight: normal; color: var(--gold-l); margin-bottom: 2px; }
   .choice .key { display: inline-block; margin-top: 5px; }
+  .engC { width: 190px; border-top: 2px solid var(--ec); } /* v2.41 빛의 각인 카드 */
+  .engC .engI { display: block; font-style: normal; font-size: 18px; margin-bottom: 4px; }
+  .engC b em { font-style: normal; color: var(--ec); font-size: 11px; }
 
   /* 결과 */
   .items { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; max-height: 220px; overflow: auto; }
@@ -639,6 +642,14 @@
         <h2>모닥불 — 휴식</h2>
         <p>하트를 회복하고, 축복을 하나 고릅니다.</p>
         <div class="choices" id="restChoices"></div>
+      </div>
+    </div>
+
+    <div class="ov" id="ovEng">
+      <div class="pf win">
+        <h2 id="engTitle">빛의 각인</h2>
+        <p id="engSub"></p>
+        <div class="choices" id="engChoices"></div>
       </div>
     </div>
 
