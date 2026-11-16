@@ -52,6 +52,8 @@
 
   /* 파티 패널 */
   /* v1.39 HUD 격자: 바깥 여백 8px · 왼쪽/오른쪽 기둥 폭 140px(파티 · 단계·미니맵) · 가운데 요소는 화면 중앙(384px) · 요소 간격 6px */
+  .hudDim { opacity: .28 !important; } /* v2.38 캐릭터가 뒤에 있으면 패널을 흐리게 */
+  #party, #phase { transition: opacity .15s; }
   #party { left: 8px; top: 8px; width: 140px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; }
   /* v2.35 색 되찾기 팔레트 — 캐릭터 패널 아래 따로, 막대마다 픽셀 장식 틀 */
   #p1pal { display: flex; flex-direction: column; gap: 6px; padding: 6px 7px 7px; } /* v2.35 다른 패널과 같은 .pf.glass 틀 */

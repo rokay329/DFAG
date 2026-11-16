@@ -5409,6 +5409,7 @@ huskUp:[
     if (fresh && R.type === 'elite') banner(ER().n, ER().sub[R.tier] || STG().elite);
     if (fresh && R.type === 'survive') banner('봉인된 방', `문이 닫혔다 · ${SURV_N}차례의 습격을 견뎌야 한다`);
     if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
+    if (R.type === 'shop') shopHeartFix(R);
     if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner('모닥불', '불가에서 숨을 고르고 축복을 택한다 · F'); } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('상인', '남은 골드로 보급을 구한다 · F'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
@@ -5631,6 +5632,13 @@ huskUp:[
     G.fx.push({ kind: 'skybeam', x: a.x, y: a.y - 6, w: 22, c: '200,30,40', t: 0.6, max: 0.6, up: true });
     if (a.k === 'gear') { const f = altarFodder(); SAVE.inv = SAVE.inv.filter(i => i !== f); G.fieldItems = G.fieldItems.filter(i => i !== f); persist(); heartUp(1, `「${f.name}」을 바쳤다`); }
     else { heartDown(2); const r = Math.random() * 100, gk = r < 20 ? 'rare' : r < 90 ? 'unique' : 'legend', owned = new Set(SAVE.inv.filter(i => i.cls === G.cls && i.wk != null).map(i => i.wk)), cands = wcat(G.cls).filter(o => o.grade === gk && !(o.i === 10 && !leg2Open(G.cls)) && !weaponLocked(G.cls, o.i)), fresh = cands.filter(o => !owned.has(o.i)), pickW = pick(fresh.length ? fresh : cands), it = makeItem(G.cls, pickW ? { grade: gk, wk: pickW.i } : { grade: gk }); /* 확률 그대로 (잿불 단계 보정 없음) */ spawnLoot('gear', a.x, a.y - 4, it); lootFeed(`하트 두 칸을 바쳤다 — ${gradeOf(it).n} 무기`, gradeOf(it).c, 3000); }
+  }
+  function shopHeartFix(R) { // v2.39 최대 하트(6칸)면 상점의 빈 하트 그릇을 다른 물건으로 바꿈
+    if (!R || !R.shop || !G || !G.stats || G.stats.hp < HEART_CAP) return;
+    const s = R.shop.find(x => x.k === 'heartUp' && !x.sold); if (!s) return;
+    const have = new Set(R.shop.map(x => x.k)), alt = [['armor', 220], ['vial', 55], ['orb', 45], ['iron', 30], ['meat', 100]].find(([k]) => !have.has(k)) || ['armor', 220];
+    const mul = G.stage === 4 ? 1.9 : G.stage === 2 ? 1.3 : G.stage === 3 ? 1.6 : 1;
+    s.k = alt[0]; s.price = Math.round(alt[1] * mul * ASCF.shop() / 5) * 5;
   }
   const SHOP_N = { heartUp: '빈 하트 그릇', meat: '하트 반 칸', orb: '투지 구슬', vial: '핏빛 영약', gear: '장비 꾸러미', iron: '철광석 3개', armor: '방패 조각' };
   function rollGradeW(w) { w = ascGradeW(w); let r = Math.random() * w.reduce((a, b) => a + b, 0); const ks = ['common', 'rare', 'unique', 'legend']; for (let i = 0; i < 4; i++) { if (r < w[i]) return ks[i]; r -= w[i]; } return 'common'; }
@@ -8638,6 +8646,18 @@ huskUp:[
     ctx.fillStyle = '#000'; ctx.fillRect(x - s, y - 2 * s, 3 * s, 5 * s); ctx.fillRect(x - 2 * s, y - s, 5 * s, 3 * s);
     ctx.fillStyle = c; ctx.fillRect(x, y - s, s, 3 * s); ctx.fillRect(x - s, y, 3 * s, s);
   }
+  const HF = { t: 0, L: null, R: null, dimL: false, dimR: false, a: 1 };
+  function hudFade() {
+    if (!G || !G._wt) return; const T = G._wt;
+    if (!(time < HF.t)) { HF.t = time + 0.5; const pa = $('party'), ph = $('phase'); HF.L = pa ? { x: pa.offsetLeft, y: pa.offsetTop, w: pa.offsetWidth, h: pa.offsetHeight } : null; HF.R = ph ? { x: VW - 8 - 140, y: 8, w: 140, h: (MM.bot || 160) - 8 } : null; }
+    const pts = []; const P = G.player; if (P && !P.dead) pts.push([P.x, P.y - 16]);
+    for (const e of G.enemies) if (!e.dead && !isDummy(e)) pts.push([e.x, e.y - 14]);
+    const hit = r => r && pts.some(([x, y]) => { const sx = T.a * x + T.e, sy = T.d * y + T.f; return sx > r.x - 8 && sx < r.x + r.w + 8 && sy > r.y - 8 && sy < r.y + r.h + 12; });
+    const dl = hit(HF.L), dr = hit(HF.R);
+    if (dl !== HF.dimL) { HF.dimL = dl; const pa = $('party'); if (pa) pa.classList.toggle('hudDim', dl); }
+    if (dr !== HF.dimR) { HF.dimR = dr; const ph = $('phase'); if (ph) ph.classList.toggle('hudDim', dr); }
+    HF.a += ((dr ? 0.28 : 1) - HF.a) * 0.25;
+  }
   function drawMinimap() {
     const D = G.dun; if (!D) return;
     if (!(time < MM.phT)) { const ph = $('phase'); MM.phH = ph && ph.offsetHeight ? ph.offsetHeight : 52; MM.phT = time + 0.5; } // v1.78 패널 높이는 0.5초마다만 읽음
@@ -8647,10 +8667,11 @@ huskUp:[
     const blink = Math.floor(time * 4) % 2;
     if (MM.key !== key || !MM.c || MM.dun !== D) { MM.key = key; MM.dun = D; const [mc, mg] = MM.c ? [MM.c, MM.g] : mkCanvas(W0, H0); MM.c = mc; MM.g = mg; mg.clearRect(0, 0, W0, H0);
       const ctx0 = ctx; ctx = mg; try { drawMinimapRooms(D, 0, 0, W0, H0, cw, ch, gap); } finally { ctx = ctx0; } }
-    ctx.drawImage(MM.c, x0, y0);
+    ctx.save(); ctx.globalAlpha = HF.a; /* v2.38 캐릭터·적이 뒤에 있으면 미니맵도 흐리게 */ ctx.drawImage(MM.c, x0, y0);
     ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; if (!TOUCH.on) { ctx.fillStyle = '#000'; ctx.fillText('TAB 지도', VW - 11, y0 + H0 + 10); ctx.fillStyle = '#8a8496'; ctx.fillText('TAB 지도', VW - 12, y0 + H0 + 9); }
     { const cur = D.cur, sf = shapeFit(cur), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), x = Math.round(x0 + W0 / 2 - rw / 2), y = Math.round(y0 + H0 / 2 - rh / 2);
       ctx.save(); ctx.strokeStyle = blink ? '#ffe39a' : '#fff'; ctx.lineWidth = 1; ctx.strokeRect(x - 0.5, y - 0.5, rw + 1, rh + 1); ctx.restore(); }
+    ctx.restore();
   }
   function drawMinimapRooms(D, x0, y0, W0, H0, cw, ch, gap) {
     ctx.save();
@@ -10748,7 +10769,7 @@ huskUp:[
     if (!o.dot) { if (P.dropletNext && !o.proc) { P.dropletNext = false; dmg *= 1.5; } if (hasRelic('chain') && e.st && e.st.stunT > 0) dmg *= 1.2; if (hasRelic('candle') && e.type !== 'boss' && !isDummy(e) && G.enemies.filter(x => !x.dead && !isDummy(x)).length === 1) dmg *= 1.5; } // v2.36 물방울·사슬·촛불
     dmg = Math.max(1, Math.round(dmg));
     e.hitT = time;
-    if (e.ward > 0) { e.barHit = time; const ab = Math.min(e.ward, dmg); e.ward -= ab; dmg -= ab; if (e.ward <= 0) { e.ward = 0; burst(e.x, e.y - 20, '#ff6060', 10); sfx('block', 1.3); } }
+    let wardAb = 0; if (e.ward > 0) { e.barHit = time; const ab = Math.min(e.ward, dmg); wardAb = ab; e.ward -= ab; dmg -= ab; if (e.ward <= 0) { e.ward = 0; burst(e.x, e.y - 20, '#ff6060', 10); sfx('block', 1.3); } }
     e.hp -= dmg; e.flash = o.dot ? 0.06 : 0.12;
     if (G.tstopT > 0 && e.st && e.st.tsT > 0 && !o.bank) e.st.bank = (e.st.bank || 0) + dmg * 0.5; // v2.08 시간 정지 중 피해 절반을 모아 둠
     if (isDummy(e) && e.hp <= 0) e.hp = e.maxHp; // v2.04 허수아비는 쓰러지지 않음
@@ -10762,7 +10783,7 @@ huskUp:[
     }
     const killing = e.hp <= 0, small = e.type !== 'boss' && !isElite(e) && !isSemi(e);
     const top = e.tall || (e.type === 'boss' ? 62 : isElite(e) ? 52 : 36);
-    G.nums.push({ x: e.x + rand(-5, 5), y: e.y - top, v: String(dmg), t: crit ? 0.95 : 0.7, c: o.dot ? '#ffa050' : crit ? '#ffd34d' : '#ffffff', s: o.dot ? 1 : crit ? 3 : 2,
+    if (dmg > 0 || wardAb > 0) G.nums.push({ x: e.x + rand(-5, 5), y: e.y - top, v: String(dmg > 0 ? dmg : wardAb), t: crit ? 0.95 : 0.7, c: dmg <= 0 ? '#8aa8c8' : o.dot ? '#ffa050' : crit ? '#ffd34d' : '#ffffff', // v2.38 보호막이 다 막은 공격은 0 대신 막은 양을 회청색으로 s: o.dot ? 1 : crit ? 3 : 2,
       pop: o.dot ? 0 : crit ? 0.2 : 0.12, vx: o.dot ? 0 : Math.cos(o.ang || 0) * rand(25, 45) + rand(-12, 12), vy: o.dot ? 0 : crit ? -70 : -40 });
     const hy = e.y - (e.tall ? e.tall * 0.42 : e.type === 'boss' ? 26 : isElite(e) ? 20 : 12);
     if (!o.dot) {
@@ -10821,7 +10842,7 @@ huskUp:[
   const hueGold = () => (G && G.pal && hueTier('g') >= 1 ? 1.15 : 1), hueChest = () => (G && G.pal && hueTier('g') >= 2 ? 0.05 : 0);
   function hueDrop(e) { // 몬스터 처치 시 확률로 색 조각
     const R = G.dun && G.dun.cur; if (!R || !R.hue || isDummy(e)) return;
-    const n = e.type === 'boss' ? 0 : isElite(e) ? (Math.random() < 0.5 ? 2 : 1) : isSemi(e) ? (Math.random() < 0.8 ? 1 : 0) : Math.random() < 0.15 ? 1 : 0; // v2.35 절반으로
+    const n = e.type === 'boss' ? 0 : isElite(e) ? 1 : isSemi(e) ? (Math.random() < 0.4 ? 1 : 0) : Math.random() < 0.07 ? 1 : 0; // v2.38 다시 절반 (일반 7% · 준엘리트 40% · 정예 1)
     for (let i = 0; i < n * (G.player.counterT > 0 ? 2 : 1); i++) { const c = Math.random() < 0.7 ? R.hue : pick(['r', 'b', 'g']), l0 = G.loot.length; spawnLoot('hue', e.x, e.y); if (G.loot[l0]) G.loot[l0].hue = c; }
   }
   function hueGain(c, n) {
@@ -10863,7 +10884,7 @@ huskUp:[
 
   function startPaint(R, x, y) { // 방을 비우면 색 물결
     if (!R || !R.hue || R.painted) return; G.paintW = { R, x, y, t: 0 };
-    for (let i = 0, m = (Math.random() < 0.5 ? 1 : 2) + (hasRelic('brush') ? 1 : 0); i < m; i++) { const l0 = G.loot.length; spawnLoot('hue', x, y); if (G.loot[l0]) G.loot[l0].hue = R.hue; }
+    for (let i = 0, m = 1 + (hasRelic('brush') ? 1 : 0); i < m; i++) { const l0 = G.loot.length; spawnLoot('hue', x, y); if (G.loot[l0]) G.loot[l0].hue = R.hue; }
     sfx('heal', 0.8); sfx('grogi', 1.6); addShake(2, 0);
   }
   function killEnemy(e, silent) {
@@ -14584,7 +14605,7 @@ huskUp:[
     window.AudioSys.setMood('victory', true);
     slowmo = 1.6; flashT = 0.2; flashColor = '#ffffff';
     G.vortex = null; G.tele = []; G.akRings = [];
-    { const R = G.dun && G.dun.cur; if (R) { for (let i = 0; i < 5; i++) { const l0 = G.loot.length; spawnLoot('hue', b.x, b.y); if (G.loot[l0]) G.loot[l0].hue = G.stage === 4 ? pick(['r', 'b', 'g']) : R.hue; } startPaint(R, b.x, b.y); } } // v2.34 원색의 심장 · 색 물결
+    { const R = G.dun && G.dun.cur; if (R) { for (let i = 0; i < 3; i++) { const l0 = G.loot.length; spawnLoot('hue', b.x, b.y); if (G.loot[l0]) G.loot[l0].hue = G.stage === 4 ? pick(['r', 'b', 'g']) : R.hue; } startPaint(R, b.x, b.y); } } // v2.34 원색의 심장 · 색 물결
     G.enemies.forEach(e => { if (!e.dead && e !== b) killEnemy(e, true); });
     banner(G.stage < lastStage() ? `STAGE ${G.stage} 보스 처치` : `${STG().boss} 처치`, '전리품 상자를 열어라 · 탐색을 마치면 붉은 출구로');
     { const R = G.dun.cur; R.cleared = true; G.rs.state = 'done'; sealRoom(false); if (R.exitP) R.exit = R.exitP; } // v1.01: 보스를 잡아도 바로 넘어가지 않는다
@@ -16213,7 +16234,7 @@ void main() {
     roomEnts(ents); gearEnts(ents); forgeEnts(ents);
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
-    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); G._occ = null; drawEvOutline();
+    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); G._occ = null; drawEvOutline(); G._wt = ctx.getTransform();
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && G.dun.forge)) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     enemySays();
@@ -16270,7 +16291,7 @@ void main() {
     } }
     { const t0 = PERF.on ? performance.now() : 0; pixelPass(); if (PERF.on) PERF.pp += performance.now() - t0; } // v1.05 화면 도트화 (글자·프롬프트·숫자는 이 뒤)
     drawPrompt();
-    for (const n of G.nums) { ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt || (typeof n.v === 'string' && /[^0-9+\-]/.test(n.v))) { /* v2.33 글자(흘려냄·반격! 등)는 숫자 글꼴로 안 그려져 보이지 않던 문제 → 글자로, 외곽선 */ const big = (n.s || 1) >= 2, x = Math.round(n.x), y = Math.round(n.y) - (n.pop > 0 ? 2 : 0); ctx.font = big ? '11px Galmuri11' : '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1]]) ctx.fillText(n.v, x + dx, y + dy); ctx.fillStyle = n.c; ctx.fillText(n.v, x, y); } else drawNumber(n.v, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); }
+    for (const n of G.nums) { if (n.v == null || /NaN|undefined|Infinity|null|object|function|=>|\$\{|\d[eE][+-]/.test(String(n.v))) continue; /* v2.38 잘못된 값은 그리지 않음 */ ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt || (typeof n.v === 'string' && /[^0-9+\-]/.test(n.v))) { /* v2.33 글자(흘려냄·반격! 등)는 숫자 글꼴로 안 그려져 보이지 않던 문제 → 글자로, 외곽선 */ const big = (n.s || 1) >= 2, x = Math.round(n.x), y = Math.round(n.y) - (n.pop > 0 ? 2 : 0); ctx.font = big ? '11px Galmuri11' : '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1]]) ctx.fillText(n.v, x + dx, y + dy); ctx.fillStyle = n.c; ctx.fillText(n.v, x, y); } else { const nv = typeof n.v === 'number' ? (isFinite(n.v) ? String(Math.round(n.v)) : '') : String(n.v).replace(/(\d)\.\d+/g, '$1'); /* v2.38 소수·무한대가 0000…으로 그려지던 문제 */ if (nv) drawNumber(nv, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); } }
     ctx.globalAlpha = 1;
     ctx.restore();
 
@@ -16296,6 +16317,7 @@ void main() {
       vg.addColorStop(0, 'rgba(120,0,0,0)'); vg.addColorStop(1, `rgba(140,0,0,${0.35 + Math.sin(time * 5) * 0.1})`);
       ctx.fillStyle = vg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     }
+    hudFade(); // v2.38 캐릭터·적이 좌우 패널 뒤로 가면 패널을 흐리게
     if (mode !== 'map' && !(G && G.cine)) drawMinimap(); // v1.92 TAB 지도를 열면 미니맵은 숨김
     drawCombo();
     if (flashT > 0) { ctx.globalAlpha = Math.min(0.6, flashT * 2.5); ctx.fillStyle = flashColor; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1; }
@@ -16702,6 +16724,7 @@ void main() {
     }
     html += `<div class="pf glass" id="p1pal"></div>`; // v2.35 색 팔레트는 캐릭터 패널 아래 따로
     $('party').innerHTML = html; if (typeof renderPal === 'function') renderPal();
+    try { hudPrev.gold = null; hudPrev.heart = null; hudPrev.hearts = -1; hudPrev.tags = ''; } catch (e) { /* 처음 불릴 때는 아직 없음 */ } // v2.38 패널을 다시 만들면 골드·하트 표시도 다시 채움 (스테이지 넘어가면 0으로 보이던 문제)
   }
   buildParty();
   function applyClassUI() {
