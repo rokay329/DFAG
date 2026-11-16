@@ -10528,7 +10528,7 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: b.x, y: b.y - 6, r: 6, grow: 150, t: 0.3, max: 0.3, c: '#ffd34d' }); sparks(b.x, b.y - 10, -Math.PI / 2, '#fff2b0', 6); sfx('bolt', 1.4);
       for (const e of nearFoes(b.x, b.y, 36)) damageEnemy(e, 0.8, { proc: true, grogi: 4, ang: angTo(b, e), gauge: 1 }); }
   }
-  const COUNTER_T = 2.5, COUNTER_MUL = 1.4;
+  const COUNTER_T = 2.5, COUNTER_MUL = 1.4; let CNT_COL = null, CNT_MK = null, CNT_OC = null;
   function perfectDodge() {
     { const P0 = G.player; if (G.stats.efx.has('nova')) { gxNova(P0.x, P0.y); for (const o of nearFoes(P0.x, P0.y, 92)) damageEnemy(o, 1.2, { proc: true, ang: angTo(P0, o), gauge: 2 }); } }
     const P = G.player;
@@ -14520,10 +14520,12 @@ huskUp:[
     updateRoom(dt);
     updateCamera(dt);
     updateProj(dt);
+    const fxE0 = G.fx.length, ptE0 = G.parts.length; // v2.28 적이 만든 이펙트 표시 (반격 시간 흑백용)
     updateEProj(dt);
     updateOrcWorld(dt);
     for (const e of G.enemies) if (!e.dead && isDummy(e)) { stTick(e, dt); e.flash = Math.max(0, e.flash - dt); e.lean *= Math.pow(0.02, dt); e.x = e.hx; e.y = e.hy; e.vx = e.vy = 0; if (e.bleedT > 0) {} }
     for (const e of G.enemies) if (!e.dead && !isDummy(e)) { stTick(e, dt); if (e.grogiMax && e.grogi > 0 && !(e.grogiT > 0) && time - (e.grogiHitT || 0) > GROGI_DECAY.wait) e.grogi = Math.max(0, e.grogi - e.grogiMax * GROGI_DECAY.rate * dt); /* v2.19 그로기 게이지 자연 감소 */ const edt = dt * stScale(e); /* v2.03 상태 효과 */ if (e.type === 'boss') { if (e.kind === 'slimeking') { updateSlimeKing(e, edt); slimeKingStage(e); } else if (e.kind === 'krugash') updateKrugash(e, edt); else if (e.kind === 'ashking') updateAshKing(e, edt); else { updateBoss(e, edt); bossStageCheck(e); } } else if (e.hitStun > 0 && e.state === 'chase') hitStunTick(e, edt); else { e.hitStun = 0; updateEnemy(e, edt); } }
+    for (let i = fxE0; i < G.fx.length; i++) G.fx[i].en = 1; for (let i = ptE0; i < G.parts.length; i++) G.parts[i].en = 1;
     weaponTick(dt); // v2.03 무기 기술
     const P = G.player;
     const live = G.enemies.filter(e => !e.dead && !isDummy(e)); // v2.04 허수아비는 밀리지 않음
@@ -14548,6 +14550,7 @@ huskUp:[
       if (t.owner && !t.owner.dead && t.follow && t.t < t.dur * 0.6) { t.x = t.owner.x; t.y = t.owner.y; t.ang = angTo(t.owner, P); if (t.owner.sw == null && t.owner.blade) t.owner.bladeTarget = t.ang - ((t.owner.step % 2 ? 1 : -1) * t.owner.face) * 115 * DEG; }
       if (t.track && t.t < t.dur - 0.6) { t.x += (P.x - t.x) * Math.min(1, dt * 6); t.y += (P.y - t.y) * Math.min(1, dt * 6); }
     }
+    const fxE1 = G.fx.length, ptE1 = G.parts.length;
     const fired = G.tele.filter(t => t.t >= t.dur);
     G.tele = G.tele.filter(t => t.t < t.dur);
     for (const t of fired) {
@@ -14561,6 +14564,7 @@ huskUp:[
     }
     G.hazards = G.hazards.filter(h => h.t > 0);
     updateVortex(dt);
+    for (let i = fxE1; i < G.fx.length; i++) G.fx[i].en = 1; for (let i = ptE1; i < G.parts.length; i++) G.parts[i].en = 1;
     for (const p of G.parts) {
       p.t -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt; p.vx *= 0.96; // v1.85 g 없는 파티클이 NaN 되던 것
       if (p.floor && p.y > p.floor && p.g > 0) { if (p.c === '#8f1418' || p.c === '#a3161c') { dg.fillStyle = 'rgba(100,10,16,.6)'; dg.fillRect(Math.round(p.x) & ~1, Math.round(p.y) & ~1, 2, 2); } p.t = 0; }
@@ -15962,7 +15966,8 @@ void main() {
     roomEnts(ents); gearEnts(ents); forgeEnts(ents);
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
-    ents.sort((a, b) => a.y - b.y).forEach(o => o.d());
+    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); G._occ = null;
+      if (G.player.counterT > 0) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && G.dun.forge)) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     enemySays();
     flushBubbles(); // v1.10 말주머니는 모든 물체 위에
@@ -15990,6 +15995,29 @@ void main() {
     drawTelePillar(); drawExitPillar();
     drawTreasureBeam(G.dun && G.dun.cur);
     drawVortex();
+    { const P = G.player; if (P && P.counterT > 0 && !P.dead) { // v2.28 반격 시간: 나·이펙트·데미지 숫자만 컬러, 나머지는 흑백 (채도 합성 한 번 → 가벼움)
+      const k = Math.min(1, (COUNTER_T - P.counterT) / 0.15, P.counterT / 0.35);
+      const WT = ctx.getTransform();
+      if (!CNT_COL) { CNT_COL = document.createElement('canvas'); CNT_MK = document.createElement('canvas'); }
+      if (CNT_COL.width !== cv.width || CNT_COL.height !== cv.height) { CNT_COL.width = CNT_MK.width = cv.width; CNT_COL.height = CNT_MK.height = cv.height; }
+      const cc = CNT_COL.getContext('2d'), mk = CNT_MK.getContext('2d');
+      const PB = 72, bx = Math.max(0, Math.floor(WT.a * P.x + WT.e - PB)), by = Math.max(0, Math.floor(WT.d * (P.y - 16) + WT.f - PB)), bw = Math.min(cv.width - bx, PB * 2), bh = Math.min(cv.height - by, PB * 2); // 캐릭터 주변 칸만 처리 (가벼움)
+      cc.setTransform(1, 0, 0, 1, 0, 0); if (bw > 0 && bh > 0) { cc.clearRect(bx, by, bw, bh); cc.drawImage(cv, bx, by, bw, bh, bx, by, bw, bh); } // 색 있는 화면 복사 (조명 포함)
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = 'saturation'; ctx.globalAlpha = k; ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, VW, VH); ctx.restore();
+      if (k > 0.5 && bw > 0 && bh > 0) {
+        // 마스크: 내 캐릭터 모양 − 앞을 가리는 물체 → 그 자리만 컬러 복사본에서 가져옴 (가려지는 건 그대로 가려짐)
+        mk.setTransform(1, 0, 0, 1, 0, 0); mk.globalCompositeOperation = 'source-over'; mk.globalAlpha = 1; mk.clearRect(bx, by, bw, bh); mk.setTransform(WT);
+        if (!CNT_OC) CNT_OC = document.createElement('canvas'); if (CNT_OC.width !== cv.width || CNT_OC.height !== cv.height) { CNT_OC.width = cv.width; CNT_OC.height = cv.height; }
+        const oc = CNT_OC.getContext('2d'); oc.setTransform(1, 0, 0, 1, 0, 0); oc.globalCompositeOperation = 'source-over'; oc.globalAlpha = 1; oc.clearRect(bx, by, bw, bh); oc.setTransform(WT);
+        const main = ctx, wt0 = WTEXT.length, np = G.parts.length;
+        try { ctx = mk; drawPlayer(); ctx = oc; for (const o of G._occ || []) o.d(); if (FRONT_ON && G.stage === 1 && !(G.dun && G.dun.forge)) oc.drawImage(frontM, 0, 0); }
+        finally { ctx = main; WTEXT.length = wt0; G.parts.length = Math.min(G.parts.length, np); }
+        mk.setTransform(1, 0, 0, 1, 0, 0); mk.globalAlpha = 1; mk.globalCompositeOperation = 'destination-out'; mk.drawImage(CNT_OC, bx, by, bw, bh, bx, by, bw, bh);
+        mk.setTransform(1, 0, 0, 1, 0, 0); mk.globalCompositeOperation = 'source-in'; mk.globalAlpha = 1; mk.drawImage(CNT_COL, bx, by, bw, bh, bx, by, bw, bh); mk.globalCompositeOperation = 'source-over';
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.drawImage(CNT_MK, bx, by, bw, bh, bx, by, bw, bh); ctx.restore();
+        { const np = G.parts.length; drawGearGround(); G.parts.length = Math.min(G.parts.length, np); } // 내 발밑 효과(반격 꺾쇠·남은 시간 막대)도 컬러
+        drawWproj(); drawHarp(); for (const f of G.fx) if (!f.en) drawFx(f); for (const pr of G.proj) drawProj(pr); for (const pr of G.mproj) drawMProj(pr); drawAimLine(); for (const q of G.parts) if (!q.en) { ctx.globalAlpha = Math.min(1, q.t * 3); ctx.fillStyle = q.c; ctx.fillRect(snap2(q.x), snap2(q.y), 2, 2); } ctx.globalAlpha = 1; }
+    } }
     { const t0 = PERF.on ? performance.now() : 0; pixelPass(); if (PERF.on) PERF.pp += performance.now() - t0; } // v1.05 화면 도트화 (글자·프롬프트·숫자는 이 뒤)
     drawPrompt();
     for (const n of G.nums) { ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt) { ctx.font = '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(n.v, Math.round(n.x) + 1, Math.round(n.y) + 1); ctx.fillStyle = n.c; ctx.fillText(n.v, Math.round(n.x), Math.round(n.y)); } else drawNumber(n.v, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); }
