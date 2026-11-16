@@ -202,6 +202,24 @@
   #ovTitle.howto .logo, #ovTitle.howto #titleInfo { display: none; }
   #ovTitle.howto #titleMenu { width: 500px; max-width: 94%; max-height: 404px; overflow-y: auto; }
   .keys span { color: var(--ink); }
+
+  /* v2.29 기록 보관소 */
+  .popWin.arc { width: 640px; height: 400px; }
+  .arcSub { font: 10px 'Galmuri9'; color: var(--quiet); margin: -4px 0 8px; text-align: center; }
+  .arcList { flex: 1; min-height: 0; overflow-y: auto; padding: 2px 4px; }
+  .arcTabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 3px; padding: 2px 0 6px; background: #17131c; }
+  .arcTab { flex: 1; font: 10px 'Galmuri9'; color: var(--quiet); background: rgba(0,0,0,.4); border: 1px solid #2a2430; padding: 4px 0; cursor: pointer; }
+  .arcTab.on { color: var(--gold-l); border-color: var(--gold-d); background: rgba(90,66,20,.35); }
+  .arcH { font: 11px 'Galmuri11'; color: var(--gold-l); margin: 6px 0 4px; display: flex; justify-content: space-between; }
+  .arcH i { font-style: normal; color: var(--quiet); font-size: 10px; }
+  .arcGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 4px; }
+  .arcC { display: flex; gap: 6px; align-items: center; padding: 4px 6px; background: rgba(0,0,0,.35); border: 1px solid #2a2430; min-height: 38px; }
+  .arcC img { width: 27px; height: 27px; image-rendering: pixelated; flex: none; }
+  .arcC .an { font: 10px 'Galmuri9'; color: var(--ink); line-height: 1.25; display: block; }
+  .arcC .ac { font: 9px 'Galmuri7'; color: var(--quiet); display: block; margin-top: 1px; }
+  .arcC.lock img { filter: brightness(0); opacity: .55; }
+  .arcC.lock .an { color: #8a8494; }
+  .arcC .bar { display: block; height: 3px; background: #2a2430; margin-top: 3px; position: relative; } .arcC .bar b { position: absolute; left: 0; top: 0; bottom: 0; background: var(--gold); }
   #ovPop { z-index: 40; } .popWin { width: 500px; height: 330px; max-width: 94%; display: flex; flex-direction: column; } .popPane { display: none; flex: 1; min-height: 0; flex-direction: column; } .popPane.on { display: flex; } .popPane .keys { flex: 1; overflow-y: auto; align-content: start; } .popPane .vol { flex: 1; align-content: center; } .popPane > .menu { margin-top: auto; } .popWin:has(#tmSound.on) { width: 300px; height: auto; } .popWin:has(#tmSound.on) .vol { margin: 10px 0 12px; } /* v2.19 조작법 팝업 · 사운드는 작게 */
   .vol { display: grid; grid-template-columns: 54px 1fr 26px; gap: 6px 8px; align-items: center; margin: 8px 0; }
   .vol span { color: var(--ink); }
@@ -545,6 +563,7 @@
       <div class="pf win" id="titleMenu">
         <div class="menu" id="tmMain">
           <button class="mi sel" data-act="start">토벌 시작</button>
+          <button class="mi" data-act="archive">기록 보관소</button>
           <button class="mi" data-act="howto">조작법</button>
           <button class="mi" data-act="sound">사운드</button>
           <button class="mi danger" data-act="reset">저장 초기화</button>
@@ -561,7 +580,7 @@
         <div class="selCards" id="selCards"></div>
         <div class="selDetail pf" id="selDetail"></div>
         <div class="ascRow pf" id="ascRow"></div>
-        <div class="selHint f7"><span class="pcOnly">← → 직업 · ↑ ↓ 잿불 단계 · ENTER 출정 · ESC 돌아가기</span><span class="touchOnly">카드를 탭해 살펴보고 · 한 번 더 탭하면 출정</span></div>
+        <div class="selHint f7"><span class="pcOnly">← → 직업 · ENTER 출정 · ESC 돌아가기</span><span class="touchOnly">카드를 탭해 살펴보고 · 한 번 더 탭하면 출정</span></div>
       </div>
     </div>
 
@@ -672,6 +691,11 @@
             <span class="key">화면 탭</span><span>누른 쪽으로 바로 공격</span>
           </div>
           <p>붉은 장판 = 곧 공격.<br>엘리트의 봉인 열쇠 2개 → 보스 방 열림. 금 간 벽은 부서진다.<br>오크에게 잡히면 연타·점멸로 탈출.</p>
+          <div class="menu"><button class="mi sel" data-act="popClose">닫기 [ESC]</button></div>
+        </div>
+        <div id="tmArchive" class="popPane">
+          <h2>기록 보관소</h2>
+          <div class="arcList" id="arcList"></div>
           <div class="menu"><button class="mi sel" data-act="popClose">닫기 [ESC]</button></div>
         </div>
         <div id="tmSound" class="popPane">

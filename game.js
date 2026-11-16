@@ -341,6 +341,40 @@
   if (SAVE.gold == null) SAVE.gold = 0;
   // v1.96 승천 「잿불 단계」 저장: max 열린 최고 단계 · sel 마지막으로 고른 단계 · best 직업별 최고 클리어 단계 · unl 단계 돌파 기록
   if (!SAVE.asc) SAVE.asc = { max: (SAVE.clears4 || 0) > 0 ? 1 : 0, sel: 0, best: {}, unl: [] };
+  // v2.29 해금: 누적 기록(SAVE.rec)으로 추가 유물(나중에 추가 무기)이 열린다
+  if (!SAVE.rec) SAVE.rec = {}; if (!SAVE.unl) SAVE.unl = {};
+  const UNLOCKS = [
+    { id: 'r:mirror', kind: 'r', key: 'mirror', rec: 'perfect', n: 50, how: '퍼펙트 회피' },
+    { id: 'r:glove', kind: 'r', key: 'glove', rec: 'secret', n: 3, how: '비밀 방 찾기' },
+    { id: 'r:oldmap', kind: 'r', key: 'oldmap', rec: 'secret', n: 10, how: '비밀 방 찾기' },
+    { id: 'r:gravedirt', kind: 'r', key: 'gravedirt', rec: 'nohit', n: 1, how: '보스를 한 번도 맞지 않고 처치' },
+    { id: 'r:horn', kind: 'r', key: 'horn', rec: 'elite', n: 30, how: '정예 처치' },
+    { id: 'r:coal', kind: 'r', key: 'coal', rec: 'rest', n: 10, how: '모닥불에서 쉬기' },
+    { id: 'r:twincoin', kind: 'r', key: 'twincoin', rec: 'spent', n: 2000, how: '상점에서 골드 쓰기' },
+    { id: 'r:cloak', kind: 'r', key: 'cloak', rec: 'blink', n: 500, how: '점멸' },
+    { id: 'r:deadring', kind: 'r', key: 'deadring', rec: 'death', n: 10, how: '쓰러지기' },
+    { id: 'r:scales', kind: 'r', key: 'scales', rec: 'fullbag', n: 5, how: '한 판에 무기 칸 3개를 모두 채우기' },
+  ];
+  { // v2.31 직업마다 레어 3종(3·4·5번) · 유니크 2종(7·8번)은 해금 (사용자 결정)
+    const CN = { knight: '기사', ranger: '어세신', mage: '마법사', priest: '사제', gunner: '거너' }, RO = { knight: '기사로', ranger: '어세신으로', mage: '마법사로', priest: '사제로', gunner: '거너로' }, PS = { knight: '흘려내기', ranger: '베어내기', mage: '마나 격류 흘려냄', priest: '신의 가호', gunner: '교활 빗나감' };
+    for (const c in CN) UNLOCKS.push(
+      { id: `w:${c}:3`, kind: 'w', key: `${c}:3`, rec: `boss_${c}_1`, n: 1, how: `${RO[c]} 1장 보스 처치` },
+      { id: `w:${c}:4`, kind: 'w', key: `${c}:4`, rec: `kill_${c}`, n: 300, how: `${RO[c]} 적 처치` },
+      { id: `w:${c}:5`, kind: 'w', key: `${c}:5`, rec: `ev_${c}`, n: 20, how: `${CN[c]} ${PS[c]}` },
+      { id: `w:${c}:7`, kind: 'w', key: `${c}:7`, rec: `boss_${c}_2`, n: 1, how: `${RO[c]} 2장 보스 처치` },
+      { id: `w:${c}:8`, kind: 'w', key: `${c}:8`, rec: `boss_${c}_3`, n: 1, how: `${RO[c]} 3장 보스 처치` });
+  }
+  const unlocked = id => !!SAVE.unl[id];
+  const weaponLocked = (c, i) => UNLOCKS.some(u => u.kind === 'w' && u.key === c + ':' + i && !unlocked(u.id));
+  const relicLocked = k => UNLOCKS.some(u => u.kind === 'r' && u.key === k && !unlocked(u.id));
+  function unlockCheck() {
+    for (const u of UNLOCKS) if (!unlocked(u.id) && (SAVE.rec[u.rec] || 0) >= u.n) {
+      SAVE.unl[u.id] = 1; persist();
+      const nm = u.kind === 'r' ? RELICS[u.key].n : (() => { const [c, i] = u.key.split(':'); return wcat(c)[+i].name; })();
+      if (G) { (G.newUnl = G.newUnl || []).push(u.id); lootFeed(`<b style="color:#ffd34d">새로 열림 · ${u.kind === 'r' ? '유물' : '무기'} 「${nm}」</b> — 기록 보관소`, '#ffd34d', 4500); sfx('legend'); }
+    }
+  }
+  const rec = (k, n) => { SAVE.rec[k] = (SAVE.rec[k] || 0) + (n == null ? 1 : n); unlockCheck(); };
   const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SAVE)); } catch (e) { /* 무시 */ } };
   // ---------------------------------------------------------------- v1.96 승천 「잿불 단계」 (0 = 원래 게임, 1~10 규칙 누적)
   const ASC_MAX = 10;
@@ -2316,10 +2350,18 @@ WF.knight = (H) => {
   const WSK = { knight: [null, 'cleaver', 'tuna', 'chain', 'bell', 'windmill', 'fang', 'gate', 'bread', 'sun', 'exec'], ranger: [null, 'claw', 'mackerel', 'sickle', 'fan', 'needle', 'kusari', 'yarn', 'moons', 'fangs2', 'nine'], mage: [null, 'candle', 'rod', 'crystal', 'broom', 'skull', 'lrod', 'ladle', 'mirror', 'ashstar2', 'hourglass'], priest: [null, 'censer', 'pan', 'water', 'carrot', 'bellh', 'reliq', 'whip', 'mochi', 'dawn', 'spear'], gunner: [null, 'blunder', 'harpoon', 'duck', 'longrifle', 'revolver', 'cannon', 'puffer', 'match', 'undertaker', 'kingrev'] }; // 구현된 기술 (다른 직업은 준비 중)
   const WCAT_C = {};
   const stripEmoji = t => t.replace(/\s*[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]+/gu, '').trim();
+  const UNC_D = { // v2.30 언커먼(도감 11~13) 작은 효과
+    knight: ['3타 그로기 +20%', '처치할 때마다 골드 +1', '점멸 거리 +10%'],
+    ranger: ['처치 시 10% 확률로 각성 게이지 +5', '치명타 시 15% 확률로 약한 출혈', '점멸 뒤 1초 안의 첫 공격 피해 +20%'],
+    mage: ['세 발째 큰 탄 피해 +15%', '화염구 폭발 범위 +15%', '150px 넘게 떨어진 적에게 피해 +10%'],
+    priest: ['3타 피해 +10%', '타격 시 8% 확률로 0.4초 기절', '치유의 빛 재사용 대기 −1초'],
+    gunner: ['정예·보스에게 피해 +8%', '재장전 뒤 첫 발은 치명타', '장탄 +1'],
+  };
+  const uncK = () => { if (!G) return null; const it = eqWeapon(G.cls); return it && it.cls === G.cls && it.wk >= 11 && it.wk <= 13 ? G.cls + it.wk : null; }; // 예: 'knight12'
   function wcat(cls) {
     if (WCAT_C[cls]) return WCAT_C[cls];
     const H = { cellWeapon, WEAP };
-    return (WCAT_C[cls] = WF[cls](H).concat((COMMON_EXTRA[cls] || []).map(o => ({ grade: 'common', name: o.name, look: o.look, skill: '—', w: o.w, st: o.st }))).map((o, i) => ({ ...o, name: stripEmoji(o.name), i, sk: (WSK[cls] || [])[i] || null, fx: i === 9 ? WEAPON_FX[cls] : i === 10 ? ({ knight: 'execsword', ranger: 'nine', mage: 'hourglass', priest: 'spearrain', gunner: 'kingrev' })[cls] || null : null })));
+    return (WCAT_C[cls] = WF[cls](H).concat((COMMON_EXTRA[cls] || []).map((o, j) => ({ grade: 'common', name: o.name, look: o.look, skill: (UNC_D[cls] || [])[j] || '—', w: o.w, st: Object.assign({}, o.st, { val: UNC_VAL }), uncSk: true }))).map((o, i) => ({ ...o, name: stripEmoji(o.name), i, sk: (WSK[cls] || [])[i] || (o.uncSk ? 'unc' + i : null), fx: i === 9 ? WEAPON_FX[cls] : i === 10 ? ({ knight: 'execsword', ranger: 'nine', mage: 'hourglass', priest: 'spearrain', gunner: 'kingrev' })[cls] || null : null })));
   }
   const eqWeapon = cls => { const id = (SAVE.equipBy[cls] || {}).weapon; return id != null ? SAVE.inv.find(i => i.id === id) : null; };
   const wSkill = () => { if (!G) return null; const it = eqWeapon(G.cls); return it && it.wk != null && canEquip(it, G.cls) ? (wcat(G.cls)[it.wk] || {}).sk || null : null; };
@@ -2861,11 +2903,20 @@ WF.knight = (H) => {
   }
   // v1.98 옵션 수치: 유니크는 범위 위쪽 절반, 레전더리는 최대값 (대장간 다시 굴리기도 같음)
   const optRoll = (o, g) => Math.round(randi(g.k === 'legend' ? o.r[1] : g.k === 'unique' ? Math.ceil((o.r[0] + o.r[1]) / 2) : o.r[0], o.r[1]) * (1 + (g.mul - 1) * 0.5));
+  const GRADE_VAL = { common: [7, 8], rare: [11, 13], unique: [14, 17], legend: [19, 23] }, UNC_VAL = [9, 10]; // v2.31 (사용자 결정) 커먼 7~8 · 언커먼 9~10 · 레어 11~13 · 유니크 14~17 · 레전더리 19~23
+  const GRADE_NOPT = { common: 0, rare: 1, unique: 2, legend: 4 };
+  function rollOpts(g, n) { const pool = OPTS.slice(), out = []; for (let i = 0; i < n && pool.length; i++) { const o = pool.splice(randi(0, pool.length - 1), 1)[0]; out.push({ k: o.k, v: optRoll(o, g) }); } return out; }
+  function fixRoll(W0, f) { // 예전에 굴려 둔 수치를 새 범위로 맞춤
+    const [a, b] = W0.st ? W0.st.val : GRADE_VAL[W0.grade]; f.val = clamp(Math.round(f.val), a, b);
+    if (W0.st) f.opts = W0.st.opts.map(o => ({ ...o }));
+    else { const n = GRADE_NOPT[W0.grade], g = GRADES.find(x => x.k === W0.grade); if (f.opts.length > n) f.opts = f.opts.slice(0, n); if (f.opts.length < n) { const have = new Set(f.opts.map(o => o.k)); f.opts = f.opts.concat(rollOpts(g, 6).filter(o => !have.has(o.k)).slice(0, n - f.opts.length)); } }
+    return f;
+  }
   function makeItem(cls, force = {}) {
     let g = force.grade ? GRADES.find(x => x.k === force.grade) : rollGrade();
     const slot = SLOTS[0]; // v2.07 장비는 무기만 (반지·목걸이 드랍 없음)
-    let val = Math.round(randi(slot.base[0], slot.base[1]) * g.mul);
-    const nOpt = randi(g.opt[0], g.opt[1]);
+    let val = randi(...GRADE_VAL[g.k]); // v2.31 등급별 공격력 범위가 겹치지 않게
+    const nOpt = GRADE_NOPT[g.k];
     const pool = OPTS.slice(), opts = [];
     for (let i = 0; i < nOpt; i++) {
       const o = pool.splice(randi(0, pool.length - 1), 1)[0];
@@ -2876,7 +2927,7 @@ WF.knight = (H) => {
     const weaponPool = k => {
       const seen = G && G.weaponAcquired && G.weaponAcquired[k] || [], owned = SAVE.inv.filter(it => it.slot === 'weapon' && it.cls === k).map(it => it.wk);
       const reserved = G && G.weaponRolls && G.weaponRolls[k] || [];
-      return wcat(k).filter(o => !(o.i === 10 && !hasClearedChar(k)) && !seen.includes(o.i) && !owned.includes(o.i) && !reserved.includes(o.i));
+      return wcat(k).filter(o => !(o.i === 10 && !hasClearedChar(k)) && !weaponLocked(k, o.i) && !seen.includes(o.i) && !owned.includes(o.i) && !reserved.includes(o.i));
     };
     let W0 = null;
     let wcls = null;
@@ -2889,7 +2940,7 @@ WF.knight = (H) => {
         const pool = choices.length ? choices : available;
         if (pool.length) { wcls = preferred; W0 = pick(pool); }
         else { // v2.20 이번 런에 나올 무기를 다 봤으면 같은 직업 무기에서 다시 (다른 직업 무기로 넘어가지 않음)
-          const all = wcat(preferred).filter(o => !(o.i === 10 && !hasClearedChar(preferred))), same = all.filter(o => o.grade === g.k);
+          const all = wcat(preferred).filter(o => !(o.i === 10 && !hasClearedChar(preferred)) && !weaponLocked(preferred, o.i)), same = all.filter(o => o.grade === g.k);
           wcls = preferred; W0 = pick(same.length ? same : all);
         }
       }
@@ -2899,7 +2950,8 @@ WF.knight = (H) => {
       g = GRADES.find(x => x.k === W0.grade) || g;
       const key = `${wcls}:${W0.i}`;
       let fixed = SAVE.weaponRolls[key];
-      if (!fixed) { fixed = SAVE.weaponRolls[key] = W0.st ? { val: randi(W0.st.val[0], W0.st.val[1]), opts: W0.st.opts.map(o => ({ ...o })) } /* v2.20 추가 커먼: 정해진 능력치 */ : { val, opts: opts.map(o => ({ ...o })) }; }
+      if (!fixed) { fixed = SAVE.weaponRolls[key] = W0.st ? { val: randi(W0.st.val[0], W0.st.val[1]), opts: W0.st.opts.map(o => ({ ...o })) } /* v2.20 추가 커먼: 정해진 능력치 */ : { val: randi(...GRADE_VAL[W0.grade]), opts: rollOpts(g, GRADE_NOPT[W0.grade]) }; }
+      else if (!fixed.v231) { fixRoll(W0, fixed); fixed.v231 = true; } // v2.31 새 범위로 한 번 맞춤
       val = fixed.val;
       opts.splice(0, opts.length, ...fixed.opts.map(o => ({ ...o })));
     }
@@ -2936,7 +2988,9 @@ WF.knight = (H) => {
     if (it.curse) h += `<div class="cursex">☠ 저주 — ${CURSES[it.curse].d}</div>`;
     return h;
   }
-  const gradeOf = it => GRADES.find(g => g.k === it.grade);
+  const UNCOMMON = Object.assign({}, GRADES[0], { n: '언커먼', c: '#62d46e' }); // v2.30 직업별 추가 기본 무기(도감 11~13번): 초록 등급 (드랍 규칙은 커먼과 같음)
+  const isUnc = it => !!it && it.slot === 'weapon' && it.wk >= 11 && it.wk <= 13;
+  const gradeOf = it => isUnc(it) ? UNCOMMON : GRADES.find(g => g.k === it.grade);
   const slotOf = it => SLOTS.find(s => s.k === it.slot);
   const slotName = it => it.slot === 'weapon' ? CLASSES[it.cls || 'knight'].weapon : slotOf(it).n;
   const canEquip = (it, cls) => it.slot !== 'weapon' || (it.cls || 'knight') === cls;
@@ -3010,6 +3064,7 @@ WF.knight = (H) => {
     if (buffs.includes('cd')) { s.cdr += 0.2; s.gaugeRate = 1.25; }
     if (G && cls === G.cls) s.hp += G.heartBonus || 0; // v2.02 하트 그릇·훈장·피의 제단
     s.pas = pasCalc(cls); { const Q = s.pas; if (Q.atkP) atkP += Q.atkP.v; if (Q.spd) spdP += Q.spd.v; if (Q.crit) s.crit += Q.crit.v / 100; if (Q.critDmg) s.critDmg += Q.critDmg.v / 100; if (Q.cdr) s.cdr += Q.cdr.v / 100; if (Q.gauge) s.gaugeRate *= 1 + Q.gauge.v / 100; } // v2.22 보관 패시브
+    if (G && cls === G.cls && G.relics && G.relics.includes('scales')) atkP += 2 * wOwned(cls).length; // v2.29 왕의 저울
     if (G && cls === G.cls && G.relics) { const R = G.relics; if (R.includes('finger')) atkP += 5; if (R.includes('crown')) atkP += 30; if (R.includes('boots')) spdP += 12; if (R.includes('eye')) s.crit += 0.10; if (R.includes('hourglass')) s.cdr += 0.10; } // v2.19 유물 능력치
     s.atk *= 1 + atkP / 100; s.hp = clamp(s.hp, 2, HEART_CAP); s.def = 0; s.spd *= 1 + spdP / 100; // v2.00 체력 = 반 칸 수, 방어력 없음
     s.cdr = Math.min(s.cdr, 0.5); s.crit = Math.min(s.crit, 0.8); s.critDmg = Math.min(s.critDmg, 2.5); /* v1.51 치명 피해 상한 250% */
@@ -3030,13 +3085,14 @@ WF.knight = (H) => {
   function newRun() {
     wipeRunItems();
     G = {
-      cls: CUR, stage: 1, last: 4, gold: 0, committed: { gold: 0, iron: 0, crystal: 0 }, asc: Math.min(SAVE.asc.sel || 0, SAVE.asc.max || 0),
+      cls: CUR, stage: 1, last: 4, gold: 0, committed: { gold: 0, iron: 0, crystal: 0 }, asc: 0, /* v2.29 잿불 단계 취소 (사용자 결정) — 0 고정 */
       phase: 1, buffs: [], retries: 0, enemies: [], tele: [], parts: [], nums: [], hazards: [], drops: [], fx: [], ash: [], lights: [],
       waves: [], waveIdx: 0, spawning: 0, phaseState: 'intro', phaseT: 0, surviveT: 0, spawnT: 0, hazardT: 0,
       boss: null, bossTime: 300, proj: [], eproj: [], kills: 0, iron: 0, crystal: 0, newItems: [], loot: [], weaponRolls: {}, weaponAcquired: { knight: [], ranger: [], mage: [], priest: [], gunner: [] }, mproj: [], meteor: null, fieldItems: [], frenzyT: 0, bonfire: null, vortex: null, clear: false,
     };
     for (let i = 0; i < (G.stage === 4 ? 65 : 70); i++) G.ash.push(G.stage === 4 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-4, 4), vy: rand(5, 14), s: 2, a: rand(0.3, 0.8) } : G.stage === 3 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-5, 5), vy: -rand(8, 22), s: Math.random() < 0.25 ? 2 : 1, a: rand(0.3, 0.85), ff: rand(0, 6) } : G.stage === 1 ? { x: rand(0, VW), y: rand(0, VH), vx: rand(-8, 8), vy: rand(-4, 4), s: Math.random() < 0.3 ? 2 : 1, a: rand(0.3, 0.9), ff: rand(0, 6) } : { x: rand(0, VW), y: rand(0, VH), vx: rand(-6, 6), vy: rand(6, 16), s: Math.random() < 0.2 ? 2 : 1, a: rand(0.2, 0.6) });
     dg.clearRect(0, 0, W, H);
+    { const st = makeItem(G.cls, { slot: 'weapon', grade: 'common', wk: 0 }); st.cls = G.cls; SAVE.inv.push(st); SAVE.equipBy[G.cls].weapon = st.id; } // v2.30 런 시작: 직업 커먼 무기 1자루를 들고 출발
     G.stats = calcStats(G.buffs);
     G.player = makePlayer(); chapterArmor();
     SAVE.runs++; persist();
@@ -3059,7 +3115,7 @@ WF.knight = (H) => {
     1: [[['ghoul', 4]], [['ghoul', 3], ['crow', 3]]],
     2: [[['ghoul', 3], ['dog', 2]], [['ghoul', 3], ['bloat', 2], ['crow', 2]]],
     3: [[['ghoul', 4], ['cultist', 2]], [['crow', 4], ['dog', 2], ['bloat', 1]]],
-    4: [[['exec', 1], ['ghoul', 3], ['cultist', 1]]],
+    4: [[['exec', 1], ['ghoul', 3], ['cultist', 1]], [['mother', 1], ['crow', 2]]], // v2.33 엘리트 2
     6: [[['ghoul', 4], ['dog', 2], ['bloat', 2]], [['ghoul', 3], ['cultist', 3], ['crow', 2]], [['ghoul', 5], ['dog', 2], ['cultist', 1]]],
     7: [[['mother', 1], ['ghoul', 2]], [['dog', 3], ['cultist', 2]], [['ghoul', 4], ['crow', 3], ['cultist', 2]]],
     8: [[['ghoul', 5], ['dog', 3], ['bloat', 2]], [['crow', 4], ['cultist', 3], ['bloat', 2]], [['exec', 1], ['ghoul', 3], ['cultist', 1]]],
@@ -4888,7 +4944,7 @@ huskUp:[
     1: [[['slime', 4]], [['slime', 3], ['goblin', 2]]],
     2: [[['goblin', 4]], [['slime', 3], ['toxslime', 1], ['bigslime', 1]]],
     3: [[['goblin', 3], ['garcher', 2]], [['slime', 3], ['toxslime', 2], ['goblin', 1]]],
-    4: [[['gbrute', 1], ['goblin', 3]]],
+    4: [[['gbrute', 1], ['goblin', 3]], [['boar', 1], ['slime', 2], ['goblin', 1]]], // v2.33 엘리트 2
     6: [[['goblin', 5], ['garcher', 3]], [['bigslime', 2], ['toxslime', 3], ['slime', 3]], [['goblin', 5], ['slime', 2], ['garcher', 2]]],
     7: [[['slime', 5], ['bigslime', 2], ['toxslime', 2]], [['goblin', 6], ['garcher', 3]], [['boar', 1], ['slime', 3], ['goblin', 2]]],
     8: [[['goblin', 6], ['garcher', 3]], [['bigslime', 3], ['toxslime', 2], ['goblin', 3]], [['gbrute', 1], ['goblin', 3], ['garcher', 2]]],
@@ -4899,21 +4955,21 @@ huskUp:[
     1: [[['husk', 4]], [['husk', 3], ['moth', 4]]],
     2: [[['husk', 3], ['lancer', 2]], [['husk', 3], ['cantor', 2]]],
     3: [[['aguard', 2], ['husk', 3]], [['moth', 5], ['lancer', 2], ['herald', 1]]],
-    4: [[['mordred', 1], ['husk', 3], ['cantor', 1]]], // v1.30 4장 엘리트
+    4: [[['mordred', 1], ['husk', 3], ['cantor', 1]], [['mordred', 1], ['aguard', 2]]], // v1.30 4장 엘리트 · v2.33 엘리트 2
     6: [[['coffin', 1], ['husk', 3], ['moth', 3]], [['aguard', 3], ['cantor', 2]], [['lancer', 4], ['herald', 1], ['husk', 2]]],
     7: [[['coffin', 1], ['aguard', 2], ['cantor', 1]], [['herald', 1], ['aguard', 3], ['lancer', 2]], [['husk', 5], ['moth', 4], ['cantor', 1]]],
     8: [[['coffin', 1], ['herald', 1], ['husk', 4]], [['aguard', 3], ['lancer', 3], ['cantor', 2]], [['moth', 6], ['aguard', 2], ['herald', 1]]],
-    9: [[['queen', 1], ['aguard', 2], ['husk', 1]]],
+    9: [[['queen', 1], ['aguard', 2], ['husk', 1]], [['mordred', 1], ['cantor', 2]]], // v2.33 엘리트 2
   };
   const PHASES_ORC = {
     1: [[['orc', 3], ['slave', 3]], [['orc', 2], ['othrow', 2], ['slave', 2]]],
     2: [[['wolf', 3], ['orc', 2]], [['orc', 3], ['shaman', 1], ['ocharge', 1]]],
     3: [[['orc', 4], ['othrow', 2]], [['slave', 5], ['wolf', 2], ['otroll', 1]]],
-    4: [[['urg', 1], ['orc', 2]]],
+    4: [[['urg', 1], ['orc', 2]], [['troll', 1], ['orc', 1]]], // v2.33 엘리트 2
     6: [[['ogrip', 1], ['orc', 3], ['slave', 3]], [['wolf', 4], ['othrow', 2], ['shaman', 1]], [['ocharge', 1], ['orc', 4]]],
     7: [[['otroll', 1], ['orc', 4], ['othrow', 1]], [['slave', 6], ['shaman', 2]], [['ogrip', 1], ['wolf', 3], ['othrow', 2]]],
     8: [[['ocharge', 1], ['orc', 5], ['othrow', 2]], [['otroll', 1], ['wolf', 4], ['shaman', 1]], [['ogrip', 1], ['ocharge', 1], ['orc', 3]]],
-    9: [[['troll', 1], ['ogrip', 1], ['orc', 2], ['shaman', 1]]],
+    9: [[['troll', 1], ['ogrip', 1], ['orc', 2], ['shaman', 1]], [['urg', 1], ['othrow', 2]]], // v2.33 엘리트 2
   };
   const STAGES = {
     1: { n: '황혼 초원', sub: '황혼이 굳어 버린 변경의 들판', diff: 1, hpMul: 1.15, atkMul: 1.45, dark: 0.34, ash: '205,240,120', torches: false,
@@ -5338,7 +5394,9 @@ huskUp:[
     if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner('모닥불', '불가에서 숨을 고르고 축복을 택한다 · F'); } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('상인', '남은 골드로 보급을 구한다 · F'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
-    if (R.type === 'secret' && !R.greeted) { R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
+    if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
+    if (fresh && R.type === 'boss' && hasRelic('gravedirt')) { addArmor(1); lootFeed('무덤 흙 — 방패 +1', '#c8a880'); }
+    if (R.type === 'secret' && !R.greeted) { rec('secret'); R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
     setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
     if (R.type === 'start') {
       spawnDummy(); // v2.04 시작 방 허수아비 (무기 시험용)
@@ -5450,8 +5508,8 @@ huskUp:[
       const n = ++G.dun.eliteDone;
       banner(`${ER().clear} ${Math.min(n, 2)}/2`, SK().drop); sfx('grogi');
       { const q = freePoint(CX, CY + 44); spawnLoot('sealkey', q.x, q.y); G.fx.push({ kind: 'skybeam', x: q.x, y: q.y, w: 22, c: SK().rgb, t: 0.8, max: 0.8, up: true }); } // v1.18 봉인 열쇠
-      R.chest = { x: CX, y: CY - 10, opened: false, kind: 'elite' }; // v0.98 엘리트 보상 상자 → 장비 3택1
-      G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,170,90', t: 0.6, max: 0.6 });
+      // v2.32 정예 방은 상자 없음 (사용자 결정) — 봉인 열쇠 + 하트 또는 골드 확정
+      { const P = G.player, q = freePoint(CX, CY - 10), heart = P.hp < G.stats.hp && Math.random() < 0.5; if (heart) spawnLoot('bigmeat', q.x, q.y); else { spawnLoot('pouch', q.x, q.y); spawnLoot('pouch', q.x, q.y); } G.fx.push({ kind: 'skybeam', x: q.x, y: q.y, w: 22, c: heart ? '255,90,100' : '255,210,120', t: 0.6, max: 0.6, up: true }); }
     } else if (R.type === 'survive') {
       banner('봉인 해제', '침묵이 돌아왔다 · 상자가 모습을 드러냈다');
       R.chest = { x: CX, y: CY - 10, opened: false, kind: 'reward' };
@@ -5554,7 +5612,7 @@ huskUp:[
     flashT = 0.15; flashColor = '#a01218'; sfx('boss'); burst(a.x, a.y - 14, '#a3161c', 18);
     G.fx.push({ kind: 'skybeam', x: a.x, y: a.y - 6, w: 22, c: '200,30,40', t: 0.6, max: 0.6, up: true });
     if (a.k === 'gear') { const f = altarFodder(); SAVE.inv = SAVE.inv.filter(i => i !== f); G.fieldItems = G.fieldItems.filter(i => i !== f); persist(); heartUp(1, `「${f.name}」을 바쳤다`); }
-    else { heartDown(2); const r = Math.random() * 100, gk = r < 20 ? 'rare' : r < 90 ? 'unique' : 'legend', owned = new Set(SAVE.inv.filter(i => i.cls === G.cls && i.wk != null).map(i => i.wk)), cands = wcat(G.cls).filter(o => o.grade === gk && o.i !== 10), fresh = cands.filter(o => !owned.has(o.i)), pickW = pick(fresh.length ? fresh : cands), it = makeItem(G.cls, pickW ? { grade: gk, wk: pickW.i } : { grade: gk }); /* 확률 그대로 (잿불 단계 보정 없음) */ spawnLoot('gear', a.x, a.y - 4, it); lootFeed(`하트 두 칸을 바쳤다 — ${gradeOf(it).n} 무기`, gradeOf(it).c, 3000); }
+    else { heartDown(2); const r = Math.random() * 100, gk = r < 20 ? 'rare' : r < 90 ? 'unique' : 'legend', owned = new Set(SAVE.inv.filter(i => i.cls === G.cls && i.wk != null).map(i => i.wk)), cands = wcat(G.cls).filter(o => o.grade === gk && !(o.i === 10 && !leg2Open(G.cls)) && !weaponLocked(G.cls, o.i)), fresh = cands.filter(o => !owned.has(o.i)), pickW = pick(fresh.length ? fresh : cands), it = makeItem(G.cls, pickW ? { grade: gk, wk: pickW.i } : { grade: gk }); /* 확률 그대로 (잿불 단계 보정 없음) */ spawnLoot('gear', a.x, a.y - 4, it); lootFeed(`하트 두 칸을 바쳤다 — ${gradeOf(it).n} 무기`, gradeOf(it).c, 3000); }
   }
   const SHOP_N = { heartUp: '빈 하트 그릇', meat: '하트 반 칸', orb: '투지 구슬', vial: '핏빛 영약', gear: '장비 꾸러미', iron: '철광석 3개', armor: '방패 조각' };
   function rollGradeW(w) { w = ascGradeW(w); let r = Math.random() * w.reduce((a, b) => a + b, 0); const ks = ['common', 'rare', 'unique', 'legend']; for (let i = 0; i < 4; i++) { if (r < w[i]) return ks[i]; r -= w[i]; } return 'common'; }
@@ -5573,19 +5631,21 @@ huskUp:[
     if (it.k === 'gear') { collectLoot(it.o); it.o.life = -1; G.loot = G.loot.filter(l => l !== it.o); gearCmpId = null; sfx('select'); return; }
     if (it.k === 'chest') {
       const c = it.o; if (c.pending) { c.pending = false; spawnLoot('gear', c.x, c.y + 6, (c.pick && c.pick[0]) || rollChestWeapon(c.kind, c)); c.pick = null; return; } // 예전 저장의 보류 상자
-      c.opened = true; c.openT = 0;
+      c.opened = true; c.openT = 0; if (hasRelic('glove')) { G.gold += 30; G.nums.push({ x: c.x, y: c.y - 26, v: '+30G', t: 0.9, c: '#ffd34d', s: 1 }); } // v2.29 도둑의 장갑
       sfx('drop'); sfx('coin'); addShake(3);
       G.fx.push({ kind: 'skybeam', x: c.x, y: c.y, w: 26, c: c.kind === 'secret' ? '200,140,255' : '255,210,120', t: 0.5, max: 0.5, up: true });
       spawnLoot('pouch', c.x, c.y + 6);
       if (c.kind === 'boss') { openBossChest(c); return; } // v0.98: 보스 장비는 상자에서
+      if (c.kind !== 'reward' && Math.random() < 0.3 && chestRelic(c)) { if (c.kind === 'secret') { spawnLoot('orb', c.x, c.y + 6); spawnLoot('bigmeat', c.x, c.y + 6); spawnLoot('armor', c.x, c.y + 6); G.crystal++; lootFeed('정령의 결정 +1', '#9fd2ff'); } return; } // v2.32 보물 방 밖의 상자: 30% 유물 · 70% 무기
       if (c.kind === 'reward' || c.kind === 'elite') { const w = rollChestWeapon(c.kind, c); spawnLoot('gear', c.x, c.y + 6, w); if (w.grade === 'legend') sfx('legend'); return; } // v2.19 고르기 없이 무기 하나가 튀어나온다 (F로 줍기)
       const g = rollGradeW(c.kind === 'secret' ? [0, 66, 30, 4] : [40, 52, 7, 1]);
       spawnLoot('gear', c.x, c.y + 6, makeItem(G.cls, { grade: g }));
       if (c.kind === 'secret') { spawnLoot('orb', c.x, c.y + 6); spawnLoot('bigmeat', c.x, c.y + 6); spawnLoot('armor', c.x, c.y + 6); G.crystal++; lootFeed('정령의 결정 +1', '#9fd2ff'); }
     } else if (it.k === 'shop') {
       const s = it.o;
-      if (G.gold < s.price) { sfx('block'); lootFeed(`골드가 부족하다 (${G.gold}/${s.price}G)`, '#ff7070'); return; }
-      G.gold -= s.price; s.sold = true; sfx('coin');
+      const half = hasRelic('twincoin') && G.freeBuy !== G.stage, price = half ? Math.ceil(s.price / 2) : s.price; // v2.29 쌍둥이 동전: 챕터마다 1개 50%
+      if (G.gold < price) { sfx('block'); lootFeed(`골드가 부족하다 (${G.gold}/${price}G)`, '#ff7070'); return; }
+      if (half) { G.freeBuy = G.stage; lootFeed(`쌍둥이 동전 — 반값 (${price}G)`, '#f0c040'); } G.gold -= price; rec('spent', price); s.sold = true; sfx('coin');
       if (s.k === 'iron') { G.iron += 3; lootFeed('철광석 조각 +3', '#c9b07a'); }
       else if (s.k === 'gear') spawnLoot('gear', s.x, s.y + 4, makeItem(G.cls, { grade: rollGradeW([0, 85, 13.5, 1.5]) }));
       else spawnLoot(s.k, s.x, s.y + 4);
@@ -5612,7 +5672,15 @@ huskUp:[
     return makeItem(G.cls, { grade: gk, slot: 'weapon' });
   }
   // v0.98 보스 전리품 상자: 열면 장비가 튀어나와 등급 빛기둥을 세우고, 잠시 뒤 대장간(또는 결과 화면)으로
+  function chestRelic(c, i, n) { // v2.32 상자에서 유물: 아직 없고 해금된 것 중 하나 (바닥에 떨어진 것도 제외)
+    const onFloor = new Set(G.loot.filter(l => l.type === 'relic' && l.life > 0).map(l => l.relic)), left = Object.keys(RELICS).filter(k => !hasRelic(k) && !relicLocked(k) && !onFloor.has(k));
+    if (!left.length) return false;
+    const l0 = G.loot.length; spawnLoot('relic', c.x, c.y + 6); const L = G.loot[l0]; if (!L) return false; L.relic = pick(left);
+    if (n > 1) { const a = Math.PI / 2 + (i - (n - 1) / 2) * 0.7; L.vx = Math.cos(a) * 90 + (i - (n - 1) / 2) * 40; L.vy = Math.sin(a) * 70; L.vz = 170; }
+    lootFeed(`<b style="color:${RELICS[L.relic].c}">유물 · ${RELICS[L.relic].n}</b>`, RELICS[L.relic].c, 3500); sfx('legend'); return true;
+  }
   function openBossChest(c) {
+    c.items = c.items.filter((it, i) => !(Math.random() < 0.3 && chestRelic(c, i, c.items.length))); // v2.32 보스 상자도 칸마다 30% 유물
     G.newItems = []; const n = c.items.length; // v1.01: 보스 장비도 바닥에 떨어지고 F로 줍는다
     c.items.forEach((it, i) => { spawnLoot('gear', c.x, c.y + 6, it); const l = G.loot[G.loot.length - 1], a = Math.PI / 2 + (i - (n - 1) / 2) * 0.7; l.vx = Math.cos(a) * 90 + (i - (n - 1) / 2) * 40; l.vy = Math.sin(a) * 70; l.vz = 170; });
     addShake(6); flashT = 0.12; flashColor = '#fff0c0';
@@ -6002,11 +6070,11 @@ huskUp:[
   const SIGIL = fromRows(['..kkkkkk..', '.krrRRrrk.', 'krRRRRRRrk', 'krkkRRkkrk', 'krkKRRkKrk', 'krRRkkRRrk', '.krRRRRrk.', '..kRkRkRk.', '...kkkkk..']);
   const SIGIL_PAL = { k: '#1a0408', K: '#ff5060', r: '#7a1020', R: '#c02838' };
   // 상자
-  const CHEST_C = fromRows(['.kkkkkkkkkkkk.', 'kwwwwwwwwwwwwk', 'kbbbbbbbbbbbbk', 'kybBbbbbbbBbyk', 'kkkkkkyykkkkkk', 'kybbbbkkbbbbyk', 'kbbbbbyybbbbbk', 'kbbbbbbbbbbbbk', 'kybBbbbbbbBbyk', 'kBBBBBBBBBBBBk', '.kkkkkkkkkkkk.']);
-  const CHEST_O = fromRows(['.kkkkkkkkkkkk.', 'kBBBBBBBBBBBBk', 'kbbbbbbbbbbbbk', 'kwwwwwwwwwwwwk', 'kkkkkkkkkkkkkk', 'kKyKKKyKKyKKKk', 'kybbbbbbbbbbyk', 'kbbbbbbbbbbbbk', 'kybBbbbbbbBbyk', 'kBBBBBBBBBBBBk', '.kkkkkkkkkkkk.']);
-  const CHEST_PAL = { k: '#0b0a0e', K: '#140c06', w: '#a07850', b: '#6a4a30', B: '#4a3220', y: '#e0b040' };
-  const CHEST_PAL_B = { k: '#0b0a0e', K: '#160608', w: '#a8323a', b: '#6a1a20', B: '#3e0c12', y: '#ffd34d' }; // v0.98 보스 전리품 상자: 핏빛 칠 · 금 장식
-  const CHEST_PAL_S = { k: '#0b0a0e', K: '#120a1c', w: '#8a6ab0', b: '#4a3070', B: '#2e1c4a', y: '#e8d0ff' };
+  const CHEST_C = fromRows(["..kkkkkkkkkkkkkk..", ".kyYwwywwwwywwYyk.", "kyYwwbywwwwybwwYyk", "kybbbbybbbbybbbbyk", "kyBbbbyBbbbyBbbByk", "kkkkkkkkYYkkkkkkkk", "kyYbbbykYYkybbbYyk", "kybbbbykyykybbbbyk", "kybBbbybkkbybbBbyk", "kybbbbybbbbybbbbyk", "kyBbbbyBbbbyBbbByk", "kybbbbybbbbybbbbyk", "kyYBBBByBBByBBBYyk", "kkkkkkkkkkkkkkkkkk"]); // v2.32 보물상자 다시 (18×14칸 · 둥근 뚜껑 · 쇠띠 · 자물쇠)
+  const CHEST_O = fromRows(["..kkkkkkkkkkkkkk..", ".kyBbbybbbbybbByk.", "kyBKKKKKKKKKKKKByk", "kyKKKKKKKKKKKKKKyk", "kkkkkkkkkkkkkkkkkk", "kyKKKoKKKKKKoKKKyk", "kyYbbbykYYkybbbYyk", "kybbbbykyykybbbbyk", "kybBbbybkkbybbBbyk", "kybbbbybbbbybbbbyk", "kyBbbbyBbbbyBbbByk", "kybbbbybbbbybbbbyk", "kyYBBBByBBByBBBYyk", "kkkkkkkkkkkkkkkkkk"]);
+  const CHEST_PAL = {"k": "#0b0a0e", "K": "#140c06", "w": "#a87e52", "b": "#7a5434", "B": "#4e3420", "y": "#b88a30", "Y": "#f0d070", "o": "#ffd34d"};
+  const CHEST_PAL_B = {"k": "#0b0a0e", "K": "#160608", "w": "#c03a42", "b": "#7e2028", "B": "#4a1016", "y": "#e0a830", "Y": "#fff0a0", "o": "#ffe080"}; // 보스 전리품 상자: 핏빛 칠 · 금 장식
+  const CHEST_PAL_S = {"k": "#0b0a0e", "K": "#120a1c", "w": "#9a7ac0", "b": "#5a3e84", "B": "#34224e", "y": "#a890d8", "Y": "#f4e8ff", "o": "#f0d8ff"}; // 비밀 방 상자: 보랏빛
   // 상인: 두건 쓴 떠돌이 상인과 짐수레
   const MERCHANT = fromRows([
     '....kkkk....', '...kCCCCk...', '..kCccccCk..', '..kCkkkkCk..', '.kCkeKKekCk.', '.kCkKKKKkCk.', '.kCCkkkkCCk.',
@@ -6019,10 +6087,10 @@ huskUp:[
   const LANTERN_PAL = { k: '#0b0a0e', y: '#c08030', Y: '#ffc060', W: '#fff0c0', b: '#3a3036' };
   const STAND = fromRows(['kkkkkkkkkkk', 'kwwwwwwwwwk', 'kbbbbbbbbbk', 'kbBkkkkkBbk', 'kbBk...kBbk', 'kkkk...kkkk']);
   const STAND_PAL = { k: '#0b0a0e', w: '#8a6a48', b: '#6a4a30', B: '#4a3220' };
-  const GEARBOX = fromRows(['.kkkkkk.', 'kGGyGGGk', 'kgggyggk', 'kkkkykkk', 'kgggyggk', 'kGggyggk', '.kkkkkk.']);
-  const GEARBOX_PAL = { k: '#0b0a0e', G: '#8ab0e0', g: '#4a6aa0', y: '#e0b040' };
-  const IRONORE = fromRows(['..kkk...', '.kGgdk..', 'kGgydkkk', 'kgddkGgk', '.kkkgydk', '...kkkk.']);
-  const IRONORE_PAL = { k: '#0b0a0e', G: '#a8a2b0', g: '#7a7480', d: '#4c4a52', y: '#c9b07a' };
+  const GEARBOX = fromRows(["...kk..kk...", "..kYYkkYYk..", "..kYykkyYk..", "..kkYooYkk..", "kkkkkYYkkkkk", "kCBBBYYBBBbk", "kBBBBYyBBbbk", "kkkkkYYkkkkk", ".kBBBYYBBbk.", ".kBBBYYBBbk.", ".kBBBYyBBbk.", ".kbbbyybbbk.", ".kkkkkkkkkk."]); // v2.32 장비 꾸러미(선물상자) 다시
+  const GEARBOX_PAL = {"vialX": "#0b0a0e", "Y": "#ffd34d", "y": "#b08020", "o": "#fff2b0", "B": "#7aa8e8", "b": "#3e5c98", "C": "#c8e0ff"};
+  const IRONORE = fromRows(["...kkkk.....", "..kNnnnkk...", ".kNnTSnnnk..", "kNnSTsnunnk.", "knnsnnnnTSk.", "knunnTSnsnNk", "kNnnSsnnnNNk", ".kNNnnnuNNk.", "..kkNNNNkk..", "....kkkk...."]); // v2.32 철광석 다시
+  const IRONORE_PAL = { k: '#0b0a0e', n: '#6a6470', N: '#45404c', S: '#a8b8c8', s: '#6a7a8c', T: '#e8f0f8', u: '#b06a3a' };
 
   const artCache = {};
   const art = (key, fn) => artCache[key] || (artCache[key] = fn());
@@ -7562,8 +7630,8 @@ huskUp:[
     const by = (y - st.height + 8 + (Math.floor(time * 2 + x) % 2 ? 0 : -2)) & ~1;
     if (s.k === 'gear') { const g = art('gearbox', () => gCanvas(GEARBOX, GEARBOX_PAL)); ctx.drawImage(g, x - g.width / 2, by - g.height + 4); }
     else if (s.k === 'iron') { const g = art('ironore', () => gCanvas(IRONORE, IRONORE_PAL)); ctx.drawImage(g, x - g.width / 2, by - g.height + 4); }
-    else { const L = LOOT[s.k]; drawSprite(L.map, 'loot', L.sc, x, by + 4, false); }
-    drawPriceTag(s.price, x, y + 8, G.gold >= s.price); // v1.10 가격표
+    else { const L = LOOT[s.k]; drawSprite(L.map, L.pal || 'loot', L.sc, x, by + 4, false); }
+    { const pr = hasRelic('twincoin') && G.freeBuy !== G.stage ? Math.ceil(s.price / 2) : s.price; drawPriceTag(pr, x, y + 8, G.gold >= pr); } // v1.10 가격표 · v2.29 쌍둥이 동전 반값 표시
   }
   const PROP_MAPS = {
     goblinStatue: [["..kk..........kk..", "..kGk...kkkk...kdk", "..kGgk.kGGgdk.kddk", "...kggkGGgggdkddk.", "....kggGgggggddk..", "....kgGkkggkkddk..", "....kggrkggrkddk..", ".....kgggggdddk...", ".....kgkWkWkWdk...", "....kkggkkkkddkk..", "...kGGgggggggddDk.", "..kGGgkgggggdkdDDk", "..kGgk.kgggddk.kDk", "..kGgk.kgggddk.kDk", "...kk.kgggggddk.k.", ".....kGgk..kgddk..", ".....kGgk..kgddk..", "....kGggk..kgdddk.", "..kkkkkkkkkkkkkkkk", "..kGGGgggggggggddk", "..kgggdddddddddDDk", "..kdmDDDDDDDDmDDDk", "..kkkkkkkkkkkkkkkk"], {"k": "#0b0a0e", "G": "#9a94a4", "g": "#726c7e", "d": "#4e4958", "D": "#322e3a", "r": "#c03030", "W": "#c8c0d0", "m": "#3e5a2a", "M": "#5a7a38"}],
@@ -8506,9 +8574,9 @@ huskUp:[
     if (r.chest && !r.chest.opened) out.unshift([(x, y) => drawMapIcon(MAP_CHEST, x, y), 1]); // v1.93 열지 않은 보물상자
     if (gear) out.push([(x, y) => drawMapIcon(MAP_SWORD, x, y), gn]); // v1.93 장비는 검 모양 하나로
     if (n.pouch) out.push([(x, y) => drawSprite(LOOT.pouch.map, 'loot', 2, x, y, false), n.pouch]);
-    if (n.meat) out.push([(x, y) => drawSprite(LOOT.meat.map, 'loot', 2, x, y, false), n.meat]);
-    if (n.vial) out.push([(x, y) => drawSprite(LOOT.vial.map, 'loot', 2, x, y, false), n.vial]);
-    if (n.orb) out.push([(x, y) => drawSprite(LOOT.orb.map, 'loot', 2, x, y, false), n.orb]);
+    if (n.meat) out.push([(x, y) => drawSprite('heartHalf', 'loot', 2, x, y, false), n.meat]);
+    if (n.vial) out.push([(x, y) => drawSprite('vial', 'loot', 2, x, y, false), n.vial]);
+    if (n.orb) out.push([(x, y) => drawSprite('orb', 'loot', 2, x, y, false), n.orb]);
     if (n.sealkey) out.push([(x, y) => drawSealKey(key.l, x, y), n.sealkey]);
     return out;
   }
@@ -10142,7 +10210,7 @@ huskUp:[
     // v2.00 하트 방식: 한 번 맞으면 반 칸. 장판·독·화상은 2.5초에 반 칸. 방어력 없음
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
     const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
-    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; const lb = { knight: '흘려냄', ranger: '베어냄', priest: '가호', gunner: '빗나감', mage: '격류' }[G.cls] || '0'; G.nums.push({ x: P.x, y: P.y - 26, v: lb, t: 0.6, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 1 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
+    if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; const lb = { knight: '흘려냄', ranger: '베어냄', priest: '가호', gunner: '빗나감', mage: '격류' }[G.cls] || '0'; rec('ev_' + G.cls); G.nums.push({ x: P.x, y: P.y - 26, v: lb, t: 0.6, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 1 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
     if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1;
     if (s.curse.has('glass') && Math.random() < 0.25) dmg = 2;
@@ -10192,7 +10260,7 @@ huskUp:[
     eye: { n: '사냥꾼의 눈', d: '치명 확률 +10%p', c: '#ffd34d' },
     hourglass: { n: '모래시계 조각', d: '스킬 쿨타임 -10%', c: '#c8b080' },
     emberheart: { n: '잿불 심장', d: '정예·보스 처치 시 반 칸 회복 + 잿불 폭발', c: '#ff8a3a' },
-    seal: { n: '녹슨 기사단 인장', d: '퍼펙트 회피 뒤 첫 공격은 확정 치명 + 그로기 2배', c: '#a8acb4' },
+    seal: { n: '녹슨 기사단 인장', d: '반격 시간 동안 그로기 누적 2배', c: '#a8acb4' },
     drum: { n: '전쟁 북 가죽', d: '각성 중 이동속도 +20%', c: '#c8563a' },
     slimecore: { n: '분열하는 점액 핵', d: '처치한 적이 10% 확률로 터지며 주변 적에게 피해', c: '#7ad050' },
     fang: { n: '붉은 엄니', d: '하트 1칸 이하일 때 공격력 +40%', c: '#e0303a' },
@@ -10200,9 +10268,33 @@ huskUp:[
     greed: { n: '탐욕의 동전', d: '골드 획득 +50%', c: '#f0c040' },
     crown: { n: '깨진 왕관 조각', d: '공격력 +30% · 받는 피해 2배', c: '#b898ff' },
     pact: { n: '피의 계약', d: '처치할 때마다 투지 +10 · 회복량 절반', c: '#a3161c' },
+    // v2.29 해금 유물 (기록 보관소에서 조건 확인)
+    mirror: { n: '깨진 거울', d: '반격 시간 +0.6초', c: '#b8d8f0' },
+    glove: { n: '도둑의 장갑', d: '상자를 열면 골드 +30', c: '#8a7aa0' },
+    oldmap: { n: '낡은 지도', d: '비밀 방 위치가 지도에 보인다', c: '#e8d8a8' },
+    gravedirt: { n: '무덤 흙 한 줌', d: '보스 방에 들어가면 방패 +1', c: '#8a6a50' },
+    horn: { n: '사냥 나팔', d: '정예 처치 후 3초간 공격력 +25%', c: '#f0e0b0' },
+    coal: { n: '모닥불 숯', d: '모닥불 축복 선택지 +1', c: '#ff9a3a' },
+    twincoin: { n: '쌍둥이 동전', d: '챕터마다 상점 물건 하나 50% 할인', c: '#f0c040' },
+    cloak: { n: '잿빛 깃털 망토', d: '점멸 거리 +20%', c: '#b0b0b8' },
+    deadring: { n: '망자의 반지', d: '쓰러질 때 50% 확률로 하트 1칸으로 일어난다 (런당 1번)', c: '#b060e0' },
+    scales: { n: '왕의 저울', d: '들고 있는 무기 1자루마다 공격력 +2%', c: '#e0b040' },
   };
   // v2.21 유물마다 고유 도트 (9×9칸) — MAPS·PAL에 'relic_키'로 등록해 바닥 드랍·HUD·캐릭터 창에 같이 쓴다
   const RELIC_ART = {'finger': {'rows': ['......kkk', '.....kwWk', '....kwWDk', '...kkDkk.', '..kwWk...', '.kwWDk...', 'kkDkk....', 'kwWk.....', 'kkk......'], 'pal': {'w': '#f0e6cc', 'W': '#c8b890', 'D': '#8a7a5a', 'k': '#0b0a0e'}}, 'boots': {'rows': ['..kkkk...', '..kbBk...', '..kbBk.g.', '..kbBkgG.', '.kkbBkkg.', 'kbbbbBBk.', 'kbbbbbBBk', 'kSSSSSSSk', '.kkkkkkk.'], 'pal': {'b': '#8a5a32', 'B': '#5a3a1e', 'S': '#3a2a1a', 'g': '#c8f080', 'G': '#78b040', 'k': '#0b0a0e'}}, 'eye': {'rows': ['.........', '..kkkkk..', '.kwwwwwk.', 'kwwYYYwwk', 'kwYkKkYwk', 'kwwYYYwwk', '.kwwwwwk.', '..kkkkk..', '.........'], 'pal': {'w': '#e8e4dc', 'Y': '#e8b830', 'k': '#0b0a0e', 'K': '#ffffff'}}, 'hourglass': {'rows': ['kkkkkkkkk', '.kGGGGGk.', '..kssSk..', '...kSk...', '....k....', '...kSk...', '..ksSSk..', '.kGGGGGk.', 'kkkkkkkkk'], 'pal': {'G': '#a07840', 's': '#f0d898', 'S': '#c8a058', 'k': '#0b0a0e'}}, 'emberheart': {'rows': ['.kk...kk.', 'kRRk.kRRk', 'kRhRkRRRk', 'kRhYRRRRk', 'kRRYWYRRk', '.kRRYRRk.', '..kRRRk..', '...kRk...', '....k....'], 'pal': {'R': '#c03a1a', 'h': '#ff8a5a', 'Y': '#ffb040', 'W': '#fff0a0', 'k': '#0b0a0e'}}, 'seal': {'rows': ['..kkkkk..', '.kgGGGgk.', 'kgGkkkGgk', 'kGkrrrkGk', 'kGkrWrkGk', 'kGkrrrkGk', 'kgGkkkGgk', '.kgGGGgk.', '..kkkkk..'], 'pal': {'g': '#5a5864', 'G': '#a8acb4', 'r': '#8a5a2a', 'W': '#d8a860', 'k': '#0b0a0e'}}, 'drum': {'rows': ['.kkkkkkk.', 'kwwwwwwwk', 'kWwwwwwWk', 'kRkRkRkRk', 'kRRkRkRRk', 'kRkRkRkRk', 'kDRRRRRDk', '.kkkkkkk.', 'k.......k'], 'pal': {'w': '#e8d8b0', 'W': '#c8b088', 'R': '#c8563a', 'D': '#7a2a1a', 'k': '#0b0a0e'}}, 'slimecore': {'rows': ['...kkk...', '..kgggk..', '.kgGgggk.', 'kgGgYggGk', 'kgggYYggk', 'kggGYggGk', '.kgggggk.', '..kkkkk..', '.........'], 'pal': {'g': '#5ab838', 'G': '#a8f070', 'Y': '#f0f8c0', 'k': '#0b0a0e'}}, 'fang': {'rows': ['kk.......', 'kWWk.....', '.kwWWk...', '..kwwWk..', '...kwwWk.', '....kRwk.', '.....kRRk', '......kRk', '.......k.'], 'pal': {'W': '#fff4e0', 'w': '#d8c8a8', 'R': '#c0202a', 'k': '#0b0a0e'}}, 'feather': {'rows': ['......kk.', '.....kwwk', '....kwbwk', '...kwbwbk', '..kwbwbk.', '.kwbwbk..', '.kbwbk...', '.kkkk....', 'kq.......'], 'pal': {'w': '#ffffff', 'b': '#a8c8f0', 'q': '#8a8aa0', 'k': '#0b0a0e'}}, 'greed': {'rows': ['..kkkkk..', '.kYYYYYk.', 'kYyYWYyYk', 'kYyWYWyYk', 'kYyyWyyYk', 'kYyWYWyYk', 'kYyYWYyYk', '.kYYYYYk.', '..kkkkk..'], 'pal': {'Y': '#f0c040', 'y': '#c08a18', 'W': '#fff4a0', 'k': '#0b0a0e'}}, 'crown': {'rows': ['.k...k...', 'kGk.kGk.k', 'kGGkGGkGk', 'kGPGGPGGk', 'kGGGGGGk.', 'kgggggk..', '.kkkkk...', '.........', '.........'], 'pal': {'G': '#d8c0ff', 'g': '#8a6ac8', 'P': '#ff5a8a', 'k': '#0b0a0e'}}, 'pact': {'rows': ['....k....', '...kRk...', '...kRk...', '..kRhRk..', '.kRhRRRk.', '.kRRRRRk.', '.kRRRRDk.', '..kRDDk..', '...kkk...'], 'pal': {'R': '#a3161c', 'h': '#ff6a6a', 'D': '#5a0a0e', 'k': '#0b0a0e'}}};
+
+  Object.assign(RELIC_ART, { // v2.29 해금 유물 도트 (9×9)
+    mirror: { rows: ['..kkkkk..', '.kyYYYyk.', 'kyWwbwWyk', 'kYwbWwbYk', 'kYbWkWwYk', 'kYwwkbwYk', 'kyWbwkWyk', '.kyYYYyk.', '..kkkkk..'], pal: { k: '#0b0a0e', y: '#a87a2a', Y: '#e0b040', W: '#e8f4ff', w: '#b8d8f0', b: '#7aa8d0' } },
+    glove: { rows: ['..k.k.k..', '.kgkgkgk.', '.kgkgkgkk', '.kgggggGk', 'kGkgggggk', 'kGGgggggk', '.kGGgggk.', '..kRRRk..', '..kkkkk..'], pal: { k: '#0b0a0e', g: '#7a6a8a', G: '#4a3a58', R: '#a0303a' } },
+    oldmap: { rows: ['.kkkkkkk.', 'kpppPpppk', 'kpPpprprk', 'kppPpPrpk', 'kpppPrprk', 'kPpppPppk', 'kppPpppPk', '.kpppPpk.', '..kkkkk..'], pal: { k: '#0b0a0e', p: '#e8d8a8', P: '#c0a870', r: '#c0303a' } },
+    gravedirt: { rows: ['.........', '...kkk...', '..kdDdk..', '.kdDwwdk.', '.kDdwdDk.', 'kdDdDdDdk', 'kDdDdDdDk', 'kkkkkkkkk', '.........'], pal: { k: '#0b0a0e', d: '#6a5038', D: '#3e2c20', w: '#e8e0c8' } },
+    horn: { rows: ['.......kk', '......kHk', '.....kHhk', 'kk..khhk.', 'kHkkhhk..', 'khHhhk...', 'kHhhk....', '.kkkk....', '.........'], pal: { k: '#0b0a0e', H: '#f0e0b0', h: '#c8a060' } },
+    coal: { rows: ['.........', '...kkk...', '..kcOck..', '.kcOoOck.', '.kOoYoOk.', '.kcOoOck.', '..kcOck..', '...kkk...', '.........'], pal: { k: '#0b0a0e', c: '#3a3038', O: '#d0502a', o: '#ff9a3a', Y: '#ffe08a' } },
+    twincoin: { rows: ['.kkkk....', 'kyYYyk...', 'kYwYYk...', 'kyYkkkk..', '.kkyYYyk.', '...kYwYYk', '...kyYYyk', '....kkkk.', '.........'], pal: { k: '#0b0a0e', y: '#c08a20', Y: '#f0c040', w: '#fff2b0' } },
+    cloak: { rows: ['...kkk...', '..kfFfk..', '.kfFfFfk.', '.kFfFfFk.', 'kfFfFfFfk', 'kFfFfFfFk', 'kfFkFkFfk', 'kk.k.k.kk', '.........'], pal: { k: '#0b0a0e', f: '#c0c0c8', F: '#7a7a88' } },
+    deadring: { rows: ['...kkk...', '..kVvVk..', '...kvk...', '.kkSsSkk.', 'kSk...kSk', 'ks.....sk', 'kSk...kSk', '.kkSsSkk.', '...kkk...'], pal: { k: '#0b0a0e', V: '#c070f0', v: '#7030a0', S: '#b8bcc8', s: '#6a6e7a' } },
+    scales: { rows: ['....k....', '.kkkYkkk.', '.k..Y..k.', 'kYk.Y.kYk', 'kyk.Y.kyk', '.k..Y..k.', '...kYk...', '..kYYYk..', '..kkkkk..'], pal: { k: '#0b0a0e', Y: '#e0b040', y: '#a87a2a' } },
+  });
   for (const k in RELIC_ART) { MAPS['relic_' + k] = RELIC_ART[k].rows; PAL['relic_' + k] = RELIC_ART[k].pal; }
   const hasRelic = k => !!(G && G.relics && G.relics.includes(k));
   const RELIC_SLOTS = 4; // v2.19 유물은 글 없이 칸으로 (챕터 보스마다 하나씩)
@@ -10310,6 +10402,11 @@ huskUp:[
     if (pasO('close') && dist(P, e) < 60) m *= 1 + pasV('close');
     if (pasO('still') && (P.stillT || 0) > 0.3) m *= 1 + pasV('still');
     if (pasO('grogiDmg') && e.grogiT > 0) m *= 1 + pasV('grogiDmg');
+    { const u = uncK(); if (u && !o.dot) { // v2.30 언커먼
+      if (u === 'ranger13' && o.basic && P.stiletT > time) { m *= 1.2; P.stiletT = 0; }
+      else if (u === 'mage13' && dist(P, e) > 150) m *= 1.1;
+      else if (u === 'priest11' && o.basic && P.combo === 2) m *= 1.1;
+      else if (u === 'gunner11' && (isElite(e) || e.type === 'boss')) m *= 1.08; } }
     if (pasO('focus4') && !o.dot) { if (e.pasFoc) { m *= 1 + pasV('focus4'); e.pasFoc = false; e.pasN = 0; } else if ((e.pasN = (e.pasN || 0) + 1) >= 4) e.pasFoc = true; }
     return m;
   }
@@ -10323,9 +10420,13 @@ huskUp:[
     if (crit && pasRoll('bind')) applySt(e, 'bind', pasO('bind').d);
     if (pasRoll('zap')) { const T = nearFoes(e.x, e.y, 110, e).sort((a, b) => dist(a, e) - dist(b, e))[0]; if (T) { damageEnemy(T, 0.4, { proc: true, ang: angTo(e, T), gauge: 1 }); G.fx.push({ kind: 'ring', x: T.x, y: T.y - 10, r: 4, grow: 90, t: 0.18, max: 0.18, c: '#bfe2ff' }); sfx('bolt', 1.3); } }
     if (pasRoll('burn')) addBurn(e, 2, 0.2);
+    { const u = uncK(); // v2.30 언커먼
+      if (u === 'ranger12' && crit && Math.random() < 0.15) { if (!(e.bleedT > 0)) gxSpurt(e, 5, o.ang == null ? 0 : o.ang); e.bleedT = Math.max(e.bleedT || 0, 1.2); if (!(e.bleedTick > 0)) e.bleedTick = 0.5; }
+      if (u === 'priest12' && Math.random() < 0.08) applySt(e, 'stun', 0.4); }
   }
   function pasOnKill(e) {
     if (isDummy(e)) return;
+    { const u = uncK(), P = G.player; if (u === 'knight12') { G.gold += 1; G.nums.push({ x: e.x, y: e.y - 20, v: '+1G', t: 0.6, c: '#ffd34d', s: 1 }); } if (u === 'ranger11' && Math.random() < 0.1) P.gauge = Math.min(100, (P.gauge || 0) + 5); } // v2.30 언커먼
     if (pasRoll('crumb') && pasCap('crumb', 1)) dropCapped('crumb', e, '빵조각이 떨어졌다');
     if (pasRoll('carrot')) dropCapped('carrot', e, '당근이 굴러 나왔다');
     { const cat = pasRoll('bone') ? false : pasRoll('cat') ? true : null; if (cat != null) { const T = nearFoes(e.x, e.y, 180, e).sort((a, b) => dist(a, e) - dist(b, e))[0]; if (T) (G.wproj = G.wproj || []).push({ k: cat ? 'cat' : 'bone', x: e.x, y: e.y - 10, tgt: T, t: 1.2 }); } }
@@ -10528,12 +10629,12 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: b.x, y: b.y - 6, r: 6, grow: 150, t: 0.3, max: 0.3, c: '#ffd34d' }); sparks(b.x, b.y - 10, -Math.PI / 2, '#fff2b0', 6); sfx('bolt', 1.4);
       for (const e of nearFoes(b.x, b.y, 36)) damageEnemy(e, 0.8, { proc: true, grogi: 4, ang: angTo(b, e), gauge: 1 }); }
   }
-  const COUNTER_T = 2.5, COUNTER_MUL = 1.4; let CNT_COL = null, CNT_MK = null, CNT_OC = null;
+  const COUNTER_T = 2.5, COUNTER_MUL = 1.15; // v2.33 피해 +40% → +15% let CNT_COL = null, CNT_MK = null, CNT_OC = null;
   function perfectDodge() {
     { const P0 = G.player; if (G.stats.efx.has('nova')) { gxNova(P0.x, P0.y); for (const o of nearFoes(P0.x, P0.y, 92)) damageEnemy(o, 1.2, { proc: true, ang: angTo(P0, o), gauge: 2 }); } }
     const P = G.player;
-    P.perfectUsed = true; if (hasRelic('seal')) P.sealNext = true;
-    P.counterT = COUNTER_T; // v2.27 반격 시간: 2.5초 동안 피해 +40% · 모든 공격 치명타
+    P.perfectUsed = true;
+    P.counterT = P.counterMax = COUNTER_T + (hasRelic('mirror') ? 0.6 : 0); rec('perfect'); // v2.27 반격 시간: 2.5초 동안 모든 공격 치명타 · v2.33 피해 +15% · 직업 회피 30%
     for (const o of nearFoes(P.x, P.y, 100)) { applySt(o, 'stun', 0.6); G.fx.push({ kind: 'ring', x: o.x, y: o.y - 10, r: 4, grow: 60, t: 0.2, max: 0.2, c: '#ffd34d' }); } // 주변 적 0.6초 경직 (보스·정예는 줄어듦)
     slowmo = 1.0; flashT = 0.12; flashColor = '#cfe6ff';
     P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
@@ -10547,8 +10648,9 @@ huskUp:[
   function playerDie() {
     const P = G.player;
     if (wSkill() === 'nine' && !G.nineUsed) { G.nineUsed = true; P.hp = 2; P.inv = 2; P.stealthT = 1; banner('아홉 목숨', '꼬리 하나를 내주고 다시 일어선다'); sfx('awaken'); flashT = 0.2; flashColor = '#7af0ff'; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 260, t: 0.6, max: 0.6, c: '#7af0ff' }); return; } // v2.05
+    if (hasRelic('deadring') && !G.ringUsed && (G.ringUsed = true) && Math.random() < 0.5) { P.hp = 2; P.inv = 2; banner('망자의 반지', '반지가 부서지며 다시 일어선다'); sfx('awaken'); flashT = 0.2; flashColor = '#c070f0'; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 220, t: 0.5, max: 0.5, c: '#c070f0' }); G.relics = G.relics.filter(k => k !== 'deadring'); return; } // v2.29
     if (G.cls === 'priest' && P.gauge >= 100 && !(G.miracleRev || {})[G.stage]) { (G.miracleRev = G.miracleRev || {})[G.stage] = true; P.hp = 2; startMiracle(true); return; } // v2.15 부활은 챕터당 1번, 반 칸×2
-    P.hp = 0; P.dead = true; P.deadT = 0; P.state = 'dead';
+    P.hp = 0; P.dead = true; P.deadT = 0; P.state = 'dead'; rec('death');
     burst(P.x, P.y - 8, '#a3161c', 24); splat(P.x, P.y, 30);
     banner('사망', '가져온 모든 것을 잃었다');
   }
@@ -10576,13 +10678,13 @@ huskUp:[
     }
     if (e.type === 'queen' && e.blink && (e.fadeA == null ? 1 : e.fadeA) < 0.35) return; // v1.30 베일 걸음 중 흩어진 동안은 맞지 않음
     const shieldHit = e.type === 'aguard' && !o.dot && guardFront(e, P.x); // v1.24 근위병 방패
-    const crit = !o.dot && (P.critNext || P.counterT > 0 || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
+    const crit = !o.dot && (P.critNext || P.counterT > 0 || (P.navyShot && uncK() === 'gunner12') || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
     if (P.critNext && !o.dot) { P.critNext = false; gxCrit(e, P.firstCrit); P.firstCrit = false; if (P.firstN > 0) { P.firstN--; P.critNext = true; P.firstCrit = true; } }
     let dmg = (hasRelic('fang') && P.hp <= 2 ? 1.4 : 1) * s.atk * coef * (1 - e.def / (e.def + 500)) * (crit ? s.critDmg : 1) * (e.grogiT > 0 ? 1.5 : 1) * (G.frenzyT > 0 ? 1.3 : 1) * (CL().dmgMul || 1) * (s.fx.has('tusk') && (e.type === 'boss' || isElite(e) || isSemi(e)) ? 1.15 : 1) * (s.efx.has('exec') && e.hp < e.maxHp * 0.3 ? 1.25 : 1) * (s.set4.has('orc') && P.hp < s.hp * 0.5 ? 1.3 : 1);
     dmg *= (P.penT > 0 ? 2 : 1) * (wSkill() === 'water' && (G.stage === 2 || G.stage === 4) ? 1.3 : 1); // v2.13 고해의 채찍 · 성수 물뿌리개
     if (!o.dot && mordredFrontHit(e, P.x)) { dmg *= 0.15; sfx('block', 1.1); sparks(e.x + e.face * 20, e.y - 20, Math.atan2(0, -e.face), '#ffd060', 6); mordredCounter(e); } // v1.30 근위의 맹세
     if (shieldHit) { dmg *= 0.4; if (Math.random() < 0.5) sfx('block', 1.2); sparks(e.x + e.face * 9, e.y - 12, Math.atan2(0, -e.face), '#e8e2d6', 4); }
-    dmg *= (e.vuln || 1) * (e.armorMul || 1) * pasDmgMul(e, o) * (P.counterT > 0 && !o.dot ? COUNTER_MUL : 1); // v2.22 보관 패시브
+    dmg *= (e.vuln || 1) * (e.armorMul || 1) * pasDmgMul(e, o) * (P.counterT > 0 && !o.dot ? COUNTER_MUL : 1) * (G.hornT > time ? 1.25 : 1); // v2.22 보관 패시브
     dmg = Math.max(1, Math.round(dmg));
     e.hitT = time;
     if (e.ward > 0) { e.barHit = time; const ab = Math.min(e.ward, dmg); e.ward -= ab; dmg -= ab; if (e.ward <= 0) { e.ward = 0; burst(e.x, e.y - 20, '#ff6060', 10); sfx('block', 1.3); } }
@@ -10634,9 +10736,9 @@ huskUp:[
       e.holdAng = null; e.hop = null; e.z = 0;
       cancelTele(e); e.state = 'stun'; e.t = o.stagger; e.lean = 0.35 * (Math.cos(o.ang || 0) > 0 ? 1 : -1);
     }
-    const sealHit = !o.dot && P.sealNext; if (sealHit) P.sealNext = false; // 녹슨 기사단 인장: 퍼펙트 회피 뒤 첫 공격
+    const sealHit = !o.dot && P.counterT > 0 && hasRelic('seal'); // v2.29 녹슨 기사단 인장: 반격 시간 동안 그로기 2배
     if (e.grogiMax && e.grogiT <= 0 && o.grogi && !(e.grogiLock > time)) {
-      e.grogi += o.grogi * (sealHit ? 2 : 1) * (1 + pasV('grogi')); e.grogiHitT = time;
+      e.grogi += o.grogi * (sealHit ? 2 : 1) * (1 + pasV('grogi')) * (o.basic && P.combo === 2 && uncK() === 'knight11' ? 1.2 : 1); e.grogiHitT = time;
       if (e.grogi >= e.grogiMax) {
         e.grogi = 0; e.grogiT = e.type === 'boss' ? 5 : 3; cancelTele(e); e.state = 'grogi';
         if (e.type === 'boss') { banner('그로기!', '5초간 받는 피해 +50%'); e.grogiMax = Math.round(e.grogiMax * 1.5); } // v1.49 보스는 그로기마다 다음 그로기가 1.5배 어려워짐
@@ -10659,6 +10761,9 @@ huskUp:[
     if (silent) return;
     G.kills++;
     gearOnKill(e);
+    if (!isDummy(e) && isElite(e)) { rec('elite'); if (hasRelic('horn')) { G.hornT = time + 3; G.nums.push({ x: G.player.x, y: G.player.y - 34, v: '나팔!', t: 0.7, c: '#f0e0b0', s: 1 }); } } // v2.29
+    if (G.cls === 'knight' && G.player.counterT > 0 && !isDummy(e)) rec('k_counter');
+    if (!isDummy(e)) rec('kill_' + G.cls); // v2.31 직업별 처치 (무기 해금)
     pasOnKill(e); // v2.22 보관 패시브
     if (hasRelic('pact') && G.player) G.player.gauge = Math.min(100, G.player.gauge + 10); // v2.19 피의 계약
     if (hasRelic('slimecore') && Math.random() < 0.1) { G.fx.push({ kind: 'ring', x: e.x, y: e.y - 8, r: 6, grow: 200, t: 0.35, max: 0.35, c: '#7ad050' }); for (let i = 0; i < 12; i++) { const a = rand(0, TAU), sp = rand(60, 140); G.parts.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.6 - 20, t: rand(0.3, 0.5), c: pick(['#7ad050', '#b8f070', '#3a7a2a']), g: 120 }); } sfx('blast', 1.3); for (const q of nearFoes(e.x, e.y, 56, e)) damageEnemy(q, 1.0, { proc: true, ang: angTo(e, q), kb: 140, grogi: 3, gauge: 1 }); } // v2.19 분열하는 점액 핵
@@ -10735,7 +10840,7 @@ huskUp:[
     mouse.active = Math.max(0, mouse.active - dt);
     if (mouse.active > 0) P.ang = Math.atan2(mouse.y + cam.y - (P.y - 10), mouse.x + cam.x - P.x);
     else if (ml) P.ang = Math.atan2(my, mx);
-    if (P.reload > 0) { P.reload -= dt; if (P.reload <= 0) { P.reload = 0; if (G.cls === 'gunner') P.ammo = gunMag(); sfx('reload'); } }
+    if (P.reload > 0) { P.reload -= dt; if (P.reload <= 0) { P.reload = 0; if (G.cls === 'gunner') { P.ammo = gunMag(); P.navyNext = true; } sfx('reload'); } }
     if (G.cls === 'mage') P.mana = Math.min(MAGE_MANA_MAX, P.mana + MAGE_MANA_REGEN * dt);
     P.recoil = Math.max(0, (P.recoil || 0) - dt * 7);
     P.shieldT = Math.max(0, P.shieldT - dt); P.miracleT = Math.max(0, P.miracleT - dt);
@@ -10753,7 +10858,7 @@ huskUp:[
     const free = P.state === 'idle' || P.state === 'attack' || P.state === 'rattack';
 
     if (wantDodge && P.stam > 0 && (free || P.state === 'butt' || P.state === 'pray' || (P.state === 'skill' && P.t > SKILL.wind + SKILL.swing))) {
-      P.stam--; if (G.cls === 'mage') P.surgeT = SURGE_T; P.state = 'dodge'; P.t = 0; P.dodgeT = 0; P.iframe = 0.22; P.perfectUsed = false; P.combo = 0; P.queued = false; P.blinkEnd = false;
+      P.stam--; rec('blink'); P.stiletT = time + 1; if (G.cls === 'mage') P.surgeT = SURGE_T; P.state = 'dodge'; P.t = 0; P.dodgeT = 0; P.iframe = 0.22; P.perfectUsed = false; P.combo = 0; P.queued = false; P.blinkEnd = false;
       if (G.tut && G.tut.step === 4) { G.tut.dashN++; if (G.tut.dashN < 3) P.stam = Math.max(P.stam, 1); }
       const da = ml ? Math.atan2(my, mx) : P.ang;
       P.dvx = Math.cos(da); P.dvy = Math.sin(da);
@@ -10772,7 +10877,7 @@ huskUp:[
       const slot = P.chargeCd.findIndex((c, i) => i < charges && c <= 0);
       if (slot >= 0) {
         if (G.tut && G.tut.step === 2) G.tut.skN++;
-        P.chargeCd[slot] = CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd')); if (s.efx.has('echo')) { P.echoT = 3; gxFocus(); }
+        P.chargeCd[slot] = Math.max(1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0)); if (s.efx.has('echo')) { P.echoT = 3; gxFocus(); }
         if (G.cls === 'ranger') { if (wSkill() === 'kusari') kusariHook(); else startShadow(); }
         else if (G.cls === 'mage') castFireball();
         else if (G.cls === 'priest') { if (wSkill() === 'whip') P.chargeCd[slot] = 0; else castHeal(); } // v2.18 채찍은 떼는 순간 치유
@@ -10807,7 +10912,7 @@ huskUp:[
       // 점멸: 0.11초 동안 몸을 감추고 약 80px 순간 이동, 출발점과 도착점에 잔상과 빛
       P.t += dt; P.dodgeT += dt;
       if (P.t < BLINK) {
-        P.x += P.dvx * (80 * (1 + pasV('blink')) / BLINK) * dt; P.y += P.dvy * (80 * (1 + pasV('blink')) / BLINK) * dt;
+        { const bm = 80 * (1 + pasV('blink') + (hasRelic('cloak') ? 0.2 : 0) + (uncK() === 'knight13' ? 0.1 : 0)) / BLINK; P.x += P.dvx * bm * dt; P.y += P.dvy * bm * dt; } // v2.29 잿빛 깃털 망토
         if (Math.random() < 0.7) G.parts.push({ x: P.x + rand(-4, 4), y: P.y - rand(2, 20), vx: -P.dvx * 40, vy: -P.dvy * 40, t: 0.3, c: pick(['#9fd2ff', '#e4f2ff']), g: 0, glow: true });
       } else if (!P.blinkEnd) {
         P.blinkEnd = true;
@@ -11080,7 +11185,8 @@ huskUp:[
   const MELEE_DR = 0.9;                                        // v2.23~24 직업 패시브: 피격 10% 흘려냄 · 처치 회복 없음
   const RANGED_HB = 5; // v2.25 원거리(거너 탄·마법사 탄)만 적 판정 +5px
   const SURGE_T = 3; // v2.24 마법사 마나 격류: 점멸 뒤 3초
-  const meleeKeep = () => { const P = G.player, c = G.cls; if (c === 'mage') return P.surgeT > 0 ? MELEE_DR : 1; if (c === 'ranger') return P.state === 'attack' ? MELEE_DR : 1; return MELEE_DR; }; // 기사 흘려내기 · 사제 신의 가호 · 거너 교활(상시) · 어세신 베어내기(평타 중) · 마법사 마나 격류(점멸 뒤)
+  const meleeKeep = () => { const P = G.player, c = G.cls; if (P.counterT > 0) return 0.7; // v2.33 반격 시간: 직업 회피 판정 30%
+    if (c === 'mage') return P.surgeT > 0 ? MELEE_DR : 1; if (c === 'ranger') return P.state === 'attack' ? MELEE_DR : 1; return MELEE_DR; }; // 기사 흘려내기 · 사제 신의 가호 · 거너 교활(상시) · 어세신 베어내기(평타 중) · 마법사 마나 격류(점멸 뒤)
   const heroHand = () => { const P = G.player; return { x: P.x + P.face * 3 - Math.cos(P.blade) * (P.recoil || 0) * 4, y: P.y - 8 - Math.sin(P.blade) * (P.recoil || 0) * 4 }; };
   function staffTip() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 30, y: h.y + Math.sin(P.blade) * 30 }; }
   function muzzle() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 37, y: h.y - 2 + Math.sin(P.blade) * 37 }; }
@@ -11138,7 +11244,7 @@ huskUp:[
   function castBolt() { rangedWave();
     const P = G.player; P.boltN = (P.boltN || 0) + 1; // v1.76 마력 소모 없음 (다른 PC v1.69 이식)
     const big = P.boltN % 3 === 0, tp = staffTip();
-    G.mproj.push({ kind: 'bolt', x: tp.x, y: tp.y, ang: P.ang, sp: big ? 360 : 420, t: 0.72, r: big ? 7 : 4, coef: big ? 1.2 : 0.66, big, hist: [] }); // v0.72 밸런스: 0.78/1.4 → 0.66/1.2 (v1.77 90% 하향 되돌림), 사거리 약 300px
+    G.mproj.push({ kind: 'bolt', x: tp.x, y: tp.y, ang: P.ang, sp: big ? 360 : 420, t: 0.72, r: big ? 7 : 4, coef: big ? 1.2 * (uncK() === 'mage11' ? 1.15 : 1) : 0.66, big, hist: [] }); // v0.72 밸런스: 0.78/1.4 → 0.66/1.2 (v1.77 90% 하향 되돌림), 사거리 약 300px
     sfx(big ? 'boltBig' : 'bolt');
     G.fx.push({ kind: 'ring', x: tp.x, y: tp.y, r: 3, grow: big ? 90 : 50, t: 0.15, max: 0.15, c: '#c890ff' });
   }
@@ -11148,7 +11254,7 @@ huskUp:[
     P.blade = P.ang;
     for (let i = 0; i < n; i++) {
       const a = P.ang + (i - (n - 1) / 2) * 0.3;
-      G.mproj.push({ kind: 'fireball', x: tp.x, y: tp.y, ang: a, sp: 300, t: 0.95, r: 9, coef: 2.2, br: n > 1 ? 54 : 66, hist: [] });
+      G.mproj.push({ kind: 'fireball', x: tp.x, y: tp.y, ang: a, sp: 300, t: 0.95, r: 9, coef: 2.2, br: (n > 1 ? 54 : 66) * (uncK() === 'mage12' ? 1.15 : 1), hist: [] });
     }
     if (wSkill() === 'mirror' || pasRoll('mirror')) { const mx = P.x - Math.cos(P.ang) * 42, my = P.y - Math.sin(P.ang) * 30; G.mproj.push({ kind: 'fireball', x: mx, y: my - 10, ang: P.ang, sp: 300, t: 1.1, r: 9, coef: 2.2, br: 66, hist: [] }); G.fx.push({ kind: 'ghost', x: mx, y: my, face: P.face, rot: 0, t: 0.5, max: 0.5, tint: true }); } // v2.08 거울 분신
     P.state = 'rattack'; P.t = 0.08; P.fired = true;
@@ -11333,7 +11439,7 @@ huskUp:[
     crack(x, y); sfx('heavy');
     for (const e of G.enemies) if (!e.dead && !G.player.hitSet.has(e) && Math.hypot(e.x - x, e.y - y) < R + e.r) damageEnemy(e, 0.8, { ang: Math.atan2(e.y - y, e.x - x), grogi: 6, kb: 120, stagger: 0.4, gauge: 2, basic: true });
   }
-  function castHeal() {
+  function castHeal() { rec('p_heal');
     const P = G.player, s = G.stats;
     { let cap = wSkill() === 'reliq' ? 2 : 1; if (cap === 1 && pasO('reliq') && (P.holyArmor || 0) >= 1 && (P.armor || 0) < ARMOR_MAX && pasOnce('reliq')) cap = 2; if ((P.holyArmor || 0) < cap && (P.armor || 0) < ARMOR_MAX) addArmor(1, true); } // v2.15 치유의 빛: 하트 회복 대신 빛의 방패 (이 기술로는 1칸, 성유물함 2칸까지)
     if (wSkill() === 'carrot') for (let i = 0; i < 3; i++) (G.wproj = G.wproj || []).push({ k: 'carrotm', x: P.x, y: P.y - 10, ang: P.ang + i * TAU / 3, t: 0.7, hit: new Set() }); // 당근 셋
@@ -11371,7 +11477,7 @@ huskUp:[
   // v2.16 연사 간격(초): 한 발 피해·범위가 큰 무기일수록 느리게 (기본 0.534)
   const GUN_RATE = { revolver: 0.27, blunder: 0.8, cannon: 0.95, puffer: 0.7, longrifle: 0.64, kingrev: 0.534 };
   function gunRate() { return GUN_RATE[wSkill()] || 0.534; }
-  function gunMag() { const k = wSkill(); return k === 'harpoon' ? 1 : (k === 'blunder' ? 3 : k === 'revolver' ? 12 : k === 'kingrev' ? 6 : GUN_MAG) + pasV('ammo'); }
+  function gunMag() { const k = wSkill(); return k === 'harpoon' ? 1 : (k === 'blunder' ? 3 : k === 'revolver' ? 12 : k === 'kingrev' ? 6 : GUN_MAG) + pasV('ammo') + (uncK() === 'gunner13' ? 1 : 0); }
   function startReload() { const P = G.player, k = wSkill(); P.reloadMax = (k === 'revolver' ? 0.7 : k === 'harpoon' ? 0.3 : GUN_RELOAD) * (1 - pasV('reload')); P.reload = P.reloadMax;
     if (k === 'kingrev') { sfx('grogi', 1.3); G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 8, grow: 240, t: 0.35, max: 0.35, c: '#ffd34d' }); for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; G.parts.push({ x: P.x + Math.cos(a) * 12, y: P.y - 10 + Math.sin(a) * 8, vx: Math.cos(a) * 160, vy: Math.sin(a) * 100, t: 0.3, c: '#ffd34d', g: 0, glow: true }); }
       for (const e of nearFoes(P.x, P.y, 72)) damageEnemy(e, 0.4, { proc: true, kb: 320, ang: angTo(P, e), grogi: 4, gauge: 1 }); } }
@@ -11379,7 +11485,7 @@ huskUp:[
   // 작은 적은 내 앞까지 끌려오며 그동안 회피 판정(맞지 않음·행동 불가) · 큰 적은 경직+그로기 · 작살이 돌아와야 다음 발
   const HARP = { range: 230, out: 1150, back: 820, coef: 2.4 };
   function launchHarp(m) { const P = G.player;
-    G.harp = { ph: 'out', ang: P.ang, len: 8, max: Math.min(HARP.range, rayEnd(m.x, m.y, P.ang, HARP.range)), e: null };
+    G.harp = { ph: 'out', ang: P.ang, len: 8, max: Math.min(HARP.range, rayEnd(m.x, m.y, P.ang, HARP.range)), e: null, jam: Math.random() < 0.1 }; // v2.32 10% 줄 걸림
     G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 1.2, t: 0.1, max: 0.1 }); sfx('shot', 0.7);
     P.x -= Math.cos(P.ang) * 6; P.y -= Math.sin(P.ang) * 6; }
   function harpRelease(H, stun) { const e = H.e; if (!e) return; e.harpT = 0; if (!e.dead && stun) applySt(e, 'stun', stun); H.e = null; }
@@ -11404,7 +11510,7 @@ huskUp:[
       else { const L = Math.max(H.len, stop), tx = m.x + ux * L, ty = m.y + uy * L + H.oy;
         if (solidAt(tx, ty) || tx < A.x0 + 6 || tx > A.x1 - 6 || ty < A.y0 + 6 || ty > A.y1 - 6) harpRelease(H, 0.4); // 벽에 걸리면 놓친다
         else { e.x = tx; e.y = ty; applySt(e, 'stun', 0.3); if (H.len <= stop) { harpRelease(H, 0.6); sfx('grogi', 1.4); } } } }
-    if (H.len <= 0) { G.harp = null; P.ammo = gunMag(); sfx('reload'); } // 돌아오면 바로 다음 발 (총 돌리는 장전 연출 없음)
+    if (H.len <= 0) { G.harp = null; if (H.jam) { P.ammo = 0; P.reload = P.reloadMax = 1.6 * (1 - pasV('reload')); G.nums.push({ x: P.x, y: P.y - 30, v: '줄 걸림!', t: 1, c: '#ff9a7a', s: 1 }); sfx('block', 0.7); } else { P.ammo = gunMag(); sfx('reload'); } } // 돌아오면 바로 다음 발 (총 돌리는 장전 연출 없음)
   }
   function gunHit(e, ang, coef) { // 한 발이 적에게 맞았을 때
     const k = wSkill(), P = G.player;
@@ -11418,6 +11524,7 @@ huskUp:[
     for (const e of nearFoes(x, y, R)) damageEnemy(e, coef, { proc: true, ang: Math.atan2(e.y - y, e.x - x), kb: 220, grogi: 6, gauge: 2, heavy: true }); }
   function fireMusket() { rangedWave(); // v1.76 거너 그로기 절반 (사격 9→4.5, 산탄 10→5, 저격 60→30, 개머리판 6→4)
     const P = G.player, k = wSkill();
+    P.navyShot = !!P.navyNext; P.navyNext = false; setTimeout(() => { P.navyShot = false; }, 0); // v2.30 해군 머스킷: 재장전 뒤 첫 발
     P.state = 'rattack'; P.t = 0; P.blade = P.ang; P.atkAng = P.ang; P.ammo = Math.max(0, P.ammo - 1); const last = P.ammo === 0; if (last && k !== 'harpoon') startReload(); P.recoil = 1;
     P.gunN = (P.gunN || 0) + 1;
     const m = muzzle();
@@ -11735,15 +11842,24 @@ huskUp:[
 
   // ---------------------------------------------------------------- 필드 드랍 (잡몹·엘리트)
   // 체력 물약: HP 회복 / 투지 구슬: 각성 게이지 / 금화 주머니: 골드 / 핏빛 영약: 8초 공격력 +30% / 장비: 낮은 확률, 줍는 즉시 더 좋으면 바로 장착
+
+  // v2.32 드랍·상점 아이템 도트 다시 (2px 칸, 더 크게) — 하트·하트 그릇·방패 조각·투지 구슬·핏빛 영약
+  MAPS.heartFullX = ["..kkk...kkk..", ".kRRRk.kRRRk.", "kRWPRRkRRRRrk", "kRWRRRRRRRRrk", "kRPRRRRRRRRrk", "kRRRRRRRRRrrk", ".kRRRRRRRRrk.", "..kRRRRRRrk..", "...kRRRRrk...", "....kRRrk....", ".....krk.....", "......k......"];
+  MAPS.heartHalfX = ["..kkk...kkk..", ".kRRRk.keeEk.", "kRWPRRkeeeeEk", "kRWRRRkeeeeEk", "kRPRRRkeeeeEk", "kRRRRRkeeeeEk", ".kRRRRkeeeEk.", "..kRRRkeeEk..", "...kRRkeEk...", "....kRkEk....", ".....kkk.....", "......k......"];
+  MAPS.heartUpX = ["..kkk...kkk..", ".kYYYk.kYYYk.", "kYoeEYkYEeeYk", "kYeeeeYeeeeyk", "kYeeeeoeeeeyk", "kYeeeoooeeeyk", ".kYeeeoeeeyk.", "..kYeeeeeyk..", "...kYeeeyk...", "....kYeyk....", ".....kyk.....", "......k......"];
+  MAPS.shieldPkX = [".kkkkkkkkkk.", "kyYYYYYYYYyk", "kYTTSSSSSsYk", "kYTSSSSSSsYk", "kYSSSXXSSsYk", "kYSSXXXXSsYk", "kYSSSXXSSsYk", ".kYSSSSSsYk.", ".kYSSSSSsYk.", "..kYSSSsYk..", "...kYSsYk...", "....kYYk....", ".....kk....."];
+  MAPS.orbX = ["....kkkk....", "..kkyYYykk..", ".kyYYooYYyk.", ".kYYoWWoYYk.", "kyYoWWoYYYyk", "kyYYooYYYYyk", "kyYYYYYYYyyk", ".kyYYYYYyyk.", ".kyyYYYyyyk.", "..kkyyyykk..", "....kkkk...."];
+  MAPS.vialX = ["....kkk....", "...kcck....", "...kcck....", "....kGk....", "...kGgk....", "..kGVVgk...", ".kGVHVVvk..", "kGVHVVVVvk.", "kGVVVVVvvk.", "kgVVVVvvvk.", ".kvvvvvvk..", "..kkkkkk..."];
+  PAL.lootHi = {"k": "#0b0a0e", "R": "#e8364a", "r": "#a01828", "W": "#fff0f0", "P": "#ff8a98", "e": "#2a141a", "E": "#4a2430", "Y": "#ffd34d", "y": "#b08020", "o": "#fff2b0", "S": "#a8b8c8", "s": "#6a7a8c", "T": "#e8f0f8", "D": "#3e4a5a", "B": "#7aa8e8", "b": "#3e5c98", "C": "#c8e0ff", "G": "#c8d0e0", "g": "#8a92a8", "c": "#8a6236", "V": "#d040b0", "v": "#801870", "H": "#ffb0f0", "n": "#6a6470", "N": "#45404c", "u": "#b06a3a", "X": "#c83040", "O": "#ff9a2a"};
   const LOOT = {
-    meat:  { n: '하트 반 칸', map: 'heartHalf', sc: 3, c: '#ff6a6a', light: '255,60,70' }, // v2.01 물약 → 하트
-    bigmeat: { n: '하트', map: 'heartFull', sc: 3, c: '#ff6a6a', light: '255,60,70' },
-    orb:   { n: '투지 구슬', map: 'orb', sc: 3, c: '#ffd34d', light: '255,210,90' },
+    meat:  { n: '하트 반 칸', map: 'heartHalfX', pal: 'lootHi', sc: 2, c: '#ff6a6a', light: '255,60,70' }, // v2.01 물약 → 하트
+    bigmeat: { n: '하트', map: 'heartFullX', pal: 'lootHi', sc: 2, c: '#ff6a6a', light: '255,60,70' },
+    orb:   { n: '투지 구슬', map: 'orbX', pal: 'lootHi', sc: 2, c: '#ffd34d', light: '255,210,90' },
     pouch: { n: '금화 주머니', map: 'pouch', sc: 3, c: '#ffd34d', light: '255,210,120' },
-    vial:  { n: '핏빛 영약', map: 'vial', sc: 3, c: '#e070d0', light: '220,60,200' },
-    armor: { n: '방패 조각', map: 'shieldPk', sc: 3, c: '#c8d8e0', light: '200,220,240' }, // v2.00
+    vial:  { n: '핏빛 영약', map: 'vialX', pal: 'lootHi', sc: 2, c: '#e070d0', light: '220,60,200' },
+    armor: { n: '방패 조각', map: 'shieldPkX', pal: 'lootHi', sc: 2, c: '#c8d8e0', light: '200,220,240' }, // v2.00
     relic: { n: '유물', map: 'relic', sc: 3, c: '#ff8a3a', light: '255,140,60' }, // v2.07
-    heartUp: { n: '빈 하트 그릇', map: 'heartUp', sc: 3, c: '#ffd34d', light: '255,210,90' }, // v2.02
+    heartUp: { n: '빈 하트 그릇', map: 'heartUpX', pal: 'lootHi', sc: 2, c: '#ffd34d', light: '255,210,90' }, // v2.02
     medal: { n: '잿빛 훈장', map: 'medal', sc: 3, c: '#ffd34d', light: '255,210,90' }, // v2.02 무피격 보스 처치
     crumb: { n: '빵조각', map: 'crumb', sc: 3, c: '#e8b060', light: '255,190,110' }, // v2.03 굳은 바게트
     carrot: { n: '당근', map: 'carrot', sc: 3, c: '#f08a2a', light: '255,150,60' }, // v2.13 당근 메이스
@@ -12030,7 +12146,7 @@ huskUp:[
         ctx.fillStyle = `rgba(255,214,96,${a})`; for (let m = 0; m < 5; m++) { ctx.fillRect((Math.round(x) & ~1) + ux * m, Math.round(y) & ~1, 2, 2); ctx.fillRect(Math.round(x) & ~1, (Math.round(y) & ~1) + uy * m, 2, 2); } }
     }
     if (P.counterT > 0 && !P.dead) { // v2.27 반격 시간 남은 막대 (발밑, 금빛)
-      const w = Math.max(2, Math.round(28 * P.counterT / COUNTER_T / 2) * 2), x = snap2(P.x - 14), y = snap2(P.y + 8);
+      const w = Math.max(2, Math.round(28 * Math.min(1, P.counterT / (P.counterMax || COUNTER_T)) / 2) * 2), x = snap2(P.x - 14), y = snap2(P.y + 8);
       ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 2, y - 2, 32, 6); ctx.fillStyle = '#5a4214'; ctx.fillRect(x, y, 28, 2); ctx.fillStyle = Math.floor(time * 10) % 2 && P.counterT < 0.6 ? '#fff2c0' : '#ffd34d'; ctx.fillRect(x, y, w, 2);
       if (Math.random() < 0.5) G.parts.push({ x: P.x + rand(-10, 10), y: P.y - rand(0, 24), vx: rand(-8, 8), vy: -rand(20, 45), t: 0.35, c: pick(['#ffd34d', '#fff2c0', '#ffb040']), g: 0, glow: true });
     }
@@ -12600,6 +12716,7 @@ huskUp:[
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 10, grow: 120, t: 0.45, max: 0.45, c: g.c });
       lootFeed(`<b style="color:${g.c}">[${g.n}] ${it.name}</b>${cmp}${equipped ? ' — 장착' : canEquip(it, G.cls) ? ' — 보관' : ' — 다른 직업'}${it.efx ? ` · <span style="color:#7fd4ff">${EFX[it.efx].n}</span>` : ''}${it.set ? ` · <span style="color:${SETS[it.set].c}">${SETS[it.set].n}</span>` : ''}${it.curse ? ' · <span style="color:#ff6a6a">저주</span>' : ''}`, g.c, 4200);
       if (it.grade === 'legend') triggerLegendPickup(it);
+      if (!G.fullRec && wOwned(G.cls).length >= 3) { G.fullRec = true; rec('fullbag'); } // v2.29 기록
     }
   }
   function lootFeed(html, c, ms = 2600) {
@@ -12697,7 +12814,7 @@ huskUp:[
     }
     if (l.type === 'sealkey') { drawSealKey(l, l.x, l.y - hover + 1); return; }
     if (l.type === 'relic' && l.relic && RELIC_ART[l.relic]) { drawSprite('relic_' + l.relic, 'relic_' + l.relic, 2, l.x, l.y - hover + 1, false); return; } // v2.21 유물별 도트
-    drawSprite(L.map, 'loot', L.sc, l.x, l.y - hover + 1, false);
+    drawSprite(L.map, L.pal || 'loot', L.sc, l.x, l.y - hover + 1, false);
   }
 
   // 이번 런에서 모은 골드·재료 중 아직 대장간에 넘기지 않은 몫을 넘긴다
@@ -14334,8 +14451,8 @@ huskUp:[
 
   // ---------------------------------------------------------------- 보상
   function bossDefeated(b) {
-    { const left = Object.keys(RELICS).filter(k => !hasRelic(k)); if (left.length) { const l0 = G.loot.length; spawnLoot('relic', b.x, b.y - 4); const L1 = G.loot[l0]; if (L1) L1.relic = pick(left); } else { G.crystal += 2; lootFeed('유물이 더 없다 — 정령의 결정 +2', '#9fd2ff'); } } // v2.07 보스 유물
-    if (G.bossClean) { G.bossClean = false; spawnLoot('medal', b.x, b.y); lootFeed('한 번도 맞지 않고 쓰러뜨렸다 — 잿빛 훈장', '#ffd34d', 3500); } // v2.02
+    rec(`boss_${G.cls}_${G.stage}`); { const onFl = new Set(G.loot.filter(l => l.type === 'relic' && l.life > 0).map(l => l.relic)), left = Object.keys(RELICS).filter(k => !hasRelic(k) && !relicLocked(k) && !onFl.has(k)); if (left.length) { const l0 = G.loot.length; spawnLoot('relic', b.x, b.y - 4); const L1 = G.loot[l0]; if (L1) L1.relic = pick(left); } else { G.crystal += 2; lootFeed('유물이 더 없다 — 정령의 결정 +2', '#9fd2ff'); } } // v2.07 보스 유물
+    if (G.bossClean) { G.bossClean = false; rec('nohit'); rec(`nohit_${G.cls}_${G.stage}`); spawnLoot('medal', b.x, b.y); lootFeed('한 번도 맞지 않고 쓰러뜨렸다 — 잿빛 훈장', '#ffd34d', 3500); } // v2.02
     window.AudioSys.setMood('victory', true);
     slowmo = 1.6; flashT = 0.2; flashColor = '#ffffff';
     G.vortex = null; G.tele = []; G.akRings = [];
@@ -14376,12 +14493,12 @@ huskUp:[
       takeBossItems(); commitRunMats(); SAVE.clears++;
       if (G.stage >= 3) SAVE.clears3 = (SAVE.clears3 || 0) + 1;
       if (G.stage >= 4) SAVE.clears4 = (SAVE.clears4 || 0) + 1;
-      if (G.stage >= lastStage()) newChronicle = recordChronicleEnding(G.cls);
+      if (G.stage >= lastStage()) { const was = leg2Open(G.cls); newChronicle = recordChronicleEnding(G.cls); if (!was && leg2Open(G.cls)) (G.newUnl = G.newUnl || []).push('w:' + G.cls + ':10'); } // v2.29 레전더리 2 해금
     }
     else wipeRunItems(); // 사망·포기: 이번 런의 장비·재료·골드를 모두 잃는다
     SAVE.best = Math.max(SAVE.best || 0, (G.stage - 1) * 11 + G.phase);
     let ascMsg = ''; // v1.96 잿불 단계 돌파·해금
-    if (win) { const A = SAVE.asc, L = G.asc || 0; A.best[G.cls] = Math.max(A.best[G.cls] == null ? -1 : A.best[G.cls], L);
+    if (win && false) { const A = SAVE.asc, L = G.asc || 0; // v2.29 잿불 단계 취소 A.best[G.cls] = Math.max(A.best[G.cls] == null ? -1 : A.best[G.cls], L);
       const first = !A.unl.includes(L); if (first) A.unl.push(L);
       { const bonus = 50 * L + (ascOn(6) ? Math.round(G.gold * 0.4) : 0); if (bonus) { SAVE.gold += bonus; G.ascBonus = bonus; } } // v1.97 클리어 정산 골드 · 궁핍 정산
       if (first && ASC_FIRST[L]) { const f = ASC_FIRST[L]; SAVE.gold += f.gold || 0; SAVE.mats.iron += f.iron || 0; SAVE.mats.crystal += f.crystal || 0; G.ascFirst = f; } // v1.97 첫 돌파 꾸러미
@@ -14393,6 +14510,7 @@ huskUp:[
     $('resTitle').style.color = win ? 'var(--gold-l)' : '#ff7070';
     const chMsg = newChronicle ? ` · [전서 기록: ${newChronicle.label}]` : '';
     $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 토벌은 STAGE 3까지 이어진다' : '다음 토벌은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `STAGE ${G.stage} ${G.dun && G.dun.cur ? ROOM_N[G.dun.cur.type] : ''}에서 쓰러졌다 · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
+    if (G.newUnl && G.newUnl.length) $('resSub').textContent += ' · 새로 열림: ' + G.newUnl.map(id => { const u = UNLOCKS.find(x => x.id === id); if (id.startsWith('w:')) { const [, c, i] = id.split(':'), W0 = wcat(c)[+i]; return `${GRADES.find(x => x.k === W0.grade).n} 무기 「${W0.name}」`; } return u && u.kind === 'r' ? RELICS[u.key].n : id; }).join(', ') + ' (기록 보관소)'; // v2.29
     renderResultItems(win);
     $('ovResult').classList.add('on');
   }
@@ -14414,7 +14532,7 @@ huskUp:[
     mode = 'rest';
     const keysB = Object.keys(BUFFS).filter(k => !G.buffs.includes(k));
     const opts = [];
-    while (opts.length < (ascOn(9) ? 2 : 3) && keysB.length) opts.push(keysB.splice(randi(0, keysB.length - 1), 1)[0]);
+    rec('rest'); while (opts.length < 3 + (hasRelic('coal') ? 1 : 0) && keysB.length) opts.push(keysB.splice(randi(0, keysB.length - 1), 1)[0]);
     $('restChoices').innerHTML = opts.map((k, i) => `<button class="choice pf" data-b="${k}"><canvas class="px" width="16" height="16" data-icon="${k}"></canvas><b>${BUFFS[k].n}</b>${BUFFS[k].d}<br><span class="key">${i + 1}</span></button>`).join('');
     $('restChoices').querySelectorAll('canvas[data-icon]').forEach(c => drawIcon(c, BUFF_ICON[c.dataset.icon]));
     $('restChoices').querySelectorAll('[data-b]').forEach(bt => bt.addEventListener('click', () => chooseBuff(bt.dataset.b)));
@@ -15996,7 +16114,7 @@ void main() {
     drawTreasureBeam(G.dun && G.dun.cur);
     drawVortex();
     { const P = G.player; if (P && P.counterT > 0 && !P.dead) { // v2.28 반격 시간: 나·이펙트·데미지 숫자만 컬러, 나머지는 흑백 (채도 합성 한 번 → 가벼움)
-      const k = Math.min(1, (COUNTER_T - P.counterT) / 0.15, P.counterT / 0.35);
+      const k = Math.min(1, ((P.counterMax || COUNTER_T) - P.counterT) / 0.15, P.counterT / 0.35);
       const WT = ctx.getTransform();
       if (!CNT_COL) { CNT_COL = document.createElement('canvas'); CNT_MK = document.createElement('canvas'); }
       if (CNT_COL.width !== cv.width || CNT_COL.height !== cv.height) { CNT_COL.width = CNT_MK.width = cv.width; CNT_COL.height = CNT_MK.height = cv.height; }
@@ -16651,7 +16769,7 @@ void main() {
     $('comboPips').style.display = G.cls === 'gunner' ? 'none' : ''; // 거너 사격 칸에는 연타 단계 칸이 필요 없음
     $('comboPips').querySelectorAll('b').forEach((b, i) => b.classList.toggle('on', i < step));
     // 돌진 참격
-    const charges = skMax('K'), total = CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd'));
+    const charges = skMax('K'), total = Math.max(1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0));
     const readyN = P.chargeCd.slice(0, charges).filter(c => c <= 0).length;
     const minCd = Math.min(...P.chargeCd.slice(0, charges));
     const kReady = readyN > 0 && !P.dead;
@@ -16706,8 +16824,35 @@ void main() {
   }
   // v2.19 공용 팝업 (조작법 · 사운드) — 타이틀·일시정지에서 같은 크기로
   let popOpen = null;
-  function openPop(name) { popOpen = name; syncVol(); $('tmHowto').classList.toggle('on', name === 'howto'); $('tmSound').classList.toggle('on', name === 'sound'); $('ovPop').classList.add('on'); }
-  function closePop() { if (!popOpen) return; popOpen = null; $('ovPop').classList.remove('on'); $('tmHowto').classList.remove('on'); $('tmSound').classList.remove('on'); sfx('blip'); }
+  function openPop(name) { popOpen = name; syncVol(); $('tmHowto').classList.toggle('on', name === 'howto'); $('tmSound').classList.toggle('on', name === 'sound'); $('tmArchive').classList.toggle('on', name === 'archive'); $('ovPop').querySelector('.popWin').classList.toggle('arc', name === 'archive'); if (name === 'archive') renderArchive(); $('ovPop').classList.add('on'); }
+  let arcTab = 'relic';
+  function arcWeaponCell(c, i) { // v2.30 기록 보관소 무기 칸 · v2.31 해금 조건·진행도
+    const W0 = wcat(c)[i], u = UNLOCKS.find(x => x.kind === 'w' && x.key === c + ':' + i), l10 = i === 10 && !leg2Open(c), lock = l10 || (u && !unlocked(u.id));
+    const g = isUnc({ slot: 'weapon', wk: i }) ? UNCOMMON : GRADES.find(x => x.k === W0.grade), sk = W0.skill && W0.skill !== '—' ? stripEmoji(W0.skill) : '고유 기술 없음';
+    const cur = u ? Math.min(u.n, SAVE.rec[u.rec] || 0) : 0, cond = l10 ? `${({ knight: '기사로', ranger: '어세신으로', mage: '마법사로', priest: '사제로', gunner: '거너로' })[c]} 4장 보스 클리어` : u ? `${u.how}${u.n > 1 ? ` ${u.n}번` : ''}` : '';
+    const sub = l10 ? '4장 보스 클리어' : lock ? `${u.how} ${cur}/${u.n}` : (u || i === 10) ? '해금됨' : '기본';
+    return `<div class="arcC${lock ? ' lock' : ''}" ${aTip(lock ? '???' : W0.name, lock ? `열리는 조건: ${cond}` : `<span style="color:${g.c}">${g.n}</span> · ${sk}`, lock ? '#9a8ea5' : g.c)}><img src="${weaponIconURL({ slot: 'weapon', cls: c, wk: i, grade: W0.grade })}"><span><span class="an" style="color:${lock ? '#8a8494' : g.c}">${lock ? '???' : W0.name}</span><span class="ac">${sub}</span>${lock && u ? `<span class="bar"><b style="width:${Math.round(cur / u.n * 100)}%"></b></span>` : ''}</span></div>`;
+  }
+  function renderArchive() { // v2.29 기록 보관소 · v2.30 탭: 유물 / 직업별 무기
+    const fmt = n => n >= 1000 ? n.toLocaleString() : n, CL5 = ['knight', 'ranger', 'mage', 'priest', 'gunner'];
+    const tabs = `<div class="arcTabs">${[['relic', '유물'], ...CL5.map(c => [c, CLASSES[c].n])].map(([k, n]) => `<button class="arcTab${arcTab === k ? ' on' : ''}" data-t="${k}">${n}</button>`).join('')}</div>`;
+    let body = '';
+    if (arcTab === 'relic') {
+      const cell = k => { const r = RELICS[k], u = UNLOCKS.find(x => x.kind === 'r' && x.key === k), lock = u && !unlocked(u.id), cur = u ? Math.min(u.n, SAVE.rec[u.rec] || 0) : 0;
+        const sub = !u ? '기본' : lock ? `${u.how} ${fmt(cur)}/${fmt(u.n)}` : '해금됨';
+        return `<div class="arcC${lock ? ' lock' : ''}" ${aTip(lock ? '???' : r.n, lock ? `열리는 조건: ${u.how} ${fmt(u.n)}${u.n > 1 ? '번' : ''}` : r.d, lock ? '#9a8ea5' : r.c)}><img src="${relicIconURL(k)}"><span><span class="an">${lock ? '???' : r.n}</span><span class="ac">${sub}</span>${lock ? `<span class="bar"><b style="width:${Math.round(cur / u.n * 100)}%"></b></span>` : ''}</span></div>`; };
+      const keys = Object.keys(RELICS), base = keys.filter(k => !UNLOCKS.some(u => u.key === k)), ext = keys.filter(k => UNLOCKS.some(u => u.key === k)), got = ext.filter(k => !relicLocked(k)).length;
+      body = `<div class="arcH">해금 유물<i>${got} / ${ext.length}</i></div><div class="arcGrid">${ext.map(cell).join('')}</div>`
+        + `<div class="arcH">기본 유물<i>${base.length}</i></div><div class="arcGrid">${base.map(cell).join('')}</div>`;
+    } else {
+      const c = arcTab, W = wcat(c), sec = (t, ids) => ids.length ? `<div class="arcH">${t}<i>${ids.filter(i => !(i === 10 && !leg2Open(c)) && !weaponLocked(c, i)).length} / ${ids.length}</i></div><div class="arcGrid">${ids.map(i => arcWeaponCell(c, i)).join('')}</div>` : '';
+      const by = g => W.filter(w => w.grade === g && !isUnc({ slot: 'weapon', wk: w.i }) && w.i !== 0).map(w => w.i);
+      body = sec('커먼', [0]) + sec('언커먼', [11, 12, 13]) + sec('레어', by('rare')) + sec('유니크', by('unique')) + sec('레전더리', [9, 10]) + `<div class="arcH">추가 무기<i>준비 중</i></div>`;
+    }
+    $('arcList').innerHTML = tabs + body;
+    $('arcList').querySelectorAll('.arcTab').forEach(b => b.addEventListener('click', () => { arcTab = b.dataset.t; sfx('blip'); renderArchive(); $('arcList').scrollTop = 0; }));
+  }
+  function closePop() { if (!popOpen) return; popOpen = null; $('ovPop').classList.remove('on'); $('tmHowto').classList.remove('on'); $('tmSound').classList.remove('on'); $('tmArchive').classList.remove('on'); pxTip.hide(); sfx('blip'); }
   function showTitlePanel(name) {
     titlePanel = name;
     $('tmMain').style.display = name === 'main' ? '' : 'none';
@@ -16720,6 +16865,7 @@ void main() {
     if (act === 'start') openSelect();
     else if (act === 'forge') openForge('title');
     else if (act === 'howto') openPop('howto');
+    else if (act === 'archive') openPop('archive');
     else if (act === 'sound') openPop('sound');
     else if (act === 'popClose') closePop();
     else if (act === 'back') showTitlePanel('main');
@@ -17068,10 +17214,12 @@ void main() {
   }
   function setStage(k) { if (!STAGES[k] || k === STAGE) return; STAGE = k; SAVE.lastStage = k; persist(); sfx('blip'); renderStages(); }
   // v1.96 직업 선택 화면의 잿불 단계 고르기
-  function ascShift(d) { const A = SAVE.asc, v = clamp((A.sel || 0) + d, 0, A.max || 0); if (v === (A.sel || 0)) return; A.sel = v; persist(); sfx('blip'); renderAsc(); }
+  function ascShift(d) { return; // v2.29 잿불 단계 취소
+  }
+  function ascShiftOld(d) { const A = SAVE.asc, v = clamp((A.sel || 0) + d, 0, A.max || 0); if (v === (A.sel || 0)) return; A.sel = v; persist(); sfx('blip'); renderAsc(); }
   function skinRowHtml() { // v1.99 외형 고르기 (설명은 마우스를 올리면)
     const open = skinOpen(), cur = SAVE.skin === 'ash' && open ? 'ash' : '';
-    const tip = open ? '잿빛 몸·무기, 붉은 안광과 기운' + (ASH_SKIN_TEST ? '<div class="rp">테스트로 열림 (정식: 잿불 3 돌파)</div>' : '') : '잿불 3을 돌파하면 열린다';
+    const tip = open ? '잿빛 몸·무기, 붉은 안광과 기운' + '' : '잿불 3을 돌파하면 열린다';
     return `<span class="skinRow"><span class="ascT">외형</span><button class="ascB skinB${cur ? '' : ' on'}" data-skin="">기본</button><button class="ascB skinB${cur ? ' on' : ''}" data-skin="ash" ${open ? '' : 'disabled'} ${aTip('잿불 외형', tip, '#ffb040')}>잿불</button></span>`;
   }
   function bindSkin(el) { el.querySelectorAll('.skinB').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; pxTip.hide(); SAVE.skin = b.dataset.skin || undefined; persist(); sfx('blip'); renderAsc(); $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv, true)); })); }
@@ -17080,6 +17228,7 @@ void main() {
   const aTip = (name, html, c) => `data-atip="${escAttr(html)}" data-aname="${escAttr(name)}"${c ? ` data-ac="${c}"` : ''}`;
   function renderAsc() {
     const A = SAVE.asc, el = $('ascRow'); if (!el) return;
+    if (true) { el.innerHTML = `<div class="ascHead">${skinRowHtml()}</div>`; bindSkin(el); return; } // v2.29 잿불 단계 취소: 외형만
     if (!A.max) { el.innerHTML = `<div class="ascHead"><span class="ascT" ${aTip('잿불 단계', '첫 토벌(마지막 보스)을 마치면 열린다', '#ffb040')}>잿불 단계</span><span class="ascLock">잠김</span>${skinRowHtml()}</div>`; bindSkin(el); return; }
     const L = Math.min(A.sel || 0, A.max), best = A.best[selCls];
     const next = A.max < ASC_MAX ? `잿불 ${A.max} 클리어 → 잿불 ${A.max + 1} 열림` : '모든 단계 열림';
@@ -17684,6 +17833,7 @@ void main() {
     }
   };
 
+  const leg2Open = cls => !!(SAVE.chronicle && SAVE.chronicle[cls] && (SAVE.chronicle[cls].normal || SAVE.chronicle[cls].leg1 || SAVE.chronicle[cls].leg2)); // v2.29 레전더리 2: 그 직업으로 4장 보스(마지막) 클리어
   function chronicleCount(cls) {
     const c = SAVE.chronicle && SAVE.chronicle[cls];
     if (!c) return 0;
