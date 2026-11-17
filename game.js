@@ -981,6 +981,108 @@
       '.kWk.kdk..kdk.....',
       ',.k..kkk..kkk....,',
     ],
+    gunner2: [
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kFFk.kFFk..',
+      '....kkkk.kkkk.,',
+    ], // v2.42 그레이브 새 도트 (13×14 기준, 월드 플리퍼 비율 참고)
+    gunner2W1: [
+      '...............',
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kFFkkkkk..,',
+    ], // 걷기 2프레임: 1칸 내려감 · 왼발
+    gunner2W3: [
+      '...............',
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kkkkFFk...,',
+    ], // 걷기 4프레임: 1칸 내려감 · 오른발
+    gunner2R: [
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kFFk.kFFk..',
+      '....kkkk.kkkk.,',
+    ], // 눈이 앞(오른쪽)을 봄
+    gunner2W1R: [
+      '...............',
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kFFkkkkk..,',
+    ], // 눈이 앞(오른쪽)을 봄
+    gunner2W3R: [
+      '...............',
+      '....k.....k....',
+      '...kqk...kqk...',
+      '...kHrrHrrHk...',
+      '...krqLrqLrk...',
+      '.kHHHHHHHHHHHk.',
+      '..kgggggggggk..',
+      '..kgekGGGekgk..',
+      '.kgdGGWWWGGGgk.',
+      '..kgkWWnWWkgk..',
+      '...kkSSSSSkk...',
+      '..kcCCCBCCCck..',
+      'kgkGkcCxCckGk..',
+      'kgkkCCCkCCCk...',
+      '.kk.kkkkFFk...,',
+    ], // 눈이 앞(오른쪽)을 봄
     potion: ['..kkkk..', '..kbbk..', '...kk...', '..knnk..', '.kppppk.', 'kpqpppPk', 'kppppPPk', 'kPpppPPk', '.kkkkkk.'],
     orb: ['..kkk..', '.kyYyk.', 'kyYWYyk', 'kYYYYYk', 'kyYYYyk', '.kyyyk.', '..kkk..'],
     pouch: ['..k.k..', '..kgk..', '.kbbbk.', 'kbbBbbk', 'kbBgBbk', 'kbbbbbk', '.kkkkk.'],
@@ -1309,6 +1411,8 @@
     hob: { k: '#0b0f08', H: '#2e3e1c', h: '#4a6228', e: '#ffd23a', m: '#141c0c', s: '#6e9a3a', S: '#46682a', c: '#8a8070', C: '#3a3428', a: '#5a3a22', A: '#3a2414', b: '#9a2a1a' },
     mage: { k: '#120c0a', H: '#7a4868', h: '#a25c86', s: '#ecbb7e', e: '#2a1a12', r: '#8a5078', R: '#6a3c60', g: '#eca359', d: '#5a3a2a', E: '#c0723e', F: '#eca359', i: '#5a3028', W: '#fae1ca', P: '#c07aa0', q: '#a8689a', Q: '#4a2844', S: '#d68b59' }, // 초상(섬네일)과 같은 따뜻한 색으로
     priest: { k: '#120c0a', W: '#c8ad94', w: '#f3dbb6', s: '#f3cf9f', e: '#2a1a12', g: '#c0723e', G: '#eca359', d: '#895042', E: '#fae1ca', F: '#ecd4af', i: '#eca359', v: '#d6bea4', V: '#b89277', S: '#e0a878' }, // 초상(섬네일)과 같은 따뜻한 색으로
+    gunner2: { k: '#0b0a0e', H: '#2a2a30', r: '#70707a', L: '#16161a', q: '#b39a78', b: '#9a9aa4', G: '#f3dbb6', g: '#c8ad94', d: '#a29378', W: '#fae1ca', e: '#f8f4ee', n: '#26262e', C: '#44444e', c: '#62626e', x: '#26262e', S: '#9a9aa4', B: '#c8b890', F: '#1c1c22' }, // v2.42 그레이브 새 도트
+    gunner2Ghost: { k: '#16233a', r: '#5f86b8', L: '#16233a', q: '#9cc1ea', H: '#3b5a86', b: '#9cc1ea', G: '#cfe6ff', g: '#9cc1ea', d: '#5f86b8', W: '#e4f2ff', e: '#cfe6ff', n: '#16233a', C: '#3b5a86', c: '#5f86b8', x: '#16233a', S: '#9cc1ea', B: '#cfe6ff', F: '#16233a' },
     gunner: { k: '#0b0a0c', H: '#2e2e34', h: '#4e4e56', s: '#d6bea4', e: '#2a1a12', m: '#34343a', c: '#3a3a42', l: '#6a6a72', b: '#b4b4bc', d: '#1e1e22', E: '#a29378', F: '#c8ad94', i: '#5a3a30', W: '#ecd4af', C: '#56565e', x: '#24242a', S: '#b89a80' }, // 초상(섬네일)과 같은 따뜻한 색으로
     loot: { o: '#f08a2a', O: '#b8561a', G: '#5ab040', m: '#f8f0f4', M: '#d8c8d0', i: '#f0a0b8', p: '#e0303a', P: '#8a1020', q: '#ffc0c0', n: '#c8d8e0', k: '#120c0a', r: '#6e2416', R: '#b5502e', h: '#e8925e', w: '#ece0c4', y: '#a8801e', Y: '#ffd34d', W: '#fff8d8', b: '#5a3c22', B: '#8a6236', g: '#ffd34d', v: '#3a0a30', V: '#9a1a7a', H: '#ff90e0', c: '#9fb2c4' },
     ranger: { k: '#120c0a', H: '#6f7a4e', h: '#9ca973', s: '#f3cf9f', e: '#ffe9a0', r: '#c03116', l: '#b16f46', m: '#895042', b: '#eca359', d: '#5a3a2a', E: '#c0723e', F: '#ecbb7e', i: '#f3dbb6' }, // 초상(섬네일)과 같은 따뜻한 색으로
@@ -1331,8 +1435,176 @@
   // 잔상용 푸른 팔레트를 밝기에 따라 자동 생성
   const ghostOf = pal => { const ramp = ['#16233a', '#3b5a86', '#5f86b8', '#9cc1ea', '#e4f2ff'], o = {}; for (const k in pal) { const h = pal[k], r = parseInt(h.slice(1, 3), 16), g = parseInt(h.slice(3, 5), 16), b = parseInt(h.slice(5, 7), 16); o[k] = ramp[Math.min(4, Math.floor((0.3 * r + 0.59 * g + 0.11 * b) / 52))]; } return o; };
   PAL.mageGhost = ghostOf(PAL.mage); PAL.priestGhost = ghostOf(PAL.priest); PAL.gunnerGhost = ghostOf(PAL.gunner);
+  // v2.43 새 정면 도트 (월드 플리퍼 비율 · 측면 음영 · 꼬리) — 파티 5인 + 난입자 5종, 걷기 2·4프레임(W1·W3)은 한 칸 내려앉고 한쪽 발만 보임
+  Object.assign(MAPS, {
+    hKnight: ["..........k1Rk...........", "........kk1rRRk..........", ".......k1rkkMMMk.........", ".......k6kMMMMMMk........", ".......k23MMMMMMMk.......", ".......k277hhhhhmk.......", ".......k25vSSSvSmk.......", "......k22SvSSSvSmmk......", "......kk2D5SsSSDmk.......", "....kkRRkk11RRRkk........", "..kkRRRk23MRRRMMmk.......", ".kRRRRrk5k24RDmkSk.......", "k11RrrRkk22RRRmmk........", "k16RkRRrkkFFk.kFFk.......", ".k6kk6kk.kkkk.kkkk......,"],
+    hKnightW0: ["..........k1Rk...........", "........kk1rRRk..........", ".......k1rkkMMMk.........", ".......k6kMMMMMMk........", ".......k23MMMMMMMk.......", ".......k277hhhhhmk.......", ".......k25vSSSvSmk.......", "......k22SvSSSvSmmk......", "......kk2D5SsSSDmk.......", "....kkRRkk11RRRkk........", "..kkRRRk23MRRRMMmk.......", ".kRRRRrk5k24RDmkSk.......", "k11RrrRkk22RRRmmk........", "k16RkRRrkkFFk.kFFk.......", ".k6kk6kk.kkkk.kkkk......,"],
+    hKnightW1: [".........................", "..........k1Rk...........", "........kk1rRRk..........", ".......k1rkkMMMk.........", ".......k6kMMMMMMk........", ".......k23MMMMMMMk.......", ".......k277hhhhhmk.......", ".......k25vSSSvSmk.......", "......k22SvSSSvSmmk......", "......kk2D5SsSSDmk.......", "...kkkRRkk11RRRkk........", ".kkRRRRk23MRRRMMmk.......", "k11RRrRk5k24RDmkSk.......", "k11rrRRkk22RRRmmk........", "k61k16k..kFFk.kkkk......,"],
+    hKnightW2: ["..........k1Rk...........", "........kk1rRRk..........", ".......k1rkkMMMk.........", ".......k6kMMMMMMk........", ".......k23MMMMMMMk.......", ".......k277hhhhhmk.......", ".......k25vSSSvSmk.......", "......k22SvSSSvSmmk......", "......kk2D5SsSSDmk.......", "....kkRRkk11RRRkk........", "...kRRRk23MRRRMMmk.......", "..kRRRrk5k24RDmkSk.......", ".k11rrRkk22RRRmmk........", "k11RkRRrkkFFk.kFFk.......", "k6kk6kkk.kkkk.kkkk......,"],
+    hKnightW3: [".........................", "..........k1Rk...........", "........kk1rRRk..........", ".......k1rkkMMMk.........", ".......k6kMMMMMMk........", ".......k23MMMMMMMk.......", ".......k277hhhhhmk.......", ".......k25vSSSvSmk.......", "......k22SvSSSvSmmk......", ".....kkk2D5SsSSDmk.......", "..kkkRRRkk11RRRkk........", ".kRRRRRk23MRRRMMmk.......", "k11RRrRk5k24RDmkSk.......", "k61RrRRkk22RRRmmk........", ".k6k16k..kkkk.kFFk......,"],
+    hRanger: [".........k...k.........", "........kDk.kLk........", "...k...kPDk.koPk.......", "..kqk..kGGHHHHHk.......", "..kOk.kDggGGGGGLk......", "..kokkDDLkLLLkLoLk.....", "..kok.kDnGmmmGmDk......", "..kqkkkkDnmzmmik.......", ".kq4RRRkk11RRRkk.......", "k11oR1kk22cYcCCk.......", "k9kqoqk4k23CxCkok......", ".k.kq44kCCCkCCCk.......", "...kkqqkkFFk.kFFk......", "...kkkkkkkkk.kkkk.....,"],
+    hRangerW0: [".........k...k.........", "........kDk.kLk........", "...k...kPDk.koPk.......", "..kqk..kGGHHHHHk.......", "..kOk.kDggGGGGGLk......", "..kokkDDLkLLLkLoLk.....", "..kok.kDnGmmmGmDk......", "..kqkkkkDnmzmmik.......", ".kq4RRRkk11RRRkk.......", "k11oR1kk22cYcCCk.......", "k9kqoqk4k23CxCkok......", ".k.kq44kCCCkCCCk.......", "...kkqqkkFFk.kFFk......", "...kkkkkkkkk.kkkk.....,"],
+    hRangerW1: [".......................", ".........k...k.........", "........kDk.kLk........", "...k...kPDk.koPk.......", "..kqk..kGGHHHHHk.......", "..kOk.kDggGGGGGLk......", "..kokkDDLkLLLkLoLk.....", "..kok.kDnGmmmGmDk......", "..kqkkkkDnmzmmik.......", ".kq4RRRkk11RRRkk.......", "k11oRR1k22cYcCCk.......", "k9kqoqk4k23CxCkok......", ".k.kq44kCCCkCCCk.......", "...kkqqkkFFk.kkkk.....,"],
+    hRangerW2: [".........k...k.........", "........kDk.kLk........", "...k...kPDk.koPk.......", "..kqk..kGGHHHHHk.......", "..kOk.kDggGGGGGLk......", "..kokkDDLkLLLkLoLk.....", "..kok.kDnGmmmGmDk......", "..kqkkkkDnmzmmik.......", ".kq4RRRkk11RRRkk.......", ".k14RR1k22cYcCCk.......", "..k9oqk4k23CxCkok......", "...kq44kCCCkCCCk.......", "....kqqkkFFk.kFFk......", "....kkkkkkkk.kkkk.....,"],
+    hRangerW3: [".......................", ".........k...k.........", "........kDk.kLk........", "...k...kPDk.koPk.......", "..kqk..kGGHHHHHk.......", "..kOk.kDggGGGGGLk......", "..kokkDDLkLLLkLoLk.....", "..kok.kDnGmmmGmDk......", "..kqkkkkDnmzmmik.......", ".kq4qRRkk11RRRkk.......", "k11oRRRk22cYcCCk.......", ".kkq4qk4k23CxCkok......", "...kq44kCCCkCCCk.......", "...kkqqkkkkk.kFFk.....,"],
+    hMage: ["............k............", "...........k2k...........", "..........k2LPk..........", "..........k2LPk..........", ".........k2LPPPk.........", ".........k2LPPPk.........", "........k25PPPPPk........", ".......kk22PPPPPkk.......", ".....k22PPPPPPPPPPPk.....", ".k....kk16YYYYYYpkk......", "kWkk...kOokoookook.......", ".kWWkkk7OWUWWWUWook......", ".kWWookkOWWWnWWWok.......", ".kWooookkkpYYYpkk........", "k88ooook12PPYPPPpk.......", "k88oook22k22YPPkPPk......", ".k8oOk223k22PPPkWPPk.....", "..k9999kk22PPPPPPk.......", "...kkkkk11ppppppppk......", "........kkFFkFFkkk......,"],
+    hMageW1: [".........................", "............k............", "...........k2k...........", "..........k2LPk..........", "..........k2LPk..........", ".........k2LPPPk.........", ".........k2LPPPk.........", "........k25PPPPPk........", ".......kk22PPPPPkk.......", ".....k22PPPPPPPPPPPk.....", ".k....kk16YYYYYYpkk......", "kWkk...kOokoookook.......", ".kWWkkk7OWUWWWUWook......", ".kWWookkOWWWnWWWok.......", ".kWooookkkpYYYpkk........", "k88ooook12PPYPPPpk.......", "k88oook22k22YPPkPPk......", ".k8oOk223k22PPPkWPPk.....", "..k9999kk22PPPPPPk.......", "...kkkkk11ppppppppk.....,"],
+    hMageW3: [".........................", "............k............", "...........k2k...........", "..........k2LPk..........", "..........k2LPk..........", ".........k2LPPPk.........", ".........k2LPPPk.........", "........k25PPPPPk........", ".......kk22PPPPPkk.......", ".....k22PPPPPPPPPPPk.....", ".k....kk16YYYYYYpkk......", "kWkk...kOokoookook.......", ".kWWkkk7OWUWWWUWook......", ".kWWookkOWWWnWWWok.......", ".kWooookkkpYYYpkk........", "k88ooook12PPYPPPpk.......", "k88oook22k22YPPkPPk......", ".k8oOk223k22PPPkWPPk.....", "..k9999kk22PPPPPPk.......", "...kkkkk11ppppppppk.....,"],
+    hPriest: [".......kk.....kk.......", "......k1Hk...kHHk......", "......k1qk...kqHk......", "......k1qk...kqHk......", ".......k1qk.kqHk.......", ".......k1qkkkqHk.......", "......k11HHHHHHHk......", "......k12hhhhhhHk......", "......k14vSSSvSHk......", ".....k214ESSSEShHk.....", "...kkkk2k4SnSSkhk......", "..kHHHkkk11XHHkk.......", ".kHHHHk21HXXXHHhk......", ".k5Hk4k3k21XHhksk......", ".k5Hk4kk21HHHHhk.......", "..k55kk.kFFk.kFFk......", "...kkk..kkkk.kkkk.....,"],
+    hPriestW1: [".......................", ".......kk.....kk.......", "......k1Hk...kHHk......", "......k1qk...kqHk......", "......k1qk...kqHk......", ".......k1qk.kqHk.......", ".......k1qkkkqHk.......", "......k11HHHHHHHk......", "......k12hhhhhhHk......", "......k14vSSSvSHk......", ".....k214ESSSEShHk.....", "...kkkk2k4SnSSkhk......", "..kHHHkkk11XHHkk.......", ".kHHHHk21HXXXHHhk......", ".k5Hk4k3k21XHhksk......", ".k5Hk4kk21HHHHhk.......", "..k55kk.kFFk.kkkk.....,"],
+    hPriestW3: [".......................", ".......kk.....kk.......", "......k1Hk...kHHk......", "......k1qk...kqHk......", "......k1qk...kqHk......", ".......k1qk.kqHk.......", ".......k1qkkkqHk.......", "......k11HHHHHHHk......", "......k12hhhhhhHk......", "......k14vSSSvSHk......", ".....k214ESSSEShHk.....", "...kkkk2k4SnSSkhk......", "..kHHHkkk11XHHkk.......", ".kHHHHk21HXXXHHhk......", ".k5Hk4k3k21XHhksk......", ".k5Hk4kk21HHHHhk.......", "..k55kk.kkkk.kFFk.....,"],
+    hGunner: [".........k.....k.........", "........kdk...kgk........", "........kkkkkkkkk........", "........kHHHHHHHk........", ".......kkQVQHQVQkk.......", "......kkkkkkkkkkkkk......", ".......kdZkgggkZgk.......", "....kkkdgUXZZZXZggk......", "..kkgggkkVUUNUUUkk.......", ".kGGggggkk11SSSkk........", "kGGDgggk23CCBCCCck.......", ".kkDdddk4k23xCckGk.......", "...kkEEEkCCCkCCCk........", ".....kkk.kFFk.kFFk.......", ".........kkkk.kkkk......,"],
+    hGunnerW1: [".........................", ".........k.....k.........", "........kdk...kgk........", "........kkkkkkkkk........", "........kHHHHHHHk........", ".......kkQVQHQVQkk.......", "......kkkkkkkkkkkkk......", ".......kdZkgggkZgk.......", "....kkkdgUXZZZXZggk......", "..kkgggkkVUUNUUUkk.......", ".kGGggggkk11SSSkk........", "kGGDgggk23CCBCCCck.......", ".kkDdddk4k23xCckGk.......", "...kkEEEkCCCkCCCk........", ".....kkk.kFFk.kkkk......,"],
+    hGunnerW3: [".........................", ".........k.....k.........", "........kdk...kgk........", "........kkkkkkkkk........", "........kHHHHHHHk........", ".......kkQVQHQVQkk.......", "......kkkkkkkkkkkkk......", ".......kdZkgggkZgk.......", "....kkkdgUXZZZXZggk......", "..kkgggkkVUUNUUUkk.......", ".kGGggggkk11SSSkk........", "kGGDgggk23CCBCCCck.......", ".kkDdddk4k23xCckGk.......", "...kkEEEkCCCkCCCk........", ".....kkk.kkkk.kFFk......,"],
+    invPanda: ["........kk.....kk........", ".......kRWk...kWRk.......", ".......kRRkkkkkRRk.......", ".k....k44RRRRRRRRRk......", "krkk..k45WRRRRRWWRk......", ".kTTkkk45ExWWWExWRk......", ".kTRRTkrWWWWk5WWWrk......", ".kRRTTRk66WWWWWrrk.......", "k7RTTRRTkk12GGgkk........", "k7TTRRTk22GGgGGGGk.......", ".kT7RTk4k23GgGcGkRk......", "..k7TTRkkGGGkGGGkk.......", "...kkkk..kFFk.kFFk.......", ".........kkkk.kkkk......,"],
+    invPandaW1: [".........................", "........kk.....kk........", ".......kRWk...kWRk.......", ".......kRRkkkkkRRk.......", ".k....k44RRRRRRRRRk......", "krkk..k45WRRRRRWWRk......", ".kTTkkk45ExWWWExWRk......", ".kTRRTkrWWWWk5WWWrk......", ".kRRTTRk66WWWWWrrk.......", "k7RTTRRTkk12GGgkk........", "k7TTRRTk22GGgGGGGk.......", ".kT7RTk4k23GgGcGkRk......", "..k7TTRkkGGGkGGGkk.......", "...kkkk..kFFk.kkkk......,"],
+    invPandaW3: [".........................", "........kk.....kk........", ".......kRWk...kWRk.......", ".......kRRkkkkkRRk.......", ".k....k44RRRRRRRRRk......", "krkk..k45WRRRRRWWRk......", ".kTTkkk45ExWWWExWRk......", ".kTRRTkrWWWWk5WWWrk......", ".kRRTTRk66WWWWWrrk.......", "k7RTTRRTkk12GGgkk........", "k7TTRRTk22GGgGGGGk.......", ".kT7RTk4k23GgGcGkRk......", "..k7TTRkkGGGkGGGkk.......", "...kkkk..kkkk.kFFk......,"],
+    invReaper: ["....kHk.......kHk....", "...kHHk.......kHHk...", "...k3k.kkkkkkk.kHk...", "....k3kCCCCCCCkHk....", ".....k22CCCCCCCk.....", "....kCc4hhhhhhcCk....", "....kCcExhhhExcCk....", "....kCc4hhshhhcCk....", ".....kCk4hhhhkCk.....", "......kcCkhkCck......", ".k...kcCCCgCCCck.....", "kckkk12CCCCCCCCck....", "k5CCk12CCCCCCCCCk....", ".k6k12CCCCCCCCCCCk...", "..kkkk22CCCCCCCCCk...", "......kkCkCCkCCCk....", ".......k.kk.kkkk....,"],
+    invReaperW1: [".....................", "....kHk.......kHk....", "...kHHk.......kHHk...", "...k3k.kkkkkkk.kHk...", "....k3kCCCCCCCkHk....", ".....k22CCCCCCCk.....", "....kCc4hhhhhhcCk....", "....kCcExhhhExcCk....", "....kCc4hhshhhcCk....", ".....kCk4hhhhkCk.....", "......kcCkhkCck......", ".k...kcCCCgCCCck.....", "kckkk12CCCCCCCCck....", "k5CCk12CCCCCCCCCk....", ".k6k12CCCCCCCCCCCk...", "..kkkk22CCCCCCCCCk...", "......kkCkCCkCCCk...,"],
+    invReaperW3: [".....................", "....kHk.......kHk....", "...kHHk.......kHHk...", "...k3k.kkkkkkk.kHk...", "....k3kCCCCCCCkHk....", ".....k22CCCCCCCk.....", "....kCc4hhhhhhcCk....", "....kCcExhhhExcCk....", "....kCc4hhshhhcCk....", ".....kCk4hhhhkCk.....", "......kcCkhkCck......", ".k...kcCCCgCCCck.....", "kckkk12CCCCCCCCck....", "k5CCk12CCCCCCCCCk....", ".k6k12CCCCCCCCCCCk...", "..kkkk22CCCCCCCCCk...", "......kkCkCCkCCCk...,"],
+    invShrew: [".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSSSSSk.....", ".....k44ExSSSExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkFFk.kFFk......", "....kkk.kkkk.kkkk.....,"],
+    invShrewW1: [".......................", ".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSSSSSk.....", ".....k44ExSSSExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkFFk.kkkk.....,"],
+    invShrewW3: [".......................", ".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSSSSSk.....", ".....k44ExSSSExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkkkk.kFFk.....,"],
+    invShrewB: [".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSpSSSk.....", ".....k44ExSSpExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkFFk.kFFk......", "....kkk.kkkk.kkkk.....,"],
+    invShrewBW1: [".......................", ".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSpSSSk.....", ".....k44ExSSpExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkFFk.kkkk.....,"],
+    invShrewBW3: [".......................", ".......kk.....kk.......", "......kSpk...kpSk......", "......kSSkkkkkSSk......", ".....k44SSSSSpSSSk.....", ".....k44ExSSpExSSk.....", "......k11SsssSssk......", ".......kk11Psskk.......", ".k......kk2rrkk........", "kskk...k32rrrrbk.......", ".k5skkk4k33bbbkSk......", "..kk5sskkkkk.kFFk.....,"],
+    invWeasel: ["........kk.....kk........", ".......kFfk...kfFk.......", ".......kFFkkkkkFFk.......", "......k33FFFFFFFFFk......", "......k3dddFFFFFdFk......", "......k3dddFFFExFFk......", ".kk...kFFdWWk4WWFFk......", "kddk...k34WWWWWWFk.......", "kddFk...kk11rrrkk........", ".k5FFkkk22CCgCCCCk.......", "..k5FFk3k22CgCCCkFk......", "...k5FFkk22CgCCCkk.......", "....kkkkkkFFk.kFFk.......", ".........kkkk.kkkk......,"],
+    invWeaselW1: [".........................", "........kk.....kk........", ".......kFfk...kfFk.......", ".......kFFkkkkkFFk.......", "......k33FFFFFFFFFk......", "......k3dddFFFFFdFk......", "......k3dddFFFExFFk......", ".kk...kFFdWWk4WWFFk......", "kddk...k34WWWWWWFk.......", "kddFk...kk11rrrkk........", ".k5FFkkk22CCgCCCCk.......", "..k5FFk3k22CgCCCkFk......", "...k5FFkk22CgCCCkk.......", "....kkkkkkFFk.kkkk......,"],
+    invWeaselW3: [".........................", "........kk.....kk........", ".......kFfk...kfFk.......", ".......kFFkkkkkFFk.......", "......k33FFFFFFFFFk......", "......k3dddFFFFFdFk......", "......k3dddFFFExFFk......", ".kk...kFFdWWk4WWFFk......", "kddk...k34WWWWWWFk.......", "kddFk...kk11rrrkk........", ".k5FFkkk22CCgCCCCk.......", "..k5FFk3k22CgCCCkFk......", "...k5FFkk22CgCCCkk.......", "....kkkkkkkkk.kFFk......,"],
+  });
+  Object.assign(PAL, {
+    hKnight: {"k": "#0b0a0e", "R": "#c03116", "r": "#7a1e10", "M": "#ecd4af", "m": "#c8ad94", "D": "#a29378", "h": "#895042", "S": "#f3dbb6", "s": "#c0723e", "v": "#2a2030", "F": "#3a2a26", "1": "#771d0e", "2": "#7c6961", "3": "#928073", "4": "#64594e", "5": "#968577", "6": "#4b120a", "7": "#54302b"},
+    hRanger: {"k": "#0b0a0e", "o": "#c0723e", "O": "#d68b59", "p": "#f3cf9f", "w": "#e0dce6", "B": "#9ca973", "b": "#6e7a4a", "e": "#2a1810", "N": "#f08aa0", "C": "#5a3426", "c": "#895042", "x": "#2a1810", "Y": "#c9a24a", "F": "#2a1e1e", "R": "#c03116", "1": "#771d0e", "2": "#371f18", "3": "#1a0e0a", "4": "#895042", "5": "#444a30", "6": "#b16f46", "q": "#ecbb7e", "9": "#491109", "H": "#5e9058", "g": "#3a5e38", "n": "#ecc888", "P": "#eb90bf", "G": "#4a7a46", "L": "#f3b86d", "D": "#af602b", "m": "#fee1a1", "i": "#e67346", "z": "#c0723e"},
+    hMage: {"k": "#0b0a0e", "P": "#a25c86", "p": "#6e3a5e", "L": "#c886b0", "o": "#eca359", "O": "#c0723e", "W": "#f3dbb6", "e": "#f8f4ee", "n": "#3a2030", "Y": "#e8c060", "F": "#2a1e2a", "1": "#44233d", "2": "#643758", "3": "#968577", "4": "#92633a", "5": "#7c5173", "6": "#8f743f", "7": "#955733", "8": "#92633a", "9": "#774528", "U": "#4a86d8"},
+    hPriest: {"k": "#0b0a0e", "H": "#f6f4f0", "h": "#c8c6d0", "q": "#eca359", "S": "#ecbb7e", "s": "#c0723e", "v": "#2a2030", "n": "#e8968a", "X": "#c0723e", "F": "#5a4434", "1": "#98949d", "2": "#7c7888", "3": "#774528", "4": "#927152", "5": "#98949d", "E": "#c0303a"},
+    hGunner: {"k": "#0b0a0e", "H": "#2a2a30", "r": "#70707a", "L": "#16161a", "q": "#b39a78", "G": "#f3dbb6", "g": "#c8ad94", "d": "#a29378", "W": "#fae1ca", "e": "#f8f4ee", "n": "#26262e", "C": "#44444e", "c": "#62626e", "x": "#26262e", "S": "#9a9aa4", "B": "#c8b890", "F": "#1c1c22", "1": "#5f5d6b", "2": "#3c3b48", "3": "#2a2933", "4": "#968577", "5": "#7c6961", "6": "#1a191f", "7": "#454450", "8": "#6e5d4e", "9": "#7e7063", "A": "#c3aba7", "D": "#7c6961", "E": "#64594e", "Q": "#4a4848", "V": "#cbc0a9", "Z": "#fefefe", "X": "#434343", "U": "#eee6dc", "N": "#6f6c66"},
+    invPanda: {"k": "#0b0a0e", "R": "#c0582a", "r": "#8a3a1c", "W": "#f0e6d8", "T": "#e8b070", "g": "#c9a24a", "G": "#3e6a2e", "c": "#2e5022", "F": "#2a1a14", "E": "#2a1414", "x": "#ff3b2c", "1": "#7c6230", "2": "#26401e", "3": "#1c3016", "4": "#77351b", "5": "#bbafb2", "6": "#6b2c17", "7": "#77351b"},
+    invReaper: {"k": "#08070a", "C": "#2a2532", "c": "#433c4e", "h": "#5e566c", "H": "#a49c88", "s": "#1c1a22", "g": "#8a8094", "F": "#14121a", "E": "#1a1022", "x": "#c070ff", "1": "#292433", "2": "#1a1620", "3": "#655e59", "4": "#494159", "5": "#292433", "6": "#040406"},
+    invShrew: {"k": "#0e0c0a", "S": "#7a6a5c", "s": "#b8a898", "p": "#d87a8a", "P": "#d87a8a", "b": "#5a3c22", "r": "#a3222a", "F": "#3a2a20", "E": "#2a1414", "x": "#ff3b2c", "1": "#726663", "2": "#65141b", "3": "#372416", "4": "#4b403c", "5": "#726663"},
+    invShrewB: {"k": "#0e0c0a", "S": "#4e4038", "s": "#8a7a6a", "p": "#d87a8a", "P": "#d87a8a", "b": "#5a3c22", "r": "#3e6a2e", "F": "#3a2a20", "E": "#2a1414", "x": "#ff3b2c", "1": "#554a45", "2": "#26401e", "3": "#372416", "4": "#302624", "5": "#554a45"},
+    invWeasel: {"k": "#0b0a0c", "F": "#8a5a30", "f": "#d8a070", "W": "#e8d8b8", "d": "#1e1a18", "r": "#a3222a", "C": "#3a3440", "g": "#c9a24a", "E": "#2a1414", "x": "#ff3b2c", "1": "#65141b", "2": "#231f2a", "3": "#55361f", "4": "#b4a598", "5": "#55361f"},
+  });
+  for (const k of ['hKnight', 'hRanger', 'hMage', 'hPriest', 'hGunner']) PAL[k + 'Ghost'] = ghostOf(PAL[k]); // 잔상·숨기 (푸른 단계)
+  const rampOf = (pal, ramp, eye) => { const o = {}; for (const k in pal) { const h = pal[k], L = (0.3 * parseInt(h.slice(1, 3), 16) + 0.59 * parseInt(h.slice(3, 5), 16) + 0.11 * parseInt(h.slice(5, 7), 16)) / 255; o[k] = ramp[Math.min(ramp.length - 1, Math.floor(L * ramp.length * 1.4))]; } if (eye) for (const k of eye) if (o[k]) o[k] = '#ffffff'; return o; };
+  PAL.hRangerShadow = rampOf(PAL.hRanger, ['#120818', '#2a1238', '#3d1d52', '#6b3d8a', '#8a5aa8'], ['e']); // 그림자 습격 잔상 (보랏빛)
+  PAL.invReaperEcho = rampOf(PAL.invReaper, ['#2a0f3a', '#5a2280', '#7a34a6', '#a35fd0', '#d9a8ff'], ['x']); // 흑각 메아리
+  // v2.44 3장 오크 9종 + 1·2·4장 엘리트·준엘리트 8종 새 정면 도트 (파티와 같은 비율 · 왼쪽 음영) — 걷기 2·4프레임(W1·W3)
+  Object.assign(MAPS, {
+    nOrc: [".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", "klkk22lllllkklk", ".k22EelllEellk.", "..k2lTkkkTllk..", "...kk3llldkk...", "..kbbk2llkbbk..", ".kllkk3ldkkllk.", ".kllk4BwBBkllk.", ".kddk5bbbbkddk.", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nOrcW1: ["...............", ".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", "klkk22lllllkklk", ".k22EelllEellk.", "..k2lTkkkTllk..", "...kk3llldkk...", "..kbbk2llkbbk..", ".kllkk3ldkkllk.", ".kllk4BwBBkllk.", ".kddk5bbbbkddk.", "...kFFk.kkkk..,"],
+    nOrcW3: ["...............", ".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", "klkk22lllllkklk", ".k22EelllEellk.", "..k2lTkkkTllk..", "...kk3llldkk...", "..kbbk2llkbbk..", ".kllkk3ldkkllk.", ".kllk4BwBBkllk.", ".kddk5bbbbkddk.", "...kkkk.kFFk..,"],
+    nOthrow: ["............k..", "...........kw..", "....kkkkkkkwk..", "...k11lllllk...", "..k11lllllllk..", "klk22rrrrrrrklk", ".kkwEelllEewlk.", ".k3llTkkkTllk..", "ko.kk4llldkk...", "k.k55blllbbbk..", ".klk55blbbbklk.", ".klk66BOBBBklk.", ".kdk77OOOOOkdk.", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nOthrowW1: ["...............", "............k..", "...........kw..", "....kkkkkkkwk..", "...k11lllllk...", "..k11lllllllk..", "klk22rrrrrrrklk", ".kkwEelllEewlk.", ".k3llTkkkTllk..", "ko.kk4llldkk...", "k.k55blllbbbk..", ".klk55blbbbklk.", ".klk66BOBBBklk.", ".kdk77OOOOOkdk.", "...kFFk.kkkk..,"],
+    nOthrowW3: ["...............", "............k..", "...........kw..", "....kkkkkkkwk..", "...k11lllllk...", "..k11lllllllk..", "klk22rrrrrrrklk", ".kkwEelllEewlk.", ".k3llTkkkTllk..", "ko.kk4llldkk...", "k.k55blllbbbk..", ".klk55blbbbklk.", ".klk66BOBBBklk.", ".kdk77OOOOOkdk.", "...kkkk.kFFk..,"],
+    nShaman: ["..k....k....k..", ".kwk.kkkkk.kwk.", ".kwwkwwwwwkwwk.", "..kwwwkwkwwwk..", "..kWWWWWWWWWk..", "klk11EelEellklk", ".k11wlllllwllk.", "..k11lldllllk..", "...kwwwwwwwk...", ".kWWWk1llkWWWk.", ".kWWlk2bbk1WWk.", ".kWWlk2bbk1WWk.", ".kWWdkWWWk3WWk.", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nShamanW1: ["...............", "..k....k....k..", ".kwk.kkkkk.kwk.", ".kwwkwwwwwkwwk.", "..kwwwkwkwwwk..", "..kWWWWWWWWWk..", "klk11EelEellklk", ".k11wlllllwllk.", "..k11lldllllk..", "...kwwwwwwwk...", ".kWWWk1llkWWWk.", ".kWWlk2bbk1WWk.", ".kWWlk2bbk1WWk.", ".kWWdkWWWk3WWk.", "...kFFk.kkkk..,"],
+    nShamanW3: ["...............", "..k....k....k..", ".kwk.kkkkk.kwk.", ".kwwkwwwwwkwwk.", "..kwwwkwkwwwk..", "..kWWWWWWWWWk..", "klk11EelEellklk", ".k11wlllllwllk.", "..k11lldllllk..", "...kwwwwwwwk...", ".kWWWk1llkWWWk.", ".kWWlk2bbk1WWk.", ".kWWlk2bbk1WWk.", ".kWWdkWWWk3WWk.", "...kkkk.kFFk..,"],
+    nOcharge: [".n...........n.", ".wk.........kw.", ".wwkkkknkkkkww.", "..k11mmnmmmmk..", ".k22MMMMMMMMMk.", "klk33EelEellklk", ".k33lllllllllk.", "..k3lTkkkTllk..", "...kk4llldkk...", "kmmk11mmmmmkmmk", "kmmk22MyMMMkmmk", ".klk55BRBBBklk.", ".kdk66RRRRRkdk.", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nOchargeW1: ["...............", ".n...........n.", ".wk.........kw.", ".wwkkkknkkkkww.", "..k11mmnmmmmk..", ".k22MMMMMMMMMk.", "klk33EelEellklk", ".k33lllllllllk.", "..k3lTkkkTllk..", "...kk4llldkk...", "kmmk11mmmmmkmmk", "kmmk22MyMMMkmmk", ".klk55BRBBBklk.", ".kdk66RRRRRkdk.", "...kFFk.kkkk..,"],
+    nOchargeW3: ["...............", ".n...........n.", ".wk.........kw.", ".wwkkkknkkkkww.", "..k11mmnmmmmk..", ".k22MMMMMMMMMk.", "klk33EelEellklk", ".k33lllllllllk.", "..k3lTkkkTllk..", "...kk4llldkk...", "kmmk11mmmmmkmmk", "kmmk22MyMMMkmmk", ".klk55BRBBBklk.", ".kdk66RRRRRkdk.", "...kkkk.kFFk..,"],
+    nOdrum: ["...............", "....kkkkkkk....", "...k11HHHHHk...", "..k22lllllllk..", ".k22lllllllllk.", "kHk2EelllEelkHk", "k12llllllllllHk", "kHk2lTkkkTllkHk", "kykk32lllldkkyk", ".kk22lllllllkk.", "klk42llllllhklk", "klk22lldllllklk", "kdkkWWWWWWWkkdk", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nOdrumW1: ["...............", "...............", "....kkkkkkk....", "...k11HHHHHk...", "..k22lllllllk..", ".k22lllllllllk.", "kHk2EelllEelkHk", "k12llllllllllHk", "kHk2lTkkkTllkHk", "kykk32lllldkkyk", ".kk22lllllllkk.", "klk42llllllhklk", "klk22lldllllklk", "kdkkWWWWWWWkkdk", "...kFFk.kkkk..,"],
+    nOdrumW3: ["...............", "...............", "....kkkkkkk....", "...k11HHHHHk...", "..k22lllllllk..", ".k22lllllllllk.", "kHk2EelllEelkHk", "k12llllllllllHk", "kHk2lTkkkTllkHk", "kykk32lllldkkyk", ".kk22lllllllkk.", "klk42llllllhklk", "klk22lldllllklk", "kdkkWWWWWWWkkdk", "...kkkk.kFFk..,"],
+    nOgrip: ["...............", "....kkkkkkk....", "...k11lllllk...", "..k11lllllllk..", ".k11rllllllllk.", "klk12EelEellklk", ".k11lrlllllllk.", "..k1lTkkkTllk..", "..k34mMmMmMmk..", "kllk11lllllkllk", "k1llk5ldldk1llk", "kMMk15llldlkMMk", "kddk66BBBBBkddk", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nOgripW1: ["...............", "...............", "....kkkkkkk....", "...k11lllllk...", "..k11lllllllk..", ".k11rllllllllk.", "klk12EelEellklk", ".k11lrlllllllk.", "..k1lTkkkTllk..", "..k34mMmMmMmk..", "kllk11lllllkllk", "k1llk5ldldk1llk", "kMMk15llldlkMMk", "kddk66BBBBBkddk", "...kFFk.kkkk..,"],
+    nOgripW3: ["...............", "...............", "....kkkkkkk....", "...k11lllllk...", "..k11lllllllk..", ".k11rllllllllk.", "klk12EelEellklk", ".k11lrlllllllk.", "..k1lTkkkTllk..", "..k34mMmMmMmk..", "kllk11lllllkllk", "k1llk5ldldk1llk", "kMMk15llldlkMMk", "kddk66BBBBBkddk", "...kkkk.kFFk..,"],
+    nOtroll: [".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kllkWWWWWkllk.", ".kllkFFkFFkllk.", ".kTTkkkkkkkTTk,"],
+    nOtrollW1: ["...............", ".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kllkWWWWWkllk.", ".kllkFFkkkkllk,"],
+    nOtrollW3: ["...............", ".......k.......", "......kHk......", ".....k1HHk.....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kllkWWWWWkllk.", ".kllkkkkFFkllk,"],
+    nUrg: ["......kHk......", ".....kyHyk.....", "....kk1HHkk....", "...k22lllllk...", "..k22lllllllk..", "klk22EelEellklk", ".k23lllllllrlk.", "..k2lTkkkTllk..", ".kwkk4llldkkwk.", "kwwwkTwwwTkwwwk", "kwlk22llrdlklwk", ".klk55yyyBBklk.", ".kdk33rrrrrkdk.", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nUrgW1: ["...............", "......kHk......", ".....kyHyk.....", "....kk1HHkk....", "...k22lllllk...", "..k22lllllllk..", "klk22EelEellklk", ".k23lllllllrlk.", "..k2lTkkkTllk..", ".kwkk4llldkkwk.", "kwwwkTwwwTkwwwk", "kwlk22llrdlklwk", ".klk55yyyBBklk.", ".kdk33rrrrrkdk.", "...kFFk.kkkk..,"],
+    nUrgW3: ["...............", "......kHk......", ".....kyHyk.....", "....kk1HHkk....", "...k22lllllk...", "..k22lllllllk..", "klk22EelEellklk", ".k23lllllllrlk.", "..k2lTkkkTllk..", ".kwkk4llldkkwk.", "kwwwkTwwwTkwwwk", "kwlk22llrdlklwk", ".klk55yyyBBklk.", ".kdk33rrrrrkdk.", "...kkkk.kFFk..,"],
+    nTroll: ["......kkk......", ".....k1HHk.....", "....kk1HHkk....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kMmkWWWWWkmMk.", ".kllkFFkFFkllk.", ".kTTkkkkkkkTTk,"],
+    nTrollW1: ["...............", "......kkk......", ".....k1HHk.....", "....kk1HHkk....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kMmkWWWWWkmMk.", ".kllkFFkkkkllk,"],
+    nTrollW3: ["...............", "......kkk......", ".....k1HHk.....", "....kk1HHkk....", "...kk2HHHlkk...", "..k22lllllllk..", ".kkk22lllllkkk.", ".k22EelllEellk.", "..kkTkkkkkTkk..", "...kk3llldkk...", "..kk22lllllkk..", ".kllkk2dlkkllk.", ".kllkWWWWWkllk.", ".kMmkWWWWWkmMk.", ".kllkkkkFFkllk,"],
+    nBrute: [".......kkkkkkk.......", "k.....k11sssrsk.....k", "hkkk.k11ssssrssk.kkkh", "1sskk.k11ssssrk.kk1ss", "kk11ssssssssssssssskk", "..kkk11EesssEesskkk..", ".....ksTkkkkkTsk.....", "......kk1sssskk......", ".....kk11ssssskk.....", "....ksskk1Sskkssk....", "....kssk2cbcckssk....", "....kSSk3CCCCkSSk....", "......kssk.kssk......", "......kkkk.kkkk.....,"],
+    nBruteW1: [".....................", ".......kkkkkkk.......", "k.....k11sssrsk.....k", "hkkk.k11ssssrssk.kkkh", "1sskk.k11ssssrk.kk1ss", "kk11ssssssssssssssskk", "..kkk11EesssEesskkk..", ".....ksTkkkkkTsk.....", "......kk1sssskk......", ".....kk11ssssskk.....", "....ksskk1Sskkssk....", "....kssk2cbcckssk....", "....kSSk3CCCCkSSk....", "......kssk.kssk.....,"],
+    nBruteW3: [".....................", ".......kkkkkkk.......", "k.....k11sssrsk.....k", "hkkk.k11ssssrssk.kkkh", "1sskk.k11ssssrk.kk1ss", "kk11ssssssssssssssskk", "..kkk11EesssEesskkk..", ".....ksTkkkkkTsk.....", "......kk1sssskk......", ".....kk11ssssskk.....", "....ksskk1Sskkssk....", "....kssk2cbcckssk....", "....kSSk3CCCCkSSk....", "......kssk.kssk.....,"],
+    nBoar: ["...k..k..kkk......", "..kbkkbkkbddkkk...", ".kbbkbbkbbdddddk..", "..kkkkkkk11dddddk.", "..kk11dddddddEedk.", "kk11dddddddddddddk", "Dk11dddddddddddLLp", "kk11dddddddddddLLL", ".k11ddddddddddddTT", "..k21dDdddDddDdkkk", "..khkkhkkkhkkhk...", "...k..k...k..k...,"],
+    nBoarW1: ["..................", "...k..k..kkk......", "..kbkkbkkbddkkk...", ".kbbkbbkbbdddddk..", "..kkkkkkk11dddddk.", "..kk11dddddddEedk.", "kk11dddddddddddddk", "Dk11dddddddddddLLp", "kk11dddddddddddLLL", ".k11ddddddddddddTT", "..k21dDdddDddDdkkk", "..khkkhkkkhkkhk..,"],
+    nBoarW3: ["..................", "...k..k..kkk......", "..kbkkbkkbddkkk...", ".kbbkbbkbbdddddk..", "..kkkkkkk11dddddk.", "..kk11dddddddEedk.", "kk11dddddddddddddk", "Dk11dddddddddddLLp", "kk11dddddddddddLLL", ".k11ddddddddddddTT", "..k21dDdddDddDdkkk", "..khkkhkkkhkkhk..,"],
+    nExec: ["....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", "..k11HHHHHHHk..", ".k11hhhhhhhHHk.", ".k11hehhhheHHk.", ".k11HHHHHHHHHk.", ".k11HHHHHHHHHk.", ".kHk22ssssskHk.", ".kHk32ssssSkHk.", ".ksskk3SSkkssk.", ".kssk4bmbbkssk.", ".kSSk5aarakSSk.", "...kBBk.kBBk...", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nExecW1: ["...............", "....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", "..k11HHHHHHHk..", ".k11hhhhhhhHHk.", ".k11hehhhheHHk.", ".k11HHHHHHHHHk.", ".k11HHHHHHHHHk.", ".kHk22ssssskHk.", ".kHk32ssssSkHk.", ".ksskk3SSkkssk.", ".kssk4bmbbkssk.", ".kSSk5aarakSSk.", "...kBBk.kBBk...", "...kFFk.kkkk..,"],
+    nExecW3: ["...............", "....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", "..k11HHHHHHHk..", ".k11hhhhhhhHHk.", ".k11hehhhheHHk.", ".k11HHHHHHHHHk.", ".k11HHHHHHHHHk.", ".kHk22ssssskHk.", ".kHk32ssssSkHk.", ".ksskk3SSkkssk.", ".kssk4bmbbkssk.", ".kSSk5aarakSSk.", "...kBBk.kBBk...", "...kkkk.kFFk..,"],
+    nMother: ["....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", ".k11sssssssHHk.", ".k12ssssssssHk.", ".k12EesssEesHk.", ".k12sbmmmbssHk.", ".k11sssssssHHk.", ".kHHkk2sskkHHk.", ".kHk33rrrrrkHk.", "kSSk34VvVVrkSSk", "kSSk45vbvvVkSSk", ".ksk34VVVVrksk.", "..k66RRRRRRRk..", "..kRkRkRkRkRk..", "..kk.k.k.k.kk.,"],
+    nMotherW1: ["...............", "....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", ".k11sssssssHHk.", ".k12ssssssssHk.", ".k12EesssEesHk.", ".k12sbmmmbssHk.", ".k11sssssssHHk.", ".kHHkk2sskkHHk.", ".kHk33rrrrrkHk.", "kSSk34VvVVrkSSk", "kSSk45vbvvVkSSk", ".ksk34VVVVrksk.", "..k66RRRRRRRk..", "..kRkRkRkRkRk.,"],
+    nMotherW3: ["...............", "....kkkkkkk....", "...k11HHHHHk...", "..k11HHHHHHHk..", ".k11sssssssHHk.", ".k12ssssssssHk.", ".k12EesssEesHk.", ".k12sbmmmbssHk.", ".k11sssssssHHk.", ".kHHkk2sskkHHk.", ".kHk33rrrrrkHk.", "kSSk34VvVVrkSSk", "kSSk45vbvvVkSSk", ".ksk34VVVVrksk.", "..k66RRRRRRRk..", "..kRkRkRkRkRk.,"],
+    nCoffin: ["....kkkkkkk....", "...k11aaaaak...", "..k11aaaaaaak..", ".k11acccccaaak.", ".k11cccccccaak.", ".k11cceccecaak.", ".k11cccccccaak.", ".k11acccccaaak.", "..k11aaaaaaak..", ".kAak1aaaakgAk.", ".kaak11aaggaak.", ".kaak1aggakaak.", ".kAAk2gaaakAAk.", "..k11aaaaaaak..", "..kAkAkAkAkAk..", "..kk.k.k.k.kk.,"],
+    nCoffinW1: ["...............", "....kkkkkkk....", "...k11aaaaak...", "..k11aaaaaaak..", ".k11acccccaaak.", ".k11cccccccaak.", ".k11cceccecaak.", ".k11cccccccaak.", ".k11acccccaaak.", "..k11aaaaaaak..", ".kAak1aaaakgAk.", ".kaak11aaggaak.", ".kaak1aggakaak.", ".kAAk2gaaakAAk.", "..k11aaaaaaak..", "..kAkAkAkAkAk.,"],
+    nCoffinW3: ["...............", "....kkkkkkk....", "...k11aaaaak...", "..k11aaaaaaak..", ".k11acccccaaak.", ".k11cccccccaak.", ".k11cceccecaak.", ".k11cccccccaak.", ".k11acccccaaak.", "..k11aaaaaaak..", ".kAak1aaaakgAk.", ".kaak11aaggaak.", ".kaak1aggakaak.", ".kAAk2gaaakAAk.", "..k11aaaaaaak..", "..kAkAkAkAkAk.,"],
+    nHerald: ["......kkk......", ".....k1Rrk.....", "....kk1Rrkk....", "...k22aaaaak...", "..k22aaaaaaak..", "..k33deddeddk..", "..k22aaaaaaak..", "..k22aaaaaaak..", "...kk2aaaakk...", "..kaak1rrkaak..", ".kaak1rgrrkaak.", ".kaak1grgrkaak.", ".kAAk1rgrrkAAk.", "...kddk.kddk...", "...kFFk.kFFk...", "...kkkk.kkkk..,"],
+    nHeraldW1: ["...............", "......kkk......", ".....k1Rrk.....", "....kk1Rrkk....", "...k22aaaaak...", "..k22aaaaaaak..", "..k33deddeddk..", "..k22aaaaaaak..", "..k22aaaaaaak..", "...kk2aaaakk...", "..kaak1rrkaak..", ".kaak1rgrrkaak.", ".kaak1grgrkaak.", ".kAAk1rgrrkAAk.", "...kddk.kddk...", "...kFFk.kkkk..,"],
+    nHeraldW3: ["...............", "......kkk......", ".....k1Rrk.....", "....kk1Rrkk....", "...k22aaaaak...", "..k22aaaaaaak..", "..k33deddeddk..", "..k22aaaaaaak..", "..k22aaaaaaak..", "...kk2aaaakk...", "..kaak1rrkaak..", ".kaak1rgrrkaak.", ".kaak1grgrkaak.", ".kAAk1rgrrkAAk.", "...kddk.kddk...", "...kkkk.kFFk..,"],
+    nMordred: ["........kykyyykyk........", "........k11gggggk........", ".......k22PPPPPPPk.......", "......k22PPPPPPPPPk......", "......k22PPPPPPPPPk......", "......k33QeQQQQeQQk......", "......k22PPPPPPPPPk......", "......k22pPpPpPpPPk......", "....k..kk22PPPPPkk.......", "...krkWWk22PPPPPkWWk.....", ".kk4rrkPk22gggPPkPk......", "k4RrrRkPk22PgPPPkPk......", "k4RrrRkpk55qqqqqkpk......", "krRkrRk.kppk.kppk........", "krk.kRk.kQQk.kQQk........", ".k...k..kkkk.kkkk.......,"],
+    nMordredW1: [".........................", "........kykyyykyk........", "........k11gggggk........", ".......k22PPPPPPPk.......", "......k22PPPPPPPPPk......", "......k22PPPPPPPPPk......", "......k33QeQQQQeQQk......", "......k22PPPPPPPPPk......", "......k22pPpPpPpPPk......", "....k..kk22PPPPPkk.......", "...krkWWk22PPPPPkWWk.....", ".kk4rrkPk22gggPPkPk......", "k4RrrRkPk22PgPPPkPk......", "k4RrrRkpk55qqqqqkpk......", "krRkrRk.kppk.kppk........", "krk.kRk.kQQk.kQQk.......,"],
+    nMordredW3: [".........................", "........kykyyykyk........", "........k11gggggk........", ".......k22PPPPPPPk.......", "......k22PPPPPPPPPk......", "......k22PPPPPPPPPk......", "......k33QeQQQQeQQk......", "......k22PPPPPPPPPk......", "......k22pPpPpPpPPk......", "....k..kk22PPPPPkk.......", "...krkWWk22PPPPPkWWk.....", ".kk4rrkPk22gggPPkPk......", "k4RrrRkPk22PgPPPkPk......", "k4RrrRkpk55qqqqqkpk......", "krRkrRk.kppk.kppk........", "krk.kRk.kQQk.kQQk.......,"],
+    nQueen: ["...kykyyykyk...", "...k11gggggk...", "..k22VVVVVVVk..", ".k23vvvvvvvvVk.", ".k23sssssssvVk.", ".k23EesssEevVk.", ".k23esssssevVk.", ".k22evSSSvvVVk.", ".k22vvxgxvvVVk.", "..k23vvvvvvVk..", "..k33vvvvvvvk..", ".k33vvvvvvvvvk.", ".k33VvvVvvVvvk.", "k33VvvVvVvvVvvk", "k22VVVVVVVVVVVk", "kkkkkkkkkkkkkk,"],
+    nQueenW1: ["...............", "...kykyyykyk...", "...k11gggggk...", "..k22VVVVVVVk..", ".k23vvvvvvvvVk.", ".k23sssssssvVk.", ".k23EesssEevVk.", ".k23esssssevVk.", ".k22evSSSvvVVk.", ".k22vvxgxvvVVk.", "..k23vvvvvvVk..", "..k33vvvvvvvk..", ".k33vvvvvvvvvk.", ".k33VvvVvvVvvk.", "k33VvvVvVvvVvvk", "k22VVVVVVVVVVV,"],
+    nQueenW3: ["...............", "...kykyyykyk...", "...k11gggggk...", "..k22VVVVVVVk..", ".k23vvvvvvvvVk.", ".k23sssssssvVk.", ".k23EesssEevVk.", ".k23esssssevVk.", ".k22evSSSvvVVk.", ".k22vvxgxvvVVk.", "..k23vvvvvvVk..", "..k33vvvvvvvk..", ".k33vvvvvvvvvk.", ".k33VvvVvvVvvk.", "k33VvvVvVvvVvvk", "k22VVVVVVVVVVV,"],
+    nDog: ["...........kdk.kdk..", "...........kddkddk..", "...........klllllk..", "k..........klmlmlk..", "dk........kl1dEeddkk", "dk..kkkkkkk21dddLLLD", "kdkk33rrrrdmddddLLLL", ".kk13rRrrrdmdddddttk", ".k11ggggggdmdkdkkkk.", "..k11dddddddk.k.....", "..k41DdddDdDk.......", "..kDkDkkkDkDk.......", "..kDkDk.kDkDk.......", "...k.k...k.k.......,"],
+    nDogW1: ["....................", "...........kdk.kdk..", "...........kddkddk..", "...........klllllk..", "k..........klmlmlk..", "dk........kl1dEeddkk", "dk..kkkkkkk21dddLLLD", "kdkk33rrrrdmddddLLLL", ".kk13rRrrrdmdddddttk", ".k11ggggggdmdkdkkkk.", "..k11dddddddk.k.....", "..k41DdddDdDk.......", "..kDkDkkkDkDk.......", "..kDkDk.kDkDk......,"],
+    nDogW3: ["....................", "...........kdk.kdk..", "...........kddkddk..", "...........klllllk..", "k..........klmlmlk..", "dk........kl1dEeddkk", "dk..kkkkkkk21dddLLLD", "kdkk33rrrrdmddddLLLL", ".kk13rRrrrdmdddddttk", ".k11ggggggdmdkdkkkk.", "..k11dddddddk.k.....", "..k41DdddDdDk.......", "..kDkDkkkDkDk.......", "..kDkDk.kDkDk......,"],
+    nGuard: ["......kkk......", ".....k1GGk.....", "...kkk2aakkk...", "..k22aaaaaaak..", "..k22aaaaaaak..", "..k33DeDDeDDk..", "..k22aaaaaaak..", "..kAk2aaaakAk..", "...kk4mmmmkk...", "k2aak5dgddk2aak", "kAak55dGdddkaAk", ".kak55dgdddkak.", ".kak33DgDDDkak.", "...kddk.kddk...", "...kDDk.kDDk...", "...kkkk.kkkk..,"],
+    nGuardW1: ["...............", "......kkk......", ".....k1GGk.....", "...kkk2aakkk...", "..k22aaaaaaak..", "..k22aaaaaaak..", "..k33DeDDeDDk..", "..k22aaaaaaak..", "..kAk2aaaakAk..", "...kk4mmmmkk...", "k2aak5dgddk2aak", "kAak55dGdddkaAk", ".kak55dgdddkak.", ".kak33DgDDDkak.", "...kddk.kddk...", "...kDDk.kDDk..,"],
+    nGuardW3: ["...............", "......kkk......", ".....k1GGk.....", "...kkk2aakkk...", "..k22aaaaaaak..", "..k22aaaaaaak..", "..k33DeDDeDDk..", "..k22aaaaaaak..", "..kAk2aaaakAk..", "...kk4mmmmkk...", "k2aak5dgddk2aak", "kAak55dGdddkaAk", ".kak55dgdddkak.", ".kak33DgDDDkak.", "...kddk.kddk...", "...kDDk.kDDk..,"],
+    nGuardShield: [".kkkkkk.", "kaaaaaak", "kaGGGGak", "kaaGGaak", "kaaGGaak", "kaaGGaak", "kAaaaaAk", ".kAaaAk.", "..kAAk..", "...kk..."],
+    nBaldor: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcRrrrrPk5pupqRR6Dk.....", ".....kcRrrrrpkgGGGgRR6Dk.....", "....kcrRrrrrrkqqkqRRR64Dk....", "....kkkRkkkkkkQQkQkkk6kkk....", "....k..k.....kkkkk...k..k...,"],
+    nBaldorW0: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcRrrrrPk5pupqRR6Dk.....", ".....kcRrrrrpkgGGGgRR6Dk.....", "...kcrrRrrrrrkqqkqRRR64Dk....", "...kkkkRkkkkkkQQkQkkk6kkk....", "...k...k.....kkkkk...k..k...,"],
+    nBaldorW1: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", "....kcrrRrrrPk5pupqR64Dk.....", "....kcrrRrrrpkgGGGgR64Dk.....", "...kcrrrRrrrrkqqkqRR64Dk.....", "..kkRkkkRkkkkkQQkQkk6kkk.....", "..k.k...k....kkkkk..k..k....,"],
+    nBaldorW2: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcRrrrk5qqqR6Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcrrRrrPk5pupq6R4Dk.....", ".....kcrrRrrpkgGGGg6R4Dk.....", "...kcRrrrRrrrkqqkqR6RR4Dk....", "...kkRkkkRkkkkQQkQk6kkkDk....", "...k.k...k...kkkkk.k...kk...,"],
+    nBaldorW3: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrRrrk5qqq64Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", "....kcRrrrrrPk5pupqRR4Dk.....", "....kcRrrrrrpkgGGGgRR4Dk.....", "...kcrRrrrRrrkqqkq6RR4Dk.....", "..kkkkRkkkRkkkQQkQ6kkkDk.....", "..k...k...k..kkkkkk...kk....,"],
+    nKrugash: [".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kFFk.kFFk............", "............kkkk.kkkk...........,"],
+    nKrugashW1: [".................................", ".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kFFk.kkkk...........,"],
+    nKrugashW3: [".................................", ".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kkkk.kFFk...........,"],
+  });
+  Object.assign(PAL, {
+    nOrc: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#1a1215", "2": "#44592c", "3": "#2f411f", "4": "#301d15", "5": "#4b3022"},
+    nOrc_v0: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#1a1215", "2": "#44592c", "3": "#2f411f", "4": "#301d15", "5": "#4b3022"},
+    nOrc_v1: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#bc9c5c", "l": "#967a3e", "d": "#6a5428", "1": "#1a1215", "2": "#5d4a28", "3": "#41331a", "4": "#301d15", "5": "#4b3022"},
+    nOrc_v2: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#1a1215", "2": "#5f362b", "3": "#42241c", "4": "#301d15", "5": "#4b3022"},
+    nOrc_v3: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa2a2", "l": "#788282", "d": "#545c5e", "1": "#1a1215", "2": "#4a4e55", "3": "#34373d", "4": "#301d15", "5": "#4b3022"},
+    nOthrow: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa85a", "l": "#7a883e", "d": "#56622a", "1": "#4b5228", "2": "#65191b", "3": "#656373", "4": "#353b1b", "5": "#4b3022", "6": "#301d15", "7": "#372313"},
+    nOthrow_v0: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#44592c", "2": "#65191b", "3": "#656373", "4": "#2f411f", "5": "#4b3022", "6": "#301d15", "7": "#372313"},
+    nOthrow_v1: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#bc9c5c", "l": "#967a3e", "d": "#6a5428", "1": "#5d4a28", "2": "#65191b", "3": "#656373", "4": "#41331a", "5": "#4b3022", "6": "#301d15", "7": "#372313"},
+    nOthrow_v2: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#5f362b", "2": "#65191b", "3": "#656373", "4": "#42241c", "5": "#4b3022", "6": "#301d15", "7": "#372313"},
+    nOthrow_v3: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa2a2", "l": "#788282", "d": "#545c5e", "1": "#4a4e55", "2": "#65191b", "3": "#656373", "4": "#34373d", "5": "#4b3022", "6": "#301d15", "7": "#372313"},
+    nShaman: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aaa86", "l": "#7a8a68", "d": "#56644a", "1": "#4b5344", "2": "#4b3022", "3": "#353c30"},
+    nShaman_v0: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#44592c", "2": "#4b3022", "3": "#2f411f"},
+    nShaman_v1: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#bc9c5c", "l": "#967a3e", "d": "#6a5428", "1": "#5d4a28", "2": "#4b3022", "3": "#41331a"},
+    nShaman_v2: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#5f362b", "2": "#4b3022", "3": "#42241c"},
+    nShaman_v3: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa2a2", "l": "#788282", "d": "#545c5e", "1": "#4a4e55", "2": "#4b3022", "3": "#34373d"},
+    nOcharge: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#76984c", "l": "#587a36", "d": "#3e5826", "1": "#656373", "2": "#3a3945", "3": "#364a23", "4": "#263518", "5": "#301d15", "6": "#3a0c0e"},
+    nOdrum: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#a8a860", "l": "#868642", "d": "#5e5e2c", "1": "#1a1215", "2": "#53512b", "3": "#3a391c", "4": "#68663f"},
+    nOdrum_v0: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#1a1215", "2": "#44592c", "3": "#2f411f", "4": "#586c3d"},
+    nOdrum_v1: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#bc9c5c", "l": "#967a3e", "d": "#6a5428", "1": "#1a1215", "2": "#5d4a28", "3": "#41331a", "4": "#745e3c"},
+    nOdrum_v2: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#1a1215", "2": "#5f362b", "3": "#42241c", "4": "#774a3d"},
+    nOdrum_v3: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa2a2", "l": "#788282", "d": "#545c5e", "1": "#1a1215", "2": "#4a4e55", "3": "#34373d", "4": "#5f626a"},
+    nOgrip: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#5f362b", "2": "#65191b", "3": "#656373", "4": "#3a3945", "5": "#42241c", "6": "#301d15"},
+    nOgrip_v0: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8fb35e", "l": "#6e9444", "d": "#4c6c30", "1": "#44592c", "2": "#65191b", "3": "#656373", "4": "#3a3945", "5": "#2f411f", "6": "#301d15"},
+    nOgrip_v1: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#bc9c5c", "l": "#967a3e", "d": "#6a5428", "1": "#5d4a28", "2": "#65191b", "3": "#656373", "4": "#3a3945", "5": "#41331a", "6": "#301d15"},
+    nOgrip_v2: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#c07a5e", "l": "#9a5a42", "d": "#6c3c2c", "1": "#5f362b", "2": "#65191b", "3": "#656373", "4": "#3a3945", "5": "#42241c", "6": "#301d15"},
+    nOgrip_v3: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa2a2", "l": "#788282", "d": "#545c5e", "1": "#4a4e55", "2": "#65191b", "3": "#656373", "4": "#3a3945", "5": "#34373d", "6": "#301d15"},
+    nOtroll: {"k": "#0b0a0e", "e": "#ff9a30", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9a9a72", "l": "#787a54", "d": "#56583a", "1": "#1a1215", "2": "#4a4a37", "3": "#353526"},
+    nUrg: {"k": "#0b0a0e", "e": "#ffd23a", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#8aa070", "l": "#6a8052", "d": "#4a5a38", "1": "#1a1215", "2": "#414d35", "3": "#65191b", "4": "#2d3624", "5": "#301d15"},
+    nTroll: {"k": "#0b0a0e", "e": "#ffe060", "E": "#2a1410", "w": "#ece0c4", "W": "#b8ac90", "b": "#7a5034", "B": "#4e3020", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "H": "#2a1e20", "r": "#a32a2a", "R": "#5e1416", "y": "#d8a840", "o": "#8a6034", "O": "#5a3a1e", "s": "#d8c49a", "T": "#f4ecd8", "F": "#2a1e18", "u": "#c0b4a0", "h": "#9aa8a8", "l": "#76848a", "d": "#56626a", "1": "#1a1215", "2": "#49505a", "3": "#353b45"},
+    nBrute: {"k": "#0b0f08", "s": "#5e8a34", "S": "#3e5e24", "h": "#8ab858", "e": "#ffdf3a", "E": "#2a1a08", "r": "#a3222a", "T": "#f4ecd8", "b": "#d8d0b8", "c": "#5a3a22", "C": "#3a2414", "1": "#3a5322", "2": "#372316", "3": "#23150d"},
+    nBoar: {"k": "#0a0806", "d": "#4a3428", "D": "#2e2018", "L": "#6a5040", "b": "#e0d8c0", "e": "#ff3020", "E": "#140c08", "p": "#a06060", "T": "#f4ecd8", "h": "#1a1410", "1": "#2d1f1a", "2": "#1c130f"},
+    nExec: {"k": "#0c0a0a", "H": "#141014", "h": "#2a242a", "e": "#ff3020", "E": "#2a242a", "s": "#b08a78", "S": "#7a5a4c", "b": "#3a2418", "a": "#5a3a24", "r": "#7a1418", "B": "#2a2024", "F": "#1a1414", "m": "#8a8a92", "1": "#0c090d", "2": "#6d534e", "3": "#4b3631", "4": "#23150f", "5": "#4b0c0f"},
+    nMother: {"k": "#0c0a0c", "H": "#1a1418", "s": "#b8b09c", "S": "#7a7464", "e": "#c8f060", "E": "#1a1418", "m": "#2a1010", "v": "#9ae050", "V": "#4a7a20", "r": "#4a3a38", "R": "#2a2020", "b": "#d8d0b8", "1": "#100c0f", "2": "#726a66", "3": "#2d2324", "4": "#2d4a15", "5": "#5f8834", "6": "#1a1315"},
+    nCoffin: {"k": "#0b0a09", "a": "#a8a296", "A": "#7a746c", "e": "#ff7a30", "c": "#2a2420", "g": "#9a7a38", "1": "#686262", "2": "#5f4a24"},
+    nHerald: {"k": "#0b0a09", "a": "#a8a296", "A": "#7a746c", "r": "#6a2a1e", "R": "#4a1c14", "g": "#c8a050", "e": "#ff7a30", "E": "#2e2b28", "d": "#4a4642", "D": "#2e2b28", "F": "#2e2b28", "1": "#411913", "2": "#686262", "3": "#2d2a2b"},
+    nMordred: {"k": "#0b0a09", "W": "#dcd6ca", "P": "#aaa49a", "p": "#7e7870", "q": "#56514b", "Q": "#36322e", "g": "#c8a050", "y": "#f0d890", "r": "#8a2e20", "R": "#4e1c14", "e": "#ff7a30", "E": "#36322e", "1": "#7c6134", "2": "#696365", "3": "#211e1e", "4": "#551b15", "5": "#353131"},
+    nQueen: {"k": "#0b0a09", "v": "#5e5466", "V": "#3e3648", "x": "#9a90a4", "s": "#d8d0c4", "S": "#a89e92", "g": "#c8a050", "y": "#f0d890", "e": "#ff7a30", "E": "#251f2c", "1": "#7c6134", "2": "#26202f", "3": "#3a3343"},
+    nDog: {"k": "#100c0c", "d": "#5e4638", "D": "#3a2a22", "L": "#8a6a5a", "l": "#a8aeb8", "m": "#6a707c", "t": "#e0d8c0", "e": "#ff3b2c", "E": "#1a1010", "r": "#7a1a22", "R": "#4a0e14", "g": "#b89040", "1": "#3a2a24", "2": "#414451", "3": "#4b0f16", "4": "#231916"},
+    nGuard: {"k": "#0b0a09", "a": "#a49e94", "A": "#7a746c", "d": "#524e48", "D": "#34312c", "g": "#9a7a38", "G": "#c8a050", "e": "#ff7a30", "E": "#34312c", "m": "#8a847a", "1": "#7c6134", "2": "#656061", "3": "#201d1c", "4": "#555050", "5": "#322f2f"},
+    nBaldor: {"k": "#050407", "P": "#655d7a", "p": "#4d465c", "q": "#3a3448", "Q": "#2a2534", "H": "#1d1a24", "i": "#57506a", "r": "#8e2632", "R": "#561420", "g": "#a87a30", "G": "#e0b860", "u": "#b450d8", "v": "#d17aff", "E": "#2a070b", "D": "#3e0d14", "1": "#3e3850", "2": "#1a1622", "3": "#2f2a3c", "4": "#581720", "5": "#231f2f", "6": "#350c15", "c": "#b23a44"},
+    nKrugash: {"u": "#6a5a40", "V": "#7a6a50", "k": "#0b0a0e", "l": "#527c32", "d": "#365a20", "m": "#a4a4b0", "M": "#5e5e6a", "n": "#e4e4ec", "w": "#ece0c4", "A": "#d83a2c", "e": "#ff3a20", "E": "#2a0604", "T": "#f4ecd8", "r": "#a32a2a", "R": "#5e1416", "B": "#4e3020", "y": "#d8a840", "F": "#2a1e18", "W": "#b8ac90", "1": "#213615", "2": "#324b20", "3": "#41362a", "4": "#656373", "5": "#301d15"},
+  });
+  PAL.nMordredShade = rampOf(PAL.nMordred, ['#3a0808', '#701414', '#a02020', '#d03434', '#ff8070'], ['e']); PAL.nQueenShade = rampOf(PAL.nQueen, ['#3a0808', '#701414', '#a02020', '#d03434', '#ff8070'], ['e']); // 붉은 환영
+
   const spriteCache = {};
-  const PLAYER_MAPS = new Set(['knight', 'ranger', 'mage', 'priest', 'gunner']);
+  const PLAYER_MAPS = new Set(['knight', 'ranger', 'mage', 'priest', 'gunner', ...['hKnight', 'hRanger', 'hMage', 'hPriest', 'hGunner'].flatMap(k => [k, k + 'W0', k + 'W1', k + 'W2', k + 'W3'])]);
+  for (const k of ['nOrc', 'nOthrow', 'nShaman', 'nOcharge', 'nOdrum', 'nOgrip', 'nOtroll', 'nUrg', 'nTroll', 'nBrute', 'nBoar', 'nExec', 'nMother', 'nCoffin', 'nHerald', 'nMordred', 'nQueen', 'nDog', 'nGuard', 'nBaldor', 'nKrugash', 'invPanda', 'invReaper', 'invShrew', 'invShrewB', 'invWeasel']) for (const v of ['', 'W1', 'W3']) PLAYER_MAPS.add(k + v); // v2.43~44 새 도트는 질감 점 없이
   function sprite(map, pal, scale, white) {
     const key = map + pal + scale + (white ? 'w' : '');
     if (spriteCache[key]) return spriteCache[key];
@@ -1397,16 +1669,36 @@
     if (!fresh) { if (P.cache.size > 96) P.cache.delete(P.cache.keys().next().value); P.cache.set(key, r); }
     return r;
   }
+  // v2.50 도트 오오라 캐시: 스프라이트 그림(회전·늘이기 결과 포함)마다 색·단계·순환 스텝별로 한 번만 만든다 — 매 프레임 픽셀 읽기 없음
+  const PXA = new WeakMap(), PXA_T = {};
+  function pxAuraCv(cv, pa) {
+    const [col, lv] = pa, st = Math.floor(time * 6) % 4, ph = Math.floor(time * 4) % 2, key = col + lv + '|' + st + '|' + (lv > 1 ? ph : 0);
+    let m = PXA.get(cv); if (!m) { m = new Map(); PXA.set(cv, m); } const hit = m.get(key); if (hit) return hit;
+    const P = lv > 2 ? 6 : lv > 1 ? 4 : 2, W = cv.width + P * 2, H = cv.height + P * 2;
+    const tmp = n => { const t = PXA_T[n]; if (t && t[0].width >= W && t[0].height >= H) return t; return (PXA_T[n] = mkCanvas(Math.max(W, t ? t[0].width : 0), Math.max(H, t ? t[0].height : 0))); };
+    const [mc, mg] = tmp('m'), [rc, rg] = tmp('r'), [c, g] = mkCanvas(W, H);
+    const clr = q => { q.setTransform(1, 0, 0, 1, 0, 0); q.globalAlpha = 1; q.globalCompositeOperation = 'source-over'; q.clearRect(0, 0, q.canvas.width, q.canvas.height); };
+    clr(mg); mg.drawImage(cv, P, P); mg.globalCompositeOperation = 'source-in'; mg.fillStyle = '#fff'; mg.fillRect(0, 0, W, H); mg.globalCompositeOperation = 'source-over';
+    const ring = (dd, inner, color, dith) => { clr(rg); const sh = (r, op) => { rg.globalCompositeOperation = op; for (let dy = -r; dy <= r; dy += 2) for (let dx = -r; dx <= r; dx += 2) if (Math.abs(dx) + Math.abs(dy) <= r + (r > 2 ? 2 : 0)) rg.drawImage(mc, dx, dy); };
+      sh(dd, 'source-over'); if (inner >= 0) sh(inner, 'destination-out');
+      if (dith) { rg.globalCompositeOperation = 'destination-in'; rg.fillStyle = rg.createPattern(dith, 'repeat'); rg.fillRect(0, 0, W, H); }
+      rg.globalCompositeOperation = 'source-in'; rg.fillStyle = color; rg.fillRect(0, 0, W, H); g.drawImage(rc, 0, 0); };
+    if (lv > 2) ring(6, 4, auraShade(col, -0.45), auraDith(ph, true));
+    if (lv > 1) ring(4, 2, auraShade(col, -0.25), auraDith(ph));
+    ring(2, 0, auraShade(col, [0, 0.25, 0.5, 0.25][st]), null);
+    g.globalCompositeOperation = 'destination-out'; g.drawImage(cv, P, P); g.globalCompositeOperation = 'source-over'; // 몸 자리는 비움 (반투명하게 그릴 때 비침 방지)
+    const r = { c, p: P }; m.set(key, r); return r;
+  }
   function drawSprite(map, pal, scale, x, y, flip, o = {}) { // v1.05: 기울이기·늘이기는 칸 단위 (pxXform), 위치는 2px 격자
     if (STEALTH_DRAW && PAL[pal + 'Ghost']) pal = pal + 'Ghost'; // v2.05 모습을 감춤 (팔레트 교체)
     const ash = !STEALTH_DRAW && ASH_DRAW && PAL[pal]; if (ash) pal = ashPalKey(pal); // v1.99 잿불 외형
     const s = sprite(map, pal, scale, o.white), X = snap2(x), Y = snap2(y), rot = o.rot || 0, sx = o.sx || 1, sy = o.sy || 1;
     ctx.save(); ctx.globalAlpha = o.alpha == null ? 1 : o.alpha;
-    const W = s.width / scale, H = s.height / scale, au = ash && !o.white;
+    const W = s.width / scale, H = s.height / scale, au = ash && !o.white, pa = !o.white && o.pa; // v2.50 pa: 도트 오오라 [색, 단계]
     if (Math.round(rot / (Math.PI / 40)) === 0 && Math.round(W * sx) === W && Math.round(H * sy) === H) {
-      if (flip) { ctx.translate(X, Y); ctx.scale(-1, 1); if (au) { const A = auraOf(s, scale); ctx.drawImage(A.c, -Math.floor(s.width / 2) - A.p, -s.height - A.p); } ctx.drawImage(s, -Math.floor(s.width / 2), -s.height); }
-      else { if (au) { const A = auraOf(s, scale); ctx.drawImage(A.c, X - Math.floor(s.width / 2) - A.p, Y - s.height - A.p); } ctx.drawImage(s, X - Math.floor(s.width / 2), Y - s.height); }
-    } else { const t = pxXform(s, scale, rot, sx, sy, flip, { pvx: Math.floor(s.width / 2) }); if (au) { const A = auraOf(t.c, scale); ctx.drawImage(A.c, X - t.ax - A.p, Y - t.ay - A.p); } ctx.drawImage(t.c, X - t.ax, Y - t.ay); }
+      if (flip) { ctx.translate(X, Y); ctx.scale(-1, 1); if (pa) { const A = pxAuraCv(s, pa); ctx.drawImage(A.c, -Math.floor(s.width / 2) - A.p, -s.height - A.p); } if (au) { const A = auraOf(s, scale); ctx.drawImage(A.c, -Math.floor(s.width / 2) - A.p, -s.height - A.p); } ctx.drawImage(s, -Math.floor(s.width / 2), -s.height); }
+      else { if (pa) { const A = pxAuraCv(s, pa); ctx.drawImage(A.c, X - Math.floor(s.width / 2) - A.p, Y - s.height - A.p); } if (au) { const A = auraOf(s, scale); ctx.drawImage(A.c, X - Math.floor(s.width / 2) - A.p, Y - s.height - A.p); } ctx.drawImage(s, X - Math.floor(s.width / 2), Y - s.height); }
+    } else { const t = pxXform(s, scale, rot, sx, sy, flip, { pvx: Math.floor(s.width / 2) }); if (pa) { const A = pxAuraCv(t.c, pa); ctx.drawImage(A.c, X - t.ax - A.p, Y - t.ay - A.p); } if (au) { const A = auraOf(t.c, scale); ctx.drawImage(A.c, X - t.ax - A.p, Y - t.ay - A.p); } ctx.drawImage(t.c, X - t.ax, Y - t.ay); }
     ctx.restore();
   }
   // ================================================================ v1.99 잿불 외형 (잿불 3 돌파 보상 · 지금은 테스트로 늘 선택 가능)
@@ -2881,32 +3173,32 @@ WF.knight = (H) => {
   // ---------------------------------------------------------------- 직업
   const CLASSES = {
     knight: {
-      dmgMul: 1.22, n: '기사', name: '알드릭', sub: '??? 기사', role: '탱커 · 그로기', map: 'knight', pal: 'knight', ghostPal: 'ghost', weapon: '대검',
+      dmgMul: 1.22, n: '기사', name: '알드릭', sub: '??? 기사', role: '탱커 · 그로기', map: 'hKnight', pal: 'hKnight', ghostPal: 'hKnightGhost', weapon: '대검',
       base: { atk: 20, def: 0, hp: 6, crit: 0.10, spd: 88 }, tier: { atk: '상', crit: '하', spd: '하' }, skill: '돌진 참격', skillCd: 8, awaken: '성채의 맹세',
       skillD: '돌진한 뒤 크게 올려베며 푸른 검기를 날립니다.', awakenD: '회전베기 2번 뒤 빛의 거대검을 내려치고, 5초간 30% 확률로 흘려냅니다.',
       atkD: '묵직한 3연타, 3타는 회전베기입니다. 흘려내기: 맞을 때 10% 확률로 흘려냅니다.',
     },
     ranger: {
-      n: '어세신', name: '네로', sub: '고양이 어세신', role: '근접 연타 딜러', map: 'ranger', pal: 'ranger', ghostPal: 'rangerGhost', weapon: '쌍검',
+      n: '어세신', name: '네로', sub: '고양이 어세신', role: '근접 연타 딜러', map: 'hRanger', pal: 'hRanger', ghostPal: 'hRangerGhost', weapon: '쌍검',
       base: { atk: 18, def: 0, hp: 6, crit: 0.18, spd: 100 }, tier: { atk: '중', crit: '중', spd: '상' }, skill: '그림자 도약', skillCd: 7, awaken: '칼날 폭풍',
       skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베고, 반드시 치명타가 됩니다.', awakenD: '3초 동안 쌍검 회오리를 일으키고, 그동안 50% 확률로 흘려냅니다.',
       atkD: '빠른 3연타, 3타는 교차베기입니다. 베어내기: 기본 공격 중 맞을 때 10% 확률로 베어냅니다.',
     },
     mage: {
-      dmgMul: 0.88, n: '마법사', name: '세리안', sub: '여우 마법사', role: '원거리 광역 딜러', map: 'mage', pal: 'mage', ghostPal: 'mageGhost', weapon: '지팡이',
+      dmgMul: 0.88, n: '마법사', name: '세리안', sub: '여우 마법사', role: '원거리 광역 딜러', map: 'hMage', pal: 'hMage', ghostPal: 'hMageGhost', weapon: '지팡이',
       base: { atk: 24, def: 0, hp: 5, crit: 0.12, spd: 90 }, tier: { atk: '상', crit: '중', spd: '중' }, skill: '화염구', skillCd: 10, awaken: '운석 낙하',
       skillD: '폭발하는 화염구를 날립니다. 범위 피해를 주고 3초 동안 화상을 입힙니다.', awakenD: 'E로 조준해 클릭한 지점에 운석을 떨어뜨리고, 넓게 화상을 입힙니다.',
       atkD: '마력탄을 연사하고 3발마다 큰 탄이 나갑니다. 마나 격류: 점멸 뒤 3초간 10% 확률로 흘려냅니다.', icons: ['bolt', 'fireball', 'meteor'],
     },
     priest: {
-      n: '사제', name: '미레아', sub: '토끼 사제', role: '방패 · 버프', map: 'priest', pal: 'priest', ghostPal: 'priestGhost', weapon: '메이스',
+      n: '사제', name: '미레아', sub: '토끼 사제', role: '방패 · 버프', map: 'hPriest', pal: 'hPriest', ghostPal: 'hPriestGhost', weapon: '메이스',
       base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, tier: { atk: '중', crit: '하', spd: '중' }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
       skillD: '빛의 방패 1칸을 얻고 주변 적을 밀쳐냅니다.', awakenD: '3초 무적 빛기둥을 세웁니다. 챕터마다 한 번, 쓰러지면 저절로 발동합니다.',
       atkD: '메이스 3연타, 3타는 충격파를 일으킵니다. 신의 가호: 맞을 때 10% 확률로 막아냅니다.', icons: ['mace', 'heal', 'miracle'],
     },
     gunner: {
       dmgMul: 0.65,
-      n: '거너', name: '그레이브', sub: '늑대 총잡이', role: '원거리 단일 고화력', map: 'gunner', pal: 'gunner', ghostPal: 'gunnerGhost', weapon: '머스킷',
+      n: '거너', name: '그레이브', sub: '늑대 총잡이', role: '원거리 단일 고화력', map: 'hGunner', pal: 'hGunner', ghostPal: 'hGunnerGhost', weapon: '머스킷',
       base: { atk: 28, def: 0, hp: 5, crit: 0.50, spd: 92 }, tier: { atk: '상', crit: '상', spd: '중' }, skill: '파열탄', skillCd: 8, awaken: '마력응축탄',
       skillD: '쏘면 부채꼴로 터지며 적을 강하게 밀쳐내고, 곧바로 재장전합니다.', awakenD: '2초 조준 후 모든 적을 꿰뚫는 대형탄을 쏘고, 보스 그로기를 크게 쌓습니다.',
       atkD: '5발마다 재장전하고 가까운 적은 개머리판으로 칩니다. 교활: 적의 공격이 10% 확률로 빗나갑니다.', icons: ['musket', 'shotgun', 'snipe'],
@@ -3334,13 +3626,13 @@ WF.knight = (H) => {
     if (st === 'wind' && e.pat === 'brood') { aL = [4, 2]; aR = [-4, 2]; bob = 2; tr = g > 0.2 ? (Math.floor(time * 16) % 2 ? 2 : 0) : 0; }
     if (st === 'wind' && e.pat === 'miasma') { aL = [-2, -4]; aR = [2, -4]; sx = 1 + 0.1 * g; sy = 1 + 0.06 * g; }
     if (st === 'wind' && e.pat === 'bile') rot = -0.15 * e.face * g;
-    drawShadow(e.x, e.y + 2, 18);
+    drawShadow(e.x, e.y + 2, 12);
     if (e.state === 'wind' && e.pat === 'miasma' && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = dRadial(ctx, e.x, e.y - 10, 0, e.x, e.y - 10, 30 + 50 * e.glow); gr.addColorStop(0, `rgba(150,220,80,${0.35 * e.glow})`); gr.addColorStop(1, 'rgba(150,220,80,0)'); ctx.fillStyle = gr.p(ctx); ctx.fillRect(e.x - 90, e.y - 100, 180, 180); ctx.restore(); }
     { const by0 = e.y + 2 + ya, by = by0 + bob, o = (m, dx, dy, ex) => drawSprite(m, 'mother', 2, e.x + tr + dx * F, dy, flip, Object.assign({ white, rot, alpha: al }, ex || {}));
-      o('moLegL', 0, by0 + lL); o('moLegR', 0, by0 + lR); o('moArmL', aL[0], by + aL[1]); o('moBody', 0, by, { sx, sy }); o('moArmR', aR[0], by + aR[1]);
+      { const q = nmPose(e); if (st === 'chase') { q.sx = 1; q.sy = 1; } else { q.sx *= sx; q.sy *= sy; } if (st !== 'chase') q.rot = rot; drawNM(e, 'nMother', null, e.x + tr, by0, q, white, al); } // v2.44 새 정면 도트
       if (!white && al > 0.5) { // v1.52 배 속에서 무언가 꿈틀 · 맞은 직후 작은 손이 배를 밀고 나옴
         if (e._mf > 0 && e.flash <= 0) e.handUntil = time + 0.12; e._mf = e.flash;
-        const bx = (e.x + tr) & ~1, bcy = (by - 22) & ~1;
+        const bx = (e.x + tr) & ~1, bcy = (by0 - 10) & ~1;
         if (e.handUntil > time) { ctx.fillStyle = '#4a7a20'; ctx.fillRect(bx - 6, bcy + 4, 10, 2); ctx.fillStyle = '#c8b0a0';
           ['.w.w.', 'ww.ww', 'wwwww', '.www.'].forEach((row, j) => { for (let i = 0; i < 5; i++) if (row[i] === 'w') ctx.fillRect(bx - 6 + i * 2, bcy - 4 + j * 2, 2, 2); }); }
         else { const B = [[0, 0], [2, 1], [1, 2], [-1, 1], [1, 0], [2, 2]][Math.floor(time * 6 + e.x) % 6], qx = bx + (B[0] - 1) * 2 * F, qy = bcy + (B[1] - 1) * 2;
@@ -3349,13 +3641,12 @@ WF.knight = (H) => {
     if (!white) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       const pulse = 0.35 + 0.25 * Math.sin(time * 4) + (e.state === 'wind' ? 0.4 * e.glow : 0);
-      const gr = dRadial(ctx, e.x, e.y - 22 + ya, 0, e.x, e.y - 22 + ya, 14); gr.addColorStop(0, `rgba(170,240,90,${pulse})`); gr.addColorStop(1, 'rgba(170,240,90,0)');
-      ctx.fillStyle = gr.p(ctx); ctx.fillRect(e.x - 14, e.y - 36 + ya, 28, 28);
-      ctx.fillStyle = `rgba(200,250,110,${0.6 + 0.4 * e.glow})`; for (const ox of [-4, 4]) ctx.fillRect(Math.round(e.x + tr + (flip ? -ox - 2 : ox)), Math.round(e.y - 38 + ya + bob), 2, 2);
+      const gr = dRadial(ctx, e.x, e.y - 8 + ya, 0, e.x, e.y - 8 + ya, 14); gr.addColorStop(0, `rgba(170,240,90,${pulse})`); gr.addColorStop(1, 'rgba(170,240,90,0)');
+      ctx.fillStyle = gr.p(ctx); ctx.fillRect(e.x - 14, e.y - 22 + ya, 28, 28);
       ctx.restore();
     }
     if (e.state === 'bilecharge' && !white) {
-      const k = 1 - e.t / e.chargeMax, mx = e.x + e.face * 1, my = e.y - 32 + ya;
+      const k = 1 - e.t / e.chargeMax, mx = e.x + e.face * 1, my = e.y - 16 + ya;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       const rr = 4 + 12 * k, gr = dRadial(ctx, mx, my, 0, mx, my, rr);
       gr.addColorStop(0, `rgba(230,255,170,${0.6 + 0.4 * k})`); gr.addColorStop(0.5, `rgba(150,230,70,${0.5 * k + 0.2})`); gr.addColorStop(1, 'rgba(150,230,70,0)');
@@ -3363,7 +3654,7 @@ WF.knight = (H) => {
       if (k > 0.75 && Math.floor(time * 20) % 2) { ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(mx) - 1, Math.round(my) - 1, 3, 3); }
       ctx.restore();
     }
-    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(e.y - 56 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
+    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(e.y - 38 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
   }
 
   // ================================================================ 초원 확장: 엘리트 2종 · 고블린 아처 · 독침 슬라임 · 소품
@@ -3410,29 +3701,26 @@ WF.knight = (H) => {
   }
   Object.assign(MAPS, {"exLegL": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....kkkk............", "....kBBk............", "...kBBBk............", "...kkkkk............"], "exLegR": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", ".........kkkk.......", ".........kBBk.......", ".........kBBBk......", ".........kkkkk......"], "exBody": [",.....kkkkkk.......,", ".....kHHHHHHk.......", "....kHhhhhhhHk......", "....kHhhhhhhHk......", "....kHhkehkehk......", "....kHhhhhhhHk......", "....kHHhhhhHHk......", "...kkHHHHHHHHkk.....", "..kHHHssssssHHHk....", ".kHHsssssssssHHk....", ".kHsssbssssbssHk....", "..kssssbssbssssk....", "..kssssssbbssssk....", "...kAAAAAAAAAAk.....", "...kAaaaaaaaaAk.....", "...kAarraaaaaAk.....", "...kAaaaaraaaAk.....", "....kkkkrkkkkk......", "....................", "....................", "....................", "...................."], "moArmL": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", ".k..................", ".k..................", "kHkkk...............", "kHksk...............", "kkksk...............", "..ksk...............", "..kbk...............", "..k.k...............", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "...................."], "moArmR": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "..................k.", "..................k.", "...............kkkHk", "...............kskHk", "................kskk", "................ksk.", "................kbk.", "................k.k.", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "...................."], "moLegL": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "...kkkkk............", "....kSSk............", "...kSSSk............", "...kkkkk............"], "moLegR": [",..................,", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "....................", "............kkkkk...", "............kSSk....", "............kSSSk...", "............kkkkk..."], "moBody": [",.....kkkkkkkk.....,", ".....kHHhhhhHHk.....", "....kHhhhhhhhhHk....", "...kHhhhSSSSShhHk...", "...kHhSsssssssShk...", "...kHhssessseshHk...", "...kHhsssssssssHk...", "..kHHhsSsmmmsSsHHk..", "..kHHkhSsmmmsSkHHk..", "..kHkkkksssskkkkHk..", "..kkkSSSkkkkSSSkkk..", ".....kssSssSssk.....", ".....kssvvvvssk.....", "......ksvVVVvsk.....", "......ksvVVVVsk.....", "......ksvvVVvsk.....", "......kSsvvvsSk.....", ".....krRrRrRrRk.....", "....krRrRrRrRrRk....", "...krRrRrRrRrRrRk...", "...kkkkkRrRrkkkkk...", "........kkkk........", "....................", "....................", "...................."]}); // v1.38 처형인·역병 어미 부위 분리 (첫 줄 양끝 ',' = 투명 기준점)
   // v1.38 처형인: 몸통·다리를 따로 — 걷기 4장면(다리 번갈아·디딜 때 내려앉음), 준비 때 칸 단위로 웅크림(누르기 제거), 회전 베기 때 다리를 벌려 버팀
-  function drawExec(e, ya, al) {
-    const white = e.flash > 0, flip = e.face < 0, st = e.state;
-    let bob = 0, lL = 0, lR = 0, lx = 0;
-    if (st === 'chase') { const ph = Math.floor(e.walk * 0.9) % 4; if (ph === 0) lL = -2; else if (ph === 2) lR = -2; else bob = 2; }
-    if (st === 'wind') { bob = e.glow < 0.15 ? 2 : 4; lx = 2; }
-    if (e.sw) { bob = 2; lx = 2; }
-    const by0 = e.y + 2 + ya, by = by0 + bob, shY = by - 27, fx = e.x + e.face * 10, bx = e.x - e.face * 10;
-    const held = !e.sw && (st === 'chase' || st === 'recover' && !e.hook), bl = BLADES.headsman; // v1.38 평소엔 손을 가슴 앞에 두고 자루를 어깨에 걸쳐 멘다
-    const hx = held ? e.x + e.face * 6 : fx + Math.cos(e.bladeAng) * 12, hy = held ? shY + 9 : shY + Math.sin(e.bladeAng) * 12, behind = !e.sw && Math.cos(e.bladeAng) * e.face < -0.2;
-    drawShadow(e.x, e.y + 2, 17);
-    drawArm(bx, shY, (e.face > 0 ? 100 : 80) * DEG, 18, 6, white, true, 'exec');
+  function drawExec(e, ya, al) { // v2.44 새 정면 도트: 도끼는 손에서
+    const white = e.flash > 0, st = e.state, o = nmPose(e), f = e.face;
+    if (st === 'wind') { const k = Math.min(1, e.glow / 0.6); o.dx = -2 * f * k; o.sy = 1 - 0.1 * k; o.sx = 1 + 0.08 * k; o.rot = -0.16 * f * k; }
+    if (e.sw) { o.dx = 3 * f; o.sx = 1.1; o.sy = 0.92; o.rot = 0.2 * f; }
+    const by = e.y + 2 + ya, X = e.x + o.dx, shY = by - 16 + o.bob, fx = X + f * 8;
+    const held = !e.sw && (st === 'chase' || st === 'recover' && !e.hook), bl = BLADES.headsman; // 평소엔 도끼 자루를 어깨에 걸쳐 멘다
+    const hx = held ? X + f * NM_HAND : fx + Math.cos(e.bladeAng) * 8, hy = held ? by - 7 + o.bob : shY + Math.sin(e.bladeAng) * 8, behind = !e.sw && Math.cos(e.bladeAng) * f < -0.2;
+    drawShadow(e.x, e.y + 2, 12);
     if (behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
     drawTrail(e.trail, hx, hy, 14, bl.reach, '230,220,210', true);
-    { const ro = e.lean + (e.grogiT > 0 ? 0.25 * e.face : 0), F = flip ? -1 : 1; drawSprite('exLegL', 'exec', 2, e.x - lx * F, by0 + lL, flip, { white, rot: ro, alpha: al }); drawSprite('exLegR', 'exec', 2, e.x + lx * F, by0 + lR, flip, { white, rot: ro, alpha: al }); drawSprite('exBody', 'exec', 2, e.x, by, flip, { white, rot: ro, alpha: al }); }
-    drawArm(fx, shY, held ? Math.atan2(hy - shY, hx - fx) : e.bladeAng, held ? Math.max(6, Math.hypot(hx - fx, hy - shY)) : 12, 6, white, false, 'exec');
+    drawNM(e, 'nExec', null, e.x, by, o, white, al);
     if (!behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
     if (e.hook) { // 사슬: 2px 고리 마디 + 갈고리
       const H2 = e.hook, k = H2.hit && e.pull ? Math.max(0, dist(G.player, e) / H2.len) : Math.min(1, H2.t / H2.dur) * (H2.t > H2.dur ? Math.max(0, 1 - (H2.t - H2.dur) / 0.15) : 1), L = H2.len * k, ux = Math.cos(H2.ang), uy = Math.sin(H2.ang);
       for (let i = 0; i < L; i += 4) { const x = Math.round(fx + ux * i) & ~1, y = Math.round(shY + uy * i) & ~1; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 1, y - 1, 4, 4); ctx.fillStyle = i % 8 ? '#5a5e68' : '#9aa0ac'; ctx.fillRect(x, y, 2, 2); }
       const tx = Math.round(fx + ux * L) & ~1, ty = Math.round(shY + uy * L) & ~1; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(tx - 3, ty - 3, 8, 8); ctx.fillStyle = '#c8ccd4'; ctx.fillRect(tx - 1, ty - 1, 4, 4); ctx.fillRect(tx + Math.round(-uy * 4) - 1, ty + Math.round(ux * 4) - 1, 2, 2);
     }
-    if (e.grogiT > 0) { for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(by - 56 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); } }
+    if (e.grogiT > 0) { for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 14), Math.round(by - 38 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); } }
   }
+
   // ---- 타락한 기수: 깃발 꽂기(주변 기사단 집결 버프: 이동 +25%·공격 +20%, 깃발은 부술 수 있음) · 종자 소집 · 깃대 휘두르기/찌르기 → 깃발을 꽂은 뒤엔 장검 2연베기/찌르기
   function bearerTick(e, dt) {
     e.callT = (e.callT == null ? 7 : e.callT) - dt; e.plantT = (e.plantT == null ? 3.5 : e.plantT) - dt;
@@ -3527,9 +3815,9 @@ WF.knight = (H) => {
   }
   const isEliteT = t => t === 'panda' || t === 'reaper' || t === 'weasel' || t === 'shrewA' || t === 'shrewB' || t === 'butcher' || t === 'gbrute' || t === 'boar' || t === 'hob' || t === 'mother' || t === 'urg' || t === 'troll' || t === 'exec' || t === 'bearer' || t === 'mordred' || t === 'queen';
   const isElite = e => isEliteT(e.type);
-  const ELITE_NAMES = { weasel: '떠돌이 총잡이 「검은 안대」', shrewA: '형 땃쥐 「은고리」', shrewB: '아우 땃쥐 「금고리」', shrews: '차크람 땃쥐 형제', reaper: '떠돌이 수확자 「흑각」', panda: '떠돌이 석궁사수 「붉은 꼬리」', gbrute: '거대 고블린', boar: '가시등 멧돼지', hob: '고블린 대장', butcher: '누더기 거인', mother: '역병 어미', exec: '기사단 처형인', bearer: '타락한 기수', urg: '투기장 챔피언 우르그', troll: '사슬 풀린 트롤 그러크' };
+  const ELITE_NAMES = { weasel: '떠돌이 총잡이 「검은 안대」', shrewA: '형 땃쥐 「은고리」', shrewB: '아우 땃쥐 「금고리」', shrews: '차크람 땃쥐 형제', reaper: '떠돌이 수확자 「흑각」', panda: '떠돌이 석궁사수 「붉은 꼬리」', gbrute: '고블린 챔피언', boar: '가시등 멧돼지', hob: '고블린 대장', butcher: '누더기 거인', mother: '역병 어미', exec: '기사단 처형인', bearer: '타락한 기수', urg: '투기장 챔피언 우르그', troll: '사슬 풀린 트롤 그러크' };
   const eliteName = e => ELITE_NAMES[e.kind === 'hob' ? 'hob' : e.type];
-  const ELITE_TOP = { gbrute: 58, boar: 48, hob: 50, butcher: 52, mother: 58, exec: 56, bearer: 62 }; // 머리 위 (이름표·HP 막대 높이)
+  const ELITE_TOP = { gbrute: 34, boar: 30, hob: 50, butcher: 52, mother: 38, exec: 38, bearer: 62 }; // v2.44 새 도트 키 // 머리 위 (이름표·HP 막대 높이)
   const SEMI_T = new Set(['ocharge', 'otroll', 'ogrip']), isSemi = e => SEMI_T.has(e.type);
   const INVADER_T = new Set(['panda', 'reaper', 'shrewA', 'shrewB', 'weasel']); // 난입자
   // ================================================================ v1.24 STAGE 4 몬스터 — 죽은 왕국의 시민·신하·근위대 (2px 칸 · 검은 외곽선 · 왼쪽 위 빛)
@@ -3773,19 +4061,24 @@ huskUp:[
       onFire: tt => { e.poke = 0.18; hitShape(tt, e.atk); sfx('swing', 1.2); G.fx.push({ kind: 'claw', x: e.x + Math.cos(a) * 30, y: e.y - 10 + Math.sin(a) * 20, ang: a, r: 20, w: 2, glow: true, c: '230,220,200', t: 0.15, max: 0.15 }); e.t = 0.3; } });
   }
   const guardFront = (e, ax) => e.type === 'aguard' && e.state === 'chase' && Math.sign(ax - e.x) === e.face; // 플레이어가 앞쪽에서 때렸나
-  function drawAGuard(e, ya, al, bob) {
-    const white = e.flash > 0, flip = e.face < 0, mv = e.state === 'chase' && Math.floor(e.walk) % 2;
-    drawShadow(e.x, e.y + 1, 9);
-    const sa = e.spearAng == null ? (e.face > 0 ? 0 : Math.PI) : e.spearAng, poke = e.poke > 0 ? 12 : 0; e.poke = Math.max(0, (e.poke || 0) - 1 / 60);
-    const off = nrPoseB(nrMotion(e)), [ox, oy] = nrHand(off, e), tO = off.torso || [0, 0]; // v1.54 부위별 칸 단위
-    const drawSpear = () => { const hx = e.x + e.face * 4 + ox, hy = e.y - 14 + ya + oy; // 창: 2px 칸으로 찍는 자루 + 뾰족한 날
-      for (let i = -10; i < 34; i += 2) { const px = Math.round(hx + Math.cos(sa) * (i + poke)) & ~1, py = Math.round(hy + Math.sin(sa) * (i + poke) * 0.7) & ~1; ctx.fillStyle = i > 26 ? (white ? '#fff' : '#d8d2c6') : white ? '#fff' : '#5a4a3a'; ctx.fillRect(px, py, 2, 2); }
-      const tx = Math.round(hx + Math.cos(sa) * (34 + poke)) & ~1, ty = Math.round(hy + Math.sin(sa) * (34 + poke) * 0.7) & ~1; ctx.fillStyle = '#0b0a09'; ctx.fillRect(tx - 1, ty - 1, 4, 4); ctx.fillStyle = white ? '#fff' : '#e8e2d6'; ctx.fillRect(tx, ty, 2, 2); };
+  function drawAGuard(e, ya, al, bob) { // v2.44 새 정면 도트: 볏 달린 투구 · 판금 어깨 · 금 테 겉옷 / 앞에 탑 방패, 그 위로 창
+    const white = e.flash > 0, flip = e.face < 0, f = e.face, o = nmPose(e), y = e.y + 2 + ya;
+    if (e.poke > 0) { o.dx = 3 * f; o.sx = 1.08; o.sy = 0.94; o.rot = 0.12 * f; }
+    drawShadow(e.x, e.y + 1, 10);
+    const sa = e.spearAng == null ? (f > 0 ? 0 : Math.PI) : e.spearAng, poke = e.poke > 0 ? 12 : 0; e.poke = Math.max(0, (e.poke || 0) - 1 / 60);
+    const X = e.x + o.dx, hx = X + f * 4, hy = y - 13 + o.bob;
+    const drawSpear = () => { // 창: 굵은 자루(외곽선 포함 2칸) + 넓은 창날 + 붉은 술
+      for (let i = -10; i < 30; i += 2) { const px = Math.round(hx + Math.cos(sa) * (i + poke)) & ~1, py = Math.round(hy + Math.sin(sa) * (i + poke) * 0.7) & ~1; ctx.fillStyle = '#0b0a09'; ctx.fillRect(px - 1, py - 1, 4, 4); }
+      for (let i = -10; i < 30; i += 2) { const px = Math.round(hx + Math.cos(sa) * (i + poke)) & ~1, py = Math.round(hy + Math.sin(sa) * (i + poke) * 0.7) & ~1; ctx.fillStyle = white ? '#fff' : i % 8 === 0 ? '#4a3a2a' : '#6a5038'; ctx.fillRect(px, py, 2, 2); }
+      const tip = (d, w, c) => { const px = Math.round(hx + Math.cos(sa) * (d + poke)) & ~1, py = Math.round(hy + Math.sin(sa) * (d + poke) * 0.7) & ~1, nx = Math.round(-Math.sin(sa) * w) & ~1, ny = Math.round(Math.cos(sa) * w * 0.7) & ~1;
+        ctx.fillStyle = '#0b0a09'; ctx.fillRect(px - nx - 1, py - ny - 1, 4 + Math.abs(nx) * 2, 4 + Math.abs(ny) * 2); ctx.fillStyle = white ? '#fff' : c; ctx.fillRect(Math.min(px - nx, px + nx), Math.min(py - ny, py + ny), 2 + Math.abs(nx) * 2, 2 + Math.abs(ny) * 2); };
+      tip(30, 2, '#c8c2b6'); tip(33, 2, '#e8e2d6'); tip(36, 0, '#f4f0e8'); tip(27, 0, '#8a2e20'); };
     if (Math.sin(sa) < -0.3) drawSpear();
-    nrDraw('aguard', 'aguard', e.x, e.y + 2 + ya, flip, { white, alpha: al }, off, NR_ORD_B);
+    drawNM(e, 'nGuard', null, e.x, y, o, white, al);
     if (Math.sin(sa) >= -0.3) drawSpear();
-    drawSprite('aguardShield', 'aguard', 2, e.x + e.face * (9 + tO[0] * 2), e.y - 4 + ya + tO[1] * 2, flip, { white, alpha: al });
+    drawSprite('nGuardShield', 'nGuard', 2, X + f * 9, y - 1 + o.bob, flip, { white, alpha: al }); // 앞을 막는 탑 방패
   }
+
   // ---------- 잿더미 (v1.27, 근위 돌격병 대체): 재가 뭉쳐 기어 다니다가, 몸을 쌓아 올려 잉걸 심장을 달군 뒤 낮게 무너지며 일직선으로 쏟아져 들어온다 (움직임은 사냥개의 돌진을 빌림)
   function drawAshHeap(e, ya, al, bob) {
     const white = e.flash > 0, flip = e.face < 0, st = e.state, f = e.face, by = e.y + 2 + ya;
@@ -3835,7 +4128,7 @@ huskUp:[
     }
   }
   // v1.26 관 휘두르기: 등에 멘 관(coffinUp) 모양 그대로, 아래 끝(손잡이)을 축으로 칸 단위 회전 — 뒤로 젖혀 들었다가 머리 위로 넘겨 앞쪽 바닥에 내려찍고, 잠깐 박아 둔 뒤 다시 등으로
-  const COFFIN_REST = { x: -12, y: -22, a: 0 }, COFFIN_UP = { x: -8, y: -34, a: -0.4 }, COFFIN_HIT = { x: 12, y: -14, a: 1.9 };
+  const COFFIN_REST = { x: -10, y: -14, a: 0 }, COFFIN_UP = { x: -6, y: -24, a: -0.4 }, COFFIN_HIT = { x: 12, y: -10, a: 1.9 }; // v2.44 새 도트(몸이 작아짐)에 맞춤
   // v1.29 도트 팔: 어깨 → 손을 2px 칸으로 잇는다 (검은 외곽선 · 4px 굵기 · 손은 조금 크게). 휘두르는 동안 손이 쥔 곳을 따라간다
   function pxArm(ax, ay, bx, by, c, white) { // c = [밝은, 중간, 어두운]
     const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) / 2)), pts = [];
@@ -3884,23 +4177,23 @@ huskUp:[
   }
   function drawCoffin(e, ya, al, bob) { // v1.25 관은 등에 세워 쇠사슬로 묶어 멘다 · 꺼낼 땐 등 뒤 관 뚜껑이 열린다 / v1.26 휘두를 때도 관 모양은 그대로
     const white = e.flash > 0, flip = e.face < 0, mv = e.state === 'chase', by = e.y + 2 + (mv ? bob : 0) + ya, f = e.face;
-    drawShadow(e.x, e.y + 1, 15);
+    drawShadow(e.x, e.y + 1, 11);
     const sw = coffinSwing(e), front = sw && sw.a > 0.9;
     const lean = sw ? (sw.a < 0 ? 0.25 * sw.a : 0.12 * Math.min(1, sw.a / 1.9)) * f : 0; // 젖힐 땐 몸도 뒤로, 내려찍을 땐 앞으로
     const coffin = () => { if (sw) drawSprite('coffinUp', 'coffinB', 2, e.x + sw.x * f, by + sw.y, flip, { white, alpha: al, rot: sw.a * f });
       else drawSprite(e.opened ? 'coffinUpOpen' : 'coffinUp', 'coffinB', 2, e.x + COFFIN_REST.x * f, by + COFFIN_REST.y, flip, { white, alpha: al }); }; // v1.31 걸을 때 관이 들썩이지 않음
     // 팔: 평소엔 양옆으로 늘어뜨림(v1.31 걸을 때 흔들지 않음) → 휘두를 땐 두 손이 관 아래 끝(회전축)을 쥔다
-    const sh = [[9, -28], [-11, -28]], hang = [[10, -11], [-12, -11]]; // v1.32 어깨 바로 아래로 곧게 · v1.34 좌우 반전 (뒷팔 = 앞쪽 어깨, 앞팔 = 관 쪽 어깨)
+    const sh = [[8, -20], [-8, -20]], hang = [[10, -8], [-10, -8]]; // v2.44 새 도트의 어깨·손 // v1.32 어깨 바로 아래로 곧게 · v1.34 좌우 반전 (뒷팔 = 앞쪽 어깨, 앞팔 = 관 쪽 어깨)
     const grip = sw ? [sw.x, sw.y + 2] : null, hb = sw ? (sw.h == null ? 1 : sw.h) : 0;
     const hand = i => { const hx = hang[i][0] + ((grip ? grip[0] + (i ? -2 : 2) : 0) - hang[i][0]) * hb, hy = hang[i][1] + ((grip ? grip[1] : 0) - hang[i][1]) * hb; return [e.x + hx * f, by + hy]; };
     const brot = (e.lean || 0) + lean, bc = Math.cos(brot), bs = Math.sin(brot), shP = i => { const x = sh[i][0] * f, y = sh[i][1]; return [e.x + x * bc - y * bs, by + x * bs + y * bc]; }; // v1.35 어깨가 몸 기울기를 따라 돈다
-    const arm = i => { if (al < 0.5) return; const [hx, hy] = hand(i), [sx0, sy0] = shP(i); drawShroudArm(sx0, sy0, hx, hy, white, !i, hb > 0.5, hb < 0.5 ? [e.x, by - 20] : null); }; // 늘어뜨릴 땐 팔꿈치를 몸 쪽으로
+    const arm = i => { if (al < 0.5 || hb < 0.5) return; /* v2.44 평소 팔은 몸 도트에 그려져 있음 */ const [hx, hy] = hand(i), [sx0, sy0] = shP(i); drawShroudArm(sx0, sy0, hx, hy, white, !i, hb > 0.5, hb < 0.5 ? [e.x, by - 20] : null); }; // 늘어뜨릴 땐 팔꿈치를 몸 쪽으로
     if (!front) coffin();
     arm(0);
-    drawSprite('coffinBody', 'coffinB', 2, e.x, by, flip, { white, alpha: al, rot: (e.lean || 0) + lean });
+    { const q = nmPose(e); q.rot += lean; drawNM(e, 'nCoffin', null, e.x, e.y + 2 + ya, q, white, al); } // v2.44 새 정면 도트
     if (front) coffin();
     arm(1);
-    if (e.opened && Math.random() < 0.6) G.parts.push({ x: e.x - e.face * 8 + rand(-8, 8), y: by - 40, vx: rand(-6, 6), vy: -rand(20, 40), t: 0.6, c: pick(['#ff7a30', '#cdc7ba']), g: 0, glow: true });
+    if (e.opened && Math.random() < 0.6) G.parts.push({ x: e.x - e.face * 8 + rand(-8, 8), y: by - 30, vx: rand(-6, 6), vy: -rand(20, 40), t: 0.6, c: pick(['#ff7a30', '#cdc7ba']), g: 0, glow: true });
   }
   // ---------- 왕의 기수 (준엘리트, v1.29 전령에서 바뀜): 멀찍이 서서 왕기를 들어 올렸다 내리꽂으면 주변 적이 강해진다 (발밑 금빛 고리) — 먼저 잡아야 할 표적
   function updateHerald(e, dt, d, a, moveTo) {
@@ -3929,7 +4222,7 @@ huskUp:[
     // 들어 올리기 k (0→1) · 내리꽂은 뒤 펄럭임 wv (1→0)
     const k = st === 'blow' ? clamp(1 - e.t / 0.9, 0, 1) : 0, up = easeOut(k), wv = e.blowAt != null ? clamp(1 - (time - e.blowAt) / 0.9, 0, 1) : 0;
     const lift = Math.round(14 * up / 2) * 2, tilt = (-0.22 * up + (wv > 0.75 ? 0.08 : 0)) * f; // 뒤로 젖힘 → 내리꽂는 순간 살짝 앞으로
-    const bx = e.x + f * 12, bY = by - lift, H = 58, ca = Math.sin(tilt), cy = Math.cos(tilt); // 깃대 밑동 · 길이
+    const bx = e.x + f * NM_HAND, bY = by - 4 - lift, H = 50, ca = Math.sin(tilt), cy = Math.cos(tilt); // 깃대 밑동 · 길이
     const at = d => [bx + ca * d, bY - cy * d];
     const P2 = (x, y, c) => { ctx.fillStyle = white ? '#fff' : c; ctx.fillRect(snap2(x), snap2(y), 2, 2); };
     const K2 = (x, y) => { ctx.fillStyle = '#0b0a09'; ctx.fillRect(snap2(x) - 2, snap2(y) - 2, 6, 6); };
@@ -3948,9 +4241,9 @@ huskUp:[
       for (const [x, y, c] of cells) P2(x, y, c === 'r' ? '#7a2a1e' : c === 'R' ? '#4a1c14' : '#c8a050');
       for (let x = -2; x <= 20; x += 2) P2(cx0 + f * x, cy0, x === -2 || x === 20 ? '#e0c070' : '#8a6a30');
     };
-    nrDraw('herald', 'herald', e.x, by, flip, { white, alpha: al }, hOff, NR_ORD_B);
+    { const q = nmPose(e); if (k > 0) { q.sy = 1 + 0.06 * up; q.rot = -0.14 * f * up; } drawNM(e, 'nHerald', null, e.x, by, q, white, al); } // v2.44 새 정면 도트
     if (al >= 0.5) { drawBanner();
-      const [gx, gy] = at(22 + lift * 0.4); pxArm(e.x + f * 7 + hox, by - 24 + hoy, gx - f * 2, gy, ['#c8c2b6', '#a8a296', '#7a746c'], white); } // 오른손이 깃대를 쥔다
+    } // v2.44 손은 몸 도트에 그려져 있음
     if (k > 0.5 && Math.random() < 0.4) { const [x, y] = at(H + 4); G.parts.push({ x, y, vx: rand(-10, 10), vy: -rand(10, 30), t: 0.4, c: '#ffd060', g: 0, glow: true }); }
   }
 
@@ -4091,21 +4384,20 @@ huskUp:[
   }
   function drawMordred(e, ya, al) {
     const white = e.flash > 0, flip = e.face < 0, f = e.face, st = e.state, bob = st === 'chase' ? Math.sin(e.walk) * 0.8 : 0;
-    const guard = st === 'guard', low = guard ? 4 : (st === 'wind' && e.shieldUp) ? 2 : 0, by = e.y + 2 + ya + bob + low, shY = by - 31;
-    const fx = e.x + f * 14, bx = e.x - f * 7;
-    const bl = BLADES.royal, held = !e.sw && Math.sin(e.bladeAng) < -0.35, hx = held ? fx + f * 3 : fx + Math.cos(e.bladeAng) * 15, hy = held ? shY + 10 : shY + Math.sin(e.bladeAng) * 15, behind = !e.sw && Math.cos(e.bladeAng) * f < -0.2; // 칼이 위를 향하면 손은 가슴 앞, 칼등은 어깨에
+    const guard = st === 'guard', low = guard ? 4 : (st === 'wind' && e.shieldUp) ? 2 : 0, by = e.y + 2 + ya + low, shY = by - 18; // v2.44 새 도트
+    const fx = e.x + f * 8, bx = e.x - f * NM_HAND;
+    const bl = BLADES.royal, held = !e.sw && Math.sin(e.bladeAng) < -0.35, hx = held ? e.x + f * NM_HAND : fx + Math.cos(e.bladeAng) * 9, hy = held ? by - 7 : shY + Math.sin(e.bladeAng) * 9, behind = !e.sw && Math.cos(e.bladeAng) * f < -0.2; // 칼이 위를 향하면 손은 가슴 앞, 칼등은 어깨에
     const fore = e.shieldUp || guard || st === 'dash';
-    drawShadow(e.x, e.y + 2, 19);
-    if (!fore) { drawPlateArm(bx, shY, bx - f * 2, shY + 17, white, true); drawSprite('mshieldS', 'mshield', 2, bx - f * 2, by - 6, flip, { white, alpha: al }); } // 방패 쥔 뒷팔
+    drawShadow(e.x, e.y + 2, 12);
+    if (!fore) drawSprite('mshieldS', 'mshield', 2, bx, by - 2, flip, { white, alpha: al }); // 뒷손에 쥔 방패
     if (behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
     drawTrail(e.trail, hx, hy, 14, bl.reach, '255,170,90', true);
-    drawSprite('mordred', 'mordred', 2, e.x, by, flip, { white, rot: e.lean + (e.grogiT > 0 ? 0.25 * f : 0), alpha: al, sy: guard ? 0.94 : 1 });
-    drawPlateArm(fx, shY, hx, hy, white, false); // 대검 쥔 앞팔 (손 = 칼자루)
+    { const q = nmPose(e); if (guard) q.sy *= 0.94; if (e.sw) { q.dx = 3 * f; q.sx = 1.08; q.sy = 0.94; q.rot = 0.18 * f; } drawNM(e, 'nMordred', null, e.x, by, q, white, al); } // v2.44 새 정면 도트 (팔은 몸 도트에)
     if (!behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
     if (fore) { const bash = e.bash > 0 ? 8 : 0; e.bash = Math.max(0, (e.bash || 0) - 1 / 60);
-      drawSprite('mshield', 'mshield', 2, e.x + f * (17 + bash), by - (guard ? 2 : 6), flip, { white, alpha: al });
-      if (guard && !white) { const k = 0.5 + 0.5 * Math.sin(time * 12); ctx.fillStyle = `rgba(255,210,100,${0.25 + 0.25 * k})`; for (let y = 0; y < 30; y += 2) ctx.fillRect(snap2(e.x + f * (17 + 11)) - (f > 0 ? 0 : 2), snap2(by - 34 + y), 2, 2); } }
-    if (al > 0.5 && Math.random() < 0.05) G.parts.push({ x: e.x + f * 4, y: by - 48, vx: rand(-4, 4), vy: -rand(10, 20), t: 0.6, c: '#ff7a30', g: 0, glow: true }); // 투구 틈 불티
+      drawSprite('mshield', 'mshield', 2, e.x + f * (12 + bash), by - (guard ? 0 : 2), flip, { white, alpha: al });
+      if (guard && !white) { const k = 0.5 + 0.5 * Math.sin(time * 12); ctx.fillStyle = `rgba(255,210,100,${0.25 + 0.25 * k})`; for (let y = 0; y < 30; y += 2) ctx.fillRect(snap2(e.x + f * (12 + 11)) - (f > 0 ? 0 : 2), snap2(by - 32 + y), 2, 2); } }
+    if (al > 0.5 && Math.random() < 0.05) G.parts.push({ x: e.x + f * 4, y: by - 26, vx: rand(-4, 4), vy: -rand(10, 20), t: 0.6, c: '#ff7a30', g: 0, glow: true }); // 투구 틈 불티
   }
 
   // ---------- 상복의 왕비
@@ -4190,13 +4482,13 @@ huskUp:[
     else if (pose === 'lash') { const u = clamp((0.7 - e.t) / 0.35, 0, 1), w = 1 - u; rot = 0.22 * f * w; dx = 10 * f * w; sx = 1 + 0.1 * w; } // 베일 휘감기: 앞으로 확 쏠리며 덮친다
     if (e.grogiT > 0) rot = 0.2 * f;
     ctx.save(); ctx.globalAlpha = A2;
-    drawSprite('queen', 'queen', 2, e.x - f * 5 + dx, by + dy, flip, { white, alpha: 1, rot, sx, sy }); // 베일 자락 5칸만큼 보정
-    if (!pose) drawSprite('qflower', 'qflower', 2, e.x + f * 1, by - 14, flip, { white, alpha: 1 }); // 소매 속 두 손에 쥔 시든 꽃다발
+    { const q = nmPose(e); if (pose) Object.assign(q, { dx, rot, sx, sy, wf: -1 }); else q.dx += dx; drawNM(e, 'nQueen', null, e.x, by + dy, q, white, 1); } // v2.44 새 정면 도트 (떠다님)
+    // v2.44 새 도트는 팔이 없어 꽃다발은 그리지 않음
     ctx.restore();
     if (pose === 'lash' && e.t > 0.45 && al > 0.5) for (let i = 0; i < 3; i++) G.parts.push({ x: e.x + f * rand(10, 40), y: by - rand(14, 40), vx: f * rand(40, 90), vy: rand(-10, 10), t: rand(0.2, 0.35), c: pick(['#3e3648', '#5e5466', '#9a90a4']), g: 0 }); // 휘감기는 베일 자락
     if (pose === 'raise' && k > 0.3 && Math.random() < 0.5) G.parts.push({ x: e.x + rand(-14, 14), y: by + dy - rand(0, 10), vx: 0, vy: -rand(30, 60), t: 0.5, c: pick(['#ff7a30', '#ffc070']), g: 0, glow: true });
     if (fa > 0.5 && al > 0.5) { // 잉걸 눈물 · 치맛자락 재
-      if (Math.random() < (pose === 'weep' ? 0.6 : 0.08)) G.parts.push({ x: e.x + f * rand(-2, 3) + (pose === 'weep' ? 2 * f : 0), y: by - 40 + (pose === 'weep' ? 4 : 0), vx: 0, vy: rand(10, 24), t: 0.5, c: pick(['#ff7a30', '#ffc070']), g: 40, glow: true });
+      if (Math.random() < (pose === 'weep' ? 0.6 : 0.08)) G.parts.push({ x: e.x + f * rand(-2, 3) + (pose === 'weep' ? 2 * f : 0), y: by - 20 + (pose === 'weep' ? 4 : 0), vx: 0, vy: rand(10, 24), t: 0.5, c: pick(['#ff7a30', '#ffc070']), g: 40, glow: true });
       if (Math.random() < 0.35) G.parts.push({ x: e.x + rand(-16, 16), y: by - rand(0, 4), vx: rand(-8, 8), vy: -rand(4, 14), t: rand(0.4, 0.8), c: pick(['#5e5662', '#8a847a', '#3e3842']), g: 0 }); }
   }
 
@@ -4454,6 +4746,36 @@ huskUp:[
         ctx.fillStyle = '#140c08'; ctx.fillRect(x - 2, y - 2, 8, 8); ctx.fillStyle = i % 2 ? '#7c604a' : '#ae8e6c'; ctx.fillRect(x, y, 4, 4); ctx.fillStyle = i % 2 ? '#4c3829' : '#e2ccaa'; ctx.fillRect(i % 2 ? x + 2 : x, i % 2 ? y + 2 : y, 2, 2); }
     }
   }
+  const THROW_AXE = cellWeapon(12, 9, 6, 4, { o: '#8a6034', O: '#5a3a1e', b: '#7a5034', m: '#a4a4b0', M: '#5e5e6a', n: '#e4e4ec' }, put => { // v2.45 던지는 손도끼 (가운데가 회전축)
+    for (let x = 1; x < 11; x++) put(x, 4, x % 3 === 0 ? 'b' : 'o');
+    for (let x = 7; x <= 10; x++) for (let y = 0; y <= 3; y++) put(x, y, y === 0 || x === 10 ? 'n' : 'm'); put(7, 5, 'M'); put(8, 5, 'M'); });
+  const THROW_AXE_B = cellWeapon(12, 9, 6, 4, { o: '#ffffff', b: '#ffffff', m: '#ffffff', M: '#ffffff', n: '#ffffff' }, (put, g) => { THROW_AXE.cells.forEach((r, y) => r.forEach((c, x) => { if (c !== '.') put(x, y, c); })); });
+  // v2.46 보스 특대형 무기 (몸은 파티와 같은 비율 → 위압감은 무기로)
+  const BOSS_SWORD = cellWeapon(50, 17, 11, 8, { G: '#e0b860', g: '#a87a30', c: '#c09048', V: '#d17aff', u: '#b450d8', h: '#1d1a24', H: '#3a3448', j: '#2a2534', w: '#f4f0ff', P: '#7a7090', p: '#4d465c', m: '#655d7a', s: '#9a92b0', S: '#c8c0e0' }, put => {
+    const L = 38, sw = (u, v) => { const av = Math.abs(v);
+      if (u === -9 && av <= 1) return v ? 'G' : 'V';
+      if (u === -8 && av <= 2) return av === 2 ? 'g' : 'G';
+      if (u >= -7 && u <= -1 && av <= 1) return u % 2 === 0 ? 'h' : v === 0 ? 'H' : 'j';
+      if (u === 0 || u === 1) { if (av <= 6) return av === 0 && u === 0 ? 'V' : u === 0 ? 'G' : 'g'; if (av === 7 && u === 1) return 'g'; }
+      if (u === 2 && (av === 6 || av === 7)) return 'g';
+      if (u >= 2 && u <= 4 && av <= 2) return av === 2 ? 'g' : v === 0 ? 'G' : 'c';
+      if (u >= 5 && u < L) { const wv = u < L - 6 ? 3 : Math.max(0, Math.round((L - u) / 2)); if (av <= wv) {
+        if (av === wv) return v > 0 ? 'w' : 'P'; if (v === 0) return u % 4 === 1 && u < L - 7 ? 'V' : 'j'; if (av === 1) return v < 0 ? 'p' : 'm'; return v < 0 ? 's' : 'S'; } }
+      return null; };
+    for (let u = -9; u < L; u++) for (let v = -7; v <= 7; v++) { const c = sw(u, v); if (c) put(u + 11, v + 8, c); }
+  });
+  const KRUG_AXE = cellWeapon(44, 31, 6, 15, { w: '#ece0c4', W: '#b8ac90', k: '#0b0a0e', e: '#ff3a20', o: '#6a4a28', O: '#4a3018', r: '#a32a2a', R: '#5e1416', E: '#e04838', n: '#ffe0d0' }, put => {
+    const L = 30, uc = L - 6;
+    for (let u = -5; u <= L; u++) for (let v = 0; v <= 1; v++) put(u + 6, v + 15, u % 7 === 0 ? 'r' : v === 0 ? 'o' : 'O');
+    for (const [u, v] of [[-6, 0], [-6, 1], [-7, 0], [-7, 1]]) put(u + 6, v + 15, 'w'); // 뼈 물미
+    for (let du = -9; du <= 9; du++) for (const sg of [-1, 1]) for (let w = 1; w <= 14; w++) { // 초승달 양날: 바깥은 볼록, 자루 쪽은 오목 → 날끝이 갈고리처럼
+      const wo = 4 + 9 * Math.sqrt(Math.max(0, 1 - (du / 9.5) ** 2)), wi = 1 + (wo - 1) * Math.pow(Math.abs(du) / 9.5, 1.4) * 0.92;
+      if (w < wi || w > wo) continue; const d = wo - w, v = sg > 0 ? w + 1 : -w;
+      put(uc + du + 6, v + 15, d < 1 ? 'n' : d < 2.2 ? 'E' : w < wi + 1.2 ? 'R' : 'r'); }
+    // 도끼 끝의 해골 장식 (자루 끝에 박힘)
+    const sk = ['.www.', 'wkwkw', 'wwwww', 'wwkww', '.WwW.', '.w.w.'];
+    for (let i = 0; i < sk.length; i++) for (let j = 0; j < 5; j++) { const c = sk[i][j]; if (c !== '.') put(L + 1 + (5 - i) + 6, j - 2 + 15 + (j > 2 ? 1 : 0) * 0, c); }
+  });
   function drawLob(f, p) {
     const k = (p - (f.d0 || 0)) / (1 - (f.d0 || 0)); if (k < 0) return;
     const x = f.x0 + (f.x1 - f.x0) * k, gy = f.gy0 + (f.y1 - f.gy0) * k, y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * f.h;
@@ -4502,7 +4824,7 @@ huskUp:[
     }
   }
 
-  // ---------- 엘리트: 거대 고블린
+  // ---------- 엘리트: 고블린 챔피언
   function bruteTick(e, dt) {
     e.rockT = Math.max(0, (e.rockT || 0) - dt); e.slamT = Math.max(0, (e.slamT || 0) - dt); e.beatT = Math.max(0, (e.beatT || 0) - dt);
     if (!e.enraged && e.hp < e.maxHp * 0.5 && !e.dead) {
@@ -4538,18 +4860,19 @@ huskUp:[
   }
   function bruteBoulder(e) { // 바위를 머리 위로 들어 던진다
     const P = G.player, n = e.enraged ? 2 : 1;
-    e.state = 'wind'; e.pose = 'up'; alertMark(e, 58); sfx('warn');
+    e.state = 'wind'; e.pose = 'scoop'; e.face = P.x >= e.x ? 1 : -1; alertMark(e, 40); sfx('warn'); // v2.45 곤봉으로 바닥을 내려쳐 바위를 쳐 올린 뒤 던진다
+    e.scoop0 = time; e.scoopX = e.x + e.face * 16; debris(e.scoopX, e.y, 12); dust(e.scoopX, e.y, 10); addShake(4); sfx('heavy');
     for (let j = 0; j < n; j++) {
       const tx = clamp(P.x + (j ? rand(-70, 70) : 0), A.x0 + 20, A.x1 - 20), ty = clamp(P.y + (j ? rand(-50, 50) : 0), A.y0 + 20, A.y1 - 20), dur = 1.35 + j * 0.45;
       e.rockT = dur * 0.5 + j * 0.45;
-      G.fx.push({ kind: 'lob', x0: e.x, y0: e.y - 52, gy0: e.y, x1: tx, y1: ty, h: 80, d0: (dur * 0.5 + j * 0.2) / dur, t: dur, max: dur, rock: true, owner: e });
+      G.fx.push({ kind: 'lob', x0: e.scoopX, y0: e.y - 30, gy0: e.y, x1: tx, y1: ty, h: 80, d0: (dur * 0.5 + j * 0.2) / dur, t: dur, max: dur, rock: true, owner: e });
       G.tele.push({ shape: 'circle', x: tx, y: ty, r: 46, t: 0, dur, owner: e, heavy: true,
         onFire: tt => {
           hitShape(tt, e.atk * 1.2);
           G.fx.push({ kind: 'ring', x: tt.x, y: tt.y, r: 8, t: 0.4, max: 0.4, c: '#e0c080', grow: 240 });
           debris(tt.x, tt.y, 24); dust(tt.x, tt.y, 18); crack(tt.x, tt.y); addShake(7); sfx('blast');
           for (let k = 0; k < (e.enraged ? 8 : 6); k++) { const aa = k / (e.enraged ? 8 : 6) * TAU + rand(-0.15, 0.15); G.eproj.push({ x: tt.x, y: tt.y, ang: aa, sp: 170, r: 4, dmg: e.atk * 0.5, t: 0.8, hist: [], kind: 'rock' }); }
-          if (j === n - 1) { e.state = 'recover'; e.t = 0.7; e.cd = rand(1.3, 1.9); e.pose = null; }
+          if (j === n - 1) { e.state = 'recover'; e.t = 0.7; e.cd = rand(1.3, 1.9); e.pose = null; e.scoop0 = null; }
         } });
     }
   }
@@ -4560,31 +4883,37 @@ huskUp:[
     for (let i = 0; i < 2; i++) queueSpawn('goblin', { x: clamp(e.x + rand(-90, 90), A.x0 + 20, A.x1 - 20), y: clamp(e.y + rand(-60, 60), A.y0 + 20, A.y1 - 20) });
     for (const g of G.enemies) if (!g.dead && g.type === 'goblin' && dist(g, e) < 260) { g.haste = 6; alertMark(g, 34); }
   }
-  Object.assign(MAPS, {"gbBody": [",..........kkkkkk..........,", "..........khhhhssk..........", ".........khhhhssssk.........", "..kk....khhhsssssrsk...kk...", ".khhkk.khhhsssssssrskkkhhk..", "..kShhkkhsSSSSSSSrsSkhhSk...", "...kSshkssseesseesSSksSk....", "....kSrksssskssskSSSkSk.....", ".....kSksssssSSSSSSSkk......", "......kkssswsSSSwSSSk.......", "........ksswkkkkwSSk........", "......kkkkSSSSSSSSkkkk......", ".....khhsskkSSSSkkhhssk.....", ".....ksssshbkkkkssssssk.....", ".....kkkSShssssssssskkk.....", "........kSsssssssssk........", "........kssSSssSSSSk........", "........kssssssSSSSk........", "........kkkkkkkkkkkk........", "........kCCCCCCCCCCk........", "........kCccCccCccCk........", ".........kkkkkkkkkk.........", "............................", "............................", "............................"], "gbArmL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "....kkkk....................", "...khskk....................", "...kssSk....................", "...khssk....................", "...kssSk....................", "...kSSSk....................", "....kkk.....................", "............................", "............................", "............................"], "gbArmR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "....................kkkk....", "....................kkssk...", "....................ksssk...", "....................khssk...", "....................kssSk...", "....................kSSSk...", ".....................kkk....", "............................", "............................", "............................"], "gbLegL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".........kkkk...............", "........kSSSk...............", ".........kkkk..............."], "gbLegR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".............kkkkkk.........", ".............kSSSSSk........", "..............kkkkk........."], "gbUpL": [",..........................,", "...kkkk.....................", "..khhssk....................", "..khsssk....................", "..kssSSk....................", "...kssk.....................", "...khsk.....................", "...kssk.....................", "...khsSk....................", "..kkssSk....................", "..khssSk....................", "..kssSSk....................", "...kkkk.....................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbUpR": [",..........................,", ".....................kkkk...", "....................khhssk..", "....................khsssk..", "....................kssSSk..", ".....................kssk...", ".....................khsk...", ".....................kssk...", ".....................khsSk..", "....................kkssSk..", "....................khssSk..", "....................kssSSk..", ".....................kkkk...", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbChestR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".................kkkk.......", "................khhssk......", "...............khsssSSk.....", "...............kssSSSSk.....", "................kkkkkk......", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbChestL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".......kkkk.................", "......khhssk................", ".....khsssSSk...............", ".....kssSSSSk...............", "......kkkkkk................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"]}); // v1.36 거대 고블린 부위 분리 (첫 줄 양끝 ','= 투명 기준점, 부위 정렬 유지)
-  // v1.36 거대 고블린 움직임: 몸통·팔·다리를 따로 2px 칸 단위로 — 걷기 4장면(다리 번갈아 들고 반대 팔 흔들기, 디딜 때 몸 내려앉음)
+  Object.assign(MAPS, {"gbBody": [",..........kkkkkk..........,", "..........khhhhssk..........", ".........khhhhssssk.........", "..kk....khhhsssssrsk...kk...", ".khhkk.khhhsssssssrskkkhhk..", "..kShhkkhsSSSSSSSrsSkhhSk...", "...kSshkssseesseesSSksSk....", "....kSrksssskssskSSSkSk.....", ".....kSksssssSSSSSSSkk......", "......kkssswsSSSwSSSk.......", "........ksswkkkkwSSk........", "......kkkkSSSSSSSSkkkk......", ".....khhsskkSSSSkkhhssk.....", ".....ksssshbkkkkssssssk.....", ".....kkkSShssssssssskkk.....", "........kSsssssssssk........", "........kssSSssSSSSk........", "........kssssssSSSSk........", "........kkkkkkkkkkkk........", "........kCCCCCCCCCCk........", "........kCccCccCccCk........", ".........kkkkkkkkkk.........", "............................", "............................", "............................"], "gbArmL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "....kkkk....................", "...khskk....................", "...kssSk....................", "...khssk....................", "...kssSk....................", "...kSSSk....................", "....kkk.....................", "............................", "............................", "............................"], "gbArmR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "....................kkkk....", "....................kkssk...", "....................ksssk...", "....................khssk...", "....................kssSk...", "....................kSSSk...", ".....................kkk....", "............................", "............................", "............................"], "gbLegL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".........kkkk...............", "........kSSSk...............", ".........kkkk..............."], "gbLegR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".............kkkkkk.........", ".............kSSSSSk........", "..............kkkkk........."], "gbUpL": [",..........................,", "...kkkk.....................", "..khhssk....................", "..khsssk....................", "..kssSSk....................", "...kssk.....................", "...khsk.....................", "...kssk.....................", "...khsSk....................", "..kkssSk....................", "..khssSk....................", "..kssSSk....................", "...kkkk.....................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbUpR": [",..........................,", ".....................kkkk...", "....................khhssk..", "....................khsssk..", "....................kssSSk..", ".....................kssk...", ".....................khsk...", ".....................kssk...", ".....................khsSk..", "....................kkssSk..", "....................khssSk..", "....................kssSSk..", ".....................kkkk...", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbChestR": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".................kkkk.......", "................khhssk......", "...............khsssSSk.....", "...............kssSSSSk.....", "................kkkkkk......", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"], "gbChestL": [",..........................,", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", ".......kkkk.................", "......khhssk................", ".....khsssSSk...............", ".....kssSSSSk...............", "......kkkkkk................", "............................", "............................", "............................", "............................", "............................", "............................", "............................", "............................"]}); // v1.36 고블린 챔피언 부위 분리 (첫 줄 양끝 ','= 투명 기준점, 부위 정렬 유지)
+  // v1.36 고블린 챔피언 움직임: 몸통·팔·다리를 따로 2px 칸 단위로 — 걷기 4장면(다리 번갈아 들고 반대 팔 흔들기, 디딜 때 몸 내려앉음)
   //   준비: 처음엔 웅크렸다가(몸·팔 내려앉음) 두 팔을 머리 위로 / 내려찍기: 크게 웅크리며 두 팔을 땅으로 / 집결: 두 주먹으로 가슴을 번갈아 두드림
-  function drawBrute(e, ya, al) {
-    const white = e.flash > 0, flip = e.face < 0, st = e.state, k = e.glow || 0;
-    let bob = 0, lL = 0, lR = 0, aL = 0, aR = 0, ax = 0, up = false, chest = null, tr = 0;
-    if (st === 'chase') { const ph = Math.floor(e.walk * 0.9) % 4; if (ph === 0) { lL = -2; aR = -2; } else if (ph === 2) { lR = -2; aL = -2; } else bob = 2; }
-    if (st === 'wind' && e.pose === 'up') { if (k < 0.2) { bob = k < 0.1 ? 2 : 4; aL = aR = bob; ax = 2; } else { up = true; if (k > 0.7) tr = Math.floor(time * 18) % 2 ? 2 : 0; } }
-    if (e.slamT > 0) { bob = e.slamT > 0.12 ? 4 : 2; aL = aR = bob; ax = e.slamT > 0.12 ? 2 : 0; }
-    if (e.beatT > 0) chest = Math.floor(time * 7) % 2 ? 'L' : 'R';
-    const by = e.y + 2 + ya, rot = e.lean + (e.grogiT > 0 ? 0.25 * e.face : 0), o = (m, dx, dy) => drawSprite(m, 'gbrute', 2, e.x + tr + dx * (flip ? -1 : 1), by + dy, flip, { white, rot, alpha: al });
-    drawShadow(e.x, e.y + 2, 20);
-    o('gbLegL', 0, lL); o('gbLegR', 0, lR);
-    o('gbBody', 0, bob);
-    if (up) { o('gbUpL', 0, bob); o('gbUpR', 0, bob); }
-    else { if (chest === 'L') o('gbChestL', 0, bob); else o('gbArmL', -ax, aL); if (chest === 'R') o('gbChestR', 0, bob); else o('gbArmR', ax, aR); }
-    if (e.rockT > 0 && !white) drawSprite('boulder', 'deco', 3, e.x + tr, e.y - 50 + bob, false);
-    if (up && st === 'wind' && e.rockT <= 0) holdGlow(e.x, e.y - 52, k, '255,180,60');
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = e.enraged ? 'rgba(255,120,40,.95)' : `rgba(255,220,60,${0.4 + 0.5 * k})`;
-    const ey = Math.round(e.y - 36 + ya + bob);
-    for (const ox of [-5, 3]) ctx.fillRect(Math.round(e.x + tr + (flip ? -ox - 4 : ox)), ey, 4, 2);
-    ctx.restore();
-    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(e.y - 58 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
+  const BRUTE_CLUB = cellWeapon(18, 9, 1, 4, { o: '#8a6034', O: '#5a3a1e', b: '#a87c4c', B: '#6a4a28', n: '#d8d0b8' }, put => { // v2.44 고블린 챔피언의 나무 곤봉: 가죽 감은 손잡이 → 옹이 박힌 굵은 머리
+    for (let x = 0; x < 8; x++) { put(x, 4, x % 3 === 1 ? 'O' : 'o'); put(x, 5, 'O'); }
+    for (let x = 7; x < 18; x++) { const r = Math.min(4, 1 + Math.round((x - 7) * 0.45)); for (let y = 4 - r; y <= 4 + r; y++) put(x, y, y === 4 - r ? 'b' : y >= 4 + r - 1 ? 'B' : (x + y) % 5 === 0 ? 'O' : 'o'); }
+    for (const [x, y] of [[11, 1], [14, 0], [16, 2], [13, 8], [16, 7]]) put(x, y, 'n'); // 박힌 뼈 가시
+  });
+  function drawBrute(e, ya, al) { // v2.44 새 정면 도트
+    const white = e.flash > 0, st = e.state, k = e.glow || 0, o = nmPose(e), f = e.face;
+    const up = st === 'wind' && e.pose === 'up' && k >= 0.2; if (up) { o.sy *= 1.08; o.sx *= 0.96; } // 곤봉을 들어 올림 → 몸을 늘임
+    const scoop = st === 'wind' && e.pose === 'scoop' && e.scoop0 != null, su = scoop ? clamp((time - e.scoop0) / 0.6, 0, 1) : 0;
+    if (scoop) { const kk = su < 0.25 ? su / 0.25 : 1 - (su - 0.25) * 0.6; o.sy *= 1 - 0.12 * kk; o.sx *= 1 + 0.08 * kk; o.rot += 0.18 * f * kk; o.dx += 2 * f * kk; } // 몸을 숙여 바닥을 내려침
+    if (e.slamT > 0) { o.sy *= 0.86; o.sx *= 1.1; }
+    if (e.beatT > 0) o.dx += (Math.floor(time * 7) % 2 ? 1 : -1) * f; // 가슴 두드리기
+    const tr = up && k > 0.7 ? (Math.floor(time * 18) % 2 ? 2 : 0) : 0, y = e.y + 2 + ya;
+    drawShadow(e.x, e.y + 2, 12);
+    // 곤봉: 평소엔 어깨에 걸쳐 메고 → 내려찍기 준비 때 머리 뒤로 높이 → 내려찍는 순간 앞으로
+    const f2 = f > 0 ? 1 : 0, tgt = e.slamT > 0 || (scoop && su < 0.6) ? (f2 ? 55 : 125) : up && e.rockT <= 0 ? (f2 ? -150 : -30) : (f2 ? -115 : -65);
+    if (e._club == null) e._club = tgt * DEG; e._club = lerpAng(e._club, tgt * DEG, e.slamT > 0 ? 0.6 : 0.25);
+    const hx = e.x + tr + o.dx + f * NM_HAND, hy = y - 7 + o.bob, back = Math.sin(e._club) < -0.3;
+    if (back) drawBlade(BRUTE_CLUB, hx, hy, e._club, al, white);
+    drawNM(e, 'nBrute', null, e.x + tr, y, o, white, al);
+    if (!back) drawBlade(BRUTE_CLUB, hx, hy, e._club, al, white);
+    if (e.slamT > 0.12 && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,220,150,.6)'; for (let t = 8; t < 34; t += 2) ctx.fillRect(snap2(hx + Math.cos(e._club - 0.5 * f) * t), snap2(hy + Math.sin(e._club - 0.5 * f) * t), 2, 2); ctx.restore(); } // 휘두른 자국
+    if (scoop && e.rockT > 0 && !white) { const r = easeOut(clamp((su - 0.2) / 0.8, 0, 1)); drawSprite('boulder', 'deco', 2, e.scoopX, e.y + 7 - r * 30, false, { rot: r * 2 }); if (Math.random() < 0.5) dust(e.scoopX + rand(-6, 6), e.y, 1); } // 바닥에서 솟아오르는 바위
+    if (up && st === 'wind' && e.rockT <= 0) holdGlow(e.x, e.y - 34, k, '255,180,60');
+    if (scoop && su < 0.3 && !white) holdGlow(e.scoopX, e.y - 2, 1 - su / 0.3, '255,200,120'); // 내려친 자리
+    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 14), Math.round(e.y - 36 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
   }
+
 
   // ---------- 엘리트: 가시등 멧돼지
   function boarTick(e, dt) {
@@ -4654,30 +4983,21 @@ huskUp:[
   // v1.37 가시등 멧돼지 움직임: 몸통·머리·등가시·다리 넷을 따로 2px 칸 단위로
   //   종종걸음 4장면(대각선 다리 짝이 번갈아 앞으로 들림, 머리 끄덕임) / 돌진 준비: 머리를 낮추고 몸을 뒤로 빼며 앞발로 땅을 긁음
   //   돌진: 다리를 앞뒤로 쭉 뻗었다 모으는 질주 2장면(늘이기 제거) / 가시 준비: 웅크리며 등가시가 곤두섬 / 엄니 올려치기: 머리를 숙였다 위로 쳐올림
-  function drawBoar(e, ya, al) {
-    const white = e.flash > 0, flip = e.face < 0, st = e.state, k = e.glow || 0, F = flip ? -1 : 1;
-    let rot = e.lean, tr = 0, bob = 0, hx = 0, hy = 0, qy = 0, L = { BF: [0, 0], BN: [0, 0], FF: [0, 0], FN: [0, 0] };
-    if (st === 'chase') { const ph = Math.floor(e.walk * 0.9) % 4;
-      if (ph === 0) { L.BN = [2, -2]; L.FF = [2, -2]; } else if (ph === 2) { L.BF = [2, -2]; L.FN = [2, -2]; } else { bob = 2; hy = 2; } }
-    if (st === 'wind' && e.pat === 'rush') { rot = 0; hy = 4; hx = 2; bob = 2; L.BF = L.BN = [-2, 0]; if (Math.floor(time * 9) % 2) L.FN = [2, -2]; if (k > 0.6) tr = Math.floor(time * 18) % 2 ? 2 : 0; }
-    if (st === 'dash') { rot = 0; if (Math.floor(time * 11) % 2) { L.FF = [4, 0]; L.FN = [6, -2]; L.BF = [-4, 0]; L.BN = [-6, -2]; bob = 2; hy = 2; } else { L.FF = [-2, -2]; L.FN = [0, -2]; L.BF = [2, -2]; L.BN = [0, -2]; bob = -2; hy = -2; } }
-    if (st === 'wind' && e.pat === 'quill') { bob = 2; hy = 2; qy = k < 0.3 ? -2 : -4; if (k > 0.6) tr = Math.floor(time * 18) % 2 ? 2 : 0; }
-    if (st === 'wind' && e.pat === 'gore') { hy = 4; hx = -2; rot = 0; }
-    if (st === 'recover' && e.pat === 'gore' && e.t > 0.45) { hy = -4; hx = 4; rot = 0; }
-    if (e.grogiT > 0) rot = 0.3 * e.face;
-    drawShadow(e.x, e.y + 2, 24);
-    const by = e.y + 3 + ya, o = (m, dx, dy) => drawSprite(m, 'boar', 2, e.x + tr + dx * F, by + dy, flip, { white, rot, alpha: al });
-    o('boLegBF', L.BF[0], L.BF[1]); o('boLegFF', L.FF[0], L.FF[1]);
-    o('boQuill', 0, bob + qy);
-    o('boBody', 0, bob); o('boHead', hx, bob + hy);
-    o('boLegBN', L.BN[0], L.BN[1]); o('boLegFN', L.FN[0], L.FN[1]);
-    if (!white && st === 'wind' && e.pat === 'quill' && k > 0.3) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,240,200,${0.3 + 0.5 * k})`; for (let i = 0; i < 5; i++) ctx.fillRect(snap2(e.x + tr + (-22 + i * 5) * e.face), snap2(by - 40 + bob + qy - (i % 2) * 2), 2, 2); ctx.restore(); }
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = e.enraged ? 'rgba(255,40,30,1)' : `rgba(255,80,40,${0.5 + 0.5 * e.glow})`;
-    ctx.fillRect(snap2(e.x + tr + (e.face * 19) + hx * e.face) - 1, snap2(e.y - 23 + ya + bob + hy), 2, 4);
-    ctx.restore();
-    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(e.y - 50 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
+  function drawBoar(e, ya, al) { // v2.44 새 도트 (옆모습 2등신)
+    const white = e.flash > 0, st = e.state, k = e.glow || 0, o = nmPose(e), f = e.face;
+    let tr = 0;
+    if (st === 'wind' && e.pat === 'rush') { o.rot = 0; o.sy = 0.9; o.sx = 1.08; o.dx = -2 * f; if (k > 0.6) tr = Math.floor(time * 18) % 2 ? 2 : 0; }
+    if (st === 'dash') { o.rot = 0; o.wf = Math.floor(time * 22) % 4; o.sx = 1.08; o.sy = 0.94; }
+    if (st === 'wind' && e.pat === 'quill') { o.sy = 0.9; if (k > 0.6) tr = Math.floor(time * 18) % 2 ? 2 : 0; }
+    if (st === 'wind' && e.pat === 'gore') { o.rot = 0.2 * f; o.dx = -2 * f; }
+    if (st === 'recover' && e.pat === 'gore' && e.t > 0.45) { o.rot = -0.25 * f; o.dx = 4 * f; }
+    const by = e.y + 3 + ya;
+    drawShadow(e.x, e.y + 2, 14);
+    drawNM(e, 'nBoar', null, e.x + tr, by, o, white, al);
+    if (!white && st === 'wind' && e.pat === 'quill' && k > 0.3) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,240,200,${0.3 + 0.5 * k})`; for (let i = 0; i < 3; i++) ctx.fillRect(snap2(e.x + tr + (-12 + i * 6) * f), snap2(by - 24 - (i % 2) * 2), 2, 2); ctx.restore(); }
+    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 14), Math.round(e.y - 30 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
   }
+
 
   // ---------- 고블린 아처의 활
   function drawBow(e, ya) {
@@ -5066,7 +5386,7 @@ huskUp:[
   const STAGES = {
     1: { n: '황혼 초원', sub: '황혼이 굳어 버린 변경의 들판', diff: 1, hpMul: 1.15, atkMul: 1.45, dark: 0.34, ash: '205,240,120', torches: false,
       phases: PHASES_MEADOW, survive: [['slime', 0.3], ['goblin', 0.3], ['garcher', 0.15], ['bigslime', 0.1], ['toxslime', 0.15]], surviveMax: 10,
-      boss: '점액왕 구루그', bossSub: '들판의 잔해를 삼킨 거대한 점액 · 첫 번째 파편', bossGold: 160, elite: '거대 고블린 · 가시등 멧돼지' },
+      boss: '점액왕 구루그', bossSub: '들판의 잔해를 삼킨 거대한 점액 · 첫 번째 파편', bossGold: 160, elite: '고블린 챔피언 · 가시등 멧돼지' },
     2: { n: '무너진 성채', sub: '주인을 잃은 기사단의 옛 의식장', diff: 2, hpMul: 1.15, atkMul: 0.95, dark: 0.66, ash: '160,150,170', torches: true,
       phases: PHASES, survive: [['ghoul', 0.4], ['dog', 0.15], ['bloat', 0.15], ['cultist', 0.15], ['crow', 0.15]], surviveMax: 12,
       boss: '타락 기사단장 발도르', bossSub: '맹세를 잊은 성채의 수문장 · 두 번째 파편', bossGold: 250, elite: '기사단 처형인 · 역병 어미' },
@@ -5112,7 +5432,7 @@ huskUp:[
   // v1.21 챕터마다 다른 엘리트 방 이름·문구 (tier 4 = 첫째 엘리트 방, tier 9 = 둘째)
   const ELITE_ROOM = {
     1: { n: '우두머리의 굴', tag: '굴', foe: '우두머리', clear: '우두머리 처치', loot: '우두머리의 전리품',
-      sub: { 4: '거대 고블린이 식지 않은 불씨를 쥐고 놓지 않는다', 9: '가시등 멧돼지가 불씨 주위를 맴돌며 땅을 판다' } },
+      sub: { 4: '고블린 챔피언이 식지 않은 불씨를 쥐고 놓지 않는다', 9: '가시등 멧돼지가 불씨 주위를 맴돌며 땅을 판다' } },
     2: { n: '처형장', tag: '처형장', foe: '처형장', clear: '처형장 제압', loot: '처형장의 전리품',
       sub: { 4: '기사단 처형인이 아직 끝나지 않은 판결을 기다린다', 9: '처형인 곁, 역병 어미가 무너진 돌 틈에 둥지를 틀었다' } },
     3: { n: '결투장', tag: '결투장', foe: '결투', clear: '결투 승리', loot: '결투의 전리품',
@@ -5229,7 +5549,7 @@ huskUp:[
     }
     // 모든 칸에 적어도 오솔길/복도 하나는 나오게
     if (!rooms.some(r => r.shape === COR || r.shape === CORV)) { const nsCount = r => ['n', 's'].filter(d => r.doors[d] != null).length; const c = rooms.filter(r => r.type === 'combat').sort((a, b) => nsCount(a) - nsCount(b))[0]; if (c) c.shape = nsCount(c) <= 1 ? COR : CORV; }
-    for (const r of rooms) { r.waves = r.type === 'combat' || r.type === 'elite' ? STAGES[stage].phases[r.tier] : null; setArena(SHAPES[r.shape]); layoutRoom(r, stage); if (['combat', 'elite', 'survive'].includes(r.type)) r.hue = pick(['r', 'b', 'g']); else if (r.type === 'boss') r.hue = BOSS_HUE[stage] || 'r'; } // v2.34 방 색 성향
+    for (const r of rooms) { r.waves = r.type === 'combat' || r.type === 'elite' ? STAGES[stage].phases[r.tier] : null; setArena(SHAPES[r.shape]); layoutRoom(r, stage); if (['combat', 'elite', 'survive'].includes(r.type)) r.hue = pick(['r', 'b', 'g']); } // v2.34 방 색 성향 · v2.46 보스방은 색 성향 없음 (잿빛·색 물결·빛 조각 없음)
     setArena(SHAPES[STD]);
     // 지도 경계
     const xs = rooms.map(r => r.gx), ys = rooms.map(r => r.gy);
@@ -5595,7 +5915,7 @@ huskUp:[
   function roomClear() {
     const R = G.dun.cur;
     if (R.invade && !R.invaded) { R.invaded = true; startInvasion(R); return; } // v1.57 난입
-    R.cleared = true; G.rs.state = 'done'; startPaint(R, G.player.x, G.player.y - 8); // v2.34 색 물결
+    R.cleared = true; R.clearAt = time; G.rs.state = 'done'; startPaint(R, G.player.x, G.player.y - 8); // v2.34 색 물결
     sealRoom(false);
     if (R.type === 'elite') {
       const n = ++G.dun.eliteDone;
@@ -8506,7 +8826,7 @@ huskUp:[
       // 바닥 그림자 (날아가는 높이를 보여 준다)
       ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(gx - 4, gy, 8, 2); ctx.fillRect(gx - 2, gy - 2, 4, 2);
       if (pr.kind === 'arrow' || pr.kind === 'spear') {
-        drawBlade(pr.kind === 'arrow' ? (blink ? PROJ_W.arrowB : PROJ_W.arrow) : (blink ? PROJ_W.spearB : PROJ_W.spear), gx, hy, pr.ang); // v1.05 칸 단위 회전 도트
+        drawBlade(pr.kind === 'arrow' ? (blink ? PROJ_W.arrowB : PROJ_W.arrow) : (blink ? PROJ_W.spearB : PROJ_W.spear), gx, hy, pr.ang); // v1.05 칸 단위 회전 도트 (투척꾼은 다시 투창)
         continue;
       }
       if (pr.kind === 'ember') { const I = invInit(); pr.hist.forEach((q, i) => { if (i % 2) return; ctx.fillStyle = `rgba(255,140,50,${0.45 * (i + 1) / pr.hist.length})`; ctx.fillRect(Math.round(q.x) & ~1, Math.round(q.y - 10) & ~1, 2, 2); }); drawBlade(blink ? I.emberB : I.ember, gx, hy, pr.ang); continue; } // v1.65 총잡이 잉걸 탄
@@ -9102,6 +9422,7 @@ huskUp:[
       grogiMax: (isEliteT(type) && !INVADER_T.has(type)) || SEMI_T.has(type) ? 0 : base.grogiMax || 0, grogi: 0, grogiT: 0, pat: 0, walk: rand(0, 6), lean: 0, /* 엘리트·준엘리트는 그로기 없음 (난입자는 그로기 있음) */
       blade: base.blade || null, bladeAng: 120 * DEG, bladeTarget: 120 * DEG, trail: [], sw: null, rise: 0.35,
     };
+    if (NM_SMALL[ne.type]) ne.r = Math.min(ne.r, NM_SMALL[ne.type]); // v2.44 새 도트(파티와 같은 크기)에 맞춘 몸 반경
     if (ASH_ALIAS[ne.type]) { ne.ash = ne.type; ne.type = ASH_ALIAS[ne.type]; if (ne.ash === 'husk') { ne.sq = false; ne.blade = null; } } // v1.24 왕도 몬스터: 움직임은 원래 종을 빌린다
     if (ASH_NAMES[ne.type]) { ne.semiName = ASH_NAMES[ne.type]; ne.tall = ne.type === 'coffin' ? 70 : 76; /* v1.29 기수는 깃발 위로 이름표 */ }
     if (type === 'ghoul') { ne.sq = Math.random() < 0.5; if (ne.sq) ne.sv = randi(0, 2); else ne.blade = null; } // v0.96: 감염된 주민과 타락한 종자 반반, 종자는 외형 3종
@@ -9111,17 +9432,11 @@ huskUp:[
   }
   function cancelTele(owner) { G.tele = G.tele.filter(t => t.owner !== owner); G.fx = G.fx.filter(f => !(f.kind === 'lob' && f.owner === owner)); }
   function alertMark(e, h, big) { G.fx.push({ kind: 'alert', o: e, h, s: big ? 3 : 2, t: 0.5, max: 0.5 }); }
-  const restAng = e => e.type === 'mordred' ? (e.face > 0 ? -128 : -52) * DEG : e.type === 'exec' ? (e.face > 0 ? -152 : -28) * DEG : e.type === 'bearer' && !e.flagRef ? (e.face > 0 ? -78 : -102) * DEG : (e.face > 0 ? 125 : 55) * DEG; // 처형인은 도끼를 어깨에, 기수는 깃대를 세워 듦
+  const restAng = e => e.blade === 'boss' ? (e.face > 0 ? -70 : -110) * DEG /* v2.50 발도르: 기사처럼 칼을 세워 듦 */ : e.type === 'mordred' ? (e.face > 0 ? -128 : -52) * DEG : e.type === 'exec' ? (e.face > 0 ? -152 : -28) * DEG : e.type === 'bearer' && !e.flagRef ? (e.face > 0 ? -78 : -102) * DEG : (e.face > 0 ? 125 : 55) * DEG; // 처형인은 도끼를 어깨에, 기수는 깃대를 세워 듦
 
   const INV = {};
   function invInit() {
     if (INV.ok) return INV; INV.ok = true;
-    Object.assign(MAPS, {
-      invPanda: ["....kk....kk......","...kRWk..kWRk.....","...kRRkkkkRRk.....","..kRRRRRRRRRRk....","..kRWWRRRRWWRk....","..kRkeWWWWekRk....","..krWWWWkWWWrk....","...krrWWWWrrk.....",".kk.kkkkkkkk......","kRTkkgGGGGgk......","kTRk.kGcccGk......","kRTk.kGcbcGk......",".kRTkkGcccGk......","..kkkkkGGGk.......",".....kdk.kdk......",".....kkk.kkk......"],
-    });
-    Object.assign(PAL, {
-      invPanda: { k: '#120c0a', R: '#c0582a', r: '#8a3a1c', W: '#f0e6d8', T: '#e8b070', e: '#ff3b2c', g: '#c9a24a', G: '#3e6a2e', c: '#5a3c22', b: '#3a2414', d: '#2a1a14' },
-    });
     // 석궁: 머스킷과 같은 길이대(24~27칸), 앞쪽에 세로 활대
     const xbow = cellWeapon(27, 15, 4, 7, { b: '#6b4a2a', B: '#8a6236', i: '#5a5e68', I: '#8d9097', W: '#9aa0ac', w: '#d8dce4', S: '#d8d0c0', a: '#c8b090', r: '#a3222a', g: '#c9a24a' }, put => {
       const cy = 7;
@@ -9134,9 +9449,6 @@ huskUp:[
       for (let x = 13; x < 25; x++) put(x, cy - 2, x > 22 ? 'w' : 'a');
       put(25, cy - 2, 'w'); put(13, cy - 2, 'r'); put(14, cy - 2, 'r');
     });
-    Object.assign(MAPS, { invReaper: ["...k.........k....","..kHk.......kHk...","..kHHk.....kHHk...","...kHHkkkkkHHk....","....kchhhhhck.....","...kchhhhhhhck....","...kchkkkkkhck....","...kckseseskck....","...kckssSsskck....","..kcCkkkkkkkCck...","..kcCCcgcgcCCck...",".kcCCCCcCcCCCCck..",".kcCCCCcCcCCCCck..",".kcCkCCcCcCCkCck..","..kk.kdk.kdk.kk...","....kkk...kkk....."] });
-    PAL.invReaper = { k: '#08070a', C: '#2a2532', c: '#433c4e', h: '#5e566c', e: '#c070ff', H: '#a49c88', s: '#5a5468', S: '#3a3644', g: '#8a8094', d: '#14121a' };
-    PAL.invReaperEcho = { k: '#2a0f3a', C: '#5a2280', c: '#7a34a6', h: '#a35fd0', e: '#ffffff', H: '#d9a8ff', s: '#a35fd0', S: '#7a34a6', g: '#d9a8ff', d: '#3d1d52' };
     // 낫: 대검보다 긴 자루(32칸) + 끝에서 뒤로 휘는 날
     const scythe = cellWeapon(36, 17, 6, 14, { h: '#3a2a20', H: '#5a4030', w: '#eceff4', l: '#b9bfca', m: '#6b7280', d: '#3c404a', u: '#c070ff', g: '#8a8094', G: '#c9a24a' }, put => {
       const cy = 14;
@@ -9157,12 +9469,6 @@ huskUp:[
         if (o <= 1 && i > 1) put(x, y, o > 0.86 ? 'w' : i < 1.18 ? 'm' : 'l'); }
     });
     const crescentB = cellWeapon(8, 13, 3, 6, { w: '#ffffff', l: '#e0b0ff', m: '#a35fd0' }, (put, g) => { for (let y = 0; y < 13; y++) for (let x = 0; x < 8; x++) { const c = crescent.cells[y][x]; if (c !== '.') put(x, y, c); } });
-    Object.assign(MAPS, {
-      invShrew: ["....kk.kk.......","...kSkkSk.......","..kSSSSSSkk.....",".kSSSSSSSSSkk...",".kSSSkeSSSSSSkk.",".kSsSSSSSssssspk","..kssSSSSsssskk.","...kkkkkkkkkk...","..kbrrrrrbk.....","kkkbrrrrrbk.....","kSkkbbbbbbk.....",".kSSkbbbbk......","...kSkdk.kdk....","....kkkk.kkk...."],
-      invShrewB: ["....kk.kk.......","...kSkkSk.......","..kSSSSSSkk.....",".kSSSSSSpSSkk...",".kSSSkepSSSSSkk.",".kSsSSpSSssssspk","..kssSSSSsssskk.","...kkkkkkkkkk...","..kbrrrrrbk.....","kkkbrrrrrbk.....","kSkkbbbbbbk.....",".kSSkbbbbk......","...kSkdk.kdk....","....kkkk.kkk...."],
-    });
-    PAL.invShrew = { k: '#0e0c0a', S: '#7a6a5c', s: '#b8a898', p: '#d87a8a', e: '#ff3b2c', b: '#5a3c22', r: '#a3222a', d: '#3a2a20' };
-    PAL.invShrewB = { k: '#0e0c0a', S: '#4e4038', s: '#8a7a6a', p: '#d87a8a', /* p: 코·흉터 */ e: '#ff3b2c', b: '#5a3c22', r: '#3e6a2e', d: '#3a2a20' };
     // 차크람: 머리보다 큰 고리 (지름 13칸), 바깥 날 8개 — 손에 쥘 때는 가장자리, 날아갈 때는 가운데가 축
     const chak = (pal, px, py) => cellWeapon(15, 15, px, py, pal, put => {
       const c = 7;
@@ -9172,8 +9478,6 @@ huskUp:[
       put(c - 6, c, 'g'); put(c - 6, c + 1, 'g');
     });
     const CPA = { w: '#eceff4', l: '#b9bfca', m: '#6b7280', d: '#3c404a', g: '#a3222a' }, CPB = { w: '#fff0b0', l: '#ffd34d', m: '#c9a24a', d: '#7a5a22', g: '#3e6a2e' };
-    MAPS.invWeasel = [".....kk..kk.......","....kFfkkfFk......","...kFFdFFFFFk.....","...kFFFddFFFFk....","...kFkeFFddgdk....","...kFFWWWWddWk....","....kFWWWkWWkk....","....krrrrrrrk.....","...krrkCCCCk......",".kkkCCCgCCCCk.....","kFfkCCCCgCCCCk....","kFk.kCCCCCCCCk....","kFfkkCCgCCCCck....",".kFk.kCCkkCCk.....",".....kdk..kdk.....",".....kkk..kkk....."];
-    PAL.invWeasel = { k: '#0b0a0c', F: '#8a5a30', f: '#d8a070', W: '#e8d8b8', e: '#ff8a3a', r: '#a3222a', C: '#3a3440', g: '#c9a24a', d: '#1e1a18' }; // d: 장화·안대 가죽
     // 권총: 쌍검과 같은 길이대(17칸)
     const pistol = cellWeapon(17, 8, 3, 4, { b: '#5a3c22', B: '#7a5232', i: '#3a3440', l: '#c8ccd4', m: '#8d9097', g: '#c9a24a' }, put => {
       for (const [x, y] of [[0, 6], [1, 6], [1, 5], [2, 5], [2, 4], [3, 4], [0, 7], [1, 7]]) put(x, y, 'b');
@@ -9321,9 +9625,25 @@ huskUp:[
     }
     if (e.ps === 'after') { pandaAim(e, a, 6, dt); if (e.t <= 0) e.ps = 'move'; return; }
   }
+  // v2.43 난입자 공격 모션: 예비동작 동안 움츠리며 뒤로 기울고, 쏘거나 휘두르는 순간 앞으로 튕겼다가 탄성 있게 돌아온다
+  const INV_WIND = { panda: e => ['fan', 'bounce', 'volley', 'burst', 'snipe'].includes(e.ps) && e.t > 0, reaper: e => ['reap', 'crescent', 'spin', 'chain'].includes(e.ps),
+    shrewA: e => e.ps === 'throw' || e.ps === 'spinWind', shrewB: e => e.ps === 'throw' || e.ps === 'spinWind', weasel: e => ['fan', 'twin', 'spiral'].includes(e.ps) && e.t > 0 };
+  const INV_DRAW = { panda: (...a) => drawPanda(...a), reaper: (...a) => drawReaper(...a), shrewA: (...a) => drawShrew(...a), shrewB: (...a) => drawShrew(...a), weasel: (...a) => drawWeasel(...a) };
+  function invPose(e) {
+    const wind = !e.dead && INV_WIND[e.type](e), f = e.face || 1, o = { dx: 0, sx: 1, sy: 1, rot: 0 };
+    if (wind && !e._wOn) { e._wOn = true; e._w0 = time; }
+    if (!wind && e._wOn) { e._wOn = false; e._kick = time; }
+    if (wind) { const k = easeOut((time - e._w0) / 0.3); o.dx = -f * 2 * k; o.sx = 1 + 0.08 * k; o.sy = 1 - 0.1 * k; o.rot = -0.16 * f * k; }
+    else if (e._kick != null && time - e._kick < 0.5) { const u = time - e._kick, d = Math.exp(-u * 9) * Math.cos(u * 22); o.dx = f * 3 * d; o.sx = 1 + 0.1 * d; o.sy = 1 - 0.08 * d; o.rot = 0.22 * f * d; }
+    const rc = Math.min(6, e.recoil || 0); if (rc > 0) { o.dx -= f * rc * 0.5; o.rot -= 0.04 * f * rc; o.sx -= 0.012 * rc; o.sy += 0.012 * rc; }
+    return o;
+  }
+  function invDraw(e, ya, al, white) { const ox = e.x, p = invPose(e); e.x += p.dx; e.INVP = p; try { INV_DRAW[e.type](e, ya, al, white); } finally { e.x = ox; e.INVP = null; } }
+  const invWalk = e => e.moving && (e.ps === 'move' || !e.ps) ? Math.floor(time / 0.08) % 4 : -1; // 걷기 4프레임
+  const invOpt = (e, o) => { const p = e.INVP; return p ? Object.assign(o, { rot: p.rot, sx: p.sx, sy: p.sy }) : o; };
   function drawPanda(e, ya, al, white) {
     const I = invInit(), flip = e.face < 0;
-    const bob = e.moving && e.ps === 'move' ? -Math.round(Math.abs(Math.sin(e.walk)) * 1.5) * 2 / 2 : 0;
+    const wf = invWalk(e), bob = wf % 2 ? 2 : 0;
     drawShadow(e.x, e.y + 1, 8);
     // 저격 조준선 (2px 칸 디더): 따라오는 동안 진홍, 굳으면 금빛 점멸
     if (e.ps === 'snipe' && al > 0.5) {
@@ -9332,13 +9652,13 @@ huskUp:[
       for (let t = 0; t < L; t += 2) { const x = (sx + Math.cos(e.aim) * t) & ~1, y = (sy + Math.sin(e.aim) * t) & ~1;
         ctx.fillStyle = e.locked ? (on ? '#ffd34d' : '#a3222a') : ((t >> 1) % 2 ? '#a3222a' : '#5c1016'); if (e.locked || (t >> 1) % 3) ctx.fillRect(x, y, 2, 2); }
     }
-    const rc = e.recoil || 0, hx = e.x + e.face * 2 - Math.cos(e.aim || 0) * rc, hy = e.y - 10 + ya + bob;
+    const rc = e.recoil || 0, hx = e.x + e.face * 6 - Math.cos(e.aim || 0) * rc, hy = e.y - 9 + ya + bob; // v2.43 새 도트: 옆구리의 손
     if (e.ps === 'dodge' && e.t < BLINK) return; // 점멸 중에는 보이지 않는다 (플레이어와 같음)
     const sq = e.ps === 'fan' || e.ps === 'bounce' || e.ps === 'volley' ? 0.94 : 1;
     if (e.ps === 'intro') { // 난입: 붉은 실루엣이 칸 단위로 차오름
       drawSprite('invPanda', 'invPanda', 2, e.x, e.y + 2 + ya, flip, { white: true, alpha: (1 - al) * 0.9 });
     }
-    drawSprite('invPanda', 'invPanda', 2, e.x, e.y + 2 + ya + bob, flip, { white, alpha: al, sy: sq });
+    drawSprite(walkMap('invPanda', wf), 'invPanda', 2, e.x, e.y + 2 + ya, flip, invOpt(e, { white, alpha: al, sy: sq }));
     if (!white) drawBlade(I.xbow, hx, hy + 4, e.aim || 0, al);
     if ((e.ps === 'fan' || e.ps === 'bounce' || (e.ps === 'burst' && e.t > 0)) && al > 0.5) holdGlow(e.x + Math.cos(e.aim) * 28, e.y - 8 + Math.sin(e.aim) * 18, 1 - e.t / 0.42, '255,200,60');
   }
@@ -9437,13 +9757,13 @@ huskUp:[
       drawSprite('invReaper', 'invReaperEcho', 2, q.x, q.y + 2, q.face < 0, { alpha: 0.5 * k, white: fl }); }
     if (e.ps === 'shHide' || (e.ps === 'dodge' && e.t < BLINK)) return;
     drawShadow(e.x, e.y + 1, 8);
-    const bob = e.moving && e.ps === 'move' ? -Math.round(Math.abs(Math.sin(e.walk)) * 1.5) : 0;
-    const hx = e.x + e.face * 2, hy = e.y - 10 + ya + bob, behind = !e.sw && e.ps !== 'spin';
+    const wf = invWalk(e), bob = wf % 2 ? 2 : 0;
+    const hx = e.x + e.face * 4, hy = e.y - 11 + ya + bob, behind = !e.sw && e.ps !== 'spin'; // v2.43 망토 속에서 낫을 쥠
     if (e.trail && e.trail.length > 1) drawTrail(e.trail, hx, hy + 4, 14, I.scythe.reach + 2, '200,140,255', true);
     if (behind && !white) drawBlade(I.scythe, hx - e.face * 2, hy + 2, e.aim == null ? -96 * DEG : e.aim, al);
     if (e.ps === 'intro') drawSprite('invReaper', 'invReaper', 2, e.x, e.y + 2 + ya, flip, { white: true, alpha: (1 - al) * 0.9 });
     const sq = e.ps === 'reap' || e.ps === 'crescent' ? 0.94 : 1;
-    drawSprite('invReaper', 'invReaper', 2, e.x, e.y + 2 + ya + bob, flip, { white, alpha: al, sy: sq });
+    drawSprite(walkMap('invReaper', wf), 'invReaper', 2, e.x, e.y + 2 + ya, flip, invOpt(e, { white, alpha: al, sy: sq }));
     if (!behind && !white) drawBlade(I.scythe, hx, hy + 4, e.aim, al);
     if ((e.ps === 'reap' || e.ps === 'crescent') && e.t > 0) holdGlow(e.x + e.face * 4, e.y - 30, 1 - e.t / 0.4, '200,140,255');
   }
@@ -9538,10 +9858,10 @@ huskUp:[
     }
     if (e.ps === 'dodge' && e.t < BLINK) return;
     drawShadow(e.x, e.y + 1, 7);
-    const bob = e.moving ? -Math.round(Math.abs(Math.sin(e.walk)) * 1.5) : 0, hx = e.x + e.face * 3, hy = e.y - 9 + ya + bob;
+    const wf = invWalk(e), bob = wf % 2 ? 2 : 0, hx = e.x + e.face * 6, hy = e.y - 8 + ya + bob; // v2.43 새 도트(작은 키): 옆구리의 손
     if (e.ps === 'intro') drawSprite(mp, mp, 2, e.x, e.y + 2 + ya, flip, { white: true, alpha: (1 - al) * 0.9 });
-    if (e.rage && Math.floor(time * 8) % 2) drawSprite(mp, mp, 2, e.x, e.y + 2 + ya + bob, flip, { white: true, alpha: 0.25 });
-    drawSprite(mp, mp, 2, e.x, e.y + 2 + ya + bob, flip, { white, alpha: al, sy: e.ps === 'throw' || e.ps === 'spinWind' ? 0.94 : 1 });
+    if (e.rage && Math.floor(time * 8) % 2) drawSprite(walkMap(mp, wf), mp, 2, e.x, e.y + 2 + ya, flip, invOpt(e, { white: true, alpha: 0.25 }));
+    drawSprite(walkMap(mp, wf), mp, 2, e.x, e.y + 2 + ya, flip, invOpt(e, { white, alpha: al }));
     if (c && c.st === 'held' && !white) {
       if (e.ps === 'spin' || e.ps === 'spinWind') drawBlade(gold ? I.chakBf : I.chakAf, e.x + Math.cos(e.aim) * 16, e.y - 8 + Math.sin(e.aim) * 10, e.aim * 2, al);
       else drawBlade(gold ? I.chakB : I.chakA, hx - (e.recoil || 0) * e.face, hy + 4, e.ps === 'throw' ? e.lockAng + Math.PI : 15 * DEG * e.face + (e.face < 0 ? Math.PI : 0), al);
@@ -9610,13 +9930,13 @@ huskUp:[
     const I = invInit(), flip = e.face < 0;
     if (e.ps === 'dodge' && e.t < BLINK) return;
     drawShadow(e.x, e.y + 1, 8);
-    const bob = e.moving ? -Math.round(Math.abs(Math.sin(e.walk)) * 1.5) : 0, rc = e.recoil || 0;
+    const wf = invWalk(e), bob = wf % 2 ? 2 : 0, rc = e.recoil || 0;
     const reload = e.ps === 'reload', spiral = e.ps === 'spiral' && e.t <= 0;
     const a0 = reload ? e.spin : e.aim, a1 = reload ? -e.spin + 0.6 : spiral ? e.aim + (e.dump ? Math.PI / 2 : Math.PI) : e.aim - 0.12 * e.face;
-    const back = [e.x - e.face * 1 - Math.cos(a1) * (e.kick === 0 ? rc : 0), e.y - 13 + ya + bob - Math.sin(a1) * (e.kick === 0 ? rc : 0)], front = [e.x + e.face * 4 - Math.cos(a0) * (e.kick === 1 ? rc : 0), e.y - 9 + ya + bob - Math.sin(a0) * (e.kick === 1 ? rc : 0)];
+    const back = [e.x - e.face * 6 - Math.cos(a1) * (e.kick === 0 ? rc : 0), e.y - 6 + ya + bob - Math.sin(a1) * (e.kick === 0 ? rc : 0)], front = [e.x + e.face * 6 - Math.cos(a0) * (e.kick === 1 ? rc : 0), e.y - 5 + ya + bob - Math.sin(a0) * (e.kick === 1 ? rc : 0)]; // v2.43 새 도트: 양 옆구리의 손
     if (!white) drawBlade(I.pistol, back[0], back[1], a1, al);
     if (e.ps === 'intro') drawSprite('invWeasel', 'invWeasel', 2, e.x, e.y + 2 + ya, flip, { white: true, alpha: (1 - al) * 0.9 });
-    drawSprite('invWeasel', 'invWeasel', 2, e.x, e.y + 2 + ya + bob, flip, { white, alpha: al, sy: e.ps === 'fan' && e.t > 0 ? 0.94 : 1 });
+    drawSprite(walkMap('invWeasel', wf), 'invWeasel', 2, e.x, e.y + 2 + ya, flip, invOpt(e, { white, alpha: al }));
     if (!white) drawBlade(I.pistol, front[0], front[1], a0, al);
     if ((e.ps === 'fan' || e.ps === 'twin' || e.ps === 'spiral') && e.t > 0 && al > 0.5) holdGlow(e.x + e.face * 8, e.y - 12, 1 - e.t / 0.38, '255,170,80');
   }
@@ -10091,10 +10411,10 @@ huskUp:[
   function akEcho(b) { // 근위대, 왕비여: 모르드레드의 재 그림자 돌진 + 왕비의 눈물 고리
     banner2(b, '근위대, 왕비여!'); b.bladeTarget = -80 * DEG; const P = G.player, r = akR(b);
     const sx = clamp(P.x - 160, A.x0 + 30, A.x1 - 30), sy = clamp(P.y + rand(-60, 60), A.y0 + 30, A.y1 - 30), ang = Math.atan2(P.y - sy, P.x - sx);
-    G.fx.push({ kind: 'ghost', x: sx, y: sy, face: Math.cos(ang) > 0 ? 1 : -1, rot: 0, t: 0.9, max: 0.9, map: 'mordred', pal: 'shadeB', sc: 2, glowy: true });
+    G.fx.push({ kind: 'ghost', x: sx, y: sy, face: Math.cos(ang) > 0 ? 1 : -1, rot: 0, t: 0.9, max: 0.9, map: 'nMordred', pal: 'nMordredShade', sc: 2, glowy: true });
     G.tele.push({ shape: 'line', x: sx, y: sy, ang, len: 300, w: 36, t: 0, dur: 0.9 * r, owner: b, onFire: t => { hitShape(t, b.atk * 0.9); for (let i = 0; i < 300; i += 20) dust(sx + Math.cos(ang) * i, sy + Math.sin(ang) * i, 3); sfx('whoosh'); } });
     const qx = clamp(P.x + 140, A.x0 + 30, A.x1 - 30), qy = clamp(P.y - 40, A.y0 + 30, A.y1 - 30);
-    G.fx.push({ kind: 'ghost', x: qx, y: qy, face: -1, rot: 0, t: 1.2, max: 1.2, map: 'queen', pal: 'shadeB', sc: 2, glowy: true });
+    G.fx.push({ kind: 'ghost', x: qx, y: qy, face: -1, rot: 0, t: 1.2, max: 1.2, map: 'nQueen', pal: 'nQueenShade', sc: 2, glowy: true });
     G.tele.push({ shape: 'circle', x: qx, y: qy, r: 30, t: 0, dur: 1.1 * r, owner: b, onFire: () => { const n = 16, gap = randi(0, n - 1); for (let k = 0; k < n; k++) { if (k === gap || k === (gap + 1) % n) continue; const aa = k / n * TAU; G.eproj.push({ x: qx, y: qy, ang: aa, sp: 110, r: 5, dmg: b.atk * 0.5, t: 3, hist: [], kind: 'tear' }); } akEnd(b, 0.4, rand(1.3, 1.8)); } });
   }
   function akRain(b, n = 3) { // 재 비: 플레이어 둘레 원 (대관식 둘, 타오르는 왕 셋)
@@ -10355,16 +10675,16 @@ huskUp:[
       P.armor--; P.inv = Math.max(P.inv, 0.9); P.hurtT = 0.15; sfx('block'); hitstop = Math.max(hitstop, 0.06);
       for (let i = 0; i < 10; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(6, 20), vx: rand(-60, 60), vy: rand(-70, -10), t: rand(0.3, 0.6), c: holyHit ? pick(['#ffe9a0', '#ffd34d', '#fffbe6']) : pick(['#c8d8e0', '#8a98a8', '#f0f4f8']), g: 120 });
       G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 160, t: 0.35, max: 0.35, c: '#c8d8e0' });
-      if (!dot) gearOnHurt();
+      if (!dot) { gearOnHurt(); engOnHurt(src); } // v2.47 희망
       return;
     }
     P.hp -= dmg;
-    if (!dot) gearOnHurt();
+    if (!dot) { gearOnHurt(); engOnHurt(src); } // v2.47 희망
     if (dot) { P.hurtT = 0.15; sfx('hurt'); flashT = Math.max(flashT, 0.05); flashColor = '#ff1a28'; }
     if (!dot) {
       P.inv = TOUCH.on ? 1.2 : 0.9; P.hurtT = 0.2; sfx('hurt'); buzz(35); // v2.27 모바일 보정: 피격 뒤 무적 1.2초 (PC 0.9)
       addShake(7, src && src.x != null ? Math.atan2(P.y - src.y, P.x - src.x) : null);
-      if (src && src.x != null && !unblockable) { const ka = Math.atan2(P.y - src.y, P.x - src.x); P.kx = Math.cos(ka) * 170; P.ky = Math.sin(ka) * 170; }
+      if (src && src.x != null && !unblockable && !engSteady()) { const ka = Math.atan2(P.y - src.y, P.x - src.x); P.kx = Math.cos(ka) * 170; P.ky = Math.sin(ka) * 170; } // v2.47 버티는 발
       hitstop = Math.max(hitstop, 0.07); zoomK = Math.max(zoomK, 0.02);
       flashT = Math.max(flashT, 0.07); flashColor = '#ff1a28';
       if (G.combo) G.combo.n = 0;
@@ -10914,49 +11234,151 @@ huskUp:[
   // 분노 = 낙인 · 평온 = 잔상 · 희망 = 빛 조각. 1·2단계는 새 각인, 3단계는 고른 각인 완성 또는 새 각인
   const ENG = {
     // ---- 분노의 빛: 낙인 (근딜)
-    r_m1: { c: 'r', t: 'm', n: '불도장', d: '낙인이 3겹이 되면 터지며 큰 피해를 줍니다.', x: '3타가 낙인을 2겹씩 찍습니다.' },
-    r_m2: { c: 'r', t: 'm', n: '꿰뚫는 낙인', d: '점멸로 낙인 찍힌 적을 통과하면 낙인이 모두 터집니다.', x: '점멸로 통과한 모든 적에게 낙인을 1겹 찍습니다.' },
-    r_m3: { c: 'r', t: 'm', n: '붉은 사슬', d: '낙인 찍힌 적들이 사슬로 이어집니다. 하나를 때리면 이어진 적 모두에게 피해의 25%가 전해집니다.', x: '전해지는 피해가 50%로 증가합니다.' },
-    r_m4: { c: 'r', t: 'm', n: '역린', d: '낙인 찍힌 적의 공격 예고 시간이 0.25초 증가합니다.', x: '낙인 3겹인 적을 예고 중에 때리면 공격이 취소됩니다. 보스와 정예는 제외합니다.' },
-    r_m5: { c: 'r', t: 'm', n: '피의 고리', d: '낙인이 터진 자리에 붉은 고리가 3초 남습니다. 고리 안에서는 공격 속도가 30% 증가합니다.', x: '고리 안에서는 3타가 낙인을 1겹 더 찍습니다.' },
+    r_m1: { c: 'r', t: 'm', n: '불도장', d: '낙인이 3중첩되면 폭발하여 중간 피해를 줍니다.', x: '공격 적중 시 낙인 부여 확률이 50%로 증가합니다.' },
+    r_m2: { c: 'r', t: 'm', n: '꿰뚫는 낙인', d: '점멸로 낙인이 부여된 적을 통과하면, 해당 적의 낙인이 모두 폭발합니다.', x: '점멸로 통과한 모든 적에게 낙인을 1중첩 부여합니다.' },
+    r_m3: { c: 'r', t: 'm', n: '붉은 사슬', d: '낙인이 부여된 적끼리 사슬로 연결됩니다. 연결된 적 하나를 공격하면 연결된 다른 적에게도 피해의 25%가 전달됩니다.', x: '사슬로 전달되는 피해가 50%로 증가합니다.' },
+    r_m4: { c: 'r', t: 'm', n: '역린', d: '낙인이 부여된 적은 공격 예고 시간이 0.25초 늘어납니다.', x: '낙인 3중첩인 적이 공격을 예고하는 동안 공격을 적중시키면 해당 공격을 취소시킵니다. 보스와 정예 몬스터에게는 적용되지 않습니다.' },
+    r_m5: { c: 'r', t: 'm', n: '피의 고리', d: '낙인이 폭발한 위치에 붉은 고리가 3초 동안 생성됩니다. 고리 안에 있는 동안 공격 속도가 30% 증가합니다.', x: '붉은 고리 안에서 공격이 적중하면 낙인이 반드시 부여됩니다.' },
     // ---- 분노의 빛: 낙인 (원딜)
-    r_r1: { c: 'r', t: 'r', n: '조준 낙인', d: '낙인 찍힌 적을 향한 탄은 살짝 휘어 따라갑니다.', x: '휘는 힘이 2배가 됩니다.' },
-    r_r2: { c: 'r', t: 'r', n: '과녁', d: '낙인 찍힌 적에게 맞은 탄은 관통해 뒤의 적까지 맞힙니다. 관통할 때마다 피해가 30% 감소합니다.', x: '관통해도 피해가 감소하지 않습니다.' },
-    r_r3: { c: 'r', t: 'r', n: '낙인 전이', d: '낙인 찍힌 적을 처치하면 가장 가까운 적 2명에게 낙인이 1겹 옮겨붙습니다.', x: '옮겨붙을 때 겹이 그대로 유지됩니다.' },
-    r_r4: { c: 'r', t: 'r', n: '붉은 표적판', d: '낙인 3겹인 적은 다른 적의 공격과 투사체에도 맞습니다.', x: '낙인 2겹부터 적용됩니다.' },
-    r_r5: { c: 'r', t: 'r', n: '집중 사선', d: '낙인 3겹인 적을 겨누면 표적이 붉게 표시되고, 그 적에게 쏜 첫 탄은 크고 강해집니다.', x: '첫 탄이 낙인을 터뜨리며 큰 피해를 줍니다.' },
+    r_r1: { c: 'r', t: 'r', n: '조준 낙인', d: '발사한 탄이 낙인이 부여된 적을 향해 유도됩니다.', x: '낙인이 부여된 적을 향한 탄의 유도 성능이 2배로 증가합니다.' },
+    r_r2: { c: 'r', t: 'r', n: '과녁', d: '낙인이 부여된 적에게 적중한 탄은 적을 관통합니다. 관통할 때마다 탄의 피해가 30% 감소합니다.', x: '낙인이 부여된 적을 관통해도 탄의 피해가 감소하지 않습니다.' },
+    r_r3: { c: 'r', t: 'r', n: '낙인 전이', d: '낙인이 부여된 적을 처치하면 가장 가까운 적 2명에게 낙인이 1중첩 전이됩니다.', x: '처치한 적의 낙인 중첩 수가 그대로 전이됩니다.' },
+    r_r4: { c: 'r', t: 'r', n: '붉은 표적판', d: '낙인 3중첩인 적은 다른 적의 공격과 투사체에도 피해를 입습니다.', x: '낙인 2중첩인 적도 다른 적의 공격과 투사체에 피해를 입습니다.' },
+    r_r5: { c: 'r', t: 'r', n: '집중 사선', d: '낙인 3중첩인 적을 조준하면 표적 표시가 나타납니다. 해당 적에게 처음 적중하는 탄은 크기가 커지고 피해가 40% 증가합니다.', x: '표적에게 처음 적중한 탄이 낙인을 폭발시켜 중간 피해를 추가로 줍니다.' },
     // ---- 평온의 빛: 잔상 (근딜)
-    b_m1: { c: 'b', t: 'm', n: '메아리 베기', d: '잔상이 내 다음 공격을 그 자리에서 따라 합니다. 피해는 50%입니다.', x: '따라 하는 피해가 100%가 됩니다.' },
-    b_m2: { c: 'b', t: 'm', n: '미끼 잔상', d: '잔상 근처의 일반 몬스터는 잔상을 먼저 노립니다.', x: '잔상에 끌린 적이 받는 피해가 20% 증가합니다.' },
-    b_m3: { c: 'b', t: 'm', n: '되돌아가기', d: '점멸 직후 점멸 키를 한 번 더 누르면 잔상 자리로 되돌아갑니다. 점멸 충전을 쓰지 않습니다.', x: '되돌아갈 때 지나간 길의 적에게 피해를 줍니다.' },
-    b_m4: { c: 'b', t: 'm', n: '밀물', d: '잔상이 사라질 때 물결이 퍼지며 주변 적을 밀쳐냅니다.', x: '물결이 적의 투사체도 지웁니다.' },
-    b_m5: { c: 'b', t: 'm', n: '잇는 선', d: '잔상이 2개면 둘이 푸른 선으로 이어지고, 선을 지나는 적에게 피해를 줍니다.', x: '나와 가장 최근 잔상도 선으로 이어집니다.' },
+    b_m1: { c: 'b', t: 'm', n: '메아리 베기', d: '공격하면 잔상도 제자리에서 같은 방향으로 공격합니다. 잔상의 공격은 피해의 50%를 줍니다.', x: '잔상의 공격 피해가 100%로 증가합니다.' },
+    b_m2: { c: 'b', t: 'm', n: '미끼 잔상', d: '잔상 주변의 일반 몬스터는 플레이어 대신 잔상을 공격합니다.', x: '잔상을 공격하고 있는 적이 받는 피해가 20% 증가합니다.' },
+    b_m3: { c: 'b', t: 'm', n: '되돌아가기', d: '점멸 직후 점멸 키를 다시 누르면 잔상 위치로 순간 이동합니다. 이때 점멸 충전은 소모되지 않습니다.', x: '잔상 위치로 순간 이동할 때 이동 경로에 있는 모든 적에게 피해를 줍니다.' },
+    b_m4: { c: 'b', t: 'm', n: '밀물', d: '잔상이 사라질 때 물결이 퍼져 주변 적에게 작은 피해를 주고 밀어냅니다.', x: '잔상이 사라질 때 퍼지는 물결이 범위 안의 적 투사체를 제거합니다.' },
+    b_m5: { c: 'b', t: 'm', n: '잇는 선', d: '잔상이 2개일 때 두 잔상 사이가 푸른 선으로 연결됩니다. 선에 닿은 적은 지속적으로 피해를 입습니다.', x: '플레이어와 가장 최근 잔상 사이에도 같은 선이 연결됩니다.' },
     // ---- 평온의 빛: 잔상 (원딜)
-    b_r1: { c: 'b', t: 'r', n: '잔상 사수', d: '잔상이 내가 쏘는 탄을 같은 방향으로 따라 쏩니다. 피해는 50%입니다.', x: '따라 쏘는 피해가 100%가 됩니다.' },
-    b_r2: { c: 'b', t: 'r', n: '물러남 사격', d: '점멸하는 순간 점멸 반대 방향으로 탄 3발이 부채꼴로 나갑니다.', x: '탄이 5발로 증가합니다.' },
-    b_r3: { c: 'b', t: 'r', n: '얼음 벽', d: '잔상은 적이 지나갈 수 없는 벽이 됩니다.', x: '잔상에 부딪힌 적은 0.5초 동안 멈춥니다.' },
-    b_r4: { c: 'b', t: 'r', n: '되감기 탄', d: '빗나간 탄이 잔상 쪽으로 되돌아오며 한 번 더 맞힙니다. 잔상이 없으면 나에게 돌아옵니다.', x: '적을 맞힌 탄도 약하게 되돌아옵니다.' },
-    b_r5: { c: 'b', t: 'r', n: '물결 장막', d: '나와 가장 최근 잔상 사이에 장막이 생겨 적의 투사체를 막습니다.', x: '투사체를 3개 막을 때마다 가까운 적에게 탄 1발이 나갑니다.' },
-    // ---- 희망의 빛: 빛 조각 (근딜)
-    g_m1: { c: 'g', t: 'm', n: '조각 튕기기', d: '전투 중 색 조각이 저절로 끌려오지 않습니다. 바닥의 조각을 공격으로 치면 빛 탄환이 되어 적을 맞힌 뒤 주워집니다.', x: '빛 탄환이 적 2명을 꿰뚫습니다.' },
-    g_m2: { c: 'g', t: 'm', n: '빛 갑옷', d: '조각을 주울 때마다 빛이 한 겹 몸을 두릅니다. 최대 3겹입니다. 공격하면 한 겹이 앞쪽 빛 칼날로 터집니다.', x: '최대 5겹까지 쌓입니다.' },
-    g_m3: { c: 'g', t: 'm', n: '희망 잇기', d: '조각을 3초 안에 3개 연달아 주우면 금빛 섬광이 터져 주변 적을 밀쳐내고 0.5초 동안 무적이 됩니다.', x: '섬광이 적에게 피해도 줍니다.' },
-    g_m4: { c: 'g', t: 'm', n: '풍요의 일격', d: '3타에 맞은 적은 3초 동안 조각이 떨어질 확률이 2배가 됩니다.', x: '정예는 3타에 맞을 때마다 조각을 떨어뜨립니다. 정예마다 5개까지입니다.' },
-    g_m5: { c: 'g', t: 'm', n: '등불 동행', d: '작은 금빛 등불이 따라다니며 떨어진 조각을 주워 오고, 지나가는 길의 적에게 작은 피해를 줍니다.', x: '등불이 2개가 됩니다.' },
-    // ---- 희망의 빛: 빛 조각 (원딜)
-    g_r1: { c: 'g', t: 'r', n: '굴절', d: '전투 중 색 조각이 저절로 끌려오지 않습니다. 바닥의 조각을 쏘면 빛 파편 3개로 갈라집니다. 조각은 그대로 남습니다.', x: '빛 파편이 5개로 증가합니다.' },
-    g_r2: { c: 'g', t: 'r', n: '금빛 장전', d: '조각을 주울 때마다 다음 탄 1발이 금빛 탄이 되어 크고 강해집니다. 최대 3발까지 저장됩니다.', x: '금빛 탄이 관통합니다.' },
-    g_r3: { c: 'g', t: 'r', n: '희망 잇기', d: '조각을 3초 안에 3개 연달아 주우면 2초 동안 모든 탄이 관통합니다.', x: '지속 시간이 4초로 증가합니다.' },
-    g_r4: { c: 'g', t: 'r', n: '풍요의 사격', d: '같은 적을 5번 연속 맞히면 조각이 1개 떨어집니다. 적마다 한 번입니다.', x: '정예와 보스는 10번 맞힐 때마다 다시 떨어뜨립니다.' },
-    g_r5: { c: 'g', t: 'r', n: '금빛 과녁', d: '조각이 떨어진 자리에 1.5초 동안 과녁이 생깁니다. 과녁 위의 적에게 주는 피해가 30% 증가합니다.', x: '과녁이 3초 동안 유지됩니다.' },
+    b_r1: { c: 'b', t: 'r', n: '잔상 사수', d: '탄을 발사하면 잔상도 같은 방향으로 탄을 발사합니다. 잔상의 탄은 피해의 50%를 줍니다.', x: '잔상이 발사하는 탄의 피해가 100%로 증가합니다.' },
+    b_r2: { c: 'b', t: 'r', n: '물러남 사격', d: '점멸할 때 점멸 방향의 반대쪽으로 탄 3발을 부채꼴로 발사합니다.', x: '점멸할 때 발사하는 탄이 5발로 증가합니다.' },
+    b_r3: { c: 'b', t: 'r', n: '얼음 벽', d: '잔상이 벽이 되어 적의 이동을 막습니다. 보스에게는 적용되지 않습니다.', x: '잔상에 부딪힌 적은 0.5초 동안 기절합니다.' },
+    b_r4: { c: 'b', t: 'r', n: '되감기 탄', d: '적에게 적중하지 않은 탄이 잔상 쪽으로 되돌아오며, 되돌아오는 경로의 적에게 피해를 줍니다. 잔상이 없으면 플레이어 쪽으로 되돌아옵니다.', x: '적에게 적중한 탄도 같은 방식으로 되돌아옵니다.' },
+    b_r5: { c: 'b', t: 'r', n: '물결 장막', d: '플레이어와 가장 최근 잔상 사이에 장막이 생성되어, 장막에 닿는 적의 투사체를 막습니다.', x: '장막이 투사체를 3개 막을 때마다 가장 가까운 적에게 탄 1발을 발사합니다.' },
+    // ---- v2.47 희망의 빛: 역전 (근딜) — 맞을수록 · 하트가 적을수록 강해짐
+    h_m1: { c: 'g', t: 'm', n: '불굴', d: '희망 중첩 수에 비례하여 공격에 맞은 적이 더 멀리 밀려납니다. 보스에게는 적용되지 않습니다.', x: '희망 3중첩일 때 연속 공격의 3번째 공격이 충격파를 일으켜 주변 적에게 중간 피해를 줍니다.' },
+    h_m2: { c: 'g', t: 'm', n: '반격의 빛', d: '피격당한 후 1초 안에 공격하면 희망을 모두 소진하여, 소진한 희망 1중첩당 중간 피해를 추가로 줍니다.', x: '반격 공격이 플레이어 주변의 모든 적에게 같은 추가 피해를 줍니다.' },
+    h_m3: { c: 'g', t: 'm', n: '마지막 불씨', d: '하트가 1칸 이하로 떨어지면 5초 동안 공격할 때마다 전방으로 빛의 검기를 발사합니다. 이 효과는 토벌 1회당 한 번만 발동합니다.', x: '마지막 불씨가 토벌 1회당 한 번이 아니라 방마다 한 번씩 발동합니다.' },
+    h_m4: { c: 'g', t: 'm', n: '버티는 발', d: '희망 3중첩일 때는 피격당해도 밀려나지 않습니다.', x: '희망 2중첩부터 피격당해도 밀려나지 않습니다.' },
+    h_m5: { c: 'g', t: 'm', n: '등 뒤의 해', d: '하트가 절반 이하일 때 0.5초마다 플레이어 주변으로 빛의 파동이 퍼져, 닿은 적에게 작은 피해를 줍니다.', x: '하트 수와 관계없이 항상 빛의 파동이 퍼집니다.' },
+    // ---- v2.47 희망의 빛: 역전 (원딜)
+    h_r1: { c: 'g', t: 'r', n: '역광 사격', d: '희망 중첩 수에 비례하여 탄의 크기와 피해가 증가합니다. 희망이 1중첩 이상이면 탄이 적을 관통합니다.', x: '희망 3중첩일 때 탄이 세 갈래로 나뉘어 발사됩니다.' },
+    h_r2: { c: 'g', t: 'r', n: '마지막 불씨', d: '하트가 1칸 이하로 떨어지면 5초 동안 탄을 발사할 때마다 금빛 탄 2발을 추가로 발사합니다. 이 효과는 토벌 1회당 한 번만 발동합니다.', x: '마지막 불씨가 토벌 1회당 한 번이 아니라 방마다 한 번씩 발동합니다.' },
+    h_r3: { c: 'g', t: 'r', n: '위기의 조준', d: '하트가 절반 이하일 때 발사한 탄이 가장 가까운 적을 향해 유도됩니다.', x: '하트 수와 관계없이 항상 탄이 가장 가까운 적을 향해 유도됩니다.' },
+    h_r4: { c: 'g', t: 'r', n: '빛의 응답', d: '피격당하면 공격한 적을 향해 금빛 탄 3발을 자동으로 발사합니다.', x: '금빛 탄이 5발로 증가하고, 피격당할 때 희망이 1중첩 추가로 쌓입니다.' },
+    h_r5: { c: 'g', t: 'r', n: '새벽', d: '희망이 3중첩되면 희망을 모두 소진하여 화면에 있는 적의 투사체를 모두 제거합니다. 이 효과는 방마다 한 번만 발동합니다.', x: '새벽이 방마다 두 번까지 발동합니다.' },
   };
-  const ENG_BASE = { r: '근딜은 3타, 원딜은 같은 적을 3번 맞히면 낙인이 1겹 찍힙니다. 최대 3겹, 5초 동안 유지됩니다.', b: '점멸한 자리에 잔상이 2초 동안 남습니다. 최대 2개입니다.', g: '바닥의 색 조각과 줍는 순간을 힘으로 바꿉니다.' };
+  const ENG_BASE = { r: '근거리 직업은 공격 적중 시 30%, 원거리 직업은 탄 적중 시 20% 확률로 적에게 낙인을 1중첩 부여합니다. 낙인은 최대 3중첩까지 쌓이며 5초 동안 유지됩니다.', b: '점멸한 위치에 잔상이 2초 동안 남습니다. 잔상은 최대 2개까지 유지됩니다.', g: '피격당할 때마다 희망이 1중첩 쌓입니다. 희망은 최대 3중첩까지 쌓이며 6초 동안 유지됩니다. 하트가 절반 이하이면 일부 각인의 효과가 강화됩니다.' }; // v2.49 설명 정리
   const ENG_ICON = { r: '◆', b: '◇', g: '✦' };
+  // v2.48 각인 아이콘: 16×16 도트, 각인마다 고유 문양 (빛 색 3단계 + 쇠 · 검은 외곽선 자동)
+  // v2.49 각인 아이콘: 16칸 도트 — 모든 선은 2칸 붓, 음영은 재질별 3단(밝음·중간·어둠)을 "왼쪽 위 빛" 규칙으로 자동으로 칠한다
+  //   재질: M 본색 · D 짙은 본색 · L 옅은 본색 · S 쇠 · W 흰빛(평면) · K 홈(평면)
+  const ENG_ICOL = {
+    r: { M: ['#ffa08a', '#e8443a', '#9a1626'], D: ['#e0484a', '#a01828', '#560a18'], L: ['#fff0e8', '#ffb0a0', '#e87a68'] },
+    b: { M: ['#b4dcff', '#4a98f0', '#1e4a9a'], D: ['#5a9ae8', '#22509e', '#0e2450'], L: ['#ffffff', '#d0e8ff', '#88b8f0'] },
+    g: { M: ['#fff2a8', '#f0c040', '#a0701a'], D: ['#e0a838', '#a87a1a', '#5a3c08'], L: ['#fffef0', '#fff2c0', '#e8c870'] } };
+  const ENG_STEEL = ['#ffffff', '#c4c8d2', '#6a6e7a'];
+  const PI = Math.PI;
+  const ENG_ART = {
+    // 분노 · 근접
+    r_m1: [['l', 1, 13, 6, 8, 'S'], ['r', 6, 1, 13, 8, 'M'], ['r', 8, 3, 11, 6, 'K'], ['r', 9, 4, 10, 5, 'L'], ['d', 14, 0, 'W'], ['d', 4, 2, 'W'], ['d', 3, 4, 'L']],
+    r_m2: [['p', [[8, 2], [14, 8], [8, 14], [2, 8]], 'M'], ['p', [[8, 6], [10, 8], [8, 10], [6, 8]], 'K'], ['l', 1, 13, 10, 4, 'S'], ['p', [[15, 0], [15, 6], [9, 0]], 'S']],
+    r_m3: [['o', 4, 11.5, 3.6, 'M'], ['o', 11.5, 4, 3.6, 'M'], ['o', 7.8, 7.8, 3.6, 'L']],
+    r_m4: [['p', [[8, 0], [15, 6], [12, 13], [8, 16], [4, 13], [1, 6]], 'M'], ['p', [[8, 4], [11, 7], [10, 11], [8, 12], [6, 11], [5, 7]], 'D'], ['r', 7, 5, 8, 11, 'L']],
+    r_m5: [['o', 7.5, 6.5, 6.5, 'M'], ['r', 6, 5, 9, 8, 'D'], ['r', 3, 11, 4, 13, 'M'], ['r', 10, 12, 11, 15, 'M'], ['d', 3, 14, 'D']],
+    // 분노 · 원거리
+    r_r1: [['o', 7.5, 7.5, 6, 'S'], ['r', 7, 0, 8, 3, 'S'], ['r', 7, 12, 8, 15, 'S'], ['r', 0, 7, 3, 8, 'S'], ['r', 12, 7, 15, 8, 'S'], ['r', 6, 6, 9, 9, 'M']],
+    r_r2: [['c', 8.5, 8.5, 7, 'M'], ['c', 8.5, 8.5, 5, 'L'], ['c', 8.5, 8.5, 3, 'M'], ['r', 8, 8, 9, 9, 'W'], ['l', 0, 0, 6, 6, 'S'], ['r', 0, 3, 1, 4, 'D'], ['r', 3, 0, 4, 1, 'D']],
+    r_r3: [['p', [[4, 4], [8, 8], [4, 12], [0, 8]], 'M'], ['l', 6, 6, 10, 2, 'L'], ['l', 6, 8, 10, 12, 'L'], ['p', [[13, 0], [16, 3], [13, 6], [10, 3]], 'M'], ['p', [[13, 10], [16, 13], [13, 16], [10, 13]], 'M']],
+    r_r4: [['r', 0, 0, 15, 15, 'D'], ['c', 7.5, 7.5, 5.6, 'M'], ['c', 7.5, 7.5, 3.6, 'L'], ['r', 7, 7, 8, 8, 'K']],
+    r_r5: [['l', 1, 13, 7, 7, 'S'], ['o', 10.5, 4.5, 4.6, 'M'], ['r', 10, 4, 11, 5, 'L']],
+    // 평온 · 근접
+    b_m1: [['a', 1.5, 14.5, 12.5, -PI / 2, -0.05, 'L'], ['a', 1.5, 14.5, 8, -PI / 2, -0.05, 'M'], ['d', 14, 1, 'W'], ['d', 9, 6, 'W']],
+    b_m2: [['c', 7.5, 6.5, 5.5, 'L'], ['r', 2, 6, 13, 12, 'L'], ['r', 2, 13, 3, 14, 'L'], ['r', 7, 13, 8, 14, 'L'], ['r', 12, 13, 13, 14, 'L'], ['r', 5, 5, 5, 7, 'K'], ['r', 10, 5, 10, 7, 'K']],
+    b_m3: [['a', 7.5, 7, 5, PI, 2 * PI, 'M'], ['l', 12, 7, 12, 11, 'M'], ['l', 2, 7, 2, 10, 'M'], ['p', [[0, 11], [6, 11], [3, 15]], 'L']],
+    b_m4: [['w', 1, 2, 'L'], ['w', 1, 7, 'M'], ['w', 1, 12, 'D']],
+    b_m5: [['l', 3, 11, 11, 3, 'L'], ['c', 3, 12, 3, 'M'], ['c', 12, 3, 3, 'M'], ['r', 7, 7, 8, 8, 'W']],
+    // 평온 · 원거리
+    b_r1: [['r', 1, 2, 7, 6, 'L'], ['p', [[8, 2], [11, 4], [8, 7]], 'L'], ['r', 1, 2, 1, 6, 'D'], ['r', 4, 9, 10, 13, 'M'], ['p', [[11, 9], [14, 11], [11, 14]], 'M'], ['r', 4, 9, 4, 13, 'D']],
+    b_r2: [['l', 9, 7, 1, 7, 'L'], ['l', 9, 7, 2, 1, 'L'], ['l', 9, 7, 2, 13, 'L'], ['p', [[16, 8], [10, 3], [10, 13]], 'M']],
+    b_r3: [['r', 0, 2, 15, 14, 'L'], ['r', 0, 6, 15, 6, 'D'], ['r', 0, 10, 15, 10, 'D'], ['r', 7, 2, 7, 5, 'D'], ['r', 3, 7, 3, 9, 'D'], ['r', 11, 7, 11, 9, 'D'], ['r', 7, 11, 7, 14, 'D'], ['d', 2, 3, 'W'], ['d', 9, 3, 'W'], ['d', 5, 8, 'W'], ['d', 13, 8, 'W']],
+    b_r4: [['a', 7.5, 8, 5.5, -0.5, PI * 1.45, 'M'], ['p', [[10, 0], [16, 4], [10, 7]], 'M'], ['r', 7, 7, 8, 8, 'L']],
+    b_r5: [['r', 1, 0, 3, 15, 'M'], ['r', 5, 0, 6, 15, 'L'], ['r', 1, 0, 6, 1, 'D'], ['c', 12, 8, 2.6, 'S'], ['d', 9, 5, 'W'], ['d', 8, 8, 'W'], ['d', 9, 11, 'W']],
+    // 희망 · 근접
+    h_m1: [['r', 4, 6, 11, 12, 'M'], ['r', 4, 3, 11, 5, 'L'], ['r', 6, 3, 6, 5, 'D'], ['r', 9, 3, 9, 5, 'D'], ['r', 2, 7, 4, 10, 'L'], ['r', 5, 12, 10, 15, 'D'], ['d', 1, 1, 'W'], ['d', 14, 1, 'W'], ['d', 8, 0, 'W']],
+    h_m2: [['l', 1, 1, 10, 10, 'S'], ['l', 13, 1, 4, 10, 'S'], ['r', 1, 12, 3, 14, 'D'], ['r', 12, 12, 14, 14, 'D'], ['l', 2, 10, 4, 12, 'D'], ['l', 12, 10, 10, 12, 'D'], ['p', [[8, 2], [10, 6], [14, 7.5], [10, 9], [8, 13], [6, 9], [2, 7.5], [6, 6]], 'M'], ['r', 7, 7, 8, 8, 'W']],
+    h_m3: [['p', [[8, 0], [14, 7], [14, 11], [11, 15], [5, 15], [2, 11], [2, 7]], 'M'], ['p', [[8, 5], [11, 10], [10, 14], [6, 14], [5, 10]], 'L'], ['p', [[8, 9], [10, 14], [6, 14]], 'W']],
+    h_m4: [['r', 4, 1, 9, 11, 'M'], ['r', 4, 1, 9, 2, 'L'], ['r', 4, 9, 13, 12, 'M'], ['r', 0, 13, 15, 15, 'D']],
+    h_m5: [['c', 7.5, 7.5, 4, 'M'], ['r', 7, 0, 8, 1, 'L'], ['r', 7, 14, 8, 15, 'L'], ['r', 0, 7, 1, 8, 'L'], ['r', 14, 7, 15, 8, 'L'], ['r', 2, 2, 3, 3, 'L'], ['r', 12, 2, 13, 3, 'L'], ['r', 2, 12, 3, 13, 'L'], ['r', 12, 12, 13, 13, 'L']],
+    // 희망 · 원거리
+    h_r1: [['c', 6, 8, 6, 'M'], ['c', 6, 8, 3.6, 'L'], ['r', 5, 6, 11, 9, 'S'], ['p', [[12, 6], [15, 7.5], [15, 8.5], [12, 10]], 'S'], ['r', 5, 6, 5, 9, 'D']],
+    h_r2: [['p', [[5, 0], [10, 6], [10, 11], [7, 15], [3, 15], [0, 11], [0, 6]], 'M'], ['p', [[5, 6], [8, 10], [7, 14], [3, 14], [2, 10]], 'L'], ['r', 11, 2, 15, 4, 'L'], ['r', 11, 10, 15, 12, 'L']],
+    h_r3: [['p', [[8, 15], [0, 7], [0, 4], [3, 1], [6, 1], [8, 3], [10, 1], [13, 1], [16, 4], [16, 7]], 'M'], ['r', 7, 5, 8, 11, 'L'], ['r', 4, 7, 11, 8, 'L'], ['r', 7, 7, 8, 8, 'W']],
+    h_r4: [['p', [[0, 1], [11, 1], [11, 9], [5.5, 15], [0, 9]], 'M'], ['p', [[3, 4], [8, 4], [8, 8], [5.5, 11], [3, 8]], 'L'], ['l', 8, 10, 12, 6, 'S'], ['p', [[16, 0], [16, 6], [10, 0]], 'S']],
+    h_r5: [['c', 7.5, 12, 5.5, 'M'], ['c', 7.5, 12, 3, 'L'], ['r', 0, 12, 15, 15, 'D'], ['r', 7, 0, 8, 3, 'L'], ['l', 1, 3, 2, 5, 'L'], ['l', 13, 3, 12, 5, 'L']],
+  };
+  const ENG_ICN = {};
+  function engIcon(id, done) { // 각인 아이콘 이미지 (완성은 금테 모서리)
+    const key = id + (done ? '+' : ''); if (ENG_ICN[key]) return ENG_ICN[key];
+    const E = ENG[id], F = ENG_ICOL[E ? E.c : 'r'], N = 16, g = Array.from({ length: N }, () => Array(N).fill(null));
+    const P = (x, y, m) => { x = Math.floor(x); y = Math.floor(y); if (x >= 0 && y >= 0 && x < N && y < N) g[y][x] = m; };
+    const B = (x, y, m) => { x = Math.round(x); y = Math.round(y); P(x, y, m); P(x + 1, y, m); P(x, y + 1, m); P(x + 1, y + 1, m); }; // 2칸 붓
+    for (const op of ENG_ART[id] || [['c', 8, 8, 4, 'M']]) { const t = op[0];
+      if (t === 'd') P(op[1], op[2], op[3]);
+      else if (t === 'r') { for (let y = op[2]; y <= op[4]; y++) for (let x = op[1]; x <= op[3]; x++) P(x, y, op[5]); }
+      else if (t === 'l') { const n = Math.max(Math.abs(op[3] - op[1]), Math.abs(op[4] - op[2])) || 1; for (let i = 0; i <= n; i++) B(op[1] + (op[3] - op[1]) * i / n, op[2] + (op[4] - op[2]) * i / n, op[5]); }
+      else if (t === 'c') { for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (Math.hypot(x + 0.5 - op[1], y + 0.5 - op[2]) <= op[3]) P(x, y, op[4]); }
+      else if (t === 'o') { for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const d = Math.hypot(x + 0.5 - op[1], y + 0.5 - op[2]); if (d <= op[3] && d > op[3] - 2) P(x, y, op[4]); } }
+      else if (t === 'a') { for (let i = 0; i <= 60; i++) { const a = op[4] + (op[5] - op[4]) * i / 60; B(op[1] + Math.cos(a) * op[3] - 0.5, op[2] + Math.sin(a) * op[3] - 0.5, op[6]); } }
+      else if (t === 'w') { for (let x = op[1]; x <= 13; x++) B(x, op[2] + Math.round(Math.sin(x * 0.8) * 1.2), op[3]); }
+      else if (t === 'p') { const pts = op[1]; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { let ins = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y + 0.5) !== (yj > y + 0.5) && x + 0.5 < (xj - xi) * (y + 0.5 - yi) / (yj - yi) + xi) ins = !ins; } if (ins) P(x, y, op[2]); } }
+    }
+    const at = (x, y) => (x >= 0 && y >= 0 && x < N && y < N) ? g[y][x] : null;
+    const S2 = N + 2, [cv2, g2] = mkCanvas(S2, S2), px = (x, y, c) => { g2.fillStyle = c; g2.fillRect(x + 1, y + 1, 1, 1); };
+    for (let y = -1; y <= N; y++) for (let x = -1; x <= N; x++) if (!at(x, y) && (at(x + 1, y) || at(x - 1, y) || at(x, y + 1) || at(x, y - 1))) px(x, y, '#0b0a0e'); // 1칸 검은 외곽선
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const m = g[y][x]; if (!m) continue;
+      if (m === 'W') { px(x, y, '#ffffff'); continue; } if (m === 'K') { px(x, y, '#140f18'); continue; }
+      const T = m === 'S' ? ENG_STEEL : F[m], same = (dx, dy) => !!at(x + dx, y + dy); // 빈칸과 맞닿은 가장자리만 음영 → 안쪽 무늬는 평면
+      // 왼쪽 위 빛: 위·왼쪽이 비면 밝음, 아래·오른쪽이 비고 안쪽으로 두께가 있으면 어둠, 나머지는 중간
+      const hi = (!same(0, -1) && same(0, 1)) || (!same(-1, 0) && same(1, 0) && !(!same(0, 1) && same(0, -1)));
+      const lo = (!same(0, 1) && same(0, -1) && same(0, -2)) || (!same(1, 0) && same(-1, 0) && same(-2, 0) && !hi);
+      px(x, y, hi ? T[0] : lo ? T[2] : T[1]);
+    }
+    if (done) { const G2 = ['#fff3b0', '#e8c060']; for (const [x, y, c] of [[0, 0, 0], [1, 0, 1], [0, 1, 1], [17, 0, 0], [16, 0, 1], [17, 1, 1], [0, 17, 0], [1, 17, 1], [0, 16, 1], [17, 17, 0], [16, 17, 1], [17, 16, 1]]) { g2.fillStyle = G2[c]; g2.fillRect(x, y, 1, 1); } } // 금테 모서리 (도트)
+    return (ENG_ICN[key] = cv2.toDataURL());
+  }
+  // v2.49 각인 홈(32칸 도트): 계단식 팔각 홈 + 빛 색 테두리 + 아이콘 둘레 한 칸 광채(단색) — 완성은 금테 이중 + 반짝임 점
+  const ENG_SEAL = {};
+  function engSeal(id, done) {
+    const key = id + (done ? '+' : ''); if (ENG_SEAL[key]) return ENG_SEAL[key];
+    const E = ENG[id], F = ENG_ICOL[E ? E.c : 'r'], N = 32, [cv, g] = mkCanvas(N, N), px = (x, y, c) => { g.fillStyle = c; g.fillRect(x, y, 1, 1); };
+    const cut = 7, inOct = (x, y, m) => x >= m && y >= m && x < N - m && y < N - m && x + y >= cut + m && (N - 1 - x) + y >= cut + m && x + (N - 1 - y) >= cut + m && (N - 1 - x) + (N - 1 - y) >= cut + m;
+    const rimO = done ? '#e8c060' : F.M[1], rimI = done ? F.M[1] : F.M[2];
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      if (!inOct(x, y, 0)) continue;
+      if (!inOct(x, y, 1)) px(x, y, '#050407'); // 검은 외곽
+      else if (!inOct(x, y, 2)) px(x, y, rimO); // 바깥 테두리
+      else if (!inOct(x, y, 3)) px(x, y, done ? rimI : '#050407');
+      else if (!inOct(x, y, 4)) px(x, y, y < N / 2 ? '#000000' : '#3a3442'); // 깎인 홈: 위는 그늘, 아래는 반사
+      else px(x, y, '#0e0c12');
+    }
+    if (done) for (const [x, y] of [[9, 6], [22, 6], [6, 22], [25, 22], [15, 5]]) px(x, y, '#fff3b0');
+    // 아이콘 둘레 광채: 아이콘 외곽선 바깥으로 한 칸, 빛 색 짙은 단계(단색)
+    const ic = new Image(); ic.src = engIcon(id, false); const tmp = mkCanvas(18, 18);
+    const draw = () => { tmp[1].clearRect(0, 0, 18, 18); tmp[1].drawImage(ic, 0, 0); const d = tmp[1].getImageData(0, 0, 18, 18).data, on = (x, y) => x >= 0 && y >= 0 && x < 18 && y < 18 && d[(y * 18 + x) * 4 + 3] > 0;
+      for (let y = -1; y <= 18; y++) for (let x = -1; x <= 18; x++) if (!on(x, y) && (on(x + 1, y) || on(x - 1, y) || on(x, y + 1) || on(x, y - 1))) px(x + 7, y + 7, done ? '#a07820' : F.D[1]);
+      g.drawImage(tmp[0], 7, 7); };
+    if (ic.complete && ic.naturalWidth) draw(); else ic.onload = () => { draw(); const u = cv.toDataURL(); ENG_SEAL[key] = u; document.querySelectorAll(`img[data-seal="${key}"]`).forEach(im => im.src = u); };
+    return (ENG_SEAL[key] = cv.toDataURL());
+  }
+  const engImg = (id, done, px) => `<img class="engPx" src="${engIcon(id, done)}" style="width:${px || 18}px;height:${px || 18}px" alt="">`;
   const engT = () => (G.cls === 'mage' || G.cls === 'gunner') ? 'r' : 'm';
-  const engHas = id => !!(G && G.eng && G.eng[ENG[id].c].includes(id));
+  const engHas = id => !!(ENG[id] && G && G.eng && G.eng[ENG[id].c].includes(id)); // 옛 각인 id는 항상 false
   const engDone = id => !!(G && G.engC && G.engC.has(id));
   const engAny = c => !!(G && G.eng && G.eng[c].length);
-  function engReset() { G.eng = { r: [], b: [], g: [] }; G.engC = new Set(); G.engQ = []; G.ais = []; G.engZ = []; G.engS = []; G.lant = []; }
+  function engReset() { G.eng = { r: [], b: [], g: [] }; G.engC = new Set(); G.engQ = []; G.ais = []; G.engZ = []; G.engS = []; G.lant = []; G.emberUsed = false; if (G.player) { G.player.hope = 0; G.player.emberT = 0; } }
   function engQueue(c, tier) { if (!G.eng) engReset(); G.engQ.push({ c, tier }); }
   function engTryOpen() { if (!G.engQ || !G.engQ.length || mode !== 'play' || G.trans || G.cine || G.player.dead) return; openEng(G.engQ.shift()); }
   function engOptions(c, tier) {
@@ -10971,16 +11393,16 @@ huskUp:[
     const opts = engOptions(q.c, q.tier); if (!opts.length) return;
     const H = HUES[q.c]; mode = 'eng'; sfx('grogi', 1.4);
     $('engTitle').innerHTML = `<span style="color:${H.c}">${H.n}</span> ${q.tier}단계 — 빛의 각인`;
-    $('engSub').textContent = q.tier < 3 ? ENG_BASE[q.c] : '고른 각인을 완성하거나, 새 각인을 하나 더 얻습니다.';
+    $('engSub').textContent = q.tier < 3 ? ENG_BASE[q.c] : '보유한 각인 하나를 완성하거나, 새로운 각인을 하나 획득합니다.';
     $('engChoices').innerHTML = opts.map((o, i) => { const E = ENG[o.k];
-      return `<button class="choice pf engC" data-e="${o.k}" data-d="${o.done ? 1 : 0}" style="--ec:${H.c}"><i class="engI" style="color:${H.c}">${ENG_ICON[q.c]}</i><b>${E.n}${o.done ? ' <em>완성</em>' : ''}</b>${o.done ? E.x : E.d}<br><span class="key">${i + 1}</span></button>`; }).join('');
+      return `<button class="choice engC${o.done ? ' done' : ''}" data-e="${o.k}" data-d="${o.done ? 1 : 0}" style="--ec:${H.c};--ecd:${ENG_ICOL[q.c].M[2]}"><span class="engRune"></span><span class="engSeal"><img src="${engSeal(o.k, o.done)}" data-seal="${o.k}${o.done ? '+' : ''}" alt=""></span>${o.done ? '<span class="engDone">완성</span>' : ''}<b>${E.n}</b><span class="engD">${o.done ? E.x : E.d}</span><span class="key">${i + 1}</span></button>`; }).join(''); // v2.49 각인 석판 (도트 규칙: 번짐·기울임 없음)
     $('engChoices').querySelectorAll('[data-e]').forEach(bt => bt.addEventListener('click', () => chooseEng(bt.dataset.e, bt.dataset.d === '1')));
     $('ovEng').classList.add('on');
   }
   function chooseEng(k, done) {
     const E = ENG[k]; if (done) G.engC.add(k); else G.eng[E.c].push(k);
     $('ovEng').classList.remove('on'); sfx('select'); mode = 'play'; for (const k in pressed) pressed[k] = false; // 고른 숫자키가 무기 교체로 이어지지 않게
-    lootFeed(`<b style="color:${HUES[E.c].c}">${ENG_ICON[E.c]} ${E.n}${done ? ' 완성' : ''}</b>`, HUES[E.c].c, 3000);
+    lootFeed(`${engImg(k, done, 18)} <b style="color:${HUES[E.c].c}">${E.n}${done ? ' 완성' : ''}</b>`, HUES[E.c].c, 3000);
     const P = G.player; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 6, grow: 160, t: 0.4, max: 0.4, c: HUES[E.c].c });
     renderPal();
   }
@@ -10994,7 +11416,7 @@ huskUp:[
     const n = e.brand || 0; if (!n || e.dead) return; e.brand = 0; e.focusUsed = false;
     G.fx.push({ kind: 'ring', x: e.x, y: e.y - 12, r: 4, grow: 120, t: 0.25, max: 0.25, c: '#ff3a2a' }); burst(e.x, e.y - 14, '#ff5a3a', 10); sfx('hit', 0.7);
     if (engHas('r_m5')) G.engZ.push({ k: 'ring', x: e.x, y: e.y, r: 44, t: 3, max: 3 });
-    damageEnemy(e, 0.5 * n + (extra || 0), { proc: true, ang: -Math.PI / 2, kb: 60, grogi: 2, gauge: 1 });
+    damageEnemy(e, 0.3 * n + (extra || 0), { proc: true, /* v2.47 중간 피해 */ ang: -Math.PI / 2, kb: 60, grogi: 2, gauge: 1 });
   }
   function brandAt(x, y) { return G.engZ.some(z => z.k === 'ring' && Math.hypot(x - z.x, (y - z.y) / 0.6) < z.r); }
   function engAspd() { return G && G.engZ && engHas('r_m5') && brandAt(G.player.x, G.player.y) ? 1.3 : 1; }
@@ -11003,6 +11425,9 @@ huskUp:[
   function engShot(x, y, ang, coef, c, o = {}) { if (!G.engS) G.engS = []; G.engS.push(Object.assign({ x, y, ang, sp: 380, t: 0.75, coef, c, hit: new Set(), pierce: 0 }, o)); }
   function engMainShot(x, y, ang, coef0) { // 원딜 기본 공격 한 발마다: 잔상 사수
     if (G.eng && engHas('b_r1')) for (const ai of G.ais) engShot(ai.x, ai.y - 9, ang, coef0 * (engDone('b_r1') ? 1 : 0.5), '#9fd2ff');
+    if (!G.eng) return; const P = G.player;
+    if (engDone('h_r1') && P.hope >= 3) for (const s2 of [-0.22, 0.22]) engShot(x, y, ang + s2, coef0 * 0.5, '#ffd34d', { pierce: 1 }); // 역광 사격 완성: 세 갈래
+    if (engHas('h_r2') && P.emberT > time) for (const s2 of [-0.12, 0.12]) engShot(x, y, ang + s2, coef0 * 0.5, '#ffe08a', { sp: 460 }); // 마지막 불씨: 금빛 연사
   }
   function engRewind(endX, endY, coef0, hit) { // 되감기 탄: 탄이 끝난 자리에서 잔상(없으면 나) 쪽으로
     if (!G.eng || !engHas('b_r4') || (hit && !engDone('b_r4'))) return; const P = G.player, ai = G.ais[G.ais.length - 1], tx = ai ? ai.x : P.x, ty = ai ? ai.y - 9 : P.y - 9;
@@ -11012,25 +11437,49 @@ huskUp:[
     const P = G.player, o = { mul: 1, big: false, pierce: false, dmgKeep: false };
     if (P.gAmmo > 0 && engHas('g_r2')) { P.gAmmo--; o.mul *= 1.6; o.big = true; if (engDone('g_r2')) o.pierce = true; }
     if (P.pierceT > time) o.pierce = true;
+    if (engHas('h_r1') && P.hope > 0) { o.mul *= 1 + 0.12 * P.hope; o.big = o.big || P.hope >= 2; o.pierce = true; } // v2.47 역광 사격
     return o;
   }
-  function engAim(x, y, ang) { // 조준 낙인 (거너): 낙인 찍힌 적 쪽으로 살짝 휨
+  function engAim(x, y, ang) { // 조준 낙인 (거너): 낙인 찍힌 적 쪽으로 살짝 휨 · 위기의 조준: 가까운 적 쪽으로
+    if (engHas('h_r3') && (engDone('h_r3') || hopeLow())) { let best = null, bd = 0.35; for (const e of G.enemies) { if (e.dead || isDummy(e)) continue; const a = Math.atan2(e.y - 8 - y, e.x - x), dd = Math.abs(angDiff(a, ang)); if (dd < bd && Math.hypot(e.x - x, e.y - y) < 420) { bd = dd; best = a; } } if (best != null) ang = best; }
     if (!engHas('r_r1')) return ang; const lim = engDone('r_r1') ? 0.3 : 0.15; let best = null, bd = lim;
     for (const e of G.enemies) { if (e.dead || !(e.brand > 0)) continue; const a = Math.atan2(e.y - 8 - y, e.x - x), dd = Math.abs(angDiff(a, ang)); if (dd < bd && Math.hypot(e.x - x, e.y - y) < 420) { bd = dd; best = a; } }
     return best == null ? ang : best;
   }
   function engFocus(e) { return engHas('r_r5') && e && e.brand >= 3 && !e.focusUsed; }
   // ---------------------------------------------------------------- 타격·처치·점멸·줍기 연결
+  // ---------------------------------------------------------------- v2.47 희망: 역전
+  const hopeLow = () => { const P = G.player; return P.hp <= G.stats.hp / 2; };
+  function hopeAdd(n) { const P = G.player; P.hope = Math.min(3, (P.hope || 0) + n); P.hopeT = time + 6; }
+  function engSteady() { const P = G.player; return engHas('h_m4') && (P.hope || 0) >= (engDone('h_m4') ? 2 : 3); } // 버티는 발: 밀려나지 않음
+  function engOnHurt(src) { // 맞을 때 (방패가 깨진 경우 포함, 장판·독 제외)
+    if (!G.eng || !engAny('g')) return; const P = G.player, R = G.dun && G.dun.cur;
+    hopeAdd(1 + (engDone('h_r4') ? 1 : 0)); P.hurtAt = time;
+    G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 4, grow: 70, t: 0.25, max: 0.25, c: '#ffd34d' });
+    if (engHas('h_r4')) { let T = src && !src.dead && src.x != null && G.enemies.includes(src) ? src : null; if (!T) T = G.enemies.filter(e => !e.dead && !isDummy(e)).sort((a, b) => dist(a, P) - dist(b, P))[0];
+      if (T) { const n = engDone('h_r4') ? 5 : 3, a0 = Math.atan2(T.y - 8 - (P.y - 9), T.x - P.x); for (let i = 0; i < n; i++) engShot(P.x, P.y - 9, a0 + (i - (n - 1) / 2) * 0.14, G.cls === 'gunner' ? 0.9 : 0.45, '#ffd34d'); } }
+    if ((engHas('h_m3') || engHas('h_r2')) && P.hp > 0 && P.hp <= 2) { const per = engDone('h_m3') || engDone('h_r2'), ok = per ? !(R && R.emberUsed) : !G.emberUsed;
+      if (ok) { if (per && R) R.emberUsed = true; else G.emberUsed = true; P.emberT = time + 5; banner2(P, '마지막 불씨!'); sfx('grogi', 1.6); flashT = 0.08; flashColor = '#fff2b0'; } }
+    if (engHas('h_r5') && P.hope >= 3 && R && (R.dawnN || 0) < (engDone('h_r5') ? 2 : 1)) { R.dawnN = (R.dawnN || 0) + 1; P.hope = 0;
+      for (const pr of G.eproj) burst(pr.x, pr.y - 10, '#ffd34d', 3); G.eproj.length = 0; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 520, t: 0.5, max: 0.5, c: '#fff2b0' }); flashT = 0.12; flashColor = '#fff6d0'; sfx('heal', 1.2); banner2(P, '새벽'); }
+  }
   function engOnHit(e, o, crit, coef) {
     if (!G.eng) return; const P = G.player, ranged = engT() === 'r';
-    if (!ranged && P.state === 'attack') {
-      if (P.combo === 2) { if (engAny('r')) addBrand(e, 1 + (engDone('r_m1') ? 1 : 0) + (engDone('r_m5') && brandAt(P.x, P.y) ? 1 : 0));
+    if (!ranged && P.state === 'attack') { // v2.47 낙인은 확률 (공격이 맞을 때 30% · 불도장 완성 50% · 피의 고리 완성 안에서는 반드시)
+      if (engAny('r') && Math.random() < (engDone('r_m5') && brandAt(P.x, P.y) ? 1 : engDone('r_m1') ? 0.5 : 0.3)) addBrand(e, 1);
+      if (P.combo === 2) {
         if (engHas('g_m4')) { e.richT = time + 3; if (engDone('g_m4') && isElite(e) && (e.richN || 0) < 5 && !(e.richCd > time)) { e.richN = (e.richN || 0) + 1; e.richCd = time + 0.6; engDropShard(e); } } }
     }
     if (ranged && o.basic) {
-      if (engAny('r')) { e.engHitN = (e.engHitN || 0) + 1; if (e.engHitN >= 3) { e.engHitN = 0; addBrand(e, 1); } }
+      if (engAny('r') && Math.random() < (engDone('r_m1') ? 0.35 : 0.2)) addBrand(e, 1); // v2.47 원딜은 탄이 맞을 때 20%
       if (engHas('g_r4')) { if (P.lastT !== e) { P.lastT = e; P.lastN = 0; } P.lastN++;
         if (P.lastN === 5 && !e.richDone) { e.richDone = true; engDropShard(e); } else if (engDone('g_r4') && (isElite(e) || e.type === 'boss') && P.lastN % 10 === 0) engDropShard(e); }
+    }
+    if (!ranged && P.state === 'attack' && !e.dead) {
+      if (engHas('h_m1') && P.hope > 0 && e.type !== 'boss') { const a = angTo(P, e), k = 50 * P.hope; e.vx += Math.cos(a) * k; e.vy += Math.sin(a) * k; }
+      if (engDone('h_m1') && P.hope >= 3 && P.combo === 2 && P.hopeWave !== P.t0Swing) { P.hopeWave = P.t0Swing; G.fx.push({ kind: 'ring', x: e.x, y: e.y - 8, r: 6, grow: 180, t: 0.3, max: 0.3, c: '#ffd34d' }); addShake(3);
+        for (const q of nearFoes(e.x, e.y, 70)) damageEnemy(q, 0.6, { proc: true, ang: angTo(e, q), kb: 140, gauge: 1 }); }
+      if (P.hsUntil > time && P.hsN > 0 && !(e.hsAt === P.hsUntil)) { e.hsAt = P.hsUntil; damageEnemy(e, 0.3 * P.hsN, { proc: true, ang: angTo(P, e), kb: 90, gauge: 1 }); burst(e.x, e.y - 14, '#ffd34d', 8); }
     }
     if (engHas('r_m3') && e.brand > 0 && !e.dead) for (const q of G.enemies) if (q !== e && !q.dead && q.brand > 0 && dist(q, e) < 220) { damageEnemy(q, coef * (engDone('r_m3') ? 0.5 : 0.25), { proc: true, ang: angTo(e, q), gauge: 0.3 }); G.fx.push({ kind: 'streak', x0: e.x, y0: e.y - 14, x1: q.x, y1: q.y - 14, t: 0.12, max: 0.12 }); }
     if (engDone('r_m4') && e.brand >= 3 && e.type !== 'boss' && !isElite(e) && G.tele.some(t => t.owner === e && t.t < t.dur)) { cancelTele(e); e.state = 'chase'; e.cd = Math.max(e.cd || 0, 0.9); G.nums.push({ x: e.x, y: e.y - 40, v: '끊김!', t: 0.8, c: '#ff6a4a', s: 1, txt: true }); }
@@ -11065,7 +11514,12 @@ huskUp:[
     return true;
   }
   function engOnSwing(ang) { // 근딜이 공격을 시작할 때
-    if (!G.eng) return; const P = G.player;
+    if (!G.eng) return; const P = G.player; P.t0Swing = time;
+    if (engHas('h_m2') && P.hope > 0 && time - (P.hurtAt || -9) < 1) { P.hsN = P.hope; P.hope = 0; P.hsUntil = time + 0.45; G.nums.push({ x: P.x, y: P.y - 40, v: '반격!', t: 0.7, c: '#ffd34d', s: 1, txt: true }); sfx('grogi', 1.9); // v2.47 반격의 빛
+      if (engDone('h_m2')) { G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 8, grow: 160, t: 0.3, max: 0.3, c: '#ffd34d' }); for (const e of nearFoes(P.x, P.y, 64)) { e.hsAt = P.hsUntil; damageEnemy(e, 0.3 * P.hsN, { proc: true, ang: angTo(P, e), kb: 120, gauge: 1 }); } } }
+    if (engHas('h_m3') && P.emberT > time) { const ux = Math.cos(ang), uy = Math.sin(ang); // 마지막 불씨: 빛 칼날
+      G.fx.push({ kind: 'tracer', x0: P.x + ux * 20, y0: P.y - 9 + uy * 20, x1: P.x + ux * 110, y1: P.y - 9 + uy * 110, w: 5, t: 0.16, max: 0.16, c: '255,220,110' });
+      for (const e of G.enemies) { if (e.dead) continue; const dx = e.x - P.x, dy = e.y - 8 - (P.y - 9), al = dx * ux + dy * uy, pp = Math.abs(dx * uy - dy * ux); if (al > 16 && al < 114 && pp < e.r + 14) damageEnemy(e, 0.6, { proc: true, ang, kb: 70, gauge: 0.5 }); } }
     if (engHas('b_m1')) for (const ai of G.ais) { const c = engDone('b_m1') ? 1 : 0.5; G.fx.push({ kind: 'ring', x: ai.x + Math.cos(ang) * 22, y: ai.y - 8 + Math.sin(ang) * 14, r: 6, grow: 70, t: 0.18, max: 0.18, c: '#9fd2ff' });
       for (const e of G.enemies) if (!e.dead && Math.hypot(e.x - ai.x, e.y - ai.y) < 52 + e.r && Math.abs(angDiff(Math.atan2(e.y - ai.y, e.x - ai.x), ang)) < 1.3) damageEnemy(e, 0.9 * c, { proc: true, ang, kb: 60, gauge: 0.5 }); }
     if (engHas('g_m2') && P.lArm > 0) { P.lArm--; const ux = Math.cos(ang), uy = Math.sin(ang);
@@ -11123,6 +11577,8 @@ huskUp:[
   function engTick(dt) {
     if (!G.eng) return; const P = G.player;
     for (const e of G.enemies) if (e.brand > 0 && (e.dead || time - e.brandT > 5)) e.brand = 0;
+    if (P.hope > 0 && P.hopeT < time) P.hope = 0; // v2.47 희망은 6초 유지
+    if (engHas('h_m5') && (engDone('h_m5') || hopeLow()) && !P.dead) { G.sunT = (G.sunT || 0) - dt; if (G.sunT <= 0) { G.sunT = 0.5; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 6, grow: 110, t: 0.3, max: 0.3, c: '#ffd34d' }); for (const e of nearFoes(P.x, P.y, 60)) damageEnemy(e, 0.2, { proc: true, ang: angTo(P, e), kb: 30, gauge: 0.3 }); } }
     if (engHas('r_r5')) { let best = null, bd = 0.14; for (const e of G.enemies) { if (e.dead || !(e.brand >= 3)) continue; const dd = Math.abs(angDiff(Math.atan2(e.y - 8 - (P.y - 9), e.x - P.x), P.ang)); if (dd < bd && dist(e, P) < 420) { bd = dd; best = e; } } G.engFoc = best; }
     for (const ai of G.ais) ai.t -= dt; for (const ai of G.ais) if (ai.t <= 0) engAiEnd(ai); G.ais = G.ais.filter(ai => ai.t > 0);
     for (const z of G.engZ) z.t -= dt; G.engZ = G.engZ.filter(z => z.t > 0);
@@ -11149,6 +11605,8 @@ huskUp:[
   // ---------------------------------------------------------------- 그리기 (월드 좌표, 맨 위)
   function engDraw() {
     if (!G || !G.eng) return; const P = G.player;
+    if (P.hope > 0 && !P.dead) { for (let i = 0; i < P.hope; i++) { const x = Math.round(P.x - 6 + i * 6) & ~1, y = Math.round(P.y - 40 + Math.sin(time * 6 + i) * 1.5) & ~1; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 1, y - 1, 4, 4); ctx.fillStyle = Math.floor(time * 6) % 2 ? '#ffd34d' : '#fff2b0'; ctx.fillRect(x, y, 2, 2); } } // v2.47 희망 겹
+    if (P.emberT > time && !P.dead) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,200,90,${0.18 + 0.08 * Math.sin(time * 14)})`; ctx.beginPath(); ctx.ellipse(P.x, P.y - 8, 16, 20, 0, 0, TAU); ctx.fill(); ctx.restore(); if (Math.random() < 0.5) G.parts.push({ x: P.x + rand(-8, 8), y: P.y - rand(4, 24), vx: 0, vy: -rand(20, 40), t: 0.4, c: '#ffd34d', g: 0, glow: true }); }
     // 바닥: 피의 고리 · 금빛 과녁
     for (const z of G.engZ) { const a = Math.min(1, z.t / 0.4), n = Math.round(z.r * 1.2), col = z.k === 'ring' ? `rgba(255,60,40,${0.75 * a})` : `rgba(255,211,77,${0.8 * a})`; ctx.fillStyle = col;
       const rot = time * (z.k === 'ring' ? 0.6 : -0.9); for (let i = 0; i < n; i++) { if (i % 4 === 3) continue; const t = i / n * TAU + rot; ctx.fillRect(Math.round(z.x + Math.cos(t) * z.r) & ~1, Math.round(z.y + Math.sin(t) * z.r * 0.6) & ~1, 2, 2); }
@@ -11174,19 +11632,19 @@ huskUp:[
   }
   function engTip(c) { // 팔레트 툴팁: 고른 각인
     if (!G.eng || !G.eng[c].length) return `<span style='color:#6a6474'>${HUE_TIER.map(n => n + '개').join(' · ')}에 닿을 때마다 각인을 하나 고릅니다.</span>`;
-    return G.eng[c].map(k => `<span style='color:${HUES[c].c}'>${ENG_ICON[c]} ${ENG[k].n}${G.engC.has(k) ? ' (완성)' : ''}</span>`).join('<br>');
+    return G.eng[c].map(k => `<span style='color:${HUES[c].c}'><img src='${engIcon(k, G.engC.has(k))}' style='width:18px;height:18px;image-rendering:pixelated;vertical-align:-4px'> ${ENG[k].n}${G.engC.has(k) ? ' (완성)' : ''}</span>`).join('<br>');
   }
   // ================================================================ v2.34 색 되찾기 (문서: 색되찾기_설계) — 1단계: 잿빛 방 · 색 조각 · 색 물결 · 단계 효과 1~3
   const HUES = { r: { n: '분노의 빛', c: '#ff5a4a', rgb: '255,90,74' }, b: { n: '평온의 빛', c: '#5aa8ff', rgb: '90,168,255' }, g: { n: '희망의 빛', c: '#ffd34d', rgb: '255,211,77' } };
   const HUE_TIER = [10, 25, 45], HUE_GRAY = 0.6; // 단계 기준 · 잿빛 방은 채도 40%만 남김
   const BOSS_HUE = { 1: 'b', 2: 'r', 3: 'g', 4: 'r' };
   const hueTier = c => { const n = (G && G.pal && G.pal[c]) || 0; return n >= HUE_TIER[2] ? 3 : n >= HUE_TIER[1] ? 2 : n >= HUE_TIER[0] ? 1 : 0; };
-  const grayRoom = R => !!(R && R.hue && !R.painted && ['combat', 'elite', 'survive', 'boss'].includes(R.type) && (!R.cleared || (G.paintW && G.paintW.R === R)));
+  const grayRoom = R => !!(R && R.hue && !R.painted && ['combat', 'elite', 'survive'].includes(R.type) /* v2.46 보스방은 처음부터 색이 켜져 있음 */ && (!R.cleared || (G.paintW && G.paintW.R === R)));
   for (const c in HUES) { const H = { r: ['#ff4a4a', '#a01828', '#ffd0c8'], b: ['#5aa8ff', '#1e4a9a', '#d8ecff'], g: ['#ffd34d', '#a87a1a', '#fff6c8'] }[c];
     MAPS['hue_' + c] = ['....k....', '...kWk...', '..kWHHk..', '.kWHHHMk.', 'kWHHHHMMk', '.kHHHMMk.', '..kHMMk..', '...kMk...', '....k....']; PAL['hue_' + c] = { k: '#0b0a0e', W: H[2], H: H[0], M: H[1] }; }
   const hueGold = () => 1, hueChest = () => 0; // v2.41 빛의 각인으로 대체
   function hueDrop(e) { // 몬스터 처치 시 확률로 색 조각
-    const R = G.dun && G.dun.cur; if (!R || !R.hue || isDummy(e)) return;
+    const R = G.dun && G.dun.cur; if (!R || !R.hue || R.type === 'boss' || isDummy(e)) return; // v2.46 보스방에선 빛 조각이 떨어지지 않음
     const n = e.type === 'boss' ? 0 : isElite(e) ? 1 : isSemi(e) ? (Math.random() < 0.4 * engRichMul(e) ? 1 : 0) : Math.random() < 0.07 * engRichMul(e) ? 1 : 0; // v2.38 다시 절반 (일반 7% · 준엘리트 40% · 정예 1)
     for (let i = 0; i < n * (G.player.counterT > 0 ? 2 : 1); i++) { const c = Math.random() < 0.7 ? R.hue : pick(['r', 'b', 'g']), l0 = G.loot.length; spawnLoot('hue', e.x, e.y); if (G.loot[l0]) G.loot[l0].hue = c; }
   }
@@ -11390,12 +11848,12 @@ huskUp:[
       if (ml) { P.walk += dt * 10 * sp; if (fast) runFx(dt, mx, my); else if (Math.random() < dt * 6) dust(P.x - mx * 4, P.y, 1); }
       if (G.cls === 'mage') P.blade = lerpAng(P.blade, (P.face > 0 ? -70 : -110) * DEG, dt * 10); // 지팡이를 세워 든다
       else if (G.cls === 'gunner') P.blade = P.reload > 0 ? P.ang + (1 - P.reload / (P.reloadMax || GUN_RELOAD)) * TAU * 2 : lerpAng(P.blade, P.ang, dt * 18); // 재장전 중 총을 두 바퀴 회전
-      else if (G.cls === 'priest') P.blade = lerpAng(P.blade, (P.face > 0 ? 120 : 60) * DEG, dt * 10);
+      else if (G.cls === 'priest') P.blade = lerpAng(P.blade, (P.face > 0 ? -70 : -110) * DEG, dt * 10); // v2.43 마법사처럼 무기를 세워 든다
       else if (G.cls === 'ranger') { // 쌍검: 앞손은 아래로, 뒷손은 뒤로
         P.blade = lerpAng(P.blade, (P.face > 0 ? 20 : 160) * DEG, dt * 12); // v1.09 앞날: 몸 앞에서 아래·뒤로
         P.blade2 = lerpAng(P.blade2, (P.face > 0 ? 125 : 55) * DEG, dt * 12); // 뒷날: 몸 뒤에서 등 위로 솟게
-      } else // 대검을 뒤로 끌며 든다
-        P.blade = lerpAng(P.blade, (P.face > 0 ? (ml ? 160 : 140) : (ml ? 20 : 40)) * DEG, dt * 10);
+      } else // v2.43 대검을 옆구리에서 세워 어깨에 기대 든다 (걸을 땐 살짝 뒤로 눕힘)
+        P.blade = lerpAng(P.blade, (P.face > 0 ? (ml ? -100 : -82) : (ml ? -80 : -98)) * DEG, dt * 10);
     } else if (P.state === 'attack') {
       updateSwing(dt, wantAtk || holdMelee, mx, my);
     } else if (P.state === 'dodge') {
@@ -11602,7 +12060,7 @@ huskUp:[
     }
     P.state = 'shadow'; P.t = 0; P.shTarget = best; P.shArrived = false; P.shFrom = { x: P.x, y: P.y };
     P.iframe = Math.max(P.iframe, 0.4); P.combo = 0; P.queued = false; P.hitSet = new Set(); P.swooshed = false;
-    G.fx.push({ kind: 'ghost', x: P.x, y: P.y, face: P.face, rot: 0, t: 0.4, max: 0.4, map: 'ranger', pal: 'shadow', sc: 2 });
+    G.fx.push({ kind: 'ghost', x: P.x, y: P.y, face: P.face, rot: 0, t: 0.4, max: 0.4, map: 'hRanger', pal: 'hRangerShadow', sc: 2 });
     smoke(P.x, P.y, 16); sfx('dodge');
   }
   function updateShadow(dt) {
@@ -11678,7 +12136,29 @@ huskUp:[
   const SURGE_T = 3; // v2.24 마법사 마나 격류: 점멸 뒤 3초
   const meleeKeep = () => { const P = G.player, c = G.cls; if (P.counterT > 0) return 0.7; // v2.33 반격 시간: 직업 회피 판정 30%
     if (c === 'mage') return P.surgeT > 0 ? MELEE_DR : 1; if (c === 'ranger') return P.state === 'attack' ? MELEE_DR : 1; return MELEE_DR; }; // 기사 흘려내기 · 사제 신의 가호 · 거너 교활(상시) · 어세신 베어내기(평타 중) · 마법사 마나 격류(점멸 뒤)
-  const heroHand = () => { const P = G.player; return { x: P.x + P.face * 3 - Math.cos(P.blade) * (P.recoil || 0) * 4, y: P.y - 8 - Math.sin(P.blade) * (P.recoil || 0) * 4 }; };
+  const heroHand = () => { const P = G.player; return { x: P.x + P.face * 7 - Math.cos(P.blade) * (P.recoil || 0) * 4, y: P.y - 5 - Math.sin(P.blade) * (P.recoil || 0) * 4 }; }; // v2.43 새 정면 도트: 앞발(옆구리) 위치
+  // v2.43 공격 모션: 예비동작(움츠리며 뒤로 당김) → 타격(앞으로 늘어나며 내딛음) → 여운(탄성 있게 흔들리며 제자리로)
+  function strikePose(t, w, s, r, ang, face, amp) {
+    const cx = Math.cos(ang), cy = Math.sin(ang) * 0.6;
+    if (t < w) { const k = easeOut(t / w); return { dx: -cx * 2 * k * amp, dy: -cy * 2 * k * amp, sx: 1 + 0.08 * k * amp, sy: 1 - 0.1 * k * amp, rot: -0.16 * face * k }; }
+    if (t < w + s) { const k = easeOut((t - w) / s); return { dx: cx * (6 * k - 2) * amp, dy: cy * (6 * k - 2) * amp, sx: 1 + (0.08 + 0.06 * Math.sin(Math.PI * k)) * amp, sy: 1 - (0.1 - 0.04 * k) * amp, rot: (-0.16 + 0.38 * k) * face }; }
+    const k = clamp((t - w - s) / Math.max(r, 0.01), 0, 1), d = Math.exp(-4.5 * k) * Math.cos(k * 8);
+    return { dx: cx * 4 * amp * d, dy: cy * 4 * amp * d, sx: 1 + 0.08 * amp * d, sy: 1 - 0.06 * amp * d, rot: 0.22 * face * d };
+  }
+  let PPOSE = null;
+  function playerPose() {
+    const P = G.player, cls = G.cls; if (P.dead) return null;
+    if (P.state === 'attack') { const st = swingTable()[P.combo] || SWING[0]; return strikePose(P.t, st.wind, st.swing, st.rec, P.atkAng, P.face, st.heavy ? 1.4 : 1); }
+    if (P.state === 'butt') return strikePose(P.t, 0.05, 0.08, 0.15, P.ang, P.face, 1.2);
+    if (P.state === 'rattack' && cls === 'mage') return strikePose(P.t, 0.05, 0.06, 0.16, P.atkAng == null ? P.ang : P.atkAng, P.face, 0.8);
+    if (cls === 'gunner' && P.recoil > 0) { const rc = Math.min(2.5, P.recoil), a = P.blade; return { dx: -Math.cos(a) * rc * 2, dy: -Math.sin(a) * rc, sx: 1 - 0.05 * rc, sy: 1 + 0.05 * rc, rot: -0.12 * P.face * rc }; }
+    return null;
+  }
+  const walkFr = P => P.state === 'idle' && P.moving ? Math.floor(time / 0.08) % 4 : P.state === 'idle' && !P.dead && Math.floor(time / 0.6) % 2 ? -2 : -1; // v2.43 월드 플리퍼식 걷기 4프레임 (80ms) · v2.50 멈춰 있으면 0.6초마다 숨 쉬듯 1칸 (-2)
+  // v2.50 숨 고르기 장면: 발 두 줄은 그대로 두고 그 바로 위 한 줄을 접어 머리·몸통이 1칸 내려앉음
+  const IDLE_ROW = { hKnight: 10, hRanger: 11, hMage: 17, hPriest: 14, hGunner: 12 }; // 접을 몸통 줄 (손·버클·눈 줄은 피함)
+  const idleMap = m => { const k = m + 'I'; if (!MAPS[k]) { const R = MAPS[m], H = R.length, r = IDLE_ROW[m] != null ? IDLE_ROW[m] : H - 3; MAPS[k] = ['.'.repeat(R[0].length)].concat(R.slice(0, r), R.slice(r + 1)); PLAYER_MAPS.add(k); } return k; };
+  const walkMap = (m, f) => f === -2 ? idleMap(m) : f < 0 ? m : MAPS[m + 'W' + f] ? m + 'W' + f : m; // v2.44 W0·W2가 있으면 그 장면 (기사 망토·고양이 머플러가 휘날림)
   function staffTip() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 30, y: h.y + Math.sin(P.blade) * 30 }; }
   function muzzle() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 37, y: h.y - 2 + Math.sin(P.blade) * 37 }; }
   // 직선 위의 적 (along 순 정렬)
@@ -11735,10 +12215,10 @@ huskUp:[
   function castBolt() { rangedWave();
     const P = G.player; P.boltN = (P.boltN || 0) + 1; // v1.76 마력 소모 없음 (다른 PC v1.69 이식)
     const big = P.boltN % 3 === 0, tp = staffTip();
-    const em = engShotMods(), foc = engFocus(G.engFoc) ? G.engFoc : null; if (foc) { foc.focusUsed = true; em.mul *= 1.8; em.big = true; } // v2.41 빛의 각인
-    G.mproj.push({ kind: 'bolt', x: tp.x, y: tp.y, ang: P.ang, sp: big ? 360 : 420, t: 0.72, r: (big ? 7 : 4) * (em.big ? 1.6 : 1), coef: (big ? 1.2 * (uncK() === 'mage11' ? 1.15 : 1) : 0.66) * em.mul, big: big || em.big, hist: [], pierce: em.pierce, foc, hitS: new Set() }); engMainShot(tp.x, tp.y, P.ang, big ? 1.2 : 0.66); // v0.72 밸런스: 0.78/1.4 → 0.66/1.2 (v1.77 90% 하향 되돌림), 사거리 약 300px
+    const em = engShotMods(), foc = engFocus(G.engFoc) ? G.engFoc : null; if (foc) { foc.focusUsed = true; em.mul *= 1.4; em.big = true; } // v2.41 빛의 각인
+    G.mproj.push({ kind: 'bolt', x: tp.x, y: tp.y, ang: engAim(tp.x, tp.y, P.ang), sp: big ? 360 : 420, t: 0.72, r: (big ? 7 : 4) * (em.big ? 1.6 : 1), coef: (big ? 1.2 * (uncK() === 'mage11' ? 1.15 : 1) : 0.66) * em.mul, big: big || em.big, hist: [], pierce: em.pierce, foc, hitS: new Set() }); engMainShot(tp.x, tp.y, P.ang, big ? 1.2 : 0.66); // v0.72 밸런스: 0.78/1.4 → 0.66/1.2 (v1.77 90% 하향 되돌림), 사거리 약 300px
     sfx(big ? 'boltBig' : 'bolt');
-    G.fx.push({ kind: 'ring', x: tp.x, y: tp.y, r: 3, grow: big ? 90 : 50, t: 0.15, max: 0.15, c: '#c890ff' });
+    G.fx.push({ kind: 'castfx', x: tp.x, y: tp.y, r: big ? 24 : 16, t: 0.2, max: 0.2, col: '#e8c8ff' }); // v2.50 도트 시전 섬광
   }
   function castFireball() {
     if (wSkill() === 'ladle') return castSoup(); // v2.08 국자
@@ -11751,7 +12231,7 @@ huskUp:[
     if (wSkill() === 'mirror' || pasRoll('mirror')) { const mx = P.x - Math.cos(P.ang) * 42, my = P.y - Math.sin(P.ang) * 30; G.mproj.push({ kind: 'fireball', x: mx, y: my - 10, ang: P.ang, sp: 300, t: 1.1, r: 9, coef: 2.2, br: 66, hist: [] }); G.fx.push({ kind: 'ghost', x: mx, y: my, face: P.face, rot: 0, t: 0.5, max: 0.5, tint: true }); } // v2.08 거울 분신
     P.state = 'rattack'; P.t = 0.08; P.fired = true;
     sfx('fireball'); addShake(2, P.ang + Math.PI);
-    G.fx.push({ kind: 'ring', x: tp.x, y: tp.y, r: 4, grow: 120, t: 0.2, max: 0.2, c: '#ffb060' });
+    G.fx.push({ kind: 'castfx', x: tp.x, y: tp.y, r: 26, t: 0.22, max: 0.22, col: '#ffc070' }); // v2.50 도트 시전 섬광
   }
   function fireBlast(x, y, r, coef, burn) {
     sfx('blast'); addShake(5); flashT = Math.max(flashT, 0.04); flashColor = '#ffb060';
@@ -11837,7 +12317,7 @@ huskUp:[
       if (hitE && !fire && !wall && pr.hitS && (pr.pierce || (engHas('r_r2') && hitE.brand > 0))) { pr.hitS.add(hitE); damageEnemy(hitE, pr.coef, { ang: pr.ang, grogi: 0.8, kb: 30, gauge: 1.3, stagger: 0.12, basic: true }); if (pr.foc === hitE && engDone('r_r5') && !hitE.dead) brandBurst(hitE, 0.8); if (!pr.pierce && !engDone('r_r2')) pr.coef *= 0.7; continue; } // v2.41 관통
       if (hitE || wall || pr.t <= 0) {
         if (!fire) mageBoltEnd(pr, hitE);
-        if (!fire && G.eng) { if (hitE && pr.foc === hitE && engDone('r_r5')) setTimeout(() => { if (G && !hitE.dead) brandBurst(hitE, 0.8); }, 0); engRewind(pr.x, pr.y, pr.big ? 1.2 : 0.66, !!hitE); } // v2.41
+        if (!fire && G.eng) { if (hitE && pr.foc === hitE && engDone('r_r5')) setTimeout(() => { if (G && !hitE.dead) brandBurst(hitE, 0.4); }, 0); engRewind(pr.x, pr.y, pr.big ? 1.2 : 0.66, !!hitE); } // v2.41
         if (!fire) {
           if (hitE) damageEnemy(hitE, pr.coef, { ang: pr.ang, grogi: pr.big ? 2 : 0.8, kb: pr.big ? 90 : 30, gauge: pr.big ? 2.6 : 1.3, /* v1.76 그로기 5/2→2/0.8, 각성 충전 4/2→2.6/1.3 */ stagger: pr.big ? 0.3 : 0.12, basic: true });
           G.fx.push({ kind: 'ring', x: pr.x, y: pr.y, r: 3, grow: pr.big ? 140 : 70, t: 0.18, max: 0.18, c: '#c890ff' });
@@ -11982,7 +12462,7 @@ huskUp:[
   const HARP = { range: 230, out: 1150, back: 820, coef: 2.4 };
   function launchHarp(m) { const P = G.player;
     G.harp = { ph: 'out', ang: P.ang, len: 8, max: Math.min(HARP.range, rayEnd(m.x, m.y, P.ang, HARP.range)), e: null, jam: Math.random() < 0.1 }; // v2.32 10% 줄 걸림
-    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 1.2, t: 0.1, max: 0.1 }); sfx('shot', 0.7);
+    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 1.2, t: 0.18, max: 0.18 }); sfx('shot', 0.7);
     P.x -= Math.cos(P.ang) * 6; P.y -= Math.sin(P.ang) * 6; }
   function harpRelease(H, stun) { const e = H.e; if (!e) return; e.harpT = 0; if (!e.dead && stun) applySt(e, 'stun', stun); H.e = null; }
   function updateHarp(dt) {
@@ -12025,19 +12505,19 @@ huskUp:[
     P.gunN = (P.gunN || 0) + 1;
     const m = muzzle();
     if (k === 'puffer' && Math.random() < 0.1) { sfx('blip', 0.6); G.nums.push({ x: m.x, y: m.y - 14, v: '퉤!', t: 0.6, c: '#ffd34d', s: 1 }); for (let i = 0; i < 6; i++) G.parts.push({ x: m.x, y: m.y, vx: rand(-40, 40), vy: rand(-80, -30), t: 0.4, c: pick(['#ffe070', '#5a8a9a']), g: 260 }); P.x -= Math.cos(P.ang) * 8; P.y -= Math.sin(P.ang) * 8; return; } // 복어가 싫다고 튕겨 나옴
-    if (k === 'cannon') { (G.wproj = G.wproj || []).push({ k: 'ball', x: m.x, y: m.y, ang: P.ang, t: 1.1 }); G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2, t: 0.1, max: 0.1 }); sfx('shotgun', 0.7); if (!segSolid(P.x, P.y, P.x - Math.cos(P.ang) * 18, P.y - Math.sin(P.ang) * 18)) { P.x -= Math.cos(P.ang) * 18; P.y -= Math.sin(P.ang) * 18; } return; }
+    if (k === 'cannon') { (G.wproj = G.wproj || []).push({ k: 'ball', x: m.x, y: m.y, ang: P.ang, t: 1.1 }); G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2, t: 0.18, max: 0.18 }); sfx('shotgun', 0.7); if (!segSolid(P.x, P.y, P.x - Math.cos(P.ang) * 18, P.y - Math.sin(P.ang) * 18)) { P.x -= Math.cos(P.ang) * 18; P.y -= Math.sin(P.ang) * 18; } return; }
     if (k === 'duck') { G.nums.push({ x: m.x, y: m.y - 12, v: '꽥', t: 0.4, c: '#ffe070', s: 1 }); if (P.gunN % 5 === 0) { (G.wproj = G.wproj || []).push({ k: 'duckb', x: m.x, y: m.y, ang: P.ang, t: 0.9 }); sfx('blip', 1.6); return; } }
     if (k === 'harpoon') { launchHarp(m); return; }
     if (k === 'blunder') { for (const da of [-0.2, 0, 0.2]) { const a = P.ang + da, L0 = rayEnd(m.x, m.y, a, 150), h = rayHits(m.x, m.y, a, L0, 6); let L = L0; if (h.length) { L = h[0].along; gunHit(h[0].e, a, 1.1); } gunFx(m, a, L, 0.7); }
       P.x -= Math.cos(P.ang) * 9; P.y -= Math.sin(P.ang) * 9; sfx('shotgun', 1.2); return; }
     const pierce = k === 'longrifle', mul = (k === 'longrifle' ? 1 + Math.min(P.stillT || 0, 1.5) * 0.6 : k === 'revolver' && P.gunN % 2 ? 0.5 : 1) * (last ? 1 + pasV('lastShot') : 1);
-    const eAng = engAim(m.x, m.y, P.ang), em = engShotMods(), foc = engFocus(G.engFoc) ? G.engFoc : null; if (foc) { foc.focusUsed = true; em.mul *= 1.8; em.big = true; } // v2.41 빛의 각인
+    const eAng = engAim(m.x, m.y, P.ang), em = engShotMods(), foc = engFocus(G.engFoc) ? G.engFoc : null; if (foc) { foc.focusUsed = true; em.mul *= 1.4; em.big = true; } // v2.41 빛의 각인
     const hits = rayHits(m.x, m.y, eAng, GUN_RANGE, 5);
     let L = rayEnd(m.x, m.y, eAng, GUN_RANGE); const L0 = L;
     const inR = hits.filter(h => h.along <= L0);
     if (!inR.length) hitCrack(m.x + Math.cos(eAng) * L, m.y + Math.sin(eAng) * L + 10, 1, 34);
     if (inR.length) { if (pierce || em.pierce) { for (const h of inR) gunHit(h.e, eAng, 2.2 * mul * em.mul); } else { let cm = 1; for (const h of inR) { const brd = engHas('r_r2') && h.e.brand > 0; L = h.along; gunHit(h.e, eAng, 2.2 * mul * em.mul * cm); if (!brd) break; cm *= engDone('r_r2') ? 1 : 0.7; } }
-      if (foc && engDone('r_r5') && inR.some(h => h.e === foc) && !foc.dead) brandBurst(foc, 0.8); }
+      if (foc && engDone('r_r5') && inR.some(h => h.e === foc) && !foc.dead) brandBurst(foc, 0.4); }
     gunFx(m, eAng, L, em.big ? 1.8 : mul > 1.3 ? 1.6 : 1);
     { const ex = m.x + Math.cos(eAng) * L, ey = m.y + Math.sin(eAng) * L; engMainShot(m.x, m.y, eAng, 2.2); engRefract(m.x, m.y, ex, ey, eAng, 2.2); engRewind(ex, ey, 2.2, inR.length > 0); }
     if ((k === 'duck' || pasRoll('gbounce')) && !inR.length && L < GUN_RANGE - 10) { // 한 번 튕김 (v2.22 보관 패시브: 오리 사냥총 6%)
@@ -12050,7 +12530,7 @@ huskUp:[
   }
   function gunFx(m, ang, L, size) {
     G.fx.push({ kind: 'tracer', x0: m.x, y0: m.y, x1: m.x + Math.cos(ang) * L, y1: m.y + Math.sin(ang) * L, w: 2 * size, t: 0.12 + 0.08 * size, max: 0.12 + 0.08 * size, c: '255,220,150' });
-    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang, s: size, t: 0.08, max: 0.08 });
+    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang, s: size, t: 0.18, max: 0.18 });
     for (let i = 0; i < 6 * size; i++) G.parts.push({ x: m.x, y: m.y, vx: Math.cos(ang) * rand(20, 60) + rand(-15, 15), vy: Math.sin(ang) * rand(20, 60) + rand(-25, -5), t: rand(0.4, 0.9), c: pick(['#5b5560', '#8d8496', '#3a3540']), g: -10 });
   }
   function startButt() {
@@ -12077,7 +12557,7 @@ huskUp:[
     P.state = 'rattack'; P.t = 0; P.blade = P.ang; P.recoil = 1.8; P.reload = 0; P.ammo = gunMag();
     const m = muzzle();
     for (let i = 0; i < 9; i++) { const a = P.ang + rand(-0.55, 0.55); G.fx.push({ kind: 'tracer', x0: m.x, y0: m.y, x1: m.x + Math.cos(a) * rand(100, 150), y1: m.y + Math.sin(a) * rand(100, 150), w: 1, t: 0.14, max: 0.14, c: '255,210,140' }); }
-    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2.2, t: 0.1, max: 0.1 });
+    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2.2, t: 0.18, max: 0.18 });
     G.fx.push({ kind: 'arcwave', x: P.x, y: P.y - 8, ang: P.ang, arc: 70 * DEG, r0: 20, r1: 150, t: 0.22, max: 0.22, c: '255,190,110' });
     for (let i = 0; i < 16; i++) G.parts.push({ x: m.x, y: m.y, vx: Math.cos(P.ang) * rand(30, 90) + rand(-30, 30), vy: Math.sin(P.ang) * rand(30, 90) + rand(-40, 0), t: rand(0.5, 1.0), c: pick(['#5b5560', '#8d8496', '#3a3540']), g: -10 });
     for (const e of G.enemies) {
@@ -12111,7 +12591,7 @@ huskUp:[
     }
     G.fx.push({ kind: 'tracer', x0: m.x, y0: m.y, x1: m.x + Math.cos(ang) * L, y1: m.y + Math.sin(ang) * L, w: 12, t: 0.4, max: 0.4, c: '255,200,110' });
     G.fx.push({ kind: 'tracer', x0: m.x, y0: m.y, x1: m.x + Math.cos(ang) * L, y1: m.y + Math.sin(ang) * L, w: 4, t: 0.5, max: 0.5, c: '255,255,240' });
-    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang, s: 3, t: 0.14, max: 0.14 });
+    G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang, s: 3, t: 0.18, max: 0.18 });
     G.fx.push({ kind: 'ring', x: m.x, y: m.y, r: 6, grow: 260, t: 0.3, max: 0.3, c: '#ffd080' });
     for (let i = 0; i < 30; i++) { const k = Math.random() * L; G.parts.push({ x: m.x + Math.cos(ang) * k, y: m.y + Math.sin(ang) * k, vx: rand(-30, 30), vy: rand(-40, 0), t: rand(0.3, 0.7), c: pick(['#ffd080', '#fff0d0', '#5b5560']), g: 0, glow: Math.random() < 0.5 }); }
     P.x -= Math.cos(ang) * 40; P.y -= Math.sin(ang) * 40;
@@ -12168,22 +12648,16 @@ huskUp:[
     if (P.state === 'aim') { ctx.strokeStyle = `rgba(255,80,40,${0.4 + Math.sin(time * 16) * 0.2})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(P.x, P.y, 16 - P.t * 4, 6 - P.t * 1.5, 0, 0, TAU); ctx.stroke(); }
     if (P.miracleT > 0) { ctx.fillStyle = `rgba(255,220,120,${0.18 + Math.sin(time * 10) * 0.06})`; ctx.beginPath(); ctx.ellipse(P.x, P.y, 22, 9, 0, 0, TAU); ctx.fill(); }
     ctx.restore();
-    const bob = P.state === 'idle' && P.moving ? -Math.abs(Math.sin(P.walk)) * 1.5 : 0;
+    const wFr = walkFr(P); // v2.43 모든 직업 월드 플리퍼식 걷기 4프레임 (2·4프레임은 1칸 내려감)
+    const bob = (wFr % 2 || wFr === -2) ? 2 : 0;
     let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
     if (P.state === 'dodge') { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; }
-    if (P.state === 'attack') {
-      const st = SWING_P[P.combo];
-      if (P.t < st.wind) { rot = -0.15 * P.face; sy = 0.94; }
-      else if (P.t < st.wind + st.swing) { rot = 0.2 * P.face; sx = 1.06; sy = 0.96; }
-    }
-    if (P.state === 'butt') { rot = (P.t < 0.05 ? -0.15 : 0.2) * P.face; sx = 1.06; }
-    if (P.recoil > 0) { rot = -0.1 * P.face * P.recoil; }
+    if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'pray') sy = 1.05;
-    if (P.state === 'idle' && P.moving) sy = 1 + Math.sin(P.walk * 2) * 0.04;
     const h = heroHand(), hy = h.y + bob;
-    const behind = cls === 'priest' ? (P.state === 'idle' || P.state === 'dodge') : (Math.sin(P.blade) < -0.45 && P.state !== 'cast' && P.state !== 'butt');
+    const behind = cls === 'priest' ? (P.state === 'idle' || P.state === 'dodge') : cls === 'gunner' ? (Math.sin(P.blade) < 0.55 && P.state !== 'butt') /* v2.42 정면 도트: 총은 몸 뒤 옆으로 (아래로 겨눌 때만 앞) */ : (Math.sin(P.blade) < -0.45 && P.state !== 'cast' && P.state !== 'butt');
     if (cls === 'priest' && P.state === 'attack' && !['water', 'whip'].includes(wSkill())) {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawTrail(P.trail, h.x, hy, 10, tex.reach, weaponTrailCol(tex, 0.4), P.combo === 2); ctx.restore(); // v2.19 무기 색
+      drawSlashPx(P.trail, h.x, hy, tex.reach, SLASH_COL.priest, P.combo === 2); // v2.50 도트 궤적
     }
     if (cls === 'gunner' && P.state === 'butt') drawTrail(P.trail, h.x, hy, 4, 30, '230,220,200', true);
     const wsk = cls === 'priest' ? wSkill() : null;
@@ -12194,7 +12668,7 @@ huskUp:[
       bAng = f > 0 ? tilt : Math.PI - tilt; }
     if (wsk === 'whip') { if (behind) drawWhip(h.x, hy); }
     else if (behind && wsk !== 'water') drawBlade(tex, h.x, hy, bAng, alpha);
-    drawSprite(C.map, C.pal, 2, P.x, P.y + 2 + bob, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    drawSprite(walkMap(C.map, wFr), C.pal, 2, P.x, P.y + 2, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     if (wsk === 'whip') { if (!behind) drawWhip(h.x, hy); }
     else if (!behind || wsk === 'water') drawBlade(tex, h.x, hy, bAng, alpha);
     if (wsk !== 'whip') weaponAura(tex, h.x, hy, bAng, cls);
@@ -13615,26 +14089,75 @@ huskUp:[
       for (let x = -g2; x <= 3; x++) for (let y = -Math.ceil(ry2); y <= Math.ceil(ry2); y++) { const dx = (x - cx2) / rx2, dy = y / ry2; if (dx * dx + dy * dy <= 1) put(x, y, dy < -0.55 ? 'n' : dy < 0 ? 'm' : dy < 0.6 ? 'M' : 'k'); }
       for (let x = Math.round(cx2 - rx2 * 0.6); x <= Math.round(cx2 + rx2 * 0.6); x += 2) put(x, Math.round(ry2 * 0.15), 'k'); // 손가락 마디
       const sp2 = [-Math.round(ry2 * 0.5), 0, Math.round(ry2 * 0.5)]; for (const y of sp2) { put(Math.round(cx2 + rx2) + 1, y, 'n'); put(Math.round(cx2 + rx2) + 2, y, 'n'); } // 주먹 가시
+    } else if (k === 'boneaxe') { // v2.45 뼈도끼: 가죽 감은 나무 자루 + 끈으로 묶은 짐승 뼈 날
+      for (let x = -3; x < wl; x++) put(x, 0, x % 4 === 1 ? 'b' : 'o');
+      const h = hd; for (let x = wl - 5; x <= wl; x++) { const t = (x - (wl - 5)) / 5, hh = Math.round(h * (0.45 + 0.55 * Math.sin(t * Math.PI * 0.6 + 0.3))); for (let y = 1; y <= hh; y++) put(x, -y, y === hh || x === wl ? 'w' : 'W'); }
+      put(wl - 5, 1, 'W'); put(wl - 4, 1, 'w'); put(wl - 6, 0, 'b'); put(wl - 6, -1, 'b'); put(wl + 1, 0, 'W'); // 아래 뼈 갈고리 · 묶은 끈
+    } else if (k === 'slasher') { // v2.45 슬래셔: 녹슨 쇠판을 두들겨 만든 넓적한 식칼 도끼 (이 빠진 날 · 녹)
+      for (let x = -2; x < 4; x++) { put(x, 0, x % 3 === 0 ? 'b' : 'O'); put(x, 1, 'O'); }
+      for (let x = 3; x < wl; x++) { const top = -hd + (x > wl - 3 ? (x - (wl - 3)) : 0); for (let y = top; y <= 1; y++) { const edge = y === top, nick = edge && (x % 4 === 2); put(x, y, nick ? 'M' : edge ? 'n' : y === 1 ? 'M' : 'm'); } }
+      // v2.45 피: 날끝 한 곳에 뭉쳐 묻고, 그 아래로 흘러내린 자국 두 줄 (점처럼 흩뿌리지 않음)
+      { const bx = wl - 6, top0 = -hd; for (let x = bx; x <= bx + 3; x++) { put(x, top0 + 1, x === bx || x === bx + 3 ? 'R' : 'r'); if (x > bx && x < bx + 3) put(x, top0 + 2, 'R'); } for (let d = 2; d <= 4; d++) put(bx + 1, top0 + d, d === 4 ? 'R' : 'r'); for (let d = 2; d <= 3; d++) put(bx + 3, top0 + d, d === 3 ? 'R' : 'r'); }
+      put(4, -1, 'k'); put(5, -1, 'M'); // 손잡이 쪽 구멍
+    } else if (k === 'hatchet') { // v2.45 손도끼: 짧은 자루 + 작은 돌·쇠 날 (던지거나 북을 치는 데도 씀)
+      for (let x = -2; x < wl; x++) put(x, 0, x % 3 === 0 ? 'b' : 'o');
+      for (let x = wl - 3; x <= wl; x++) for (let y = 1; y <= hd - (wl - x === 3 ? 1 : 0); y++) put(x, -y, y === hd - (wl - x === 3 ? 1 : 0) ? 'n' : 'm');
+      put(wl - 3, 1, 'M'); put(wl - 2, 1, 'M');
+    } else if (k === 'greatbone') { // v2.45 우르그의 뼈 대도끼: 긴 자루 · 위아래 양날의 큰 뼈 날 · 금 고리 · 붉은 천
+      for (let x = -4; x < wl; x++) for (let t = 0; t < 2; t++) put(x, t, (x + t) % 5 === 0 ? 'O' : 'o');
+      for (const sg of [-1, 1]) for (let x = wl - 6; x <= wl; x++) { const tt = (x - (wl - 6)) / 6, hh = Math.round(hd * (0.4 + 0.6 * Math.sin(tt * Math.PI * 0.75 + 0.2))); for (let d = 1; d <= hh; d++) put(x, sg < 0 ? -d : 1 + d, d === hh || x === wl ? 'w' : 'W'); }
+      put(wl - 7, 0, 'y'); put(wl - 7, 1, 'y'); for (let i = 0; i < 4; i++) put(wl - 8 - (i % 2), 2 + i, i < 2 ? 'r' : 'R');
+    } else if (k === 'totem') { // v2.45 주술사의 토템 도끼: 긴 자루 끝에 짐승 두개골, 그 아래 뼈 날
+      for (let x = -4; x < wl; x++) put(x, (x % 7 === 3 ? 1 : 0), x % 5 === 0 ? 'O' : 'o');
+      for (let x = 0; x <= 2; x++) for (let y = -2; y <= 2; y++) put(wl + x, y, y === 2 ? 'W' : 'w');
+      put(wl + 3, -1, 'w'); put(wl + 3, 0, 'w'); put(wl + 4, 0, 'W'); put(wl + 1, -1, 'k'); put(wl + 1, 1, 'k'); put(wl - 1, 0, 'r');
+      for (let x = wl - 5; x <= wl - 2; x++) for (let y = 1; y <= 3 - (x === wl - 5 ? 1 : 0); y++) put(x, y, y >= 3 - (x === wl - 5 ? 1 : 0) ? 'w' : 'W');
+    } else if (k === 'stoneaxe') { // v2.45 돌도끼: 쐐기 모양 돌덩이를 가죽끈으로 동여맴
+      for (let x = -3; x < wl; x++) put(x, 0, x % 4 === 2 ? 'b' : 'o');
+      for (let x = wl - 4; x <= wl; x++) { const t = x - (wl - 4), up = Math.round(hd * (0.5 + t * 0.12)), dn = Math.max(1, Math.round(hd * 0.35)); for (let y = -up; y <= dn; y++) put(x, y, x === wl ? 'm' : y === -up ? 'm' : (x + y) % 3 === 0 ? 'M' : 'W'); }
+      for (const y of [-1, 0, 1]) put(wl - 5, y, 'b'); put(wl - 3, 1, 'b'); put(wl - 2, -1, 'b');
+    } else if (k === 'jawaxe') { // v2.45 턱뼈 도끼: 커다란 짐승 턱뼈를 날로 쓰고 이빨이 그대로 박혀 있음
+      for (let x = -3; x < wl; x++) put(x, 0, x % 5 === 0 ? 'O' : 'o');
+      for (let x = wl - 6; x <= wl; x++) { const t = (x - (wl - 6)) / 6, hh = Math.round(hd * (0.35 + 0.65 * Math.sin(t * Math.PI * 0.55))); for (let y = 1; y <= hh; y++) put(x, -y, y === hh ? ((x % 2) ? 'n' : 'w') : y === 1 ? 'W' : 'w'); if (x % 2 === 0) put(x, -hh - 1, 'n'); }
+      put(wl - 7, 0, 'b'); put(wl - 7, -1, 'b'); put(wl + 1, 0, 'W');
+    } else if (k === 'sawaxe') { // v2.45 톱날 도끼: 이를 낸 쇠날 (날 위가 톱니) + 녹
+      for (let x = -3; x < wl; x++) put(x, 0, x % 3 === 0 ? 'b' : 'o');
+      for (let x = wl - 6; x <= wl; x++) { const hh = hd - (x === wl - 6 ? 2 : x === wl - 5 ? 1 : 0); for (let y = 1; y <= hh; y++) put(x, -y, y === hh ? ((x % 2) ? 'n' : 'M') : 'm'); if (x % 2) put(x, -hh - 1, 'n'); }
+      { const bx = wl - 4; for (let x = bx; x <= bx + 2; x++) put(x, -hd + 1, x === bx + 1 ? 'r' : 'R'); put(bx + 1, -hd + 2, 'r'); put(bx + 1, -hd + 3, 'R'); } // 톱니 사이에 낀 피와 한 줄기 흘러내림
+      put(wl - 6, 1, 'M'); put(wl - 5, 1, 'M');
+    } else if (k === 'doubleaxe') { // v2.45 양날 쇠도끼: 위아래 대칭 날 + 가운데 묶음
+      for (let x = -3; x < wl; x++) put(x, 0, x % 4 === 1 ? 'b' : 'o');
+      for (const sg of [-1, 1]) for (let x = wl - 5; x <= wl; x++) { const t = (x - (wl - 5)) / 5, hh = Math.round(hd * (0.3 + 0.7 * Math.sin(t * Math.PI * 0.5 + 0.15))); for (let d = 1; d <= hh; d++) put(x, sg * d, d === hh || x === wl ? 'n' : d === 1 ? 'M' : 'm'); }
+      put(wl - 6, 0, 'b'); put(wl + 1, 0, 'm');
+    } else if (k === 'talon') { // v2.45 트롤 발톱: 손끝에서 뻗은 굵고 휘어진 갈고리 발톱 셋 (뿌리는 어둡고 끝은 밝게)
+      for (const [oy, bend] of [[-2, -1], [0, 0], [2, 1]]) for (let t = 0; t <= hd; t++) { const y = oy + (t >= hd - 1 ? bend : 0); put(t, y, t < 2 ? 'W' : t === hd ? 'n' : 'w'); if (t < hd - 1 && oy !== 0) put(t, y + (oy < 0 ? 1 : -1) * 0, t < 2 ? 'W' : 'w'); }
+      for (let y = -2; y <= 2; y++) put(-1, y, 'd'); // 발톱 뿌리 (손등)
+    } else if (k === 'shackle') { // v2.50 쇠수갑: 손목을 감은 두꺼운 쇠고리(리벳) + 고리·옆고리가 번갈아 이어진 사슬, 끝 고리는 끊어져 벌어짐
+      for (let x = -2; x <= 1; x++) for (let y = -hd; y <= hd; y++) put(x, y, y === -hd ? 'M' : y === hd ? 'n' : x === -2 ? 'n' : x === 1 ? 'M' : 'm');
+      put(-1, 0, 'M'); put(-1, -hd + 1, 'n'); put(-1, hd - 1, 'n'); // 리벳 · 이음매
+      const oval = (s0, open) => { for (let x = s0 + 1; x <= s0 + 3; x++) { put(x, -1, 'M'); if (!(open && x === s0 + 3)) put(x, 1, 'n'); } put(s0, 0, 'm'); if (!open) put(s0 + 4, 0, 'm'); };
+      const bar = s0 => { for (let x = s0; x <= s0 + 2; x++) put(x, 0, x === s0 + 1 ? 'M' : 'm'); };
+      bar(2); oval(4, true); // 고리 한 마디만 남고 끝은 벌어진 채 끊어짐
     } else if (k === 'claw') {
       for (let i = -1; i <= 1; i++) for (let t = 0; t < 4; t++) put(1 + t, i * 2 + (t > 1 ? (i > 0 ? 1 : 0) : 0), t === 3 ? 'W' : 'w');
     }
     // 2) 팔 뼈대: 어깨 → 팔꿈치 → 손
     const bend = -(o.bend == null ? 30 : o.bend) * DEG, L1 = Math.max(2, Math.round(L * 0.55)), L2 = Math.max(2, L - L1 + 1);
-    const E = { x: L1, y: 0 }, ux = Math.cos(bend), uy = Math.sin(bend), Hh = { x: E.x + ux * L2, y: E.y + uy * L2 };
+    const E = { x: L1, y: 0 }, ux = Math.cos(bend), uy = Math.sin(bend), Hh = o.noArm ? { x: 0, y: 0 } : { x: E.x + ux * L2, y: E.y + uy * L2 }; // v2.45 noArm: 팔·주먹 없이 무기만 (손이 회전축)
     const r1 = Math.max(1, (th + 1) / 2), r2 = Math.max(0.8, th / 2), fist = o.kind !== 'gauntlet' && o.kind !== 'claw';
     const cells = new Map(), shade = v => v < -0.45 ? 'h' : v < 0.1 ? 'l' : v < 0.6 ? 'd' : 'D';
     const segD = (px, py2, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, L0 = vx * vx + vy * vy || 1, t = clamp(((px - ax) * vx + (py2 - ay) * vy) / L0, 0, 1), cx = ax + vx * t, cy = ay + vy * t; return { d: Math.hypot(px - cx, py2 - cy), t, s: (-(px - ax) * vy + (py2 - ay) * vx) / Math.sqrt(L0) }; };
     const R = L + wl + 14;
-    for (let y = -R; y <= R; y++) for (let x = o.wdir == null ? -3 : -R; x <= R; x++) {
+    for (let y = -R; y <= R; y++) for (let x = o.wdir == null && !o.noArm ? -3 : -R; x <= R; x++) {
       // 무기 (손에서 아래팔 방향으로)
-      const wx = o.wdir == null ? ux : Math.cos(o.wdir * DEG), wy = o.wdir == null ? uy : Math.sin(o.wdir * DEG), dx = x - Hh.x, dy = y - Hh.y, lx = Math.round(dx * wx + dy * wy), ly = Math.round(-dx * wy + dy * wx), wc = WM.get(lx + ',' + ly);
+      const wx = o.wdir == null ? (o.noArm ? 1 : ux) : Math.cos(o.wdir * DEG), wy = o.wdir == null ? (o.noArm ? 0 : uy) : Math.sin(o.wdir * DEG), dx = x - Hh.x, dy = y - Hh.y, lx = Math.round(dx * wx + dy * wy), ly = Math.round(-dx * wy + dy * wx), wc = WM.get(lx + ',' + ly);
       const a1 = segD(x, y, 0, 0, E.x, E.y), rr1 = r1 * (1 + 0.3 * Math.sin(Math.PI * a1.t));
       const a2 = segD(x, y, E.x, E.y, Hh.x, Hh.y);
       let c = null;
-      if (a1.d <= rr1) c = shade(a1.s / rr1);
-      if (a2.d <= r2 + 0.15) c = o.bracer && a2.t > 0.25 && a2.t < 0.8 ? (a2.t < 0.33 || a2.t > 0.72 ? 'y' : a2.s < -0.2 ? 'n' : a2.s < 0.4 ? 'm' : 'M') : shade(a2.s / (r2 + 0.15));
+      if (!o.noArm && a1.d <= rr1) c = shade(a1.s / rr1);
+      if (!o.noArm && a2.d <= r2 + 0.15) c = o.bracer && a2.t > 0.25 && a2.t < 0.8 ? (a2.t < 0.33 || a2.t > 0.72 ? 'y' : a2.s < -0.2 ? 'n' : a2.s < 0.4 ? 'm' : 'M') : shade(a2.s / (r2 + 0.15));
       if (wc) c = wc;
-      if (fist && Math.hypot(x - Hh.x, y - Hh.y) <= Math.max(1.1, th * 0.62)) c = (y - Hh.y) < -0.3 ? 'h' : (y - Hh.y) < 0.5 ? 'l' : 'd';
+      if (fist && !o.noArm && Math.hypot(x - Hh.x, y - Hh.y) <= Math.max(1.1, th * 0.62)) c = (y - Hh.y) < -0.3 ? 'h' : (y - Hh.y) < 0.5 ? 'l' : 'd';
       if (c) cells.set(x + ',' + y, c);
     }
     let mx = 1e9, my = 1e9, Mx = -1e9, My = -1e9;
@@ -13665,22 +14188,22 @@ huskUp:[
   const ORC_SPEC = {
     // 캐릭터 도트와 같은 비율 (v0.57): 머리가 키의 40% 안팎, 짧은 몸통과 다리, 적은 칸 수. 기사 12×14칸 · 고블린 14×14칸이 기준
     // 오크 전사: 표준 체격, 모히칸, 가죽 어깨받이, 해골 버클, 큰 도끼
-    orc: { body: { W: 18, H: 19, sh: 0.27, wa: 0.2, tor: 0.24, leg: 0.2, head: 2.2, hfwd: 0.15, hair: 'mohawk', pauld: 'hide', buckle: 'skull', backArm: true, thigh: 0.14 }, skin: 'green', arm: { len: 5, th: 2, kind: 'axe', wlen: 12, head: 7, bend: 28 }, tall: 38, rest: 70 },
+    orc: { body: { W: 18, H: 19, sh: 0.27, wa: 0.2, tor: 0.24, leg: 0.2, head: 2.2, hfwd: 0.15, hair: 'mohawk', pauld: 'hide', buckle: 'skull', backArm: true, thigh: 0.14 }, skin: 'green', arm: { len: 5, th: 2, kind: 'boneaxe', wlen: 12, head: 6, bend: 28 }, tall: 38, rest: 70 },
     // 투척꾼: 홀쭉하고 다리가 조금 긴 사냥꾼, 머리띠와 깃털, 흰 칠, 등에 투창
-    othrow: { body: { W: 16, H: 20, sh: 0.23, wa: 0.17, tor: 0.23, leg: 0.24, head: 2.1, hfwd: 0.15, hair: 'band', quiver: true, earring: true, paint: 'white', backArm: true, thigh: 0.13 }, skin: 'moss', arm: { len: 5, th: 2, kind: 'spear', wlen: 18, bend: 18 }, carry: { bend: 135, wdir: 132, ang: 48, front: true }, tall: 40, rest: -150 },
+    othrow: { body: { W: 16, H: 20, sh: 0.23, wa: 0.17, tor: 0.23, leg: 0.24, head: 2.1, hfwd: 0.15, hair: 'band', quiver: true, earring: true, paint: 'white', backArm: true, thigh: 0.13 }, skin: 'moss', arm: { len: 5, th: 2, kind: 'spear', wlen: 14, bend: 18 }, carry: { bend: 135, wdir: 132, ang: 48, front: true }, tall: 40, rest: -150 },
     // 주술사: 늙고 구부정, 짐승 두개골 머리장식, 털 망토, 흰 칠
-    shaman: { body: { W: 17, H: 19, sh: 0.22, wa: 0.2, tor: 0.25, leg: 0.19, lean: 0.15, head: 2.1, hfwd: 0.2, hair: 'skull', cloak: true, paint: 'white', kilt: 'fur', backArm: true, tusk: 0, thigh: 0.13 }, skin: 'ash', arm: { len: 5, th: 2, kind: 'staff', wlen: 14, bend: 40 }, tall: 38, rest: -60 },
+    shaman: { body: { W: 17, H: 19, sh: 0.22, wa: 0.2, tor: 0.25, leg: 0.19, lean: 0.15, head: 2.1, hfwd: 0.2, hair: 'skull', cloak: true, paint: 'white', kilt: 'fur', backArm: true, tusk: 0, thigh: 0.13 }, skin: 'ash', arm: { len: 5, th: 2, kind: 'totem', wlen: 14, head: 4, bend: 40 }, tall: 38, rest: -60 },
     // 돌격대장: 땅딸막하고 넓적, 뿔 달린 쇠투구, 가슴 쇠판
-    ocharge: { body: { W: 22, H: 22, sh: 0.31, wa: 0.25, tor: 0.25, leg: 0.18, head: 2.1, hfwd: 0.15, hair: 'hornhelm', plate: true, pauld: 'metal', kilt: 'skirt', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'dark', arm: { len: 6, th: 3, kind: 'club', wlen: 14, head: 5, bend: 28 }, carry: { bend: 135, wdir: 135, ang: 45, front: true }, tall: 44, rest: -178, semi: '돌격대장' },
+    ocharge: { body: { W: 22, H: 22, sh: 0.31, wa: 0.25, tor: 0.25, leg: 0.18, head: 2.1, hfwd: 0.15, hair: 'hornhelm', plate: true, pauld: 'metal', kilt: 'skirt', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'dark', arm: { len: 6, th: 3, kind: 'slasher', wlen: 14, head: 5, bend: 28 }, carry: { bend: 135, wdir: 135, ang: 45, front: true }, tall: 44, rest: -178, semi: '돌격대장' },
     // 북잡이: 배불뚝이, 땋은 머리, 배에 북
-    odrum: { body: { W: 22, H: 21, sh: 0.28, wa: 0.24, belly: 1, tor: 0.27, leg: 0.17, head: 2.0, hfwd: 0.15, hair: 'braid', earring: true, kilt: 'fur', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'olive', arm: { len: 5, th: 2, kind: 'stick', wlen: 8, bend: 42 }, tall: 42, rest: 45, semi: '북잡이' },
+    odrum: { body: { W: 22, H: 21, sh: 0.28, wa: 0.24, belly: 1, tor: 0.27, leg: 0.17, head: 2.0, hfwd: 0.15, hair: 'braid', earring: true, kilt: 'fur', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'olive', arm: { len: 5, th: 2, kind: 'hatchet', wlen: 7, head: 3, bend: 42 }, tall: 42, rest: 45, semi: '북잡이' },
     // 거구 오크: 가장 큰 근육질, 대머리, 사슬 목줄, 찢어진 눈 흉터, 굵은 팔
-    ogrip: { body: { W: 24, H: 24, sh: 0.32, wa: 0.21, tor: 0.27, leg: 0.19, delt: 1.3, head: 1.9, hfwd: 0.15, hair: 'bald', collar: true, scarEye: true, backArm: true, armW: 0.13, tusk: 2, thigh: 0.15 }, skin: 'red', arm: { len: 7, th: 4, kind: 'gauntlet', head: 7, bend: 22 }, tall: 48, rest: 80, semi: '거구 오크' },
+    ogrip: { body: { W: 24, H: 24, sh: 0.32, wa: 0.21, tor: 0.27, leg: 0.19, delt: 1.3, head: 1.9, hfwd: 0.15, hair: 'bald', collar: true, scarEye: true, backArm: true, armW: 0.13, tusk: 2, thigh: 0.15 }, skin: 'red', arm: { len: 7, th: 4, kind: 'slasher', wlen: 13, head: 5, bend: 22 }, tall: 48, rest: 80, semi: '거구 오크' },
     // 우르그: 투기장 챔피언, 상투, 뼈 어깨받이, 금 버클, 붉은 허리천
-    urg: { body: { W: 28, H: 30, sh: 0.32, wa: 0.2, tor: 0.27, leg: 0.2, delt: 1.3, head: 1.9, hfwd: 0.15, hair: 'topknot', pauld: 'bone', necklace: true, buckle: 'gold', kilt: 'red', scars: true, paint: 'red', backArm: true, armW: 0.12, tusk: 2, thigh: 0.15 }, skin: 'scar', arm: { len: 9, th: 5, kind: 'gauntlet', head: 9, bend: 30 }, tall: 60, rest: 80, elite: true },
+    urg: { body: { W: 28, H: 30, sh: 0.32, wa: 0.2, tor: 0.27, leg: 0.2, delt: 1.3, head: 1.9, hfwd: 0.15, hair: 'topknot', pauld: 'bone', necklace: true, buckle: 'gold', kilt: 'red', scars: true, paint: 'red', backArm: true, armW: 0.12, tusk: 2, thigh: 0.15 }, skin: 'scar', arm: { len: 9, th: 5, kind: 'greatbone', wlen: 18, head: 7, bend: 30 }, tall: 60, rest: 80, elite: true },
     // 트롤: 짐승이라 구부정 (긴 팔을 땅에 끌고 다님)
-    troll: { body: { W: 32, H: 27, sh: 0.32, wa: 0.25, tor: 0.32, leg: 0.18, lean: 0.5, hunch: 0.8, head: 1.6, hfwd: 0.5, hair: 'mohawk', kilt: 'fur', backArm: 'long', armW: 0.12, tusk: 0, thigh: 0.15 }, skin: 'troll', pal: { e: '#ffe060' }, arm: { len: 14, th: 5, kind: 'claw', bend: 26 }, tall: 54, rest: 85, elite: true },
-    otroll: { body: { W: 24, H: 22, sh: 0.32, wa: 0.25, tor: 0.32, leg: 0.18, lean: 0.4, hunch: 0.7, head: 1.7, hfwd: 0.45, hair: 'mohawk', kilt: 'fur', backArm: 'long', armW: 0.12, tusk: 0, thigh: 0.15 }, skin: 'cave', pal: { e: '#ff9a30' }, arm: { len: 11, th: 4, kind: 'claw', bend: 26 }, tall: 46, rest: 85, semi: '동굴 트롤' },
+    troll: { body: { W: 32, H: 27, sh: 0.32, wa: 0.25, tor: 0.32, leg: 0.18, lean: 0.5, hunch: 0.8, head: 1.6, hfwd: 0.5, hair: 'mohawk', kilt: 'fur', backArm: 'long', armW: 0.12, tusk: 0, thigh: 0.15 }, skin: 'troll', pal: { e: '#ffe060' }, arm: { len: 14, th: 5, kind: 'claw', bend: 26, talon: 3 }, tall: 54, rest: 85, elite: true },
+    otroll: { body: { W: 24, H: 22, sh: 0.32, wa: 0.25, tor: 0.32, leg: 0.18, lean: 0.4, hunch: 0.7, head: 1.7, hfwd: 0.45, hair: 'mohawk', kilt: 'fur', backArm: 'long', armW: 0.12, tusk: 0, thigh: 0.15 }, skin: 'cave', pal: { e: '#ff9a30' }, arm: { len: 11, th: 4, kind: 'claw', bend: 26, talon: 2 }, tall: 46, rest: 85, semi: '동굴 트롤' },
     // 크루가쉬: 거인 왕, 털 망토, 엄니 왕관, 쇠 어깨받이, 붉은 전투 칠
     // v0.91 재디자인: 흑녹색 블랙 오크 · 뿔 달린 철 투구 · 가시 어깨갑옷 · 붉은 전투 망토 · 해골 가슴끈 · 금 해골 버클 · 쇠 판금 · 정강이·팔 보호대 · 눈을 가로지른 붉은 칠
     krugash: { body: { W: 36, H: 38, padTop: 7, sh: 0.33, wa: 0.23, tor: 0.27, leg: 0.19, belly: 0.25, delt: 1.25, head: 1.9, hfwd: 0.15, hair: 'warhelm', cape: true, pauld: 'spiked', strap: true, chestPaint: true, warpaint: true, scars: true, buckle: 'skull3', kilt: 'fur', tassets: true, greaves: true, backArm: true, tusk: 3, thigh: 0.16 }, skin: 'boss', pal: { e: '#ff3a20', A: '#d83a2c', Z: '#2a0604', E: '#ffe8a0' }, arm: { len: 11, th: 5, kind: 'warAxe', wlen: 30, head: 16, bend: 24, bracer: true }, carry: { bend: 110, wdir: 170, ang: 70 }, tall: 70, rest: -39, boss: true },
@@ -13715,6 +14238,7 @@ huskUp:[
     e.orc = kind; e.tall = S.tall; e.aa = S.rest * DEG; e.aaT = e.aa; e.asw = null; e.steps = null;
     e.ov = ORC_VAR_T[kind] ? randi(0, 3) : undefined; // 보스·엘리트는 고유 색
     if (S.semi) e.semiName = S.semi;
+    if (ORC_NEW[kind]) e.tall = Math.min(e.tall, 38); // v2.44 새 도트 키
   }
   function orcInit(e) {
     if (e.type === 'wolf') { e.orc = 'wolf'; e.tall = 30; e.flank = rand(0, TAU); }
@@ -14177,26 +14701,21 @@ huskUp:[
       if (k === 0 || k === 2) P.dy = 2; else { P.hdy = 2; if (k === 1) { P.lL = 2; P.mx = 2; } else { P.lR = 2; P.mx = -2; } } }
     e._kpT = time; return (e._kp = P);
   }
-  function drawKrugash(e, ya, al, lean) {
-    const white = e.flash > 0, flip = e.face < 0, f = e.face, z = e.z || 0, q = kgPose(e, lean), o = { white, alpha: al };
-    const by = e.y + 2 - z + ya, W = KG.W, H = KG.H;
-    drawShadow(e.x, e.y + 1, 22 * (z > 0 ? Math.max(0.4, 1 - z / 300) : 1));
-    const hx = e.x + f * ((KG.hand[0] + 0.5) * 2 - W) + q.ux, hy = by - H * 2 + (KG.hand[1] + 0.5) * 2 + q.dy;
-    const phi = e.aa, back = Math.cos(phi) < -0.15 && Math.sin(phi) < 0.2; // 도끼가 머리 뒤쪽이면 몸 뒤에
-    const pw = f > 0 ? phi : Math.PI - phi, wa = pw + 23 * DEG; // 자루 = 칸 그림의 −23° 방향. 왼쪽으로 넘어가면 rotW가 뒤집으니 미리 뒤집은 도끼를 씀
-    const axe = () => drawBlade(Math.cos(wa) < 0 ? KG.wepM : KG.wep, hx, hy, wa, al, white);
-    if (back) axe();
-    drawSprite('kgLegL', 'kg', 2, e.x, by - q.lL, flip, o); drawSprite('kgLegR', 'kg', 2, e.x, by - q.lR, flip, o);
-    drawSprite('kgBody', 'kg', 2, e.x, by + q.dy, flip, o);
-    drawSprite(e.roarUntil > time ? 'kgHeadR' : 'kgHead', 'kg', 2, e.x + q.ux + q.hx, by + q.dy + q.hdy, flip, o);
-    drawSprite('kgSide', 'kg', 2, e.x + q.mx, by + (q.dy >> 1 << 1 ? 0 : 0), flip, o);
-    drawSprite(e.roarUntil > time ? 'kgPeltR' : 'kgPelt', 'kg', 2, e.x + q.ux, by + q.dy, flip, o);
-    if (!back) axe();
-    { const d = phi + 39 * DEG; drawBlade(KG.fist, hx, hy, f > 0 ? d : Math.PI - d, al, white); } // 대기(−39°)에서 원래 모양, 도끼가 돈 만큼 같이 돎
-    if (e.rockHold) drawSprite('boulder', 'deco', 4, e.x + f * 4, by - H * 2 - 2, false);
-    if (e.glowT > 0) { const k = 1 - e.glowT / e.glowMax, r = 30; holdGlow(hx + Math.cos(pw) * r, hy + Math.sin(pw) * r, k, '255,120,60'); }
-    if (e.state === 'dazed' || e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 12) & ~1, Math.round(by - H * 2 - 4 + Math.sin(time * 6 + i * 2.1) * 3) & ~1, 2, 2); }
+  function drawKrugash(e, ya, al, lean) { // v2.46 새 정면 도트 (거대한 꼬인 뿔 투구) + 특대형 핏빛 대도끼
+    const white = e.flash > 0, f = e.face, z = e.z || 0, q0 = kgPose(e, lean), o = nmPose(e);
+    o.dx += q0.ux || 0; const by = e.y + 2 - z + ya + (q0.dy || 0);
+    drawShadow(e.x, e.y + 1, 14 * (z > 0 ? Math.max(0.4, 1 - z / 300) : 1));
+    const X = e.x + o.dx, hx = X + f * NM_HAND, hy = by - 7 + o.bob, phi = e.aa, pw = f > 0 ? phi : Math.PI - phi;
+    const rest = (e.state === 'chase' || e.state === 'idle') && !e.steps && !e.asw && !(e.glowT > 0), wa = rest ? (f > 0 ? -72 : -108) * DEG : pw; // v2.50 평소에도 손에 쥐고 세워 든다
+    const back = !rest && Math.cos(phi) < -0.15 && Math.sin(phi) < 0.2;
+    if (back) drawBlade(KRUG_AXE, hx, hy, wa, al, white);
+    drawNM(e, 'nKrugash', null, e.x, by, o, white, al);
+    if (!back) drawBlade(KRUG_AXE, hx + (rest ? f * 2 : 0), hy - (rest ? 4 : 0), wa, al, white);
+    if (e.rockHold) drawSprite('boulder', 'deco', 4, X + f * 4, by - 36, false);
+    if (e.glowT > 0) { const k = 1 - e.glowT / e.glowMax, r = 50; holdGlow(hx + Math.cos(pw) * r, hy + Math.sin(pw) * r, k, '255,120,60'); }
+    if (e.state === 'dazed' || e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(X + Math.cos(time * 6 + i * 2.1) * 12) & ~1, Math.round(by - 36 + Math.sin(time * 6 + i * 2.1) * 3) & ~1, 2, 2); }
   }
+
   function drawOrc(e, ya, al, bob, lean) {
     if (e.type === 'boss' && e.orc === 'krugash') { drawKrugash(e, ya, al, lean); return; }
     const white = e.flash > 0, flip = e.face < 0, z = e.z || 0;
@@ -14212,6 +14731,7 @@ huskUp:[
       if ((e.drumT > 0 || e.buffT > 0) && Math.random() < 0.3) G.parts.push({ x: e.x + rand(-8, 8), y: e.y - rand(10, 20), vx: 0, vy: -20, t: 0.3, c: '#ff4030', g: 0, glow: true });
       return;
     }
+    if (ORC_NEW[e.orc]) return drawOrcNew(e, ya, al, ORC_NEW[e.orc]); // v2.44 새 정면 도트
     const S = orcSprite(e.orc, e.ov), y = e.y + 2 - z + ya, OM = nrMotion(e); // v1.54 출렁임 대신 칸 단위
     drawShadow(e.x, e.y + 1, Math.max(10, S.w * 0.3) * (z > 0 ? Math.max(0.4, 1 - z / 300) : 1));
     const fr = S.F ? (e.crouch > 0 ? S.F.low : e.state === 'dazed' ? S.F.crouch : OM.m === 'walk' && !e.steps ? [S.F.crouch, S.F.lL, S.F.crouch, S.F.lR][OM.f] : null) : null; // v1.39 걷기·웅크림은 장면으로
@@ -14239,6 +14759,39 @@ huskUp:[
     if (e.glowT > 0) { const k = 1 - e.glowT / e.glowMax, r = S.arm.reach * 0.92; holdGlow(shx + Math.cos(ang) * r, shy + Math.sin(ang) * r, k, '255,120,60'); }
     if ((e.drumT > 0 || e.buffT > 0) && Math.random() < 0.3) G.parts.push({ x: e.x + rand(-S.w * 0.2, S.w * 0.2), y: y - S.h * rand(0.5, 0.9), vx: 0, vy: -24, t: 0.35, c: '#ff4030', g: 0, glow: true });
     if (e.state === 'dazed') for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 12) & ~1, Math.round(y - S.h - 4 + Math.sin(time * 6 + i * 2.1) * 3) & ~1, 2, 2); }
+  }
+  const NM_SMALL = { ocharge: 10, odrum: 10, ogrip: 10, otroll: 10, urg: 11, troll: 11, gbrute: 11, boar: 11, exec: 10, mother: 10, coffin: 10, mordred: 10, queen: 10 };
+  MAPS.nDrum = ['.kkkkkk.', 'kWWWWWWk', 'kwWWWWwk', 'kbRbbRbk', 'kbbRRbbk', 'kBRBBRBk', '.kkkkkk.']; // v2.44 새 도트 크기에 맞춘 작은 북
+  const ORC_WPN = { orc: ['boneaxe'], othrow: ['spear'], shaman: ['totem'], ocharge: ['slasher'], odrum: ['hatchet'], ogrip: ['doubleaxe'], urg: ['greatbone'] }; // v2.50 오크 무기: 종류마다 한 가지로 고정 (주술사는 지팡이)
+  const ORC_WCACHE = {};
+  const ORC_NEW = { orc: 'nOrc', othrow: 'nOthrow', shaman: 'nShaman', ocharge: 'nOcharge', odrum: 'nOdrum', ogrip: 'nOgrip', otroll: 'nOtroll', urg: 'nUrg', troll: 'nTroll' };
+  function drawOrcNew(e, ya, al, key) { // v2.44 오크: 정면 도트(양팔 포함) + 손에 쥔 무기만 따로 (팔이 셋이 되지 않게 짧은 주먹+무기)
+    const S = orcSprite(e.orc, e.ov), SP = ORC_SPEC[e.orc], white = e.flash > 0, f = e.face, z = e.z || 0, o = nmPose(e);
+    if (e.wk == null) { const L = ORC_WPN[e.orc]; e.wk = L ? L[Math.floor(Math.random() * L.length)] : SP.arm.kind === 'claw' ? 'shackle' : SP.arm.kind; } // v2.45 트롤: 손목의 쇠수갑
+    const wkey = e.orc + '|' + e.wk + '|' + e.ov; S.armH = ORC_WCACHE[wkey];
+    if (!S.armH) { const sk = e.ov == null ? SP.skin : 'v' + e.ov; const sm = { kind: e.wk, noArm: true, len: 2, th: Math.min(2, SP.arm.th), head: SP.arm.kind === 'claw' ? SP.arm.talon : Math.round((SP.arm.head || 4) * 1.35) + 1, wlen: Math.round((SP.arm.wlen || 10) * 1.3) }; /* v2.45 오크 무기는 몸보다 크게 (대형) */ S.armH = ORC_WCACHE[wkey] = genArm(Object.assign({ skin: sk, pal: SP.pal }, SP.arm, sm)); }
+    const pal = e.ov != null && PAL[key + '_v' + e.ov] ? key + '_v' + e.ov : key, y = e.y + 2 - z + ya, X = e.x + o.dx;
+    drawShadow(e.x, e.y + 1, 10 * (z > 0 ? Math.max(0.4, 1 - z / 300) : 1));
+    const claw = SP.arm.kind === 'claw', hx = X + f * NM_HAND, hy = y - (claw ? 3 : 7) + o.bob, ang = f > 0 ? e.aa : Math.PI - e.aa; // 트롤 손은 바닥 가까이
+    // v2.45 큰 무기는 평소엔 어깨에 메고(몸 뒤로 세움), 공격할 때만 휘두른다 — 땅에 박히거나 몸을 가리지 않게
+    const carrying = !e.carryHold && (e.state === 'chase' || e.state === 'idle') && !e.steps && !e.asw && !(e.glowT > 0), CY0 = false, cang = (f > 0 ? -72 : -108) * DEG; // v2.50 평소에도 손에 쥐고 세워 든다 (등에 메지 않음)
+    drawNM(e, key, pal, e.x, y, o, white, al);
+    if (carrying && !claw) drawBlade(S.armH, hx + f * 2, hy - 4, cang, al, white);
+    if (e.type === 'odrum') { const hit = e.beatT > 1.08 || (e.steps && e.glowT > 0); drawSprite('nDrum', 'heldDrum', 2, X - f * 9, y - 3 + o.bob + (hit ? 2 : 0), e.face < 0, { white, alpha: al }); } // 옆구리에 멘 작은 북 (북채는 앞손)
+    // v2.45 트롤: 긴 팔 끝의 발톱이 무기 (평소엔 땅을 향해 늘어뜨리고, 휘두르면 그 방향으로 + 발톱 자국)
+    if (claw) { drawBlade(S.armH, hx, hy - (carrying ? 1 : 3), carrying ? (f > 0 ? 0 : 180) * DEG : ang, al, white); drawBlade(S.armH, X - f * NM_HAND, hy - 1, (f > 0 ? 180 : 0) * DEG, al * 0.95, white); /* v2.50 사슬은 바닥을 따라 바깥으로 늘어짐 */ // 손목의 쇠수갑, 끊어진 사슬이 늘어짐 // 양손 주먹에 낀 가시 건틀릿
+      if (e.asw && !white && al > 0.5) { // v2.45 주먹 타격 효과: 휘두른 방향 끝에서 별 모양 충격 + 바깥으로 퍼지는 파편
+        const ix = hx + Math.cos(ang) * 10, iy = hy + Math.sin(ang) * 8, ph = Math.floor(time * 20) % 3, rr = 4 + ph * 3;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = 'rgba(255,240,200,.95)'; ctx.fillRect(snap2(ix) - 2, snap2(iy) - 2, 4, 4);
+        ctx.fillStyle = `rgba(255,200,120,${0.85 - ph * 0.2})`; for (let i = 0; i < 8; i++) { const a2 = i * Math.PI / 4; ctx.fillRect(snap2(ix + Math.cos(a2) * rr), snap2(iy + Math.sin(a2) * rr * 0.8), 2, 2); }
+        ctx.fillStyle = `rgba(255,255,255,${0.6 - ph * 0.15})`; for (const a2 of [ang - 0.6, ang, ang + 0.6]) ctx.fillRect(snap2(ix + Math.cos(a2) * (rr + 4)), snap2(iy + Math.sin(a2) * (rr + 4) * 0.8), 2, 2);
+        ctx.restore(); } }
+    else if (!carrying) drawBlade(S.armH, hx, hy, ang, al, white);
+    if (e.rockHold) drawSprite('boulder', 'deco', 3, X + f * 2, y - 32, false);
+    if (e.glowT > 0) { const k = 1 - e.glowT / e.glowMax, r = claw ? 12 : S.armH.reach * 0.92; holdGlow(hx + Math.cos(ang) * r, hy + Math.sin(ang) * r, k, '255,120,60'); }
+    if ((e.drumT > 0 || e.buffT > 0) && Math.random() < 0.3) G.parts.push({ x: X + rand(-8, 8), y: y - rand(14, 28), vx: 0, vy: -24, t: 0.35, c: '#ff4030', g: 0, glow: true });
+    if (e.state === 'dazed') for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(X + Math.cos(time * 6 + i * 2.1) * 12) & ~1, Math.round(y - 34 + Math.sin(time * 6 + i * 2.1) * 3) & ~1, 2, 2); }
   }
   // ---------- 공중 도약 (그림자는 땅을 따라가고 몸만 떠오른다)
   function airTick(e, dt) {
@@ -15456,7 +16009,7 @@ huskUp:[
     if (b.stage === 3 && Math.random() < 0.9) G.parts.push({ x: b.x + rand(-14, 14), y: b.y - rand(4, 46), vx: rand(-8, 8), vy: -rand(30, 60), t: 0.45, c: pick(['#ff3050', '#b45cff', '#ff8060']), g: 0, glow: true });
     if (b.stage === 3 && Math.random() < 0.5) G.parts.push({ x: ex, y: ey, vx: -b.face * 40, vy: -10, t: 0.35, c: '#ff3050', g: 0, glow: true });
   }
-  function drawShadow(x, y, w) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(x, y, w, w * 0.32, 0, 0, TAU); ctx.fill(); }
+  function drawShadow(x, y, w) { const c = AURA_MAIN || ctx; c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(x, y, w, w * 0.32, 0, 0, TAU); c.fill(); }
   // 칼날 잔상: 휘두른 궤적을 초승달 모양으로 채운다
   // v2.19 휘두름 궤적 색 = 무기 도트에서 가장 많이 쓴 밝은 색 (흰빛을 섞어 궤적답게)
   function weaponTrailCol(tex, white = 0.45) {
@@ -15468,6 +16021,21 @@ huskUp:[
     if (!best) return (tex[ck] = '240,236,226');
     const m = c => Math.round(c / best.w * (1 - white) + 255 * white);
     return (tex[ck] = `${m(best.r)},${m(best.g)},${m(best.b)}`);
+  }
+  // v2.50 플레이어 근접 궤적 (도트): 한 가지 색의 초승달 — 칼끝 반경에서 안쪽으로 2px 칸을 채우고, 두께는 가운데가 가장 두껍고 양 끝은 반드시 뾰족하게.
+  //   오래된 칸은 투명해지지 않고 두께가 단계적으로 줄다가 사라진다
+  const SLASH_COL = { knight: '#ece6e2', ranger: '#ffc8a8', priest: '#ffd34d', holy: '#ffd34d', ice: '#9fd2ff', storm: '#7affb0', shadow: '#c08cff' };
+  function drawSlashPx(trail, px, py, rout, col, heavy) {
+    const n = trail.length; if (n < 2) return;
+    const A = [trail[0].a]; for (let i = 1; i < n; i++) A.push(A[i - 1] + angDiff(trail[i].a, trail[i - 1].a));
+    const tot = Math.abs(A[n - 1] - A[0]) || 1e-6, thMax = rout * 0.4 * (heavy ? 1.15 : 1), seen = new Set();
+    ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.fillStyle = col;
+    for (let i = 1; i < n; i++) {
+      const life = Math.ceil(clamp(trail[i].t / 0.11, 0, 1) * 4) / 4, a0 = A[i - 1], a1 = A[i], m = Math.max(1, Math.ceil(Math.abs(a1 - a0) * rout / 1.6));
+      for (let j = 0; j <= m; j++) { const a = a0 + (a1 - a0) * j / m, u = Math.abs(a - A[0]) / tot, th = thMax * Math.pow(Math.sin(Math.PI * clamp(u, 0, 1)), 0.9) * (0.35 + 0.65 * life), ca = Math.cos(a), sa = Math.sin(a);
+        for (let d = 0; d <= th; d += 1.5) { const x = snap2(px + ca * (rout - d)), y = snap2(py + sa * (rout - d)), key = x * 8192 + y; if (seen.has(key)) continue; seen.add(key); ctx.fillRect(x, y, 2, 2); } }
+    }
+    ctx.restore();
   }
   function drawTrail(trail, px, py, rin, rout, col, heavy) {
     if (trail.length < 2) return;
@@ -15489,6 +16057,7 @@ huskUp:[
   }
 
   function holdGlow(x, y, k, c) {
+    k = Math.round(clamp(k, 0, 1) * 6) / 6; x = snap2(x); y = snap2(y); // v2.50 6단계로 끊어 디더 무늬 재사용 (모으는 동안 매 프레임 새로 만들던 문제)
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const r = 6 + 10 * k, gr = dRadial(ctx, x, y, 0, x, y, r);
     gr.addColorStop(0, `rgba(${c},${0.25 + 0.45 * k})`); gr.addColorStop(1, `rgba(${c},0)`);
@@ -15607,11 +16176,39 @@ huskUp:[
   // v0.94: 버프는 발밑 바닥 원으로만 (사용자 결정) — 몸을 덮는 돔·불꽃·화살표 없음
   //  보호막 = 두 겹 고리(바깥 실선 + 안쪽 반대로 도는 점선) + 둘레를 도는 룬 4개 + 디더 바닥 빛, 맞으면 번쩍. 주술사 방벽은 남은 양만큼만 바깥 고리가 이어짐
   //  강화 = 한 겹 끊긴 고리가 빠르게 돌고 안쪽에 맥동하는 디더 빛 + 고리에서 튀는 불티 몇 점
-  function drawBuffBack(e) {
-    const B = buffState(e); if (!B) return;
+  // v2.50 성능: 강화·보호막 바닥 고리를 적마다 따로 업로드하지 않고, 반 해상도(2px 칸) 레이어 한 장에 모아 프레임당 한 번만 올린다
+  //   (북 의식으로 오크 여럿이 동시에 강화되면 적 수만큼 putImageData가 일어나 프레임이 크게 떨어졌음)
+  const BUFL = { cap: 0, buf: null, cv: null, g: null, img: null };
+  function buffLayer(x0, y0, x1, y1) {
+    x0 = Math.floor(x0 / 2) * 2; y0 = Math.floor(y0 / 2) * 2; const w = Math.max(1, Math.ceil((x1 - x0) / 2)), h = Math.max(1, Math.ceil((y1 - y0) / 2)), n = w * h * 4;
+    if (BUFL.cap < n) { BUFL.buf = new Float32Array(n); BUFL.cap = n; } else BUFL.buf.fill(0, 0, n);
+    const B = BUFL.buf;
+    return { rect(x, y, rw, rh, r, g, b, a) { if (a <= 0) return;
+        const xa = Math.max(0, (x - x0) >> 1), ya = Math.max(0, (y - y0) >> 1), xb = Math.min(w, (x - x0 + rw + 1) >> 1), yb = Math.min(h, (y - y0 + rh + 1) >> 1);
+        const pr = r * a, pg = g * a, pb = b * a;
+        for (let yy = ya; yy < yb; yy++) for (let xx = xa, i = (yy * w + xa) * 4; xx < xb; xx++, i += 4) { B[i] += pr; B[i + 1] += pg; B[i + 2] += pb; B[i + 3] += a; } },
+      flush() {
+        if (!BUFL.img || BUFL.img.width !== w || BUFL.img.height !== h) BUFL.img = new ImageData(w, h);
+        const d = BUFL.img.data; for (let i = 0; i < n; i += 4) { const A = B[i + 3]; if (A <= 0) { d[i + 3] = 0; continue; } const k = 1 / A; d[i] = B[i] * k; d[i + 1] = B[i + 1] * k; d[i + 2] = B[i + 2] * k; d[i + 3] = (A > 1 ? 1 : A) * 255; }
+        if (!BUFL.cv || BUFL.cv.width < w || BUFL.cv.height < h) [BUFL.cv, BUFL.g] = mkCanvas(Math.max(w, BUFL.cv ? BUFL.cv.width : 0), Math.max(h, BUFL.cv ? BUFL.cv.height : 0));
+        BUFL.g.putImageData(BUFL.img, 0, 0);
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.imageSmoothingEnabled = false; ctx.drawImage(BUFL.cv, 0, 0, w, h, x0, y0, w * 2, h * 2); ctx.restore(); } };
+  }
+  let BUFF_BATCH = false;
+  function drawBuffBatch() { // 캐릭터를 그리기 전에 바닥 고리를 한꺼번에
+    BUFF_BATCH = false; if (!OPT) return;
+    const L = []; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const e of G.enemies) { if (e.dead) continue; const B = buffState(e); if (!B) continue; const LR = enemyW(e) * 1.25 + 16; L.push([e, B]);
+      x0 = Math.min(x0, e.x - LR - 4); x1 = Math.max(x1, e.x + LR + 4); y0 = Math.min(y0, e.y - LR * 0.5 - 6); y1 = Math.max(y1, e.y + LR * 0.5 + 8); }
+    BUFF_BATCH = true; if (!L.length) return;
+    const Ly = buffLayer(x0, y0, x1, y1); for (const [e, B] of L) drawBuffBack(e, Ly, B); Ly.flush();
+  }
+  function drawBuffBack(e, LyIn, Bin) {
+    if (BUFF_BATCH && !LyIn) return; // 이번 프레임은 이미 한꺼번에 그림
+    const B = Bin || buffState(e); if (!B) return;
     const w = enemyW(e), cx = e.x, cy = e.y + 1;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const LR = w * 1.25 + 16, Ly = pxLayer(cx - LR - 4, cy - LR * 0.5 - 6, LR * 2 + 8, LR + 12, true); // v1.17 한 장으로
+    if (!LyIn) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; }
+    const LR = w * 1.25 + 16, Ly = LyIn || pxLayer(cx - LR - 4, cy - LR * 0.5 - 6, LR * 2 + 8, LR + 12, true); // v1.17 한 장으로
     const dot = (x, y, c, a) => { const v = rgbN(c); Ly.rect(Math.round(x) & ~1, Math.round(y) & ~1, 2, 2, v[0], v[1], v[2], a); };
     const ring = (rx, c, a, rot, gapEvery, len) => { const ry = rx * 0.45, n = Math.max(24, Math.round(rx * 1.7)), m = Math.round(n * (len == null ? 1 : len)); for (let i = 0; i < m; i++) { if (gapEvery && i % gapEvery === 0) continue; const t = i / n * TAU + rot; dot(cx + Math.cos(t) * rx, cy + Math.sin(t) * ry, c, a); } };
     const fill = (rx, c, a) => { const ry = rx * 0.45, v = rgbN(c); for (let y = Math.round(cy - ry) & ~1; y <= cy + ry; y += 2) for (let x = Math.round(cx - rx) & ~1; x <= cx + rx; x += 2) { const q = Math.hypot((x - cx) / rx, (y - cy) / ry); if (q < 1 && dith(x >> 1, y >> 1, 0.45 * (1 - q))) Ly.rect(x, y, 2, 2, v[0], v[1], v[2], a); } };
@@ -15631,8 +16228,7 @@ huskUp:[
       ring(R * 0.6, '255,230,170', 0.35 + 0.3 * pul, -time * 2.4, 3);
       if (Math.random() < 0.35) { const t = rand(0, TAU); G.parts.push({ x: cx + Math.cos(t) * R, y: cy + Math.sin(t) * R * 0.45, vx: 0, vy: -rand(20, 40), t: 0.35, c: `rgb(${B.emp})`, g: 0, glow: true }); }
     }
-    Ly.flush();
-    ctx.restore();
+    if (!LyIn) { Ly.flush(); ctx.restore(); }
   }
   function drawBuffFront(e) { if (e.type === 'ghost' && !e.dead && G.boss && !G.boss.dead && G.boss.shield) drawSoulChain(e, G.boss); }
   // 망령 기사 → 발도르: 출렁이는 영혼 사슬, 빛 덩이가 발도르 쪽으로 흘러감
@@ -15689,6 +16285,76 @@ huskUp:[
     if (e._nrH != null && time - e._nrH < 0.32) return { m: 'hurt', f: Math.min(3, Math.floor((time - e._nrH) / 0.08)) };
     if (st === 'chase' && moved) return { m: 'walk', f: Math.floor(e.walk * 0.9) % 4 };
     return { m: 'idle', f: Math.floor(time * 1.8 + e.x * 0.013) % 4 };
+  }
+  // v2.44 새 정면 도트(오크·엘리트) 공용: 걷기 4프레임 + 예비동작(움츠림·뒤로) → 타격(앞으로 늘어남) → 여운 · 맞으면 뒤로 젖힘
+  function nmPose(e) {
+    const M = nrMotion(e), f = e.face || 1, o = { dx: 0, rot: 0, sx: 1, sy: 1, wf: -1 };
+    if (M.m === 'walk') o.wf = M.f;
+    else if (M.m === 'wind') { const k = Math.min(1, M.f / 4); o.dx = -2 * f * k; o.sx = 1 + 0.08 * k; o.sy = 1 - 0.1 * k; o.rot = -0.16 * f * k; }
+    else if (M.m === 'hit') { const k = 1 - Math.min(1, M.f / 4); o.dx = 4 * f * k; o.sx = 1 + 0.12 * k; o.sy = 1 - 0.08 * k; o.rot = 0.22 * f * k; }
+    else if (M.m === 'back') { o.dx = f; o.rot = 0.06 * f; }
+    else if (M.m === 'hurt') { const k = 1 - M.f / 4; o.dx = -2 * f * k; o.rot = -0.14 * f * k; }
+    if (e.crouch > 0) { o.sy *= 0.88; o.sx *= 1.06; }
+    o.rot += (e.lean || 0) + (e.grogiT > 0 ? 0.25 * f : 0); o.bob = o.wf % 2 ? 2 : 0;
+    return o;
+  }
+  const NM_HAND = 10; // 새 도트의 손: 몸 중심에서 옆으로 10px · 발밑에서 위로 7px
+  // v2.49 도트 오오라: 번지는 글로우 대신 실루엣 바깥에 한 칸 단색 외곽선 + (엘리트) 체크 무늬 두 번째 칸 + (보스) 성긴 세 번째 칸.
+  //   밝기 변화는 반투명이 아니라 팔레트 순환(4단 스텝)과 디더 위상 전환으로 표현한다
+  const AURA_BUF = {}, AURA_DITH = {};
+  const auraShade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = c => Math.max(0, Math.min(255, Math.round(k > 0 ? c + (255 - c) * k : c * (1 + k)))); return `rgb(${f(n >> 16)},${f(n >> 8 & 255)},${f(n & 255)})`; };
+  function auraDith(ph, sparse) { // 2px 칸 체크 무늬 (sparse: 4칸 중 1칸)
+    const k = ph + (sparse ? 's' : ''); if (AURA_DITH[k]) return AURA_DITH[k];
+    const [c, g] = mkCanvas(8, 8); g.fillStyle = '#fff';
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) { const on = sparse ? ((x + ph * 2) % 4 === 0 && (y + (x >> 1) * 2 + ph) % 2 === 0) || ((x + y * 2 + ph * 2) % 4 === 0 && y % 2 === 1) : (x + y + ph) % 2 === 0; if (on) g.fillRect(x * 2, y * 2, 2, 2); }
+    return (AURA_DITH[k] = c);
+  }
+  const AURA_NOP = { beginPath() {}, ellipse() {}, fill() {}, set fillStyle(v) {} }; // 실루엣 단계에서는 그림자를 그리지 않음 (본 그림 때 한 번만)
+  let AURA_MAIN = null; // 오오라용으로 따로 그리는 동안 그림자는 본 화면에 그린다
+  function pxAura(e, col, lv, S, below, ax, ay, fn) {
+    const id = 'S' + S, buf = n => AURA_BUF[id + n] || (AURA_BUF[id + n] = n ? mkCanvas(S, S) : (c => [c, c.getContext('2d', { willReadFrequently: true })])(Object.assign(document.createElement('canvas'), { width: S, height: S }))); // 0번은 실루엣을 읽어 오므로 CPU 쪽 캔버스
+    const [c0, g0] = buf(0), [c1, g1] = buf(1), [c2, g2] = buf(2), [c3, g3] = buf(3);
+    const ox = snap2(ax) - S / 2, oy = snap2(ay) - S + below;
+    const reset = g => { g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = false; g.clearRect(0, 0, S, S); };
+    reset(g0); g0.setTransform(1, 0, 0, 1, -ox, -oy);
+    // v2.50 실루엣은 몸만: 빛 더하기(lighter)나 반투명으로 그리는 광채·예고 효과는 빼고 그린다 (패턴 중 테두리가 부풀던 문제)
+    //   그 뒤 본 그림은 화면에 그대로 다시 그림 (파티클·이펙트가 두 번 생기지 않게 실루엣 단계에서는 빈 목록으로 바꿔 둠)
+    const sil = new Proxy(g0, { get(t, k) { const v = t[k]; if (typeof v !== 'function') return v;
+        if (k === 'fillRect' || k === 'fill' || k === 'stroke' || k === 'drawImage' || k === 'putImageData' || k === 'strokeRect') return (...a) => (t.globalCompositeOperation !== 'source-over' || t.globalAlpha < 0.6) ? undefined : v.apply(t, a);
+        return v.bind(t); }, set(t, k, v) { t[k] = v; return true; } });
+    const main = ctx, keep = [G.parts, G.fx, G.nums]; AURA_MAIN = AURA_NOP; ctx = sil; G.parts = []; G.fx = []; G.nums = [];
+    try { fn(); } finally { ctx = main; AURA_MAIN = null; [G.parts, G.fx, G.nums] = keep; g0.setTransform(1, 0, 0, 1, 0, 0); }
+    // 실루엣: 조금이라도 보이는 픽셀은 꽉 찬 칸으로 (반투명 번짐 제거)
+    reset(g1); const im = g0.getImageData(0, 0, S, S), d = im.data;
+    for (let i = 3; i < d.length; i += 4) { const on = d[i] >= 24; d[i - 3] = d[i - 2] = d[i - 1] = 255; d[i] = on ? 255 : 0; }
+    g1.putImageData(im, 0, 0);
+    const ring = (g, dd, inner, color, dith) => { // dd칸 바깥 테두리에서 inner칸 안쪽을 뺀 고리 (모서리는 계단식)
+      reset(g); const sh = (r, op) => { g.globalCompositeOperation = op; for (let dy = -r; dy <= r; dy += 2) for (let dx = -r; dx <= r; dx += 2) if (Math.abs(dx) + Math.abs(dy) <= r + (r > 2 ? 2 : 0)) g.drawImage(c1, dx, dy); };
+      sh(dd, 'source-over'); if (inner >= 0) sh(inner, 'destination-out');
+      if (dith) { g.globalCompositeOperation = 'destination-in'; g.fillStyle = g.createPattern(dith, 'repeat'); g.fillRect(0, 0, S, S); }
+      g.globalCompositeOperation = 'source-in'; g.fillStyle = color; g.fillRect(0, 0, S, S);
+    };
+    const st = Math.floor(time * 6 + e.x * 0.03) % 4, ph = Math.floor(time * 4) % 2; // 팔레트 순환 스텝 · 디더 위상
+    const inC = auraShade(col, [0, 0.25, 0.5, 0.25][st]);
+    if (lv > 2) { ring(g3, 6, 4, auraShade(col, -0.45), auraDith(ph, true)); ctx.drawImage(c3, ox, oy); }
+    if (lv > 1) { ring(g3, 4, 2, auraShade(col, -0.25), auraDith(ph)); ctx.drawImage(c3, ox, oy); }
+    ring(g2, 2, 0, inC, null); ctx.drawImage(c2, ox, oy);
+    fn(); // 본 그림은 효과까지 화면에 직접
+    // 떠오르는 빛 알갱이: 2px 칸 (번짐 조명 없음)
+    if (Math.random() < (lv > 2 ? 0.3 : lv > 1 ? 0.25 : 0.12)) G.parts.push({ x: snap2(ax + rand(-12, 12)), y: snap2(ay - rand(4, (e.tall || 30) - 4)), vx: 0, vy: -rand(14, 30), t: rand(0.3, 0.6), c: inC, g: 0 });
+  }
+  const NM_AURA = { gbrute: ['#ffb040', 2], boar: ['#ff4a30', 2], exec: ['#d02828', 2], mother: ['#9ae050', 2], mordred: ['#ff9a40', 2], queen: ['#b890ff', 2], urg: ['#ffd34d', 2], troll: ['#8ad0ff', 2],
+    boss: ['#c070ff', 2], coffin: ['#ff7a30', 1], herald: ['#ffd060', 1], ocharge: ['#ff6a2a', 1], odrum: ['#ff4030', 1], ogrip: ['#ff8a50', 1], otroll: ['#c0e070', 1] };
+  const nmAuraOf = e => e.orc === 'krugash' ? ['#ff5a2a', 2] : NM_AURA[e.type];
+  function withAura(e, col, fn) { // 여러 부위로 그리는 보스(점액왕·잿빛 왕)
+    if (e.flash > 0 || e.dead || (e.fadeA != null && e.fadeA < 0.5)) return fn();
+    pxAura(e, col, 2, 360, 80, e.x, e.y, fn); // v2.50 보스도 두 칸까지만 (과하게 퍼지지 않게)
+  }
+  function drawNM(e, key, pal, x, y, o, white, al, ex) {
+    const mk = walkMap(key, o.wf); pal = pal || key; e.tall = MAPS[key].length * 2 + 4; // 이름표·경고 표시 높이를 새 도트 키에 맞춤
+    const A = !white && al >= 0.5 && nmAuraOf(e); // v2.50 도트 오오라 (스프라이트 그림마다 캐시)
+    drawSprite(mk, pal, 2, x + o.dx, y, e.face < 0, Object.assign({ white, alpha: al, rot: o.rot, sx: o.sx, sy: o.sy, pa: A || null }, ex || {}));
+    if (A && Math.random() < (A[1] > 2 ? 0.3 : A[1] > 1 ? 0.25 : 0.12)) G.parts.push({ x: snap2(x + rand(-12, 12)), y: snap2(y - rand(4, (e.tall || 30) - 4)), vx: 0, vy: -rand(14, 30), t: rand(0.3, 0.6), c: A[0], g: 0 });
   }
   // 사람형 자세(칸): 부위 → [dx, dy]
   function nrPoseB(M, robe) {
@@ -15777,12 +16443,9 @@ huskUp:[
     else if (e.type === 'exec') drawExec(e, ya, al);
     else if (e.type === 'bearer') drawBearer(e, ya, al);
     else if (e.type === 'flag') drawFlagEnt(e, ya, al);
-    else if (e.type === 'boss' && e.kind === 'ashking') drawAshKing(e, ya, al);
-    else if (e.type === 'boss' && e.kind === 'slimeking') drawSlimeKing(e, ya, al);
-    else if (e.type === 'panda') drawPanda(e, ya, al, white);
-    else if (e.type === 'reaper') drawReaper(e, ya, al, white);
-    else if (e.type === 'shrewA' || e.type === 'shrewB') drawShrew(e, ya, al, white);
-    else if (e.type === 'weasel') drawWeasel(e, ya, al, white);
+    else if (e.type === 'boss' && e.kind === 'ashking') withAura(e, '#ff8a3a', () => drawAshKing(e, ya, al));
+    else if (e.type === 'boss' && e.kind === 'slimeking') withAura(e, '#7ae0ff', () => drawSlimeKing(e, ya, al)); // v2.46 보스 오오라
+    else if (INV_DRAW[e.type]) invDraw(e, ya, al, white); // v2.43 난입자 (공격 모션 포함)
     else if (e.type === 'goblin' || e.type === 'garcher') {
       drawShadow(e.x, e.y + 1, 8);
       const pal = e.type, M = nrMotion(e); // v1.54 부위별 칸 단위
@@ -15810,7 +16473,7 @@ huskUp:[
       if (hold) holdGlow(e.x + e.face * 1, e.y - 26, k, '255,60,40');
     }
     else if (e.type === 'dog' && e.ash === 'lancer') drawAshHeap(e, ya, al, bob);
-    else if (e.type === 'dog') { drawShadow(e.x, e.y + 1, 12); nrQuad(e, e.state === 'dash' ? 'houndB' : 'hound', e.ash ? 'ashHound' : 'hound', e.x, e.y + 2 + ya, flip, { white, alpha: al }); } // v1.54 머리·몸·꼬리·네 다리
+    else if (e.type === 'dog') { drawShadow(e.x, e.y + 1, 11); const o = nmPose(e); if (e.state === 'dash') { o.wf = Math.floor(time * 22) % 4; o.sx = 1.1; o.sy = 0.92; o.rot = 0; } drawNM(e, 'nDog', null, e.x, e.y + 2 + ya, o, white, al); } // v2.44 새 도트 (옆모습 2등신)·꼬리·네 다리
     else if (e.type === 'cultist') {
       drawShadow(e.x, e.y + 1, 9);
       const casting = e.state === 'wind';
@@ -15848,24 +16511,19 @@ huskUp:[
       const map = e.type === 'boss' ? 'baldor' : e.type === 'ghost' ? 'soldier' : 'ghoul';
       const pal = e.type === 'boss' ? 'boss' : e.type === 'ghost' ? 'ghost' : 'butcher';
       const handY = e.type === 'boss' ? 30 : e.type === 'butcher' ? 24 : 14;
-      const hx0 = e.x + e.face * (e.type === 'boss' ? 4 : 3), hy = e.y - handY + (e.type === 'boss' ? bdPose(e).dy : 0) + 0; const hx = hx0 + (e.type === 'boss' ? bdPose(e).ux : 0);
-      const bl = BLADES[e.blade];
-      const behind = !e.sw && Math.sin(e.bladeAng) < -0.2 === false && Math.cos(e.bladeAng) * e.face < 0;
+      const hx0 = e.x + e.face * (e.type === 'boss' ? NM_HAND + (e.sw ? 0 : 4) : 3), hy = e.type === 'boss' ? e.y - (e.sw ? 8 : 14) + bdPose(e).dy : e.y - handY; /* v2.50 들고 다닐 때는 가슴 높이에서 쥠 */ const hx = hx0 + (e.type === 'boss' ? bdPose(e).ux : 0);
+      const bl = e.type === 'boss' ? BOSS_SWORD : BLADES[e.blade]; // v2.46 발도르: 특대형 대검
+      const behind = e.type === 'boss' ? !e.sw && Math.cos(e.bladeAng) * e.face < -0.25 /* v2.50 발도르: 세워 든 칼은 손에 쥔 채 몸 앞, 뒤로 넘긴 때만 등 뒤 */ : !e.sw && Math.sin(e.bladeAng) < -0.2 === false && Math.cos(e.bladeAng) * e.face < 0;
       drawShadow(e.x, e.y + 2, e.type === 'boss' ? 24 : e.type === 'butcher' ? 16 : 10);
       if (e.type === 'boss' && !e.dead && Math.random() < 0.5) G.parts.push({ x: e.x + rand(-16, 16), y: e.y - rand(0, 48), vx: 0, vy: -24, t: 0.6, c: e.stage === 3 ? '#8a3fb0' : '#3e2b4a', g: 0 });
       if (bl && behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
       if (bl) drawTrail(e.trail, hx, hy, 10, bl.reach, e.type === 'ghost' ? '170,210,255' : e.type === 'boss' ? '190,120,240' : '230,220,210', e.type === 'boss');
       let rot = (e.grogiT > 0 ? 0.3 * e.face : e.state === 'dash' ? 0.25 * e.face : 0) + lean;
       if (e.type === 'ghost' && e.state === 'hold') { const k = 1 - e.t / e.holdMax; rot = -0.2 * e.face * (0.5 + k); }
-      if (e.type === 'boss') { const p = bdPose(e), by = e.y + 3 + ya - (e.lift || 0), o = { white, alpha: al }; // v1.46 부위별 칸 단위 (아래 → 위 순서로 겹쳐 그림)
-        drawSprite('bdHem', 'bdr', 2, e.x + p.mx, by, flip, o);
-        drawSprite('bdLegL', 'bdr', 2, e.x, by - p.lL, flip, o); drawSprite('bdLegR', 'bdr', 2, e.x, by - p.lR, flip, o);
-        drawSprite('bdLower', 'bdr', 2, e.x, by + p.dy, flip, o);
-        drawSprite(p.eye && Math.floor(time * 10) % 3 ? 'bdHeadG' : 'bdHead', 'bdr', 2, e.x + p.ux + p.hx, by + p.dy + p.hdy, flip, o);
-        drawSprite('bdUpper', 'bdr', 2, e.x + p.ux, by + p.dy, flip, o); }
+      if (e.type === 'boss') { const p = bdPose(e), by = e.y + 3 + ya - (e.lift || 0), q = nmPose(e); q.dx += p.ux; q.rot += e.state === 'dash' ? 0.2 * e.face : 0; if (q.wf < 0 && e.state !== 'idle' && !(e.grogiT > 0)) q.wf = e.state === 'dash' ? Math.floor(time * 16) % 4 : [0, 2][Math.floor(time * 9) % 2]; drawNM(e, 'nBaldor', null, e.x, by + p.dy, q, white, al); } // 동작할 때 망토가 휘날림 // v2.46 새 정면 도트 (망토 포함)
       else drawSprite(map, pal, sc, e.x, e.y + 3 + (e.grogiT > 0 ? 0 : bob) + ya - (e.lift || 0), flip, { white, rot, alpha: al * (e.type === 'ghost' ? 0.85 : 1), sy: e.grogiT > 0 ? 0.92 : sq });
       if (bl && !behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
-      if (bl && !behind && (e.sw || !['idle', 'chase', 'recover', 'cast'].includes(e.state))) { // 칼자루를 쥔 건틀릿: 검을 등에 진 평소엔 숨기고 공격할 때만 (v0.66)
+      if (bl && !behind && e.type !== 'boss' && (e.sw || !['idle', 'chase', 'recover', 'cast'].includes(e.state))) { // 칼자루를 쥔 건틀릿: 검을 등에 진 평소엔 숨기고 공격할 때만 (v0.66)
         const P0 = PAL[pal], fx = Math.round(hx) & ~1, fy = Math.round(hy) & ~1;
         ctx.globalAlpha = al * (e.type === 'ghost' ? 0.85 : 1); ctx.fillStyle = white ? '#fff' : P0.k; ctx.fillRect(fx - 4, fy - 4, 8, 8);
         ctx.fillStyle = white ? '#fff' : P0.l; ctx.fillRect(fx - 2, fy - 2, 4, 2); ctx.fillStyle = white ? '#fff' : P0.m; ctx.fillRect(fx - 2, fy, 4, 2); ctx.globalAlpha = 1;
@@ -15913,7 +16571,7 @@ huskUp:[
     if (P.dead) {
       drawShadow(P.x, P.y + 1, 8);
       drawBlade(weaponTex('ranger'), P.x + 10, P.y - 2, 0.3, 0.9); drawBlade(weaponTex('ranger'), P.x - 8, P.y, 2.6, 0.9);
-      drawSprite('ranger', 'ranger', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
+      drawSprite('hRanger', 'hRanger', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
       return;
     }
     if ((P.state === 'dodge' && P.t < BLINK) || (P.state === 'shadow' && P.t < 0.08)) return;
@@ -15925,25 +16583,19 @@ huskUp:[
       ctx.beginPath(); ctx.ellipse(P.x, P.y - 2, 30, 12, 0, 0, TAU); ctx.stroke();
       ctx.restore();
     }
-    const bob = P.state === 'idle' && P.moving ? -Math.abs(Math.sin(P.walk)) * 1.5 : 0;
+    const wFr = walkFr(P), bob = (wFr % 2 || wFr === -2) ? 2 : 0; // v2.43 걷기 4프레임
     let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
     if (P.state === 'dodge') { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; }
-    if (P.state === 'attack') {
-      const st = SWING_R[P.combo];
-      if (P.t < st.wind) { rot = -0.12 * P.face; sy = 0.94; }
-      else if (P.t < st.wind + st.swing) { rot = 0.2 * P.face; sx = 1.08; }
-    }
+    if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'shadow') { rot = 0.25 * P.face; sx = 1.1; sy = 0.92; }
     if (storm) { rot = Math.sin(time * 30) * 0.15; }
-    if (P.state === 'idle' && P.moving) sy = 1 + Math.sin(P.walk * 2) * 0.04;
-    const fhx = P.x + P.face * 4, fhy = P.y - 9, bhx = P.x - P.face * 3, bhy = P.y - 10;
+    const fhx = P.x + P.face * 7, fhy = P.y - 5 + bob, bhx = P.x - P.face * 7, bhy = P.y - 6 + bob; // v2.43 새 도트의 양손
     const swinging = P.state === 'attack' || P.state === 'shadow' || storm;
     const col = storm ? '120,255,180' : P.state === 'shadow' ? '190,140,255' : weaponTrailCol(weaponTex('ranger'), 0.4); // v2.19 평타 궤적은 무기 색
     if (swinging) {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      drawTrail(P.trail, fhx, fhy, 6, storm ? 34 : 42, col, true);
-      drawTrail(P.trail2, bhx, bhy, 6, storm ? 34 : 42, col, true);
-      ctx.restore();
+      const sc = storm ? SLASH_COL.storm : P.state === 'shadow' ? SLASH_COL.shadow : SLASH_COL.ranger; // v2.50 도트 궤적
+      drawSlashPx(P.trail, fhx, fhy, storm ? 34 : 42, sc, P.combo === 2);
+      drawSlashPx(P.trail2, bhx, bhy, storm ? 34 : 42, sc, P.combo === 2);
     }
     // 역수 쥐기: 주먹은 휘두르는 방향으로 뻗고, 날은 주먹 아래에서 뒤로 끌리듯 눕는다
     const REV = P.face * 100 * DEG, ext = swinging ? 5 : 0;
@@ -15951,7 +16603,7 @@ huskUp:[
     const f1x = fhx + Math.cos(P.blade) * ext, f1y = fhy + Math.sin(P.blade) * ext * 0.7, b2x = bhx + Math.cos(P.blade2) * ext, b2y = bhy + Math.sin(P.blade2) * ext * 0.7;
     // v1.09 겹침 순서: 뒷날(+광채) → 몸 → 앞날(+광채). 뒷날 광채가 몸 위로 올라오던 문제 수정
     drawBlade(tex, b2x, b2y, v2, alpha * 0.95); if (!storm) weaponAura(tex, b2x, b2y, v2, 'ranger');
-    drawSprite('ranger', 'ranger', 2, P.x, P.y + 2 + bob, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    drawSprite(walkMap('hRanger', wFr), 'hRanger', 2, P.x, P.y + 2, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     drawBlade(tex, f1x, f1y, v1, alpha); if (!storm) weaponAura(tex, f1x, f1y, v1, 'ranger');
     if (storm) for (let i = 0; i < 4; i++) { const a = P.spin * 1.3 + i * Math.PI / 2; drawBlade(BLADES.daggerG, P.x + Math.cos(a) * 16, P.y - 10 + Math.sin(a) * 7, a, 0.75, false, 1, 'lighter'); }
     ctx.fillStyle = 'rgba(232,228,216,.45)';
@@ -15962,54 +16614,48 @@ huskUp:[
     const P = G.player, ox = P.x, oy = P.y, ob = P.blade, ob2 = P.blade2, th = TAU / ROT_N * 0.8;
     if (P.bladeShow == null || Math.abs(angDiff(P.blade, P.bladeShow)) > th) P.bladeShow = P.blade;
     if (P.blade2 != null && (P.blade2Show == null || Math.abs(angDiff(P.blade2, P.blade2Show)) > th)) P.blade2Show = P.blade2;
+    PPOSE = playerPose(); if (PPOSE) { P.x += PPOSE.dx; P.y += PPOSE.dy; } // v2.43 공격 모션: 몸과 손이 같이 움직임
     P.x = snap2(P.x); P.y = snap2(P.y); P.blade = P.bladeShow; if (P.blade2 != null) P.blade2 = P.blade2Show;
     ASH_DRAW = SAVE.skin === 'ash' && skinOpen(); STEALTH_DRAW = G.player.stealthT > 0; // v1.99 잿불 외형 · v2.05 숨기
-    try { drawPlayerInner(); } finally { ASH_DRAW = false; STEALTH_DRAW = false; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
+    try { drawPlayerInner(); } finally { PPOSE = null; ASH_DRAW = false; STEALTH_DRAW = false; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
   }
   function drawPlayerInner() {
     if (G.cls === 'ranger') return drawRanger();
     if (G.cls === 'mage' || G.cls === 'priest' || G.cls === 'gunner') return drawHero();
     const P = G.player;
     const lift = P.lift || 0;
-    const hx = P.x + P.face * 2, hy = P.y - PIVOT_Y - lift;
+    const wFr = walkFr(P), bob = (wFr % 2 || wFr === -2) ? 2 : 0; // v2.43 걷기 4프레임
+    const hx = P.x + P.face * 7, hy = P.y - 9 - lift + bob; // v2.43 새 도트: 옆구리의 손
     const holy = P.awakenT > 0 || P.state === 'awaken';
     const brk = !holy && G.breadBrk > 0 && wSkill() === 'bread', tex = brk ? breadHalf(0) : weaponTex('knight'); // v2.19 각성해도 들고 있는 무기 모양 그대로 (금빛은 덧칠로)
     const chainLash = !holy && wSkill() === 'chain' && P.state === 'attack' && P.combo === 2;
     if (P.dead) {
       drawShadow(P.x, P.y + 1, 8);
       drawBlade(weaponTex('knight'), P.x + 14, P.y - 2, 0.15, 0.9);
-      drawSprite('knight', 'knight', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
+      drawSprite('hKnight', 'hKnight', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
       return;
     }
     if (P.state === 'dodge' && P.t < BLINK) return; // 점멸 중에는 보이지 않는다
     const blink = P.inv > 0 && Math.floor(time * 16) % 2 === 0;
     drawShadow(P.x, P.y + 1, 8 - Math.min(3, lift * 0.3));
     if (holy) { ctx.fillStyle = `rgba(255,211,77,${0.22 + Math.sin(time * 11) * 0.07})`; ctx.beginPath(); ctx.ellipse(P.x, P.y, 20, 8, 0, 0, TAU); ctx.fill(); }
-    const bob = P.state === 'idle' && P.moving ? -Math.abs(Math.sin(P.walk)) * 1.5 : 0;
     let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
     if (P.state === 'dodge') { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; }
     if (P.state === 'charge') { rot = 0.3 * P.face; sx = 1.1; }
-    if (P.state === 'attack') {
-      const st = SWING[P.combo];
-      if (P.t < st.wind) { rot = -0.15 * P.face; sy = 0.94; }
-      else if (P.t < st.wind + st.swing) { rot = 0.22 * P.face; sx = 1.08; sy = 0.95; }
-      else rot = 0.08 * P.face;
-    }
+    if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'skill') { rot = (P.t < SKILL.wind ? -0.25 : 0.2) * P.face; sx = 1.06; sy = P.t < SKILL.wind ? 0.9 : 1.04; }
     if (P.state === 'awaken') { sy = P.t < 0.15 ? 0.88 : 1; rot = P.t > 0.9 && P.t < 1.1 ? 0.3 * P.sign : 0; }
-    if (P.state === 'idle' && P.moving) sy = 1 + Math.sin(P.walk * 2) * 0.04;
     const swinging = P.state === 'attack' || P.state === 'skill' || P.state === 'awaken';
     const behind = !swinging && P.state !== 'charge';
     const trailCol = P.state === 'skill' ? '170,220,255' : holy ? '255,214,120' : weaponTrailCol(tex, P.combo === 2 ? 0.3 : 0.5); // v2.19 평타 궤적은 무기 색
     const giantK = P.state === 'awaken' ? (P.giant || 0) : 0;
     const rout = giantK > 0 ? tex.reach * (1 + 1.7 * giantK) : P.state === 'skill' ? SKILL.reach : tex.reach + 2;
     if (swinging) {
-      if (holy || P.state === 'skill') { ctx.save(); ctx.globalCompositeOperation = 'lighter'; drawTrail(P.trail, hx, hy + 4, 12, rout, trailCol, true); ctx.restore(); }
-      drawTrail(P.trail, hx, hy + 4, 12, rout, trailCol, P.state !== 'attack' || P.combo === 2);
+      drawSlashPx(P.trail, hx, hy + 4, rout, P.state === 'skill' ? SLASH_COL.ice : holy ? SLASH_COL.holy : SLASH_COL.knight, P.state !== 'attack' || P.combo === 2); // v2.50 도트 궤적
     }
     if (brk) drawBlade(breadHalf(1), P.x - P.face * 8, hy + 4, P.blade + Math.PI * 0.85 * P.face, alpha); // 반대 손의 반 토막
     if (behind) { drawBlade(tex, hx - P.face * 2, hy + 2, P.blade, alpha); if (!holy && !brk) weaponAura(tex, hx - P.face * 2, hy + 2, P.blade, 'knight'); }
-    drawSprite('knight', 'knight', 2, P.x, P.y + 2 + bob - lift, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    drawSprite(walkMap('hKnight', wFr), 'hKnight', 2, P.x, P.y + 2 - lift, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     if (giantK > 0) {
       { const sc = 1 + 1.7 * giantK; // v2.19 빛의 거대검도 들고 있는 무기 모양 · 배율마다 회전 그림을 새로 만들면 끊기므로 배율 1 그림을 늘려 그린다
         const drawBig = (al, comp) => { if (!tex.cells) { drawBlade(tex, hx, hy + 4, P.giantAng, al, false, sc, comp); return; } const r = rotW(tex, P.giantAng); ctx.save(); ctx.globalAlpha = al; if (comp) ctx.globalCompositeOperation = comp; ctx.imageSmoothingEnabled = false; ctx.translate(snap2(hx), snap2(hy + 4)); ctx.scale(sc, sc); ctx.drawImage(r.c, -r.o + 1, -r.o + 1); ctx.restore(); };
@@ -16186,12 +16832,21 @@ huskUp:[
       ctx.beginPath(); ctx.moveTo(f.x0, f.y0); ctx.lineTo(f.x1, f.y1); ctx.stroke();
       ctx.strokeStyle = `rgba(255,255,255,${1 - p})`; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(f.x0 + (f.x1 - f.x0) * p * 0.6, f.y0 + (f.y1 - f.y0) * p * 0.6); ctx.lineTo(f.x1, f.y1); ctx.stroke();
-    } else if (f.kind === 'muzzle') {
-      ctx.globalCompositeOperation = 'lighter';
-      const L = 10 * f.s * (1 - p * 0.5), ux = Math.cos(f.ang), uy = Math.sin(f.ang);
-      ctx.fillStyle = `rgba(255,220,140,${1 - p})`;
-      ctx.beginPath(); ctx.moveTo(f.x - uy * 4 * f.s, f.y + ux * 4 * f.s); ctx.lineTo(f.x + ux * L * 1.6, f.y + uy * L * 1.6); ctx.lineTo(f.x + uy * 4 * f.s, f.y - ux * 4 * f.s); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = `rgba(255,255,240,${1 - p})`; ctx.beginPath(); ctx.arc(f.x, f.y, 3 * f.s, 0, TAU); ctx.fill();
+    } else if (f.kind === 'muzzle') { // v2.50 총구 섬광 (도트·한 가지 색): 앞이 열린 초승달(양 끝 뾰족) + 앞으로 부채꼴 빛줄기 → 마지막엔 조각나 흩어짐
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.fillStyle = f.col || '#ffe14a';
+      const ph = p < 0.3 ? 0 : p < 0.65 ? 1 : 2, S = f.s, ca = Math.cos(f.ang), sa = Math.sin(f.ang), seen = new Set();
+      const put = (u, v) => { const x = snap2(f.x + u * ca - v * sa), y = snap2(f.y + u * sa + v * ca), k = x * 8192 + y; if (seen.has(k)) return; seen.add(k); if (ph === 2 && ((x >> 1) * 7 + (y >> 1) * 13) % 3) return; ctx.fillRect(x, y, 2, 2); };
+      const R = (8 + 5 * S) * [0.7, 1, 1.2][ph], th = 3 + 1.6 * S;
+      for (let i = 0; i <= 24; i++) { const t = i / 24, a2 = Math.PI * (0.62 + 0.76 * t), w = th * Math.sin(Math.PI * t); // 뒤쪽 반원 (앞이 열림)
+        for (let d = 0; d <= w; d += 1.5) put(R * 0.55 + Math.cos(a2) * (R - d), Math.sin(a2) * (R - d)); }
+      const L = (14 + 12 * S) * [0.55, 1, 1.25][ph];
+      for (const [da, k] of [[0, 1], [-0.28, 0.75], [0.28, 0.75], [-0.55, 0.5], [0.55, 0.5]]) for (let r = 2; r <= L * k; r += 1.6) put(Math.cos(da) * r, Math.sin(da) * r);
+    } else if (f.kind === 'castfx') { // v2.50 지팡이 끝 시전 섬광 (도트·한 가지 색): 뾰족한 별 → 작아짐 → 조각
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.fillStyle = f.col || '#e8c8ff';
+      const ph = p < 0.35 ? 0 : p < 0.7 ? 1 : 2, r = f.r * [1, 0.6, 1.3][ph], seen = new Set();
+      const put = (x, y) => { x = snap2(x); y = snap2(y); const k = x * 8192 + y; if (seen.has(k)) return; seen.add(k); if (ph === 2 && ((x >> 1) * 5 + (y >> 1) * 11) % 3) return; ctx.fillRect(x, y, 2, 2); };
+      for (const [dx, dy, k] of [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [0.7, 0.7, 0.5], [-0.7, 0.7, 0.5], [0.7, -0.7, 0.5], [-0.7, -0.7, 0.5]]) for (let t = 0; t <= r * k; t += 1.6) put(f.x + dx * t, f.y + dy * t);
+      if (ph < 2) for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) put(f.x + dx, f.y + dy); // 가운데는 조금 두껍게 (끝은 뾰족)
     } else if (f.kind === 'streak') {
       ctx.globalCompositeOperation = 'lighter';
       ctx.strokeStyle = `rgba(${f.c || '120,190,255'},${0.6 * (1 - p)})`; ctx.lineWidth = 6 * (1 - p) + 1;
@@ -16298,10 +16953,12 @@ huskUp:[
   const LBAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   const bandQ = (s, t, W = 0.4) => { const b = Math.floor(s), r = s - b, lo = 0.5 - W / 2; return r < lo ? b : r > lo + W ? b + 1 : b + ((r - lo) / W > t ? 1 : 0); }; // 단계는 납작하게, 단계 가운데 폭 W만 디더 (평균 밝기 유지)
   let LSTAMP_PX = 0;
+  // v2.50 큰 빛은 반지름을 8칸 단위로 끊어 도장을 재사용 (북이 울릴 때 매 프레임 새 도장을 만들던 문제)
+  const lRc = r => r > 48 ? Math.max(2, Math.round(r / 16) * 4) : Math.max(2, Math.ceil(r / 4) * 2);
   function lightStampD(r, a, c, ca, phx = 0, phy = 0) { // phx·phy: 도장 왼쪽 위 칸의 월드 위상(0~3) — 도장이 2px씩 움직여도 망점 무늬는 월드에 고정
-    const Rc = Math.max(2, Math.ceil(r / 2 / 2) * 2), key = (c ? 'd' + Rc + '|' + c + '|' + Math.round(ca * 25) : 'd' + Rc + '|' + Math.round(a * 20)) + '|' + phx + phy;
+    const Rc = lRc(r), key = (c ? 'd' + Rc + '|' + c + '|' + Math.round(ca * 25) : 'd' + Rc + '|' + Math.round(a * 20)) + '|' + phx + phy;
     let st = LSTAMP.get(key); if (st) return st;
-    const n = Rc * 2 + 4, [cv2, g] = mkCanvas(n, n), im = g.createImageData(n, n), px = im.data, ctr = n / 2, R = r / 2, rc = R * 0.8;
+    const n = Rc * 2 + 4, [cv2, g] = mkCanvas(n, n), im = g.createImageData(n, n), px = im.data, ctr = n / 2, R = r > 48 ? Rc : r / 2, rc = R * 0.8;
     const A = Math.round(a * 20) / 20, CA = Math.round(ca * 25) / 25, col = c ? c.split(',').map(v => +v) : null, Nd = 10; // v1.80 5 → 10단계 (단계 사이 차이가 작아 점이 덜 보임)
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
       const ddx = x + 0.5 - ctr, ddy = y + 0.5 - ctr, d = Math.sqrt(ddx * ddx + ddy * ddy), t = (LBAY[((y + phy) & 3) * 4 + ((x + phx) & 3)] + 0.5) / 16, o = (y * n + x) * 4;
@@ -16314,7 +16971,7 @@ huskUp:[
   }
   // 도장 찍기: 반 해상도 빛 지도(H.g, 월드 → ×0.5 변환)에 1칸 = 1px로, 왼쪽 위를 8px 격자에 맞춤
   const stampL = (g2, l, col) => { // 빛 하나 찍기: 칸(2px) 단위 위치 + 그 위상의 도장
-    const Rc = Math.max(2, Math.ceil(l.r / 4) * 2), ctr = Rc + 2, cx = Math.round(l.x / 2) - ctr, cy = Math.round(l.y / 2) - ctr;
+    const Rc = lRc(l.r), ctr = Rc + 2, cx = Math.round(l.x / 2) - ctr, cy = Math.round(l.y / 2) - ctr;
     const st = col ? lightStampD(l.r, 0, l.c, l.ca, cx & 3, cy & 3) : lightStampD(l.r, l.a, null, 0, cx & 3, cy & 3);
     g2.drawImage(st.c, cx * 2, cy * 2, st.n * 2, st.n * 2); };
   const stampAt = (g2, st, x, y) => { const X = Math.round((x - st.ctr * 2) / 8) * 8, Y = Math.round((y - st.ctr * 2) / 8) * 8; g2.drawImage(st.c, X, Y, st.n * 2, st.n * 2); };
@@ -16620,13 +17277,14 @@ void main() {
     drawSqueeze(); drawRiteGround(); // v2.40 관중 제거 · 3단계 좁아지는 방책
     drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
+    drawBuffBatch(); // v2.50 바닥 강화 고리 한 장으로
     const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.y, d: () => drawEnemyShk(e) }));
     if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
     ents.push({ y: G.player.y, d: drawPlayer });
     roomEnts(ents); gearEnts(ents); forgeEnts(ents);
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
-    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); G._occ = null; drawEvOutline(); G._wt = ctx.getTransform();
+    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); G._wt = ctx.getTransform();
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && G.dun.forge)) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     enemySays();
@@ -16720,6 +17378,25 @@ void main() {
     if (mode === 'wmap') drawWorldIntro();
   }
   // 맞는 순간 적 스프라이트를 맞은 방향으로 좌우 떨림
+  // v2.50 전투를 끝낸 방: 캐릭터 둘레에 갈 수 있는 게이트 쪽을 가리키는 도트 화살표 (안 가 본 방은 금색 · 가 본 방은 회색 · 게이트에 다가가면 숨김)
+  const GATE_ARW = (() => { const c = []; for (let y = -3; y <= 3; y++) for (let x = 0; x <= 3 - Math.abs(y); x++) c.push([x, y]); return c; })(); // 오른쪽(→)
+  const GATE_ARW_D = (() => { const c = []; for (let y = -3; y <= 0; y++) for (let x = 0; x <= 3; x++) if (x - y >= 3) c.push([x - 1, y + 1]); return c; })(); // 오른쪽 위(↗), 직각 끝이 바깥
+  function drawGateArrows() {
+    const R = G.dun && G.dun.cur, P = G.player; if (!R || !R.cleared || G.sealed || G.trans || !P || P.dead || mode !== 'play') return;
+    const age = time - (R.clearAt || -9); if (age < 0.4 && Math.floor(age * 20) % 2) return; // 막 열렸을 때는 깜빡이며 등장
+    const step = Math.floor(time * 4) % 2 * 2, cx = P.x, cy = P.y - 10;
+    for (const d in DIRS) {
+      if (doorState(R, d) !== 'open') continue; const D = DOOR[d]; if (!D || Math.hypot(D.x - P.x, D.y - P.y) < 70) continue;
+      const nr = G.dun.rooms[R.doors[d]], fill = nr && nr.visited ? ['#c8c4d0', '#f0eef4'] : ['#ffd34d', '#fff2b0'];
+      const a = Math.atan2(D.y - cy, D.x - cx), idx = ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8; // 8방향: 0 → · 2 ↓ · 4 ← · 6 ↑ · 홀수는 대각
+      const diag = idx % 2 === 1, k = diag ? (((idx - 7) / 2) % 4 + 4) % 4 : idx / 2, shape = diag ? GATE_ARW_D : GATE_ARW;
+      const rot = ([x, y]) => { for (let i = 0; i < k; i++) [x, y] = [-y, x]; return [x, y]; }; // 시계 방향 90°씩
+      const qa = idx * Math.PI / 4, ox = snap2(cx + Math.cos(qa) * (32 + step)), oy = snap2(cy + Math.sin(qa) * (22 + step));
+      const cells = shape.map(rot), on = new Set(cells.map(c => c.join(','))), minY = Math.min(...cells.map(c => c[1])), maxY = Math.max(...cells.map(c => c[1]));
+      ctx.fillStyle = '#0b0a0e'; for (const [x, y] of cells) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!on.has((x + dx) + ',' + (y + dy))) ctx.fillRect(ox + (x + dx) * 2, oy + (y + dy) * 2, 2, 2);
+      for (const [x, y] of cells) { ctx.fillStyle = y < (minY + maxY) / 2 ? fill[1] : fill[0]; ctx.fillRect(ox + x * 2, oy + y * 2, 2, 2); } // 위쪽 절반은 밝게
+    }
+  }
   function drawEnemyShk(e) {
     if (!(e.shk > 0)) return drawEnemy(e);
     const ox = e.x, oy = e.y, j = (Math.floor(e.shk * 60) % 2 ? 1 : -1) * Math.min(3, 1 + e.shk * 14);
