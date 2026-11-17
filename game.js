@@ -9549,7 +9549,7 @@ huskUp:[
       if (k < BLINK) { e.x += e.dvx * (PD.dodgeD / BLINK) * dt; e.y += e.dvy * (PD.dodgeD / BLINK) * dt; e.fadeA = 0;
         if (Math.random() < 0.7) G.parts.push({ x: e.x + rand(-4, 4), y: e.y - rand(2, 20), vx: -e.dvx * 40, vy: -e.dvy * 40, t: 0.3, c: pick(e.type === 'reaper' ? ['#c070ff', '#e8d0ff'] : e.type === 'shrewB' ? ['#ffd34d', '#fff0b0'] : e.type === 'shrewA' ? ['#d8dce4', '#ffffff'] : e.type === 'weasel' ? ['#ffb040', '#fff0c0'] : ['#ff9a6a', '#ffd0b0']), g: 0, glow: true }); }
       else if (!e.blinkEnd) { e.blinkEnd = true; solveObs(e, e.r); e.x = clamp(e.x, A.x0 + e.r, A.x1 - e.r); e.y = clamp(e.y, A.y0 + e.r, A.y1 - e.r);
-        blinkBurst(e.x, e.y - 10); G.fx.push({ kind: 'streak', x0: e.from.x, y0: e.from.y - 10, x1: e.x, y1: e.y - 10, t: 0.18, max: 0.18 }); }
+        blinkBurst(e.x, e.y - 10); G.fx.push({ kind: 'streak', px: e.type === 'reaper' ? '#c48cff' : '#ffe6a0', x0: e.from.x, y0: e.from.y - 10, x1: e.x, y1: e.y - 10, t: 0.18, max: 0.18 }); }
       e.fadeA = k < BLINK ? 0 : clamp((k - BLINK) / 0.09, 0.5, 1);
       if (k >= BLINK + 0.09) { e.fadeA = 1; e.ps = e.prevPs === 'snipe' ? 'snipe' : 'move'; if (e.ps === 'move') e.cd = Math.min(e.cd, 0.15); }
       return true;
@@ -9617,7 +9617,7 @@ huskUp:[
         e.recoil = 4; sfx('swing');
         for (let i = 0; i < PD.volleyN; i++) { const r = i === 0 ? 0 : rand(30, 100), q = rand(0, TAU), lead = i === 0 ? 0 : 0.4, x = clamp(P.x + (P.vx || 0) * lead + Math.cos(q) * r, A.x0 + 14, A.x1 - 14), y = clamp(P.y + (P.vy || 0) * lead + Math.sin(q) * r * 0.8, A.y0 + 14, A.y1 - 14);
           G.tele.push({ shape: 'circle', x, y, r: 18, t: 0, dur: 0.65 + i * 0.09, owner: e,
-            onFire: tt => { hitShape(tt, e.atk * 0.7); dust(tt.x, tt.y, 6); G.fx.push({ kind: 'ring', x: tt.x, y: tt.y, r: 4, t: 0.25, max: 0.25, c: '#ffd34d', grow: 70 });
+            onFire: tt => { hitShape(tt, e.atk * 0.7); dust(tt.x, tt.y, 6); G.fx.push({ kind: 'ring', px: true, x: tt.x, y: tt.y, r: 4, t: 0.25, max: 0.25, c: '#ffd34d', grow: 70 });
               for (let k = 0; k < 4; k++) G.parts.push({ x: tt.x + rand(-2, 2), y: tt.y - 40 - k * 6, vx: 0, vy: 260, t: 0.15, c: '#e8dcc0', g: 0 }); } }); }
         e.ps = 'after'; e.t = PD.after; e.cd = rand(...PD.cd);
       }
@@ -9674,7 +9674,7 @@ huskUp:[
     const side = rand(0, TAU), x = clamp(P.x + Math.cos(side) * 34, A.x0 + 16, A.x1 - 16), y = clamp(P.y + Math.sin(side) * 24, A.y0 + 16, A.y1 - 16);
     e.mark = { x, y }; sfx('dodge');
     G.tele.push({ shape: 'circle', x: P.x, y: P.y, r: 46, t: 0, dur: e.t + (fast ? RP.shadowMark * 0.75 : RP.shadowMark), owner: e, heavy: true,
-      onFire: tt => { hitShape(tt, e.atk * 0.95); G.fx.push({ kind: 'ring', x: tt.x, y: tt.y, r: 6, t: 0.3, max: 0.3, c: '#c070ff', grow: 200 }); dust(tt.x, tt.y, 10); sfx('blast');
+      onFire: tt => { hitShape(tt, e.atk * 0.95); G.fx.push({ kind: 'ring', px: true, x: tt.x, y: tt.y, r: 6, t: 0.3, max: 0.3, c: '#c070ff', grow: 200 }); dust(tt.x, tt.y, 10); sfx('blast');
         reaperSwing(e, angTo(e, tt) - 1.9 * e.face, angTo(e, tt) + 1.9 * e.face, 0.12); e.ps = 'after'; e.t = RP.after + 0.1; } });
     e.markTele = G.tele[G.tele.length - 1];
   }
@@ -9747,7 +9747,7 @@ huskUp:[
       e.ps = 'spin'; sfx('warn');
       G.tele.push({ shape: 'circle', x: e.x, y: e.y, r: 50, t: 0, dur: RP.spinWind, owner: e, heavy: true,
         onFire: tt => { hitShape(tt, e.atk * 0.9); const off = rand(0, TAU), gap = randi(0, RP.spinN - 1); reaperRing(e.x, e.y, RP.spinN, RP.spinSp, off, gap, e.atk * 0.55);
-          G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 8, t: 0.35, max: 0.35, c: '#c070ff', grow: 220 }); sfx('blast');
+          G.fx.push({ kind: 'ring', px: true, x: e.x, y: e.y, r: 8, t: 0.35, max: 0.35, c: '#c070ff', grow: 220 }); sfx('blast');
           if (ph2) setTimeout(() => { if (!e.dead && G.enemies.includes(e)) { reaperRing(e.x, e.y, RP.spinN, RP.spinSp * 0.8, off + Math.PI / RP.spinN, (gap + RP.spinN / 2) % RP.spinN, e.atk * 0.55); } }, 280);
           e.ps = 'after'; e.t = RP.after + 0.1; e.cd = rand(...RP.cd); } }); }
   }
@@ -9759,7 +9759,7 @@ huskUp:[
     drawShadow(e.x, e.y + 1, 8);
     const wf = invWalk(e), bob = wf % 2 ? 2 : 0;
     const hx = e.x + e.face * 4, hy = e.y - 11 + ya + bob, behind = !e.sw && e.ps !== 'spin'; // v2.43 망토 속에서 낫을 쥠
-    if (e.trail && e.trail.length > 1) drawTrail(e.trail, hx, hy + 4, 14, I.scythe.reach + 2, '200,140,255', true);
+    if (e.trail && e.trail.length > 1) drawSlashPx(e.trail, hx, hy + 4, I.scythe.reach + 2, '#c48cff', true); // v2.50 도트 궤적
     if (behind && !white) drawBlade(I.scythe, hx - e.face * 2, hy + 2, e.aim == null ? -96 * DEG : e.aim, al);
     if (e.ps === 'intro') drawSprite('invReaper', 'invReaper', 2, e.x, e.y + 2 + ya, flip, { white: true, alpha: (1 - al) * 0.9 });
     const sq = e.ps === 'reap' || e.ps === 'crescent' ? 0.94 : 1;
@@ -9803,7 +9803,7 @@ huskUp:[
       c.x -= ux * 4; c.y -= uy * 4; b.x += ux * 4; b.y += uy * 4; c.clank = 0.2;
       const mx = (c.x + b.x) / 2, my = (c.y + b.y) / 2, off = rand(0, TAU);
       for (let i = 0; i < SH.spark; i++) { const ang = off + i / SH.spark * TAU; G.eproj.push({ x: mx, y: my, ang, sp: SH.sparkSp, r: 3, dmg: e.atk * 0.4, t: 1.6, hist: [], kind: 'quill' }); }
-      G.fx.push({ kind: 'ring', x: mx, y: my, r: 4, t: 0.3, max: 0.3, c: '#ffd34d', grow: 160 }); sparks(mx, my - 10, 0, '#ffd34d', 14); sfx('block'); sfx('blast'); addShake(2);
+      G.fx.push({ kind: 'ring', px: true, x: mx, y: my, r: 4, t: 0.3, max: 0.3, c: '#ffd34d', grow: 160 }); sparks(mx, my - 10, 0, '#ffd34d', 14); sfx('block'); sfx('blast'); addShake(2);
     }
     c.clank = (c.clank || 0) - dt;
   }
@@ -9876,7 +9876,7 @@ huskUp:[
     if (e.ammo <= 0) return false; e.ammo--; e.hand = hand == null ? 1 - (e.hand || 0) : hand;
     const mx = e.x + Math.cos(ang) * 16, my = e.y + Math.sin(ang) * 12 - (e.hand ? 0 : 3);
     G.eproj.push({ x: mx, y: my, ang, sp, r: 3, dmg: e.atk * dmgK, t: 2.6, hist: [], kind: 'ember' });
-    G.fx.push({ kind: 'ring', x: mx, y: my - 10, r: 2, t: 0.1, max: 0.1, c: '#ffd080', grow: 60 }); e.recoil = 3; e.kick = e.hand; sfx('shot', 1.2 + Math.random() * 0.2);
+    G.fx.push({ kind: 'muzzle', x: mx, y: my - 10, ang, s: 0.6, t: 0.18, max: 0.18, col: '#ffd080' }); e.recoil = 3; // v2.50 도트 총구 섬광 e.kick = e.hand; sfx('shot', 1.2 + Math.random() * 0.2);
     return true;
   }
   function updateWeasel(e, dt, d, a, moveTo) {
@@ -16690,7 +16690,12 @@ huskUp:[
     if (f.kind && f.kind.charCodeAt(0) === 103 && f.kind.slice(0, 3) === 'gx_') { ctx.save(); drawGearFx(f); ctx.restore(); return; }
     const p = 1 - f.t / f.max;
     ctx.save();
-    if (f.kind === 'ring') {
+    if (f.kind === 'ring' && f.px) { // v2.50 도트 고리 (난입자): 한 가지 색 — 두꺼운 고리 → 가는 고리 → 끊긴 조각
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = f.c;
+      const R = Math.max(2, f.grow ? f.r : f.r + p * 26), ph = p < 0.35 ? 0 : p < 0.7 ? 1 : 2, n = Math.max(16, Math.round(R * 3.2)), seen = new Set();
+      for (let i = 0; i < n; i++) { if (ph === 2 && (i >> 1) % 3) continue; const a = i / n * TAU;
+        for (let d = 0; d <= (ph === 0 ? 2 : 0); d += 2) { const x = snap2(f.x + Math.cos(a) * (R - d)), y = snap2(f.y + Math.sin(a) * (R - d)), k = x * 8192 + y; if (seen.has(k)) continue; seen.add(k); ctx.fillRect(x, y, 2, 2); } }
+    } else if (f.kind === 'ring') {
       ctx.strokeStyle = f.c; ctx.globalAlpha = 1 - p; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(f.x, f.y, Math.max(1, f.grow ? f.r : f.r + p * 26), 0, TAU); ctx.stroke();
     } else if (f.kind === 'impact') {
@@ -16847,6 +16852,11 @@ huskUp:[
       const put = (x, y) => { x = snap2(x); y = snap2(y); const k = x * 8192 + y; if (seen.has(k)) return; seen.add(k); if (ph === 2 && ((x >> 1) * 5 + (y >> 1) * 11) % 3) return; ctx.fillRect(x, y, 2, 2); };
       for (const [dx, dy, k] of [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [0.7, 0.7, 0.5], [-0.7, 0.7, 0.5], [0.7, -0.7, 0.5], [-0.7, -0.7, 0.5]]) for (let t = 0; t <= r * k; t += 1.6) put(f.x + dx * t, f.y + dy * t);
       if (ph < 2) for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2]]) put(f.x + dx, f.y + dy); // 가운데는 조금 두껍게 (끝은 뾰족)
+    } else if (f.kind === 'streak' && f.px) { // v2.50 도트 빛줄기 (난입자 순간이동): 한 가지 색, 양 끝 뾰족, 뒤에서부터 짧아짐
+      ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = f.px;
+      const L = Math.hypot(f.x1 - f.x0, f.y1 - f.y0), t0 = Math.min(0.85, p * 1.2), n = Math.max(2, Math.ceil(L / 2)), nx = -(f.y1 - f.y0) / (L || 1), ny = (f.x1 - f.x0) / (L || 1), seen = new Set();
+      for (let i = 0; i <= n; i++) { const t = i / n; if (t < t0) continue; const u = (t - t0) / (1 - t0), w = 3 * Math.sin(Math.PI * u) * (1 - p * 0.5);
+        for (let k = -w; k <= w; k += 1.5) { const x = snap2(f.x0 + (f.x1 - f.x0) * t + nx * k), y = snap2(f.y0 + (f.y1 - f.y0) * t + ny * k), q = x * 8192 + y; if (seen.has(q)) continue; seen.add(q); ctx.fillRect(x, y, 2, 2); } }
     } else if (f.kind === 'streak') {
       ctx.globalCompositeOperation = 'lighter';
       ctx.strokeStyle = `rgba(${f.c || '120,190,255'},${0.6 * (1 - p)})`; ctx.lineWidth = 6 * (1 - p) + 1;
