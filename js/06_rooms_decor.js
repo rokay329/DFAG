@@ -1331,13 +1331,16 @@
     if (R.type === 'shop') { ents.push({ y: R.keeper ? R.keeper.y - 5 : CY - 28, d: () => drawShopKeeper(R) }); for (const s of R.shop) ents.push({ y: s.y, d: () => drawShopItem(s) }); }
     if (R.type === 'reward' && R.chest) ents.push({ y: R.chest.y - 1, d: () => drawTreasure(R) });
     if (R.altars) for (const a of R.altars) ents.push({ y: a.y, d: () => drawAltar(a) }); // v2.02 피의 제단
-    if (R.type === 'rest' && G.bonfire) ents.push({ y: G.bonfire.y, d: () => drawCampFire(G.bonfire) });
+    if (R.type === 'rest' && G.bonfire) BISTRO.ents(ents); // v3.10 모닥불 위 큰 솥 · 쿠오 · 쿠키
+    if (R.type === 'home') HOME.ents(ents); // v2.97 시작 장소 NPC (역참 단군)
+    if (R.type === 'archive') ARCH.ents(ents); // v3.00 코코아의 기록 보관소
   }
   function roomLights(lights) {
     const R = G.dun && G.dun.cur; if (!R) return;
     srLights(lights, R); if (R.type === 'shop') lights.push({ x: CX, y: CY + 40, r: 140, a: 0.45, c: '255,200,140', ca: 0.06 });
     if (R.type === 'reward' && R.chest) { lights.push({ x: R.chest.x, y: R.chest.y - 10, r: R.chest.opened ? 80 : 120, a: 0.75, c: '255,210,110', ca: R.chest.opened ? 0.1 : 0.22 }); }
     if (R.type === 'rest' && G.bonfire) lights.push({ x: G.bonfire.x, y: G.bonfire.y - 10, r: 150 + Math.sin(time * 8) * 6, a: 0.85, c: '255,150,60', ca: 0.22 });
+    if (R.type === 'rest') BISTRO.lights(lights); // v3.10 쿠오 · 쿠키 · 메뉴판
     if (R.exit) { lights.push({ x: R.exit.x, y: R.exit.y, r: 90, a: 0.7, c: '255,120,60', ca: 0.22 }); lights.push({ x: R.exit.x, y: R.exit.y - 70, r: 60, a: 0.45, c: '255,170,90', ca: 0.14 }); }
     if (R.tele && R.cleared) { lights.push({ x: R.tele.x, y: R.tele.y, r: 70, a: 0.6, c: '120,180,255', ca: 0.18 }); lights.push({ x: R.tele.x, y: R.tele.y - 60, r: 50, a: 0.4, c: '150,200,255', ca: 0.1 }); }
     if (R.props) for (const p of R.props) { const L = PROPS[p.name].light; if (L) lights.push({ x: p.x, y: p.y + L.dy, r: L.r + Math.sin(time * 9 + p.x) * 3, a: 0.8, c: L.c, ca: L.ca }); }

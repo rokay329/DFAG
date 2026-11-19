@@ -65,7 +65,7 @@
     $('resTitle').style.color = win ? 'var(--gold-l)' : '#ff7070';
     const chMsg = newChronicle ? ` · [전서 기록: ${newChronicle.label}]` : '';
     $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 원정은 STAGE 3까지 이어진다' : '다음 원정은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `STAGE ${G.stage} ${G.dun && G.dun.cur ? ROOM_N[G.dun.cur.type] : ''}에서 쓰러졌다 · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
-    if (G.newUnl && G.newUnl.length) $('resSub').textContent += ' · 새로 열림: ' + G.newUnl.map(id => { const u = UNLOCKS.find(x => x.id === id); if (id.startsWith('w:')) { const [, c, i] = id.split(':'), W0 = wcat(c)[+i]; return `${GRADES.find(x => x.k === W0.grade).n} 무기 「${W0.name}」`; } return u && u.kind === 'r' ? RELICS[u.key].n : id; }).join(', ') + ' (기록 보관소)'; // v2.29
+    if (G.newUnl && G.newUnl.length) $('resSub').textContent += ' · 새로 열림: ' + G.newUnl.map(id => { const u = UNLOCKS.find(x => x.id === id); if (id.startsWith('w:')) { const [, c, i] = id.split(':'), W0 = wcat(c)[+i]; return `${GRADES.find(x => x.k === W0.grade).n} 무기 「${W0.name}」`; } return u && u.kind === 'r' ? RELICS[u.key].n : id; }).join(', ') + ' (코코아의 기록 보관소)'; // v2.29
     renderResultItems(win);
     $('ovResult').classList.add('on');
   }
@@ -88,13 +88,13 @@
     const keysB = Object.keys(BUFFS).filter(k => !G.buffs.includes(k));
     const opts = [];
     rec('rest'); while (opts.length < 3 + (hasRelic('coal') ? 1 : 0) && keysB.length) opts.push(keysB.splice(randi(0, keysB.length - 1), 1)[0]);
-    $('restChoices').innerHTML = opts.map((k, i) => `<button class="choice pf" data-b="${k}"><canvas class="px" width="16" height="16" data-icon="${k}"></canvas><b>${BUFFS[k].n}</b>${BUFFS[k].d}<br><span class="key">${i + 1}</span></button>`).join('');
+    $('restChoices').innerHTML = BISTRO.menu(opts); /* v3.10 요리로 */ if (false) $('restChoices').innerHTML = opts.map((k, i) => `<button class="choice pf" data-b="${k}"><canvas class="px" width="16" height="16" data-icon="${k}"></canvas><b>${BUFFS[k].n}</b>${BUFFS[k].d}<br><span class="key">${i + 1}</span></button>`).join('');
     $('restChoices').querySelectorAll('canvas[data-icon]').forEach(c => drawIcon(c, BUFF_ICON[c.dataset.icon]));
     $('restChoices').querySelectorAll('[data-b]').forEach(bt => bt.addEventListener('click', () => chooseBuff(bt.dataset.b)));
     $('ovRest').classList.add('on');
   }
   function chooseBuff(k) {
-    G.buffs.push(k);
+    G.buffs.push(k); BISTRO.ate(k);
     const hp0 = G.stats.hp; G.stats = calcStats(G.buffs);
     G.player.hp = ascOn(9) ? Math.min(G.stats.hp, G.player.hp + Math.max(0, G.stats.hp - hp0)) : G.stats.hp; // v1.96 꺼진 모닥불: 꽉 채우지 않음
     $('ovRest').classList.remove('on');
@@ -105,9 +105,11 @@
 
   // ---------------------------------------------------------------- 배너
   let bannerTimer = null;
-  function banner(t, sub, mid) { // mid: 화면 가운데 (스테이지 진입)
+  let bannerWX = null; const bannerPlace = () => { if (bannerWX != null) $('banner').style.left = (Math.round(bannerWX - cam.x) - 240) + 'px'; }; // 카메라가 움직여도 맵 기준 가운데
+  function banner(t, sub, mid, wx) { // mid: 화면 가운데 (스테이지 진입) · wx: 이 월드 x를 가운데로 (v3.10 맵 기준 가운데)
     const el = $('banner');
     el.classList.toggle('mid', !!mid);
+    bannerWX = wx == null ? null : wx; if (wx != null) { el.style.right = 'auto'; el.style.width = '480px'; bannerPlace(); } else { el.style.left = el.style.right = el.style.width = ''; }
     el.innerHTML = `<div class="b1">${t}</div>${sub ? `<div class="b2 out">${sub}</div>` : ''}`;
     el.style.opacity = 1;
     clearTimeout(bannerTimer);
@@ -149,6 +151,7 @@
     { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100), y1 = A.y1 + 88 - VH;
       const cx = x1 >= x0 ? clamp(tx, x0, x1) : (x0 + x1) / 2, cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
     cam.x = tx; cam.y = ty;
+    bannerPlace();
   }
   function update(rdt) {
     time += rdt;
@@ -160,6 +163,7 @@
     if (G && CA.busy()) { CA.update(rdt); return; } // v2.52 재의 제단 연출 중엔 조작 없음
     if (G && END.busy()) { END.update(rdt); return; } // v2.54 엔딩 연출 중엔 조작 없음
     if (G && TRUTH.busy()) { TRUTH.update(rdt); return; } // v2.58 진엔딩 단서 대화 · 연출 중엔 조작 없음
+    if (G && G.dun && G.dun.arch && ARCH.update(rdt)) return; // v3.00 코코아의 기록 보관소: 인사 · ESC로 나가기
     if (G && G.dun && G.dun.home && HOME.update(rdt)) return; // v2.55 시작 장소: 대사 · 장소 이름 · 아래 문으로 나가면 출발
     if (take('escape')) { openPause(); return; }
     if (take('tab')) { openMap(); return; }
@@ -168,7 +172,7 @@
     if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
     if (G.tut && !G.cine) updateTut(rdt);
     if (G.kg && G.kgT < 900) { G.kgT -= rdt; if (G.kgT <= 0) G.kg = false; }
-    const dbgK = k => { if (pressed[k] !== 'shift') return false; pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T), 그냥 누르면 아무 일 없음
+    const dbgK = k => { if (pressed[k] !== 'shift') return false; pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T·R), 그냥 누르면 아무 일 없음
     if (dbgK('n') && !G.clear) debugClearRoom();
     if (dbgK('v')) { debugStageClear(); return; }
     if (dbgK('t')) { // 테스트: 무기 등급 순환 (커먼 → 레어 → 유니크 → 레전더리)
@@ -181,6 +185,7 @@
     if (dbgK('o')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
     if (dbgK('y')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
     if (dbgK('b') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
+    if (dbgK('r') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
     if (dbgK('g') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환
 
     shake = Math.max(0, shake - rdt * 22);

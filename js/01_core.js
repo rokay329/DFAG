@@ -389,7 +389,7 @@
     for (const u of UNLOCKS) if (!unlocked(u.id) && (SAVE.rec[u.rec] || 0) >= u.n) {
       SAVE.unl[u.id] = 1; persist();
       const nm = u.kind === 'r' ? RELICS[u.key].n : (() => { const [c, i] = u.key.split(':'); return wcat(c)[+i].name; })();
-      if (G) { (G.newUnl = G.newUnl || []).push(u.id); lootFeed(`<b style="color:#ffd34d">새로 열림 · ${u.kind === 'r' ? '유물' : '무기'} 「${nm}」</b> — 기록 보관소`, '#ffd34d', 4500); sfx('legend'); }
+      if (G) { (G.newUnl = G.newUnl || []).push(u.id); lootFeed(`<b style="color:#ffd34d">새로 열림 · ${u.kind === 'r' ? '유물' : '무기'} 「${nm}」</b> — 코코아의 기록 보관소`, '#ffd34d', 4500); sfx('legend'); }
     }
   }
   const rec = (k, n) => { SAVE.rec[k] = (SAVE.rec[k] || 0) + (n == null ? 1 : n); unlockCheck(); };

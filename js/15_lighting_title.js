@@ -65,12 +65,14 @@ void main() {
     if (anyC) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(S.c, S.W2, 0, S.W2, S.H2, CAMX, CAMY, VW, VH); ctx.restore(); }
   }
   // 조명: 어둠을 깔고 광원 자리만 지운 뒤, 따뜻한 빛을 더한다
+  // v3.00 빛 자르기: l.clip = [x0, y0, x1, y1] (월드 좌표) 안에만 빛을 낸다 — 벽에 박힌 구슬 빛을 벽 안쪽 바닥에만 (벽에 잘린 반원)
+  function clipL(g, l, f) { if (!l.clip) { f(); return; } g.save(); g.beginPath(); g.rect(l.clip[0], l.clip[1], l.clip[2] - l.clip[0], l.clip[3] - l.clip[1]); g.clip(); f(); g.restore(); }
   function renderLighting() {
     const P = G.player, lights = [];
     lights.push({ x: P.x, y: P.y - 8, r: 105, a: 0.95 });
     if (STG().torches) TORCHES.forEach((t, i) => { const lv = G.stage === 2 && !G.dun.forge ? [1, 2, 1, 0, 1, 2, 2, 1][Math.floor(time * 8 + i * 3) % 8] : -1; lights.push(lv < 0 ? { x: t.x, y: t.y + 20, r: 85 + Math.sin(time * 9 + t.x) * 3, a: 0.85, c: '255,150,60', ca: 0.12 } : { x: t.x, y: t.y + 20, r: 78 + lv * 8, a: 0.85, c: '255,150,60', ca: 0.09 + lv * 0.035 }); }); // v1.55 챕터2: 3단계로 일렁임
     if (G.drums && G.boss && G.boss.armorMul < 1) for (const d of G.drums) if (d.boss && !d.broken && !(d.drop > 0)) lights.push({ x: d.x, y: d.y - 20, r: 70 + (d.pulse || 0) * 90, a: 0.7, c: '255,60,30', ca: 0.12 + (d.pulse || 0) * 0.3 });
-    if (G.bonfire) lights.push({ x: G.bonfire.x, y: G.bonfire.y - 6, r: 170 + Math.sin(time * 12) * 5, a: 1, c: '255,140,50', ca: 0.22 });
+    if (G.bonfire) { const rs = G.dun && G.dun.cur && G.dun.cur.type === 'rest'; lights.push({ x: G.bonfire.x, y: G.bonfire.y + (rs ? 16 : -6), r: 170 + Math.sin(time * 12) * 5, a: 1, c: '255,140,50', ca: rs ? 0.13 : 0.22 }); } // v3.10 비스트로: 빛 중심을 솥 아래 불로 내려 솥 음영이 씻기지 않게
     if (P.state === 'attack' && P.trail.length) { const a = P.blade; lights.push({ x: P.x + Math.cos(a) * 30, y: P.y - 10 + Math.sin(a) * 30, r: 60, a: 0.6, c: '255,240,210', ca: 0.12 }); }
     if (P.awakenT > 0) lights.push({ x: P.x, y: P.y - 8, r: 120, a: 0.6, c: '255,210,90', ca: 0.18 });
     if (P.state === 'awaken') lights.push({ x: P.x, y: P.y - 14, r: 160 + (P.giant || 0) * 60, a: 0.9, c: '255,210,90', ca: 0.28 });
@@ -95,7 +97,7 @@ void main() {
       else lights.push({ x: e.x, y: e.y - 8, r: 22, a: 0.25 });
     }
     for (const t of G.tele) if (t.shape !== 'spawn' && !(t.r > 600)) { const lx = t.shape === 'line' ? t.x + Math.cos(t.ang) * t.len / 2 : t.x, ly = t.shape === 'line' ? t.y + Math.sin(t.ang) * t.len / 2 : t.y; lights.push({ x: lx, y: ly, r: (t.shape === 'line' ? t.len / 2 : t.r) + 16, a: 0.45, c: t.mark ? '170,60,220' : '240,30,30', ca: 0.1 + 0.12 * (t.t / t.dur) }); }
-    gearLights(lights); forgeLights(lights); CA.lights(lights); END.lights(lights); HOME.lights(lights); TRUTH.lights(lights);
+    gearLights(lights); forgeLights(lights); CA.lights(lights); END.lights(lights); HOME.lights(lights); ARCH.lights(lights); TRUTH.lights(lights);
     for (const f of G.fx) if (f.kind === 'skybeam') lights.push({ x: f.x, y: f.y - 20, r: 90, a: 0.7 * (f.t / f.max), c: f.c, ca: 0.25 * (f.t / f.max) });
     for (const t of G.tele) if (t.shape !== 'spawn') { const c = teleCenter(t), boss = t.mark || isBossTele(t); lights.push({ x: c.x, y: c.y, r: (t.shape === 'line' ? t.len * 0.5 : t.r) + 20, a: boss ? 0.45 : 0.35, c: t.mark ? '190,100,255' : boss ? '255,160,80' : '255,70,50', ca: 0.06 }); } // 바닥 경고가 어둠에 묻히지 않게
     for (const h of G.hazards) lights.push({ x: h.x, y: h.y, r: 40, a: 0.35, c: '120,200,60', ca: 0.08 });
@@ -127,11 +129,11 @@ void main() {
       const H = LIGHTH, dark = `rgba(${G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${STG().dark * flK})`;
       H.g.setTransform(1, 0, 0, 1, 0, 0); H.g.globalCompositeOperation = 'source-over'; H.g.clearRect(0, 0, VW / 2, VH / 2); H.g.fillStyle = dark; H.g.fillRect(0, 0, VW / 2, VH / 2);
       H.g.globalCompositeOperation = 'destination-out'; H.g.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
-      for (const l of vis) { if (l.flash) continue; if (LIGHT_DITH) stampL(H.g, l, false); else { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); } }
+      for (const l of vis) { if (l.flash) continue; clipL(H.g, l, () => { if (LIGHT_DITH) stampL(H.g, l, false); else { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); } }); }
       ctx.drawImage(H.c, 0, 0, VW / 2, VH / 2, CAMX, CAMY, VW, VH);
       let anyC = false; H.gg.setTransform(1, 0, 0, 1, 0, 0); H.gg.globalCompositeOperation = 'source-over'; H.gg.clearRect(0, 0, VW / 2, VH / 2);
       H.gg.globalCompositeOperation = 'lighter'; H.gg.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
-      for (const l of vis) if (l.c) { anyC = true; if (LIGHT_DITH) stampL(H.gg, l, true); else { const st = lightStamp(l.r, 0, l.c, l.ca); H.gg.drawImage(st.c, l.x - st.R, l.y - st.R); } }
+      for (const l of vis) if (l.c) { anyC = true; clipL(H.gg, l, () => { if (LIGHT_DITH) stampL(H.gg, l, true); else { const st = lightStamp(l.r, 0, l.c, l.ca); H.gg.drawImage(st.c, l.x - st.R, l.y - st.R); } }); }
       if (anyC) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(H.gc, 0, 0, VW / 2, VH / 2, CAMX, CAMY, VW, VH); ctx.restore(); }
       return;
     }
@@ -397,7 +399,7 @@ void main() {
     hudFade(); // v2.38 캐릭터·적이 좌우 패널 뒤로 가면 패널을 흐리게
     if (mode !== 'map' && !(G && G.cine) && !(G && END.busy()) && !(G && G.dun && G.dun.home)) drawMinimap(); // v1.92 TAB 지도를 열면 미니맵은 숨김
     drawCombo();
-    CA.screen(); END.screen(); HOME.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
+    CA.screen(); END.screen(); HOME.screen(); ARCH.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
     if (flashT > 0) { ctx.globalAlpha = Math.min(0.6, flashT * 2.5); ctx.fillStyle = flashColor; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1; }
     if (mode === 'map') drawMapOverlay();
     if (G && G.cine) drawCinematic();

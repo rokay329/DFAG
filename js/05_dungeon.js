@@ -27,7 +27,7 @@
     NC = Math.ceil((A.x1 - A.x0) / NAV); NR = Math.ceil((A.y1 - A.y0) / NAV);
   }
   const doorIn = (d, k = 26) => ({ x: DOOR[d].x + (d === 'w' ? k : d === 'e' ? -k : 0), y: DOOR[d].y + (d === 'n' ? k : d === 's' ? -k : 0) });
-  const ROOM_N = { altar: '왕도 성문', forge: '쿤의 대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '모닥불', reward: '보물 방', shop: '살구의 비밀상점', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
+  const ROOM_N = { altar: '왕도 성문', forge: '쿤의 대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '쿠키 · 쿠오의 출장 비스트로', reward: '보물 방', shop: '살구의 비밀상점', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
   // v1.21 챕터마다 다른 엘리트 방 이름·문구 (tier 4 = 첫째 엘리트 방, tier 9 = 둘째)
   const ELITE_ROOM = {
     1: { n: '우두머리의 굴', tag: '굴', foe: '우두머리', clear: '우두머리 처치', loot: '우두머리의 전리품',
@@ -40,9 +40,9 @@
       sub: { 4: '근위대장 모르드레드가 주인 없는 문을 여전히 지킨다', 9: '상복의 왕비가 빈 왕좌 앞에서 재를 매만진다' } },
   };
   const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
-  const roomName = t => t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
+  const roomName = t => t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
   const roomTag = t => t === 'elite' ? ER().tag : ROOM_TAG[t];
-  const ROOM_TAG = { altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '모닥불', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
+  const ROOM_TAG = { altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '비스트로', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
 
   // withSeed: 04_monsters.js에서 불러올 때 먼저 써서 그쪽으로 옮김
 
@@ -422,7 +422,7 @@
     if (fresh && R.type === 'survive') banner('봉인된 방', `문이 닫혔다 · ${SURV_N}차례의 습격을 견뎌야 한다`);
     if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
     if (R.type === 'shop') shopHeartFix(R);
-    if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner('모닥불', '불가에서 숨을 고르고 축복을 택한다 · F'); } }
+    if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner(BISTRO.NAME, '아침, 점심, 저녁 식사 됩니다.', false, CX); /* v3.10 맵 가운데 */ /* v3.10 */ } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('살구의 비밀상점', '네고 없음, 환불 불가'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
     if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
@@ -546,7 +546,7 @@
       R.chest = { x: CX, y: CY - 10, opened: false, kind: 'reward' };
       G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,210,120', t: 0.6, max: 0.6 });
     }
-    if (R.invaded) { rec('invader'); banner('난입자 격퇴', '전리품 상자가 남았다'); R.chest = { x: CX, y: CY - 10, opened: false, kind: 'elite', inv: true }; if (ascOn(7)) { G.crystal++; lootFeed('난입자 격퇴 — 정령의 결정 +1', '#9fd2ff'); } G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,120,80', t: 0.6, max: 0.6 }); } // v1.57 난입자 처치 → 장비 3택1
+    if (R.invaded) { rec('invader'); rec('inv_' + (R.invade || 'panda')); /* v3.00 난입자별 기록 (기록보관소 석상) */ banner('난입자 격퇴', '전리품 상자가 남았다'); R.chest = { x: CX, y: CY - 10, opened: false, kind: 'elite', inv: true }; if (ascOn(7)) { G.crystal++; lootFeed('난입자 격퇴 — 정령의 결정 +1', '#9fd2ff'); } G.fx.push({ kind: 'skybeam', x: CX, y: CY - 10, w: 30, c: '255,120,80', t: 0.6, max: 0.6 }); } // v1.57 난입자 처치 → 장비 3택1
     // 건전식 방 클리어 보상: 일정 확률로 보급품
     if (R.type === 'combat' && Math.random() < 0.35) { const p = freePoint(CX, CY); spawnLoot(pick(['meat', 'meat', 'orb', 'pouch']), p.x, p.y); }
     if (R.tele && !G.dun.teleHint) { G.dun.teleHint = true; lootFeed(TOUCH.on ? '텔레포터 활성화 — 지도에서 순간이동' : '텔레포터 활성화 — <span class="key">TAB</span> 지도에서 순간이동', '#9fd2ff'); }
@@ -574,6 +574,14 @@
     const entry = Object.keys(D.boss.doors).find(d => D.boss.doors[d] != null);
     D.foyer.visited = D.foyer.seen = true; D.foyer.cleared = true;
     goRoom(D.boss, entry);
+  }
+
+  function debugToRest() { // v3.10 테스트: 휴게방(비스트로)으로 바로 이동 (Shift+R). 이미 휴게방이면 주문만 다시 가능하게
+    const D = G.dun, R = D.rooms && D.rooms.find(r => r.type === 'rest');
+    if (!R) { lootFeed('테스트 — 이 층에는 휴게방이 없습니다', '#9a8f8a', 2500); return; }
+    R.used = false; R.visited = R.seen = true;
+    if (D.cur === R) { lootFeed('테스트 — 다시 주문할 수 있습니다', '#9fd2ff', 2000); return; }
+    goRoom(R, Object.keys(R.doors).find(d => R.doors[d] != null));
   }
 
   // ---------- 비밀 벽
@@ -615,13 +623,15 @@
     { const ai = CA.interact(); if (ai) return ai; } // v2.52 재의 제단
     { const ei = END.interact(); if (ei) return ei; } // v2.54 떨어진 왕관
     { const hi = HOME.interact(); if (hi) return hi; } // v2.55 시작 장소 출구
+    { const ri = ARCH.interact(); if (ri) return ri; } // v3.00 코코아의 기록 보관소
     if (R.chest && (!R.chest.opened || R.chest.pending) && !R.chest.fall && near(R.chest, 36)) return { k: 'chest', o: R.chest, x: R.chest.x, y: R.chest.y - 30, t: R.chest.pending ? 'F 보류한 전리품 고르기' : R.chest.kind === 'boss' ? 'F 보스의 전리품' : 'F 상자 열기' };
     { const gl = nearGear(); if (gl) return { k: 'gear', o: gl, x: gl.x, y: gl.y - 30, t: wFull(G.cls) && gl.it.cls === G.cls ? 'F 바꿔 들기' : 'F 줍기' }; }
     if (R.socks && !G.dun.bossOpen && !G.dun.gate) for (const s of R.socks) if (!(s.dual ? G.dun.sock[0] && G.dun.sock[1] : G.dun.sock[s.i]) && near(s, 36)) { const K = SK(), y = s.y - SOCK_H[SST()] - 8; return G.dun.keys > 0 ? { k: 'sock', o: s, x: s.x, y, t: `F ${K.act}` } : { k: 'none', o: s, x: s.x, y, t: K.need, bad: true }; }
     if (R.exit && near(R.exit, 26)) return { k: 'exit', o: R.exit, x: R.exit.x, y: R.exit.y - 30, t: R.type === 'forge' ? `F STAGE ${G.stage + 1}로` : G.stage < lastStage() ? `F 다음 스테이지로 · 대장간` : 'F 원정 완료' };
     if (R.shop) for (const it of R.shop) if (!it.sold && near(it, 26)) return { k: 'shop', o: it, x: it.x, y: it.y - 34, t: `F ${SHOP_N[it.k]} · ${it.price}G`, bad: G.gold < it.price };
     if (R.altars) for (const a of R.altars) if (!a.used && near(a, 30)) { const t = altarText(a); return { k: 'altar', o: a, x: a.x, y: a.y - 40, t: t.t, bad: !t.ok }; }
-    if (G.bonfire && !R.used && near(G.bonfire, 44)) return { k: 'rest', o: G.bonfire, x: G.bonfire.x, y: G.bonfire.y - 38, t: 'F 휴식 · 축복 선택' };
+    { const bi = BISTRO.interact(); if (bi) return bi; } // v3.10 쿠오 · 쿠키에게 말 걸기
+    if (G.bonfire && !R.used && near(G.bonfire, 50)) return { k: 'rest', o: G.bonfire, x: G.bonfire.x, y: G.bonfire.y + 20, t: 'F 주문하기' }; // v3.10 비스트로
     if (R.tele && R.cleared && near(R.tele, 22)) return { k: 'tele', o: R.tele, x: R.tele.x, y: R.tele.y - 24, t: 'F 지도 · 순간이동' };
     return null;
   }
@@ -660,6 +670,8 @@
     if (it.k === 'crownAltar') { CA.start(); return; } // v2.52
     if (it.k === 'endCrown') { END.start(); return; } // v2.54
     if (it.k === 'homeExit') { HOME.leave(); return; } // v2.55
+    if (it.k === 'arch') { ARCH.act(it); return; } // v3.00 코코아의 기록 보관소
+    if (it.k === 'bis') { BISTRO.act(it); return; } // v3.10 쿠오 · 쿠키 대화
     if (it.k === 'none') { sfx('block'); return; }
     if (it.k === 'sock') { placeSeal(it.o); return; }
     if (it.k === 'exit') { // v1.01: 주우지 않은 보스 전리품이 있으면 한 번 더 확인
@@ -730,7 +742,7 @@
     c.items.forEach(it => lootFeed(`<b style="color:${gradeOf(it).c}">[${gradeOf(it).n}] ${it.name}</b>${it.set ? ` · ${SETS[it.set].n}` : ''}${it.curse ? ' · 저주' : ''}`, gradeOf(it).c, 4200));
     lootFeed('장비는 가까이 가서 F로 줍는다', '#9a8f8a');
   }
-  function restDone() { G.dun.cur.used = true; banner('축복을 얻었다', ''); }
+  function restDone() { G.dun.cur.used = true; const [a, b] = BISTRO.doneText(); banner(a, b, false, CX); } // 맵 가운데 // v3.10
 
   // ---------- 적 길찾기 (흐름장)
   function updateNav(dt) {
@@ -779,13 +791,13 @@
   // ---------- 그리기: 바닥(문·구덩이), 구조물 스프라이트
   const FL_CACHE = []; // v2.35 최근 방 바닥 4개 (방 들어갈 때 바닥을 새로 그리던 60~90ms 멈춤 제거)
   function floorCached(R) {
-    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
-    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
+    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
+    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
       ROOMSTYLE = R.style || { path: 'wind' }; CUR_ROOM = R;
       if (m) { fmg.clearRect(0, 0, W, H); fmg.drawImage(c.a, 0, 0); ffg.clearRect(0, 0, W, H); ffg.drawImage(c.b, 0, 0); FRONT_ON = true; } else { fg.clearRect(0, 0, W, H); fg.drawImage(c.a, 0, 0); }
       return; }
     paintRoomFloor(R);
-    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab') return;
+    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive') return;
     let c = FL_CACHE.length >= 4 ? FL_CACHE.pop() : null; if (!c) c = { a: mkCanvas(W, H)[0], b: mkCanvas(W, H)[0] };
     c.key = key; c.dun = G.dun; const ga = c.a.getContext('2d'), gb = c.b.getContext('2d'); ga.clearRect(0, 0, W, H); gb.clearRect(0, 0, W, H);
     ga.drawImage(m ? floorM : floor, 0, 0); if (m) gb.drawImage(frontM, 0, 0); FL_CACHE.unshift(c);
@@ -795,6 +807,7 @@
       ROOMSTYLE = R.style || { path: 'wind' }; CUR_ROOM = R;
       if (R.type === 'forge') { paintForgeOut(fg, R); return; } // v1.71 출장 대장간 야외 바닥
       if (R.type === 'home') { HOME.paint(fg, R); return; } // v2.55 시작 장소
+      if (R.type === 'archive') { ARCH.paint(fg, R); return; } // v3.00 코코아의 기록 보관소
       if (R.type === 'lab') { TRUTH.paintLab(fg, R); return; } // v2.58 구덩이 실험실
       const ac = G.stage === 4;
       if (G.stage === 1) paintMeadowFloor(fmg); else if (G.stage === 3) { paintOrcFloor(fg, R); paintOrcWall(fg, R); } else { paintCastle.noRite = ac; paintCastle(fg); paintCastle.noRite = false; paintCastleWall(fg); if (R.type !== 'altar') { if (!ac) withDecor(fg, R, () => paintCastleDecor(fg, R)); } /* v2.89 4장은 21_ash4.js 바닥 자국 */ }
@@ -2131,7 +2144,7 @@
   const SR_LAYOUT = {
     shop: st => [['stall', -100, -36, [134, 14]], ['counter', -100, -20, [100, 8]], ['rugRack', 62, -54, 14], ['crates', 124, -50, 18], ['fbarrel', 170, -40, 9], ['lampPost', 30, -40, 5],
       /* v2.80 금화 자루 뺌 (그 자리로 밀려오던 상자 더미도 뺌) */ ['banner', 212, -78, 0, 1], ['banner', -212, -78, 0, 1], ['fbarrel', -150, 104, 9]],
-    rest: st => [['tent', -128, -42, [72, 14]], ['pack', -66, -40, 7], ['wood', 120, -54, 18], ['log', -66, 18, [52, 8]], ['log', 66, 18, [52, 8]], ['wood', 180, 98, 18], ...(st === 2 ? [['banner', 0, -112, 0, 1]] : [])],
+    rest: st => [['tent', -138, -42, [72, 14]], ['wood', 128, -60, 18], ['log', -78, 46, [52, 8]], ['log', 78, 46, [52, 8]], /* v3.10 비스트로: 짐 꾸러미 대신 채소 상자 · 통나무는 손님 자리로 앞쪽에 */ ['wood', 180, 98, 18], ...(st === 2 ? [['banner', 0, -112, 0, 1]] : [])],
     reward: st => [['statue', -118, -74, 14], ['statue', 118, -74, 14], ['brazier', -64, -36, 9], ['brazier', 64, -36, 9], ['gold', -96, 34, 20], ['coins', 98, 38, 12], /* v2.80 보물 더미 하나 + 작은 금화 더미 하나 */
       ['banner', -196, -86, 0, 1], ['banner', 196, -86, 0, 1], ['brazier', -190, 90, 9], ['brazier', 190, 90, 9]],
     secret: st => [['altar', 0, -11, [92, 14]]], // v1.11 대리석 제단 위 상자 하나만
@@ -2155,6 +2168,7 @@
     }
     // 상인: 노점 계산대 뒤에 앉음
     const st0 = r.srp.find(s => s.k === 'stall'); if (st0) r.keeper = { x: st0.x, y: st0.y + 6 };
+    if (r.type === 'rest') BISTRO.place(r); // v3.10 쿠키 · 쿠오의 출장 비스트로
     const al = r.srp.find(s => s.k === 'altar'); if (al && r.chest) { al.foot = r.chest.y + 8 - al.y; r.chest.lift = 30; /* v2.80 상자가 윗판 위에 온전히 */ } // 제단은 상자보다 먼저 그림
     r.nav = buildNav(r.obs);
   }

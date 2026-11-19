@@ -533,6 +533,10 @@
     for (let i = 0; i < armor; i++) h += `<img class="px ar" src="${heartURL(i >= armor - holy ? 'holy' : 'armor')}">`;
     return h;
   }
+  // v3.10 식사 효과 아이콘 칩 (9×9칸): 공격력 칼 · 이동 속도 장화 · 최대 체력 하트 · 점멸 충전 깃털 · 쿨타임 모래시계
+  const MEAL_ICON = {"atk":["....k....","...kWk...","...kWk...","...kWk...","..kkwkk..",".kYYYyyk.","..kkBkk..","...kYk...","....k...."],"spd":["...kkk...",".kkLLLk..","kSkLMDk..",".kkLMDk..","kSkLMDkk.",".kkLMMMDk","..kDDDDDk","...kkkkk.","........."],"hp":["..kk.kk..",".kHHkHHk.","kHhHHHHHk","kHHHHHHdk",".kHHHHdk.","..kHHdk..","...kdk...","....k....","........."],"stam":[".....kkk.","....kFFfk","...kFFqfk","..kFFqffk","..kFqffk.","..kqffk..",".kqkkk...","kqk......",".k......."],"cd":[".kkkkkkk.","kOOOOOOOk",".kGGYGGk.","..kGYGk..","...kYk...","..kGYGk..",".kYYYYYk.","koooooook",".kkkkkkk."]}, MEAL_IPAL = {"k":"#0b0a0e","W":"#f4f0e8","w":"#b8b4c0","Y":"#f2c84a","y":"#b88a28","B":"#7a4a2a","L":"#9ad8f0","M":"#5aa8d8","D":"#2e6a9a","S":"#bfe8ff","H":"#ff4a5a","h":"#ffb8c0","d":"#b02838","F":"#ece0ff","f":"#a890d8","q":"#6a5aa0","O":"#c08a4a","o":"#8a5a2a","G":"#8ac8e0"};
+  const MEAL_C = { atk: '#ff7a4a', spd: '#7ad0ff', hp: '#ff5a6a', stam: '#b8a0f0', cd: '#f2c84a' }, MEAL_URL = {};
+  const buffIconURL = k => MEAL_URL[k] || (MEAL_URL[k] = (() => { const m = MEAL_ICON[k] || MEAL_ICON.atk, [c, g] = mkCanvas(18, 18); m.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; g.fillStyle = MEAL_IPAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })());
   function hud() {
     const show = !!G && !['title', 'select', 'forge'].includes(mode);
     ['party', 'phase', 'skills'].forEach(id => { $(id).style.display = show && mode !== 'map' && mode !== 'wmap' ? '' : 'none'; });
@@ -547,18 +551,20 @@
     $('p1').classList.toggle('dead', P.dead);
     $('p1').classList.toggle('hurt', P.hurtT > 0);
     const relicTags = (G.relics || []).map(k => `<span class="tag relicTag relicRow" style="--c:${RELICS[k].c}" data-name="${RELICS[k].n}" data-tip="${RELICS[k].d}"><img class="px" src="${relicIconURL(k)}"></span>`).join(''); /* 유물은 하트 아래, 이름에 마우스를 올리면 설명 */
-    const statusTags = G.buffs.map(b => `<span class="tag">${BUFFS[b].t}</span>`).join('') + (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '');
+    const statusTags = (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '') + G.buffs.map(b => `<span class="tag relicTag relicRow buffTag" style="--c:${MEAL_C[b]}" data-name="${BISTRO.dishName(b) || BUFFS[b].n}" data-tip="${BUFFS[b].d}"><img class="px" src="${buffIconURL(b)}"></span>`).join(''); // v3.10 잠깐 걸리는 상태는 글자 칩 · 식사 효과는 아이콘 칩 (마우스를 올리면 설명)
     /* 유물은 패널에 표시하지 않음 (장비창에서 확인) */
     if (statusTags !== hudPrev.status) { $('p1status').innerHTML = statusTags; hudPrev.status = statusTags; }
     // 페이즈
     { const R = G.dun && G.dun.cur, rs = G.rs || {};
-      $('phaseText').textContent = R ? `${G.stage} · ${roomName(R.type)}` : '';
+      $('phaseText').textContent = R ? (R.type === 'archive' || R.type === 'rest' ? roomName(R.type) : `${G.stage} · ${roomName(R.type)}`) : ''; // v3.10 긴 장소 이름은 번호 없이
+      { const n = $('phaseText').textContent.length; $('phaseText').style.letterSpacing = n >= 14 ? '0' : ''; $('phaseText').style.whiteSpace = n >= 14 ? 'nowrap' : ''; $('phaseText').style.fontSize = n >= 14 ? '10px' : ''; } // v3.10 긴 장소 이름은 한 줄로 (기록 보관소 지하 · 출장 비스트로)
       let sub = ''; // v2.51 방 모양·봉인 글자는 빼고, 전투 중일 때만 남은 적 (보스 문 열쇠는 따로 #bkPanel)
       if (R && R.type === 'survive' && rs.state === 'run') { const left = SURV_PT() - (rs.phT || 0), al = G.enemies.filter(e => !e.dead).length; sub = rs.ph >= SURV_N - 1 && left <= 0 ? `남은 적 ${al}` : `남은 시간 ${Math.max(0, Math.ceil(left))}초`; }
       else if (R && R.waves && (rs.state === 'run' || rs.state === 'intro')) sub = `남은 적 ${G.enemies.filter(e => !e.dead).length + G.spawning}`;
       if (sub !== hudPrev.phSub) { hudPrev.phSub = sub; $('phaseSub').textContent = sub; }
       updateBossKeys(); }
-    if (hudPrev.hearts !== G.stage) { hudPrev.hearts = G.stage; $('hearts').innerHTML = `<span class="f7" style="color:var(--quiet)">STAGE ${G.stage} · ${STG().n}${G.asc ? ` · <b style="color:#ffb040">잿불 ${G.asc}</b>` : ''}</span>`; }
+    { const R0 = G.dun && G.dun.cur; if (R0 && R0.type === 'archive') { const k = 'arch' + R0.fl; if (hudPrev.hearts !== k) { hudPrev.hearts = k; $('hearts').innerHTML = `<span class="f7" style="color:var(--quiet)">${ARCH.floorSub()}</span>`; } } } // v3.00
+    if (!(G.dun && G.dun.cur && G.dun.cur.type === 'archive') && hudPrev.hearts !== G.stage) { hudPrev.hearts = G.stage; $('hearts').innerHTML = `<span class="f7" style="color:var(--quiet)">STAGE ${G.stage} · ${STG().n}${G.asc ? ` · <b style="color:#ffb040">잿불 ${G.asc}</b>` : ''}</span>`; }
     // 스킬: 공격 콤보 단계
     const step = G.cls === 'mage' ? (P.boltN || 0) % 3 : G.cls === 'gunner' ? (P.reload > 0 ? 0 : 3) : P.state === 'attack' ? P.combo + 1 : P.comboWin > 0 ? P.combo : 0;
     if (G.cls === 'gunner') setCnt('skA', gunMag() !== GUN_MAG ? P.ammo : null); else setCnt('skA', null);
@@ -659,7 +665,7 @@
     $('arcList').innerHTML = tabs + body;
     $('arcList').querySelectorAll('.arcTab').forEach(b => b.addEventListener('click', () => { arcTab = b.dataset.t; sfx('blip'); renderArchive(); $('arcList').scrollTop = 0; }));
   }
-  function closePop() { if (!popOpen) return; popOpen = null; $('ovPop').classList.remove('on'); $('tmHowto').classList.remove('on'); $('tmSound').classList.remove('on'); $('tmArchive').classList.remove('on'); pxTip.hide(); sfx('blip'); }
+  function closePop() { if (!popOpen) return; popOpen = null; $('ovPop').classList.remove('on'); $('tmHowto').classList.remove('on'); $('tmSound').classList.remove('on'); $('tmArchive').classList.remove('on'); pxTip.hide(); sfx('blip'); ARCH.closed(); }
   function showTitlePanel(name) {
     titlePanel = name;
     $('tmMain').style.display = name === 'main' ? '' : 'none';
@@ -672,13 +678,13 @@
     if (act === 'start') openSelect();
     else if (act === 'forge') openForge('title');
     else if (act === 'howto') openPop('howto');
-    else if (act === 'archive') openPop('archive');
+    else if (act === 'archive') ARCH.fromTitle(); // v3.00 팝업 대신 코코아의 기록 보관소로 걸어 들어감
     else if (act === 'sound') openPop('sound');
     else if (act === 'popClose') closePop();
     else if (act === 'back') showTitlePanel('main');
     else if (act === 'reset') {
       if (!resetArmed) { resetArmed = true; btn.textContent = '정말 지울까? 한 번 더 선택'; }
-      else { SAVE = blankSave(); persist(); resetArmed = false; btn.textContent = '초기화 완료'; titleMats(); }
+      else { SAVE = blankSave(); persist(); try { sessionStorage.setItem('acr_reset_done', '1'); } catch (e) { /* 무시 */ } location.reload(); } // v2.86 불러오기 때 채우는 저장 항목(weaponRolls 등)까지 다시 갖추도록 새로 불러옴 — 초기화 직후 출정하면 멈추던 문제
     }
     else if (act === 'resume') resume();
     else if (act === 'inv') openInv('pause');
@@ -722,6 +728,7 @@
   function resume() { $('ovPause').classList.remove('on'); for (const k in pressed) pressed[k] = false; mode = 'play'; }
   $('btnAgain').addEventListener('click', start);
   $('btnTitle').addEventListener('click', toTitle);
+  $('btnArch').addEventListener('click', () => ARCH.fromResult()); // v3.00
   $('btnInv').addEventListener('click', () => { resultShowAll = !resultShowAll; sfx('blip'); renderResultItems(resultWin); });
   addEventListener('keydown', e => {
     const k = keyName(e);

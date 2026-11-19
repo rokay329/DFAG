@@ -622,7 +622,7 @@
 
   // ============================================================ 2. 네로 · 버려진 역참 (더 작은 방, 출구 6시)
   SCENES.ranger = {
-    name: '버려진 역참', who: '네로', amb: 0.44, line: '…피 냄새가 나.',
+    name: '버려진 역참', sub: '단군의 은신처', who: '네로', amb: 0.44, line: '…피 냄새가 나.',
     room: [96, 56, 288, 164],
     sleep: [116, 78], exit: [192, 156], exitDir: 's',
     draw(P) {
@@ -839,7 +839,11 @@
     const ecx = CX, ecy = 114, erx = 118, ery = 64;
     const inE = (x, y) => ((x + 0.5 - ecx) / erx) ** 2 + ((y + 0.5 - ecy) / ery) ** 2 <= 1;
     P.rect(0, 0, GW, GH, K);
-    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const d = ((x + 0.5 - ecx) / (erx + 8)) ** 2 + ((y + 0.5 - ecy) / (ery + 8)) ** 2; if (d <= 1 && !inE(x, y)) P.put(x, y, h2(x >> 2, y >> 2, 81) < 0.5 ? '#4a4554' : '#45404e'); if (d <= 1 && d > 0.96) P.put(x, y, K); }
+    // v2.86 둥근 벽 윗면: 짙은 나무색(줄눈 없이) — 바닥 쪽 테두리 턱(밝은 선 + 그 아래 어두운 선) · 바깥 외곽선
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const d = ((x + 0.5 - ecx) / (erx + 8)) ** 2 + ((y + 0.5 - ecy) / (ery + 8)) ** 2; if (d > 1 || inE(x, y)) continue;
+      const lip = inE(x, y - 1) || inE(x - 1, y) || inE(x + 1, y), lip2 = !lip && (inE(x, y - 2) || inE(x - 2, y) || inE(x + 2, y)), row = y >> 2, seam = (y & 3) === 3 || ((x + (row & 1) * 4) % 8) === 0;
+      let c = lip ? '#140e0a' : lip2 ? '#9a7048' : (h2(x >> 2, y >> 2, 81) < 0.5 ? '#644229' : '#5e3e27'); void seam;
+      if (d > 0.96) c = K; P.put(x, y, c); }
     const F = Grid(); flagstones(F, 0, 0, GW, GH, { a: '#46424f', b: '#423e4a', c: '#3e3a46', gap: '#24222c', hi: '#524e5c', speck: '#5a5668' }, 3, 12, 8);
     const fd = F.g.getImageData(0, 0, GW, GH).data;
     for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) if (inE(x, y)) { const i = (y * GW + x) * 4; P.put(x, y, `rgb(${fd[i]},${fd[i + 1]},${fd[i + 2]})`); }
@@ -1187,15 +1191,388 @@
   }
 
 
+  // ================================================================ v2.96 시작 장소 디테일 업 (기사 장면 수준으로): 공통 도구
+  // 바닥 판별: 장면을 다 그린 뒤 칸 색을 읽어, 바닥 색 칸에만 덧칠 (소품 위로 번지지 않게)
+  // 부드러운 값 잡음 (격자가 안 보이게 칸 크기 c로 이중선형 보간 + 두 겹)
+  function vnoise(x, y, s, c = 9) {
+    const one = (x, y, c, s) => { const gx = Math.floor(x / c), gy = Math.floor(y / c), fx = x / c - gx, fy = y / c - gy, u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), a = h2(gx, gy, s), b = h2(gx + 1, gy, s), e = h2(gx, gy + 1, s), f = h2(gx + 1, gy + 1, s); return a + (b - a) * u + (e - a) * v + (a - b - e + f) * u * v; };
+    return one(x + 0.37 * y, y, c, s) * 0.65 + one(x, y + 0.5 * x, c * 0.45, s + 9) * 0.35;
+  }
+  function DK(P) {
+    let d = P.g.getImageData(0, 0, GW, GH).data;
+    const hx = n => n.toString(16).padStart(2, '0');
+    const col = (x, y) => { if (x < 0 || y < 0 || x >= GW || y >= GH) return ''; const i = ((y | 0) * GW + (x | 0)) * 4; return '#' + hx(d[i]) + hx(d[i + 1]) + hx(d[i + 2]); };
+    const T = {
+      col, refresh() { d = P.g.getImageData(0, 0, GW, GH).data; },
+      set: a => new Set(a.map(c => c.toLowerCase())),
+      on(S, x, y, c) { if (S.has(col(x, y))) P.put(x, y, c); },
+      // 접지 그림자: 소품 밑동 아래 두 줄 (윗줄 진하게, 아랫줄 디더)
+      shadow(S, x0, x1, y, c1, c2) { for (let x = x0; x < x1; x++) { T.on(S, x, y, c1); if ((x + y) & 1 || (x > x0 + 1 && x < x1 - 2)) T.on(S, x, y + 1, c2 || c1); } },
+      oval(S, cx, cy, rx, ry, c, seed, dens = 1) { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const q = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2; if (q > 1) continue; if (q < 0.4 * dens || (((x + y) & 1) && h2(x, y, seed) < (1.2 - q) * dens)) T.on(S, x, y, c); } },
+      // 폴리라인 따라 닳은 길 (디더)
+      path(S, pts, w, c, seed, dens = 0.5) {
+        for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { let best = 1e9;
+          for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))), dx = x - ax - vx * t, dy = (y - ay - vy * t) * 1.6; best = Math.min(best, Math.hypot(dx, dy)); }
+          if (best < w && h2(x, y, seed) < (1 - best / w) * dens * (((x + y) & 1) ? 1.4 : 0.6)) T.on(S, x, y, c); } },
+      // 거미줄 (모서리, dir 1 = 왼쪽 위 모서리, -1 = 오른쪽 위)
+      web(x, y, dir, n, c) { for (let i = 0; i < n; i++) { P.put(x + dir * i, y, c); P.put(x, y + i, c); } for (let i = 0; i <= n - 1; i++) P.put(x + dir * i, y + n - 1 - i, c); for (let i = 0; i <= (n >> 1); i++) P.put(x + dir * i, y + (n >> 1) - i, c); P.line(x, y, x + dir * (n - 1), y + n - 1, c); },
+    };
+    return T;
+  }
+  // 넓은 판자 바닥 (가로, 판 높이 6칸 · 길이 34~64): 나뭇결 줄 · 옹이 · 양끝 못
+  function planksW(P, x0, y0, x1, y1, pal, seed) {
+    for (let y = y0; y < y1; y++) {
+      const row = Math.floor((y - y0) / 6), ly = (y - y0) % 6;
+      for (let x = x0; x < x1; x++) {
+        const len = 34 + Math.floor(h2(row, 1, seed) * 30), off = Math.floor(h2(row, 2, seed) * len), b = Math.floor((x - x0 + off) / len), lx = (x - x0 + off) % len, id = row * 31 + b;
+        const v = h2(id, 3, seed); let c = v < 0.33 ? pal.a : v < 0.7 ? pal.b : pal.c;
+        if (ly === 5 || lx === 0) c = pal.gap; else if (ly === 0) c = pal.hi;
+        else if ((lx === 2 || lx === len - 3) && (ly === 1 || ly === 4)) c = pal.nail;
+        else { const gl = Math.floor(h2(id, 4, seed) * 3) + 2, ph = Math.floor(h2(id, 5, seed) * 9); if (ly === gl && ((lx + ph) % 13) < 6) c = pal.grain; else if (ly === gl + 1 && ((lx + ph + 7) % 17) < 4 && ly < 5) c = '#4e3828';
+          const kx = Math.floor(h2(id, 6, seed) * (len - 10)) + 5; if (h2(id, 7, seed) < 0.35 && Math.abs(lx - kx) <= 1 && (ly === 2 || ly === 3)) c = lx === kx ? pal.gap : pal.grain; }
+        P.put(x, y, c);
+      }
+    }
+  }
+  // ---------------------------------------------------------------- 2. 버려진 역참 디테일: 닳은 길 · 접지 그림자 · 끌린 핏자국 · 칼자국 · 짚 · 거미줄 · 벽 얼룩 · 카운터 소품
+  {
+    const base = SCENES.ranger.draw;
+    SCENES.ranger.draw = function (P) {
+      base(P);
+      const top = RY0 - 22, cx = (RX0 + RX1) / 2, T = DK(P);
+      const PL = { a: '#5a4230', b: '#523a28', c: '#4a3424', gap: '#26180e', hi: '#664c38', nail: '#8a7a6a', grain: '#3e2c1e' };
+      // 바닥: 촘촘한 판자(4칸) → 넓은 판자(6칸 · 길이 34~64) — 나뭇결 줄 · 옹이 · 양끝 못. 기존 얼룩 점도 함께 걷어 냄
+      { const F = Grid(); planksW(F, RX0, RY0, RX1, RY1, PL, 12); const fd = F.g.getImageData(0, 0, GW, GH).data, OLD = T.set(Object.values(PL).concat(['#3a2a1c', '#34241a']));
+        for (let y = RY0; y < RY1; y++) for (let x = RX0; x < RX1; x++) if (OLD.has(T.col(x, y)) && !(x < RX0 + 57 && y < RY0 + 37)) { const i = (y * GW + x) * 4; P.put(x, y, `rgb(${fd[i]},${fd[i + 1]},${fd[i + 2]})`); } T.refresh(); }
+      const FL = T.set(Object.values(PL).concat(['#4e3828']));
+      // 닳은 길: 쪽문 → 탁자 → 카운터 (밟힌 판자가 한 톤 밝음 · 가장자리는 디더)
+      { const WM = { '#5a4230': '#684c38', '#523a28': '#604632', '#4a3424': '#583e2c', '#664c38': '#725842' }, pts = [[cx, RY1 - 2], [cx - 2, 126], [212, 100], [250, 84]];
+        for (let y = RY0; y < RY1; y++) for (let x = RX0; x < RX1; x++) { const c = T.col(x, y); if (!WM[c]) continue; let best = 1e9;
+          for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))); best = Math.min(best, Math.hypot(x - ax - vx * t, (y - ay - vy * t) * 1.5)); }
+          if (best < 6 || (best < 10 && ((x + y) & 1) && h2(x, y, 61) < (10 - best) / 4)) P.put(x, y, WM[c]); } }
+      // 둥근 깔개 (탁자 밑): 바랜 붉은 천 · 테두리 무늬 · 닳은 구멍 · 술
+      { const rx = 26, ry = 10, ox = 187, oy = 109;
+        for (let y = oy - ry - 1; y <= oy + ry + 1; y++) for (let x = ox - rx - 2; x <= ox + rx + 2; x++) { const q = ((x - ox) / rx) ** 2 + ((y - oy) / ry) ** 2; if (q > 1.08) continue; if (!T.set(Object.values(PL).concat(['#684c38', '#604632', '#583e2c', '#725842'])).has(T.col(x, y))) continue;
+          let c = q > 0.98 ? '#2a1414' : q > 0.82 ? '#5e2626' : q > 0.74 ? (((x >> 1) + y) & 1 ? '#a0703a' : '#5e2626') : q > 0.68 ? '#5e2626' : q < 0.12 ? '#7a3a30' : (h2(x >> 1, y, 72) < 0.5 ? '#6a2e2a' : '#723430');
+          if (q < 0.68 && q > 0.3 && ((x + 2 * y) % 9 === 0)) c = '#8a5a3a';
+          if (h2(x >> 1, y >> 1, 73) < 0.05 && q < 0.6) c = '#4e3a2a';
+          P.put(x, y, c); }
+        for (let x = ox - rx + 6; x <= ox + rx - 6; x += 2) { const y = oy + Math.round(ry * Math.sqrt(Math.max(0, 1 - ((x - ox) / rx) ** 2))) + 1; P.put(x, y, '#a0703a'); } }
+      T.refresh(); const FL2 = T.set(Object.values(PL).concat(['#4e3828', '#684c38', '#604632', '#583e2c', '#725842', '#6a2e2a', '#723430', '#7a3a30', '#5e2626', '#8a5a3a']));
+      // 다락 밑 그늘
+      for (let y = RY0 + 37; y < RY0 + 50; y++) for (let x = RX0; x < RX0 + 57; x++) if (y < RY0 + 41 || (((x + y) & 1) && h2(x, y, 63) < 1 - (y - RY0 - 41) / 9)) T.on(FL2, x, y, '#2e2016');
+      // 접지 그림자
+      const SH = (x0, x1, y) => T.oval(FL2, (x0 + x1) / 2 + 2, y + 0.5, (x1 - x0) / 2 + 3, 2.6, '#1e140c', x0 + y, 1.3); // 빛이 왼쪽 위에서 → 그림자는 오른쪽 아래로 살짝
+      SH(99, 111, 152); SH(111, 123, 156); SH(257, 274, 153); SH(271, 285, 154); SH(167, 175, 117); SH(197, 205, 119); SH(219, 227, 130);
+      T.oval(FL2, 186, 112, 10, 2.2, '#2a1414', 64, 1.4); SH(101, 106, 106); SH(145, 150, 106); SH(131, 143, 111);
+      // 끌린 핏자국: 쪽문에서 카운터 뒤로 (마른 검붉은 색 · 군데군데 번진 자국)
+      const BL = ['#4a1216', '#5e1a1c', '#3a0e12'];
+      const drag = [[cx + 6, RY1 - 4], [cx + 14, 140], [226, 128], [246, 112], [262, 102]];
+      for (let i = 0; i < drag.length - 1; i++) { const [ax, ay] = drag[i], [bx, by] = drag[i + 1], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay));
+        for (let k = 0; k <= n; k++) { const x = Math.round(ax + (bx - ax) * k / n), y = Math.round(ay + (by - ay) * k / n), r = h2(x, y, 65);
+          if (r < 0.7) T.on(FL2, x, y, BL[k % 3 ? 0 : 1]); if (r < 0.45) T.on(FL2, x + 1, y, BL[2]); if (r < 0.2) T.on(FL2, x, y + 1, BL[0]); if (r > 0.88) { T.on(FL2, x - 1, y + 1, BL[1]); T.on(FL2, x + 2, y - 1, BL[0]); } } }
+      T.oval(FL2, 264, 101, 6, 2.2, '#3a0e12', 66, 1.2); T.oval(FL2, 263, 100, 3, 1.2, '#5e1a1c', 67, 1.4);
+      for (const [x, y] of [[cx - 6, 150], [178, 132], [212, 142], [240, 122]]) { T.on(FL2, x, y, '#5e1a1c'); T.on(FL2, x + 1, y, '#3a0e12'); }
+      // 칼자국 세 줄 (바닥, 탁자 오른쪽)
+      for (let j = 0; j < 3; j++) for (let i = 0; i < 7; i++) T.on(FL2, 212 + j * 3 + i, 112 + i - (i >> 1), i === 0 ? '#9a7a5a' : '#2a1a10');
+      // 쏟은 술 웅덩이 (깨진 병 옆)
+      T.oval(FL2, 214, 136, 7, 2, '#3a1a22', 68, 1); T.on(FL2, 211, 135, '#8a5a6a');
+      // 짚 부스러기 (사다리 밑에만 몇 가닥)
+      for (let k = 0; k < 9; k++) { const x = 128 + Math.floor(h2(k, 1, 69) * 20), y = 111 + Math.floor(h2(k, 2, 69) * 6), c = h2(k, 3, 69) < 0.5 ? '#9a8450' : '#7a6a3e'; T.on(FL2, x, y, c); T.on(FL2, x + 1, y + (k & 1 ? 1 : 0), c); if (k % 3 === 0) T.on(FL2, x + 2, y + 1, c); }
+      // 탁자에 꽂힌 단검
+      P.spr(['.h.', 'hHh', '.g.', '.s.', '.s.', '.S.'], { h: '#2a1e14', H: '#4e3626', g: '#b09040', s: '#c8ccd4', S: '#8a8e98' }, 190, 95);
+      // 오른쪽 위 가구 다시 그림: 벽 선반 2단(받침 까치발 · 두께) + 모양 다른 술병 · 단지 + 판자 카운터(앞판 액자 무늬 · 놋쇠 발걸이)
+      { const WALL = (x, y) => { const v = h2(x, y, 6); let c = v < 0.12 ? '#54463a' : v < 0.9 ? '#605242' : '#6a5a4a'; if (h2(x >> 1, y >> 1, 7) < 0.07) c = '#463a30'; return c; };
+        for (let y = top; y < RY0 - 2; y++) for (let x = 229; x < RX1; x++) P.put(x, y, WALL(x, y)); P.rect(229, top - 1, RX1 - 229, 1, '#2a1e18');
+        P.rect(229, top + 7, RX1 - 229, 3, '#3a2a1e'); P.rect(229, top + 7, RX1 - 229, 1, '#4e3a2a'); P.rect(229, top + 10, RX1 - 229, 1, K);
+        P.rect(258, top, 5, 22, '#3a2a1e'); P.rect(258, top, 1, 22, '#4e3a2a'); P.rect(262, top, 1, 22, '#24180f');
+        const shelf = y => { P.rect(233, y - 1, 52, 1, K); P.rect(233, y, 52, 1, '#9a7a5a'); P.rect(233, y + 1, 52, 2, '#5e4430'); P.rect(233, y + 2, 52, 1, '#46321f'); P.rect(233, y + 3, 52, 1, K); P.rect(232, y - 1, 1, 5, K); P.rect(285, y - 1, 1, 5, K);
+          for (let x = 234; x < 285; x++) if ((x + y) & 1) P.put(x, y + 4, '#3a2e24');
+          for (const bx of [238, 278]) P.spr(['bbbb', 'Bbb.', 'Bb..', 'B...'], { b: '#5e4430', B: '#7e5e44' }, bx, y + 4); };
+        shelf(top + 8); shelf(top + 17);
+        const BOT = { tall: ['.c.', '.n.', 'gGg', 'gGg', 'gLg', 'gLg', 'ggd'], round: ['..c..', '..n..', '.gGg.', 'gGggd', 'gLLgd', '.ggd.'], jug: ['.cc..', 'gGgg.', 'gGggh', 'gLggh', 'gggd.'], vial: ['c.', 'n.', 'Gg', 'gd'], jar: ['tttt', 'jJjj', 'jLjj', 'jjjd'] };
+        const bot = (k, x, y, g, G2, d2) => { const R = BOT[k]; P.spr(R, { c: '#b08a5a', n: g, g, G: G2, d: d2, L: '#d8ccb0', h: g, t: '#8a7a5a', j: '#a08a6a', J: '#c0aa88' }, x, y - R.length); };
+        const GRN = ['#2e5a3a', '#4e8a5a', '#1e3a26'], AMB = ['#8a5a22', '#c08a3a', '#5a3a12'], RED = ['#6a2a2a', '#a04a40', '#401818'], BLU = ['#2e4a5a', '#5a7a8e', '#1e2e3a'], PLM = ['#4a2e4a', '#7a5a7a', '#2a1a2a'];
+        bot('tall', 236, top + 8, ...GRN); bot('round', 242, top + 8, ...AMB); bot('vial', 250, top + 8, ...BLU); bot('tall', 254, top + 8, ...RED); bot('jug', 264, top + 8, ...AMB); bot('tall', 272, top + 8, ...PLM); bot('vial', 278, top + 8, ...GRN);
+        bot('jar', 236, top + 17); bot('jar', 242, top + 17); bot('round', 250, top + 17, ...GRN); bot('tall', 258, top + 17, ...AMB);
+        P.spr(['.ggggggc', 'gGGGGGGn', 'ggggLggd', '.ddddddd'], { g: '#6a2a2a', G: '#a04a40', d: '#401818', L: '#d8ccb0', c: '#b08a5a', n: '#6a2a2a' }, 266, top + 13);
+        P.spr(['.oooo.', 'oOOOOo', 'oO..Oo', '.oooo.'], { o: '#8a7a5a', O: '#b0a07a' }, 277, top + 13);
+        // 카운터
+        const x0 = 230, y0 = RY0 + 6, w = 56;
+        P.rect(x0 - 1, y0 - 1, w + 2, 17, K);
+        for (let x = x0; x < x0 + w; x++) { const seam = (x - x0) % 14 === 13; P.put(x, y0, seam ? '#6e5038' : '#a8885e'); P.put(x, y0 + 1, seam ? '#4e3626' : '#8e6e50'); P.put(x, y0 + 2, seam ? '#4e3626' : (h2(x, 1, 81) < 0.15 ? '#7e5e44' : '#86684a')); P.put(x, y0 + 3, '#3a2a1e'); }
+        for (const [cx, cy] of [[248, y0 + 1], [262, y0 + 2]]) { P.put(cx, cy, '#6e5038'); P.put(cx + 2, cy, '#6e5038'); P.put(cx + 1, cy - 1 + 0, '#6e5038'); }
+        for (let y = y0 + 4; y < y0 + 13; y++) for (let x = x0; x < x0 + w; x++) { const px = (x - x0) % 11, py = y - y0 - 4; let c = '#5e4430';
+          if (px >= 2 && px <= 8 && py >= 1 && py <= 6) c = px === 2 || py === 1 ? '#3a2a1e' : px === 8 || py === 6 ? '#7e5e44' : '#4e3626'; if (px === 0) c = '#6e5038'; P.put(x, y, c); }
+        P.rect(x0, y0 + 13, w, 2, '#2e2016'); P.rect(x0, y0 + 11, w, 1, '#c09038'); P.rect(x0, y0 + 12, w, 1, '#7a5a20'); for (const bx of [234, 252, 270]) { P.rect(bx, y0 + 11, 1, 4, '#9a7028'); P.put(bx, y0 + 11, '#f0d080'); }
+        // 꺾인 옆판은 뺌: 그 자리는 넓은 판자 바닥으로 되돌리고 카운터 밑에 그림자
+        { const F = Grid(); planksW(F, RX0, RY0, RX1, RY1, PL, 12); const fd = F.g.getImageData(0, 0, GW, GH).data;
+          for (let y = y0 + 16; y < y0 + 36; y++) for (let x = 273; x < RX1; x++) { const i = (y * GW + x) * 4; P.put(x, y, `rgb(${fd[i]},${fd[i + 1]},${fd[i + 2]})`); }
+          T.refresh(); for (let x = x0 - 1; x < x0 + w + 3; x++) { T.on(FL2, x, y0 + 16, '#1e140c'); if ((x + 1) & 1) T.on(FL2, x, y0 + 17, '#1e140c'); } }
+        P.spr(['.kk.', 'kggk', 'kggk', '.kk.'], { k: '#2a1e14', g: '#cfc0a0' }, 246, RY0 + 4); }
+      // 카운터 위: 맥주잔 둘 · 동전 · 촛농 흘린 초 동강
+      const mug = x => P.spr(['kkkk.', 'mMMmh', 'mMMmh', 'mmmm.'], { k: '#e8dcc0', m: '#6e5038', M: '#8e6e50', h: '#4e3626' }, x, RY0 + 3);
+      mug(236); mug(268);
+      for (const [x, y] of [[256, RY0 + 8], [259, RY0 + 9], [262, RY0 + 8]]) { P.put(x, y, '#e0b040'); P.put(x + 1, y, '#9a7028'); }
+      P.spr(['.y.', '.Y.', 'www', 'wWw', 'wwW'], { y: '#ffd34d', Y: '#ff9a3a', w: '#e8dcc0', W: '#bfb090' }, 280, RY0 + 1);
+      // 벽: 빗물 얼룩 · 금 · 드러난 돌 · 기둥에 꽂힌 투척 단검 · 쥐구멍
+      for (const [x, n] of [[112, 12], [178, 9], [232, 14], [286, 8]]) for (let y = top + 1; y < top + n; y++) if ((x + y) & 1 || y < top + 4) { P.put(x, y, '#54463a'); if (y > top + 3 && h2(x, y, 71) < 0.5) P.put(x + 1, y, '#54463a'); }
+      P.line(122, top + 12, 126, top + 16, '#3a2a1e'); P.line(126, top + 16, 125, top + 20, '#3a2a1e'); P.line(244, top + 15, 248, top + 18, '#3a2a1e');
+      P.spr(['s..', '.s.', '..h', '..H'], { s: '#c8ccd4', h: '#2a1e14', H: '#5a4230' }, 227, top + 12, false); P.spr(['s..', '.s.', '..h', '..H'], { s: '#c8ccd4', h: '#2a1e14', H: '#5a4230' }, 228, top + 16, false);
+      P.spr(['.kk.', 'kddk', 'kddk'], { k: '#2a1e14', d: '#0b0a0e' }, 214, RY0 - 3, false); P.put(215, RY0 - 2, '#e8dcc0');
+      // 거미줄 (오른쪽 위 모서리 · 다락 기둥)
+      T.web(RX1 - 1, top, -1, 7, '#8a8490'); T.web(RX0 + 56, RY0 + 37, 1, 5, '#7a7480');
+    };
+  }
+  // ---------------------------------------------------------------- 3. 외딴 관측탑 디테일: 창 빛 웅덩이 · 접지 그림자 · 흩어진 양피지 · 잉크 자국 · 분필 가루 · 벽 밑 이끼 · 바닥 금
+  {
+    const base = SCENES.mage.draw;
+    SCENES.mage.draw = function (P) {
+      base(P);
+      // 그을린 책장 다시 그림: 선반 앞면 · 칸 안쪽 그늘 · 책등 2칸(빛 받는 면/그늘 면) · 띠 장식 · 금박 · 윗면 종이 — 창 빛이 가운데라 왼쪽 책은 오른쪽 면이, 오른쪽 책은 왼쪽 면이 밝음
+      { const ecx = CX, ecy = 114, erx = 118, ery = 64, wallTop = x => { const t = (x + 0.5 - ecx) / erx; return Math.abs(t) > 1 ? null : Math.round(ecy - ery * Math.sqrt(1 - t * t)); };
+        const lit = (h, a) => { const n = parseInt(h.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v + (a > 0 ? (255 - v) * a : v * a)))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => f(v).toString(16).padStart(2, '0')).join(''); };
+        const COLS = ['#7a2a2a', '#2e4a6a', '#6a5a2a', '#3a6a3a', '#5a3a6a', '#8a7a4a'];
+        const skip = (x, y) => [-90, -45, 45, 90].some(px => x >= ecx + px && x < ecx + px + 3) || (x >= ecx - 8 && x <= ecx + 8) || (x >= 90 && x <= 128 && y >= 61) || (x >= 248 && x <= 278 && y >= 54);
+        for (let x = ecx - erx; x < ecx + erx; x++) { const yb = wallTop(x); if (yb == null) continue; const hgt = Math.round(24 * Math.sqrt(Math.max(0, 1 - ((x + 0.5 - ecx) / erx) ** 2)) ** 0.5);
+          for (let y = yb - hgt; y < yb; y++) { if (skip(x, y)) continue; const ly = yb - y, r = ly % 8, sh = Math.floor(ly / 8);
+            const col = Math.floor((x - ecx + 200) / 2), xi = (x - ecx + 200) % 2, litSide = x < ecx ? xi === 1 : xi === 0;
+            const v = h2(col, sh, 9), burnt = h2(col >> 2, sh, 12) < 0.32, gap = h2(col, sh, 13) < 0.12, bh = 4 + Math.floor(h2(col, sh, 10) * 3);
+            let c; const narrow = x < ecx - 90 || x >= ecx + 93; // v2.86 기둥 바깥은 빈 선반 (기둥 뒤로 잘린 책이 보이지 않게)
+            if (r === 0) c = (x & 3) === 0 ? '#3e2c20' : '#5a4230';
+            else if (narrow) c = r === 7 ? '#0e0a0a' : r === 1 ? '#3a2a1e' : (r >= 5 ? '#16100e' : '#1e1612');
+            else if (gap || r > bh) c = r === 7 ? '#0e0a0a' : r === 1 && gap ? '#6e5038' : (r >= 5 ? '#16100e' : '#1e1612');
+            else if (burnt) c = r === bh ? '#100c0e' : litSide ? (v < 0.5 ? '#2a2022' : '#342a2a') : (v < 0.5 ? '#1a1416' : '#221a1c');
+            else { const base = COLS[Math.floor(v * 6)]; c = r === bh ? (litSide ? '#c8b898' : '#a89a80') : litSide ? lit(base, 0.22) : r === 1 ? lit(base, -0.3) : base;
+              if (r < bh && h2(col, sh, 14) < 0.35 && (r === 2 || r === bh - 1)) c = lit(base, -0.4);
+              if (r === bh - 2 && h2(col, sh, 15) < 0.25 && litSide) c = '#e0b040'; }
+            P.put(x, y, c); } }
+        // 벽이 좁아지는 양끝: 책 대신 말린 두루마리 · 약병 · 수정 · 모래시계 · 단지 · 초
+        const OBJ = { scroll: [['ppppppq', 'plllpPq', 'ppppppq'], { p: '#d8ccb0', l: '#8a7a5a', P: '#a8987c', q: '#7a2a2a' }], flask: [['.c.', '.g.', 'gGg', 'ggd'], { c: '#b08a5a', g: '#5a3a6a', G: '#9a7ab0', d: '#3a2448' }],
+          crystal: [['..c..', '.cC..', 'cCCcc', 'ccCcc'], { c: '#5a8ab0', C: '#c8e8ff' }], hourglass: [['wwww', '.sa.', '..a.', '.aa.', 'wwww'], { w: '#8e6e50', s: '#c8d8e0', a: '#e0c070' }],
+          jar: [['tttt', 'jJjj', 'jjjd'], { t: '#8a7a5a', j: '#6a7a5a', J: '#9aaa8a', d: '#3a4a3a' }], candle: [['.y.', '.w.', 'www'], { y: '#ffd34d', w: '#e8e0c8' }] };
+        // v2.86 집기는 각 층 안에: 가운데 칸 기준으로 층 바닥에 올리고, 층을 나누는 선반 널과 책장 밖으로 나간 부분은 가려지게 그린다
+        const hgtAt = x => Math.round(24 * Math.sqrt(Math.max(0, 1 - ((x + 0.5 - ecx) / erx) ** 2)) ** 0.5);
+        const put = (k, x, ly0) => { const [R, pal] = OBJ[k], w = R[0].length, h = R.length, ybc = wallTop(x + (w >> 1)); if (ybc == null) return;
+          const vis = (px, py) => { const yb = wallTop(px); if (yb == null) return false; const ly = yb - py; return ly >= 1 && ly <= hgtAt(px) && ly % 8 !== 0; };
+          let y0 = ybc - ly0 - h + 1, best = -1; // 그 층 안에서 가장 많이 보이는 높이로 (같으면 아래 = 널 위에 얹힘)
+          for (let d = 4; d >= -4; d--) { const yy = ybc - ly0 - h + 1 + d; let n = 0; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (R[j][i] !== '.' && vis(x + i, yy + j)) n++; if (n > best) { best = n; y0 = yy; } }
+          const at = (i, j) => (j >= 0 && j < h && i >= 0 && i < w) ? R[j][i] : '.';
+          for (let j = -1; j <= h; j++) for (let i = -1; i <= w; i++) { const ch = at(i, j), px = x + i, py = y0 + j;
+            const col = ch !== '.' ? pal[ch] : [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => at(i + dx, j + dy) !== '.') ? K : null; if (!col) continue;
+            if (!vis(px, py)) continue; // 책장 밖 · 선반 널 뒤는 가림
+            P.put(px, py, col); } };
+        void put; } // v2.86 양끝 집기는 치움 (빈 선반)
+
+      // 바닥 책 다시 그림: 납작한 사각형 → 두께가 보이는 책 (표지 윗면 · 금박 제목 · 앞쪽 종이 단면 줄무늬 · 책등) · 책 더미는 권마다 어긋나게
+      { const F = Grid(); flagstones(F, 0, 0, GW, GH, { a: '#46424f', b: '#423e4a', c: '#3e3a46', gap: '#24222c', hi: '#524e5c', speck: '#5a5668' }, 3, 12, 8); const fd = F.g.getImageData(0, 0, GW, GH).data;
+        const clear = (x0, y0, w, h) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) { const i = (y * GW + x) * 4; P.put(x, y, `rgb(${fd[i]},${fd[i + 1]},${fd[i + 2]})`); } };
+        const lit = (h, a) => { const n = parseInt(h.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v + (a > 0 ? (255 - v) * a : v * a)))); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => f(v).toString(16).padStart(2, '0')).join(''); };
+        const closedB = (x, y, c) => P.spr(['hhhhhhhh', 'CCyyyCCd', 'CCCCCCCd', 'SpPpPpPd', 'SPpPpPpd'], { h: lit(c, 0.3), C: c, d: lit(c, -0.35), y: '#e0b040', S: lit(c, -0.2), p: '#e8dcc0', P: '#bfb090' }, x, y);
+        const openB = (x, y) => P.spr(['.hhhh.hhhh.', 'hPPPPgPPPPh', 'hPllPgPllPh', 'hPPPPgPllPh', 'pPPPPgPPPPp', 'ccccccccccc'], { h: '#c8b898', P: '#e8dcc0', l: '#8a7a6a', g: '#a89878', p: '#bfb090', c: '#5e4430' }, x, y);
+        const stackB = (x, y, cols) => { cols.forEach((c, i) => { const ox = (i % 2) ? 1 : (i % 3 === 2 ? -1 : 0), yy = y - i * 3, w = 11 - (i % 2);
+            for (let k = 0; k < w; k++) { P.put(x + ox + k, yy, k === 0 ? lit(c, -0.2) : c); P.put(x + ox + k, yy + 1, k === 0 || k === w - 1 ? lit(c, -0.35) : (k & 1 ? '#e8dcc0' : '#bfb090')); P.put(x + ox + k, yy + 2, lit(c, -0.4)); }
+            P.rect(x + ox - 1, yy, 1, 3, K); P.rect(x + ox + w, yy, 1, 3, K); if (i === 0) P.rect(x + ox - 1, yy + 3, w + 2, 1, K); });
+          const t = cols.length - 1, c = cols[t], ox = (t % 2) ? 1 : (t % 3 === 2 ? -1 : 0), w = 11 - (t % 2), yy = y - t * 3;
+          P.rect(x + ox - 1, yy - 3, w + 2, 1, K); P.rect(x + ox - 1, yy - 2, 1, 2, K); P.rect(x + ox + w, yy - 2, 1, 2, K);
+          for (let k = 0; k < w; k++) { P.put(x + ox + k, yy - 2, lit(c, 0.3)); P.put(x + ox + k, yy - 1, k > 2 && k < 6 ? '#e0b040' : lit(c, 0.12)); } };
+        clear(281, 104, 16, 18); clear(212, 108, 16, 12); clear(117, 111, 11, 7); clear(131, 147, 11, 7); clear(99, 127, 11, 7); clear(253, 145, 13, 7); clear(203, 91, 13, 7);
+        stackB(283, 117, ['#7a2a2a', '#2e4a6a', '#6a5a2a', '#3a6a3a']); stackB(215, 116, ['#2e4a6a', '#7a2a2a', '#5a3a6a']);
+        closedB(119, 112, '#7a2a2a'); closedB(133, 148, '#2e4a6a'); closedB(101, 128, '#3a6a3a'); openB(254, 146); openB(204, 92); }
+      const T = DK(P), FM = T.set(['#46424f', '#423e4a', '#3e3a46', '#24222c', '#524e5c', '#5a5668']);
+      T.refresh(); const F2 = T.set(['#46424f', '#423e4a', '#3e3a46', '#24222c', '#524e5c', '#5a5668', '#64505e', '#544858']);
+      // 접지 그림자
+      const SH = (cx, cy, rx) => T.oval(F2, cx + 2, cy + 0.5, rx, 2.4, '#1c1a22', cx * 7 + cy, 1.3);
+      SH(159, 95, 9); SH(91, 97, 4); SH(124, 97, 4); SH(262, 95, 8); SH(255, 117, 26); SH(221, 119, 8); SH(289, 120, 8); SH(124, 117, 6); SH(138, 153, 6); SH(106, 133, 6); SH(260, 152, 7); SH(210, 98, 7);
+      // 바닥 금 · 벽 밑 이끼
+      for (const pts of [[[96, 140], [104, 144], [106, 150], [114, 154]], [[276, 92], [282, 98], [281, 104]], [[150, 162], [158, 166], [166, 165]]]) for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)); for (let k = 0; k <= n; k++) T.on(F2, Math.round(ax + (bx - ax) * k / n), Math.round(ay + (by - ay) * k / n), '#1c1a22'); }
+      const ecx = CX, ecy = 114, erx = 118, ery = 64;
+      for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const q = ((x + 0.5 - ecx) / erx) ** 2 + ((y + 0.5 - ecy) / ery) ** 2; if (q > 1 || q < 0.86 || y < 100) continue; const n = vnoise(x, y, 811, 8); if (n > 0.55 && (((x + y) & 1) || n > 0.68)) T.on(F2, x, y, n > 0.66 ? '#3e5634' : '#2e4228'); }
+      // 흩어진 양피지 (글줄 · 접힌 모서리) · 깃펜 하나
+      const sheet = (x, y, f) => { P.spr(f ? ['pppppppq', 'plllllpq', 'ppppppp.', 'pllllpp.', 'ppppppp.'] : ['qpppppp', 'pllllpp', 'ppppppp', 'plllppp', 'pppppp.'], { p: '#d8ccb0', l: '#7a6a5a', q: '#a8987c' }, x, y); T.oval(F2, x + 5, y + 6, 5, 1.2, '#1c1a22', x + y, 1.2); };
+      sheet(112, 146, 0); sheet(266, 138, 1); sheet(214, 92, 0); sheet(128, 104, 1);
+      P.spr(['w....', '.wW..', '..wW.', '...Wb', '....b'], { w: '#e8e0d0', W: '#a8a0b0', b: '#2a2228' }, 124, 152, false);
+      // 잉크 쏟은 자국 (책상 앞) + 뒤집힌 잉크병
+      T.oval(F2, 240, 126, 6, 2, '#141a2a', 812, 1.4); T.oval(F2, 238, 126, 3, 1, '#20304a', 813, 1.5); P.spr(['.kk', 'kbbk', '.kk.'].map(r => r.padEnd(4, '.')), { k: '#3a4a5a', b: '#1a2a40' }, 232, 124);
+      // 칠판 밑 분필 가루 · 분필 동강
+      for (let i = 0; i < 18; i++) { const x = 92 + Math.floor(h2(i, 1, 814) * 34), y = 98 + Math.floor(h2(i, 2, 814) * 4); if ((x + y) & 1) T.on(F2, x, y, '#8a8694'); }
+      P.spr(['ww'], { w: '#e8e4ec' }, 104, 100); P.spr(['ww'], { w: '#e8e4ec' }, 116, 101);
+      // 마법진 둘레 반짝이는 별가루 몇 점
+      for (const [x, y] of [[156, 120], [228, 116], [210, 152], [170, 150], [234, 140]]) { T.on(F2, x, y, '#e0b040'); T.on(F2, x, y - 1, '#9a7028'); }
+    };
+  }
+  // ---------------------------------------------------------------- 4. 종이 멈춘 수도원 디테일: 판석 바닥 · 색유리 빛 · 융단 무늬 · 신도석 다시 그림 · 벽 기둥 · 제단 소품 · 무너진 돌 · 이끼
+  {
+    const base = SCENES.priest.draw;
+    SCENES.priest.draw = function (P) {
+      base(P);
+      const top = RY0 - 28, T = DK(P);
+      // 1) 바닥: 두 색 바둑판 → 크기 다른 판석 (같은 회보라 톤)
+      { const F = Grid(); flagstones(F, RX0, RY0, RX1, RY1, { a: '#5a5664', b: '#54505e', c: '#4e4a58', gap: '#2e2a36', hi: '#66616e', speck: '#6e6a76' }, 9, 13, 8);
+        const fd = F.g.getImageData(0, 0, GW, GH).data, OLD = T.set(['#524e5c', '#5c5866', '#2e2a36', '#5e5a68', '#68636f', '#423e4a']);
+        for (let y = RY0; y < RY1; y++) for (let x = RX0; x < RX1; x++) if (OLD.has(T.col(x, y))) { const i = (y * GW + x) * 4; P.put(x, y, `rgb(${fd[i]},${fd[i + 1]},${fd[i + 2]})`); } T.refresh(); }
+      const FS = T.set(['#5a5664', '#54505e', '#4e4a58', '#2e2a36', '#66616e', '#6e6a76']);
+      const GL = ['#6a5468', '#525c74', '#6a6852'];
+      T.refresh(); const F2 = T.set(['#5a5664', '#54505e', '#4e4a58', '#2e2a36', '#66616e', '#6e6a76'].concat(GL));
+      // 3) 벽: 창 사이 반기둥 · 금 · 물 얼룩 · 담쟁이
+      for (const px of [155, 229]) { P.rect(px - 1, top, 8, 28, K); for (let y = top; y < RY0; y++) for (let x = 0; x < 6; x++) P.put(px + x, y, x === 0 ? '#77717e' : x === 5 ? '#3a3542' : (y - top) % 7 === 6 ? '#3e3a46' : '#5e5a68');
+        P.rect(px - 2, top + 2, 10, 2, '#8e8894'); P.rect(px - 2, top + 4, 10, 1, '#45404c'); P.rect(px - 2, RY0 - 3, 10, 3, '#6a6572'); P.rect(px - 2, RY0 - 3, 10, 1, '#8e8894'); }
+      for (const [x0, y0, pts] of [[96, top + 6, [[0, 0], [3, 4], [2, 8], [5, 12]]], [292, top + 4, [[0, 0], [-2, 5], [1, 9]]]]) for (let i = 0; i < pts.length - 1; i++) P.line(x0 + pts[i][0], y0 + pts[i][1], x0 + pts[i + 1][0], y0 + pts[i + 1][1], '#1e1c24');
+      for (const x of [140, 210, 248]) for (let y = top + 1; y < top + 12 + (x % 5); y++) if ((x + y) & 1) P.put(x, y, '#3e3a46');
+      for (let i = 0; i < 30; i++) { const x = RX1 - 2 - Math.floor(h2(i, 1, 903) * 16 * (1 - i / 40)), y = top + Math.floor(i * 0.9); if (y >= RY0) break; P.put(x, y, i & 1 ? '#3e5634' : '#2e4228'); if (i % 3 === 0) P.put(x - 1, y, '#4e6e3c'); }
+      // 4) 융단: 금테 + 마름모 무늬 + 닳은 구멍 + 위쪽 술 + 구겨진 주름
+      { const x0 = CX - 13, x1 = CX + 13, y0 = RY0 + 14;
+        for (let y = y0; y < RY1; y++) for (let x = x0; x < x1; x++) { const lx = x - x0, ly = y - y0;
+          let c = lx === 0 || lx === 25 ? '#3a1014' : lx === 1 || lx === 24 ? '#b08a38' : lx === 2 || lx === 23 ? '#4a1418' : '#661c22';
+          if (lx > 3 && lx < 22) { const dx = Math.abs(lx - 12.5), dy = Math.abs((ly % 14) - 7); if (Math.abs(dx + dy - 5) < 0.6) c = '#8a2a2e'; else if (dx + dy < 2) c = '#a0703a'; else if ((x + y) % 2 === 0 && h2(x, y, 904) < 0.12) c = '#5a1820'; }
+          if (h2(x >> 1, y >> 1, 905) < 0.04 && lx > 2 && lx < 23) c = '#54505e';
+          P.put(x, y, c); }
+        for (let x = x0 + 1; x < x1 - 1; x += 2) { P.put(x, y0 - 1, '#b08a38'); P.put(x, y0 - 2, '#7a5a20'); }
+        for (let i = 0; i < 18; i++) { P.put(x0 + 4 + i, 122 - (i >> 2), '#8a2a2e'); P.put(x0 + 4 + i, 123 - (i >> 2), '#3a1014'); }
+        for (let y = 146; y < 156; y++) for (let x = CX - 9; x < CX + 1; x++) if (h2(x, y, 53) < 0.55 && ((x - CX + 4) ** 2 / 25 + (y - 151) ** 2 / 25) < 1) P.put(x, y, (x + y) & 1 ? '#54505e' : '#4e4a58'); }
+      // 5) 신도석 다시 그림: 조각한 끝판(둥근 머리) · 등받이 · 앉는 판 · 앞판 · 접지 그림자 · 찬송가 책
+      const W1 = '#9a7a5a', W2 = '#7e5e44', W3 = '#6e5038', W4 = '#4e3626', W5 = '#33241a';
+      const pew = (x, y, w, br, seed) => {
+        P.rect(x - 2, y - 4, w + 4, 16, null);
+        P.rect(x - 1, y - 1, w + 2, 13, K);
+        for (let i = 0; i < w; i++) { P.put(x + i, y, W1); P.put(x + i, y + 1, W3); P.put(x + i, y + 2, W4); P.put(x + i, y + 3, '#1e140e'); P.put(x + i, y + 4, W2); P.put(x + i, y + 5, W1); P.put(x + i, y + 6, W3); P.put(x + i, y + 7, W3); P.put(x + i, y + 8, W4); P.put(x + i, y + 9, (i % 9 === 0) ? W5 : W4); P.put(x + i, y + 10, W5); if (h2(i, y, seed) < 0.06) P.put(x + i, y + 6, W4); }
+        for (const ex of [x - 2, x + w - 1]) { P.spr(['.ee.', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eEEe', 'eddE', 'dddd'], { e: W5, E: W2, d: '#2a1e14' }, ex, y - 3); P.put(ex + 1, y - 2, W1); }
+        for (let i = 0; i < w + 4; i++) if ((i + y) & 1 || (i > 2 && i < w)) T.on(F2, x + i, y + 12, '#2a2632'); for (let i = 3; i < w + 3; i++) if ((i + y) & 1) T.on(F2, x + i, y + 13, '#2a2632');
+        if (br) { const bx = x + Math.floor(w * 0.5); P.rect(bx - 1, y - 1, 6, 13, '#54505e'); P.rect(bx - 1, y + 11, 6, 1, '#2e2a36'); for (let j = 0; j < 11; j++) { P.put(bx - 1, y + j, (j & 1) ? W2 : W5); P.put(bx + 4, y + j, (j & 1) ? W5 : W2); } P.put(bx + 1, y + 6, W2); P.put(bx + 2, y + 9, W3); }
+      };
+      T.refresh();
+      [RY0 + 30, RY0 + 50, RY0 + 70, RY0 + 90, RY0 + 110].forEach((y, i) => { pew(RX0 + 14, y, 78, i === 1 || i === 4, i); if (i !== 3) pew(CX + 22, y, 78, i === 2, i + 9); });
+      { const bx = 262, by = 148; // 쓰러진 종은 신도석 위에 다시
+        P.spr(['.....oooooo.....', '...ooOOOOOOoo...', '..oOOyyyyyyOOo..', '.oOyyYYyyyyyyOo.', '.oOyYYyyyyyyyOo.', 'oOyyYyyyyyyyyyOo', 'oOyyyyyyyyyyyyOo', 'oOyyyyyyyyyyyyOo', 'oOOyyyyyyyyyyOOo', '.oooOOOOOOOOooo.', '...oooooooooo...'], { o: '#5a3c14', O: '#9a7028', y: '#c09038', Y: '#f0d080' }, bx, by - 6, true);
+        P.line(bx + 10, by - 4, bx + 12, by + 2, '#3a2a14'); P.line(bx + 12, by + 2, bx + 10, by + 4, '#3a2a14');
+        P.spr(['.kk.', 'kKKk', 'kKKk', '.kk.'], { k: '#1a1416', K: '#5a3c14' }, bx - 5, by + 1);
+        for (let i = 0; i < 28; i++) { const x = bx - 8 - i, y = by + 3 + Math.round(Math.sin(i * 0.55) * 2); P.put(x, y, i & 1 ? '#9a8a6a' : '#6a5a3a'); P.put(x, y + 1, '#3a2a1e'); } }
+      const book = (x, y, c) => P.spr(['cccc', 'cwwc'], { c, w: '#e8e0c8' }, x, y);
+      book(RX0 + 30, RY0 + 34, '#5e1a20'); book(RX0 + 60, RY0 + 74, '#2e4a3a'); book(CX + 70, RY0 + 54, '#5e1a20'); book(CX + 36, RY0 + 114, '#3a3a5e');
+      // 6) 제단: 펼친 경전 · 마른 꽃병 · 초에 흘러내린 촛농
+      P.spr(['.pppp.pppp.', 'plllpkplllp', 'ppppPkPpppp', '.kkkkkkkkk.'], { p: '#e8e0c8', P: '#c8c0a8', l: '#8a7a6a', k: '#5a1418' }, CX - 6, RY0 - 15, false);
+      for (const vx of [CX - 34, CX + 30]) { P.spr(['.f.f.', 'f.f.f', '.bfb.', '..s..', '.vVv.', '.vVv.', '..v..'], { f: '#9a6a5a', b: '#7a5a3a', s: '#5a6a3a', v: '#6a7aa0', V: '#9aa8c8' }, vx, RY0 - 3); }
+      for (const cx of [CX - 15, CX + 13]) { P.put(cx, RY0 - 13, '#f0e8d8'); P.put(cx + 1, RY0 - 15, '#f0e8d8'); P.put(cx + 1, RY0 - 14, '#d8d0c0'); }
+      // 7) 종 옆: 천장에서 떨어진 돌 조각 · 먼지
+      for (const [x, y, w, h] of [[246, 160, 5, 3], [284, 156, 4, 3], [252, 140, 3, 2], [290, 146, 6, 3]]) { P.rect(x - 1, y - 1, w + 2, h + 2, K); P.rect(x, y, w, h, '#625d6a'); P.rect(x, y, w, 1, '#8a8490'); P.rect(x + w - 1, y + 1, 1, h - 1, '#3a3542'); }
+      T.refresh(); T.oval(F2, 268, 158, 22, 5, '#6e6a76', 906, 0.6);
+      // 8) 벽 밑 이끼 · 구석 거미줄
+      for (let x = RX0; x < RX1; x++) if (vnoise(x, 0, 907, 10) > 0.62) for (let y = RY0; y < RY0 + 2 + (x % 3); y++) if ((x + y) & 1) T.on(F2, x, y, '#2e4228');
+      T.web(RX0, top, 1, 8, '#8a8490'); T.web(RX1 - 1, top, -1, 6, '#8a8490');
+    };
+  }
+  // ---------------------------------------------------------------- 5. 이름 없는 묘지 디테일: 격자 없는 풀밭 · 흙 얼룩 · 디딤돌 길 · 풀포기 · 들꽃 · 낙엽 · 버섯 · 접지 그림자
+  {
+    const base = SCENES.gunner.draw;
+    SCENES.gunner.draw = function (P) {
+      base(P);
+      const T = DK(P), G0 = T.set(['#2e2c20', '#363222', '#22301e', '#263422', '#2c3e26', '#3e5030', '#3e5634', '#32482c']);
+      // 풀밭 다시 칠하기: 8칸 네모 흙 자국(격자) 대신 부드러운 잡음 얼룩
+      for (let y = RY0; y < RY1; y++) for (let x = RX0; x < RX1; x++) { if (!G0.has(T.col(x, y))) continue;
+        const n = vnoise(x, y, 701, 11), m = vnoise(x, y, 702, 7), v = h2(x, y, 703), dith = ((x + y) & 1) ? 0.03 : -0.03;
+        let c;
+        if (n + dith < 0.3) c = v < 0.5 ? '#2e2a1e' : '#35301f';
+        else if (n + dith < 0.34) c = (x + y) & 1 ? '#2e2a1e' : '#263220';
+        else c = m < 0.35 ? (v < 0.5 ? '#202c1c' : '#24301e') : m < 0.7 ? (v < 0.55 ? '#263422' : '#2a3a24') : (v < 0.5 ? '#2c3e26' : '#30442a');
+        if (v > 0.985) c = '#3e5030';
+        P.put(x, y, c); }
+      T.refresh();
+      const GR = T.set(['#2e2a1e', '#35301f', '#263220', '#202c1c', '#24301e', '#263422', '#2a3a24', '#2c3e26', '#30442a', '#3e5030']);
+      // 흙더미 다시: 바닥이 일자로 잘린 모양 → 아래 가장자리가 둥글게 퍼지고 흙 부스러기가 풀밭으로 흩어짐 (삽도 다시 꽂음)
+      { const px = 260, py = 108, MS = T.set(['#8a7254', '#6e5a40', '#56442f', '#3e3022', '#5e4a34', '#9a8264', '#2e2216', '#0b0a0e', '#77717e', '#9a94a4', '#4e4a58', '#9a9aa4', '#9a7a5a', '#6a6a76', '#b09070', '#d8d8e4', '#a4a4b0', '#6a5438', '#5a4632']);
+        const grass = (x, y) => { const n = vnoise(x, y, 701, 11), m = vnoise(x, y, 702, 7), v = h2(x, y, 703); return n < 0.3 ? (v < 0.5 ? '#2e2a1e' : '#35301f') : m < 0.35 ? '#24301e' : m < 0.7 ? '#263422' : '#2c3e26'; };
+        for (let y = 78; y <= 114; y++) for (let x = 239; x <= 283; x++) if (MS.has(T.col(x, y))) P.put(x, y, grass(x, y));
+        const pileH = x => 13 * Math.exp(-((x / 9) ** 2)) + 3 * Math.exp(-(((x - 10) / 4) ** 2)) + (h2(Math.floor(x / 2), 0, 556) - 0.5) * 1.4;
+        const bot = x => Math.round(5.6 * Math.sqrt(Math.max(0, 1 - (x / 20) ** 2))); // 앞 가장자리: 가운데가 아래로 둥글게, 양끝은 윗선과 만나 뾰족하지 않게 잦아듦
+        const top2 = x => Math.max(0, Math.round(pileH(x) * Math.min(1, Math.sqrt(Math.max(0, 1 - (x / 20) ** 2)) * 1.6)));
+        const ins = (x, y) => x >= -20 && x <= 20 && y >= -top2(x) && y <= bot(x) && (top2(x) + bot(x) > 0);
+        for (let y = 0; y <= 9; y++) for (let x = -25; x <= 25; x++) { const q = (x / 24) ** 2 + ((y - 3) / 5.5) ** 2; if (q > 1 || ins(x, y)) continue; if (((x + y) & 1) && h2(x, y, 559) < (1 - q) * 1.3) P.put(px + x, py + y, h2(x, y, 560) < 0.5 ? '#56442f' : '#46382a'); } // 흘러내린 부스러기
+        for (let y = -16; y <= 7; y++) for (let x = -21; x <= 21; x++) { if (ins(x, y)) { const t = top2(x), b = bot(x), k = (y + t) / Math.max(1, t + b); let c = k < 0.18 ? '#8a7254' : k < 0.45 ? '#6e5a40' : k < 0.75 ? '#56442f' : '#3e3022'; if (x > 6 && k < 0.5) c = '#5e4a34'; if (h2(x, y, 557) < 0.07) c = '#9a8264'; if (h2(x, y, 558) < 0.05) c = '#2e2216'; P.put(px + x, py + y, c); }
+          else if (ins(x + 1, y) || ins(x - 1, y) || ins(x, y + 1) || ins(x, y - 1)) P.put(px + x, py + y, K); }
+        for (const [dx, dy] of [[-9, 2], [4, 3], [10, 0], [-3, 4], [-13, 2]]) { P.rect(px + dx, py + dy, 2, 2, '#77717e'); P.put(px + dx, py + dy, '#9a94a4'); P.put(px + dx + 1, py + dy + 1, '#4e4a58'); }
+        for (const [dx, dy] of [[-22, 5], [21, 6], [-20, 3], [23, 4], [-6, 8], [8, 8]]) { P.rect(px + dx, py + dy, 2, 1, '#56442f'); P.put(px + dx, py + dy + 1, '#2e2216'); }
+        const bx = px + 3, by = py - 9;
+        for (let i = 1; i < 14; i++) { const x = bx - i, y = by - i; P.put(x - 1, y - 1, K); P.put(x, y - 1, K); P.put(x, y, i < 3 ? '#9a9aa4' : '#9a7a5a'); P.put(x - 1, y, i < 3 ? '#6a6a76' : '#b09070'); P.put(x - 2, y, K); P.put(x + 1, y, K); P.put(x, y + 1, K); P.put(x - 1, y + 1, K); }
+        P.spr(['kkkk.', 'kWWWk', 'kWkWk', 'kkWkk'], { k: K, W: '#b09070' }, bx - 18, by - 17, false);
+        P.spr(['..kkk..', '.kSSsk.', 'kSSssDk', '.kDDDk.'], { k: K, S: '#d8d8e4', s: '#a4a4b0', D: '#6a5438' }, bx - 2, by - 1, false);
+        P.put(bx - 2, by + 3, '#5a4632'); P.put(bx + 3, by + 3, '#5a4632');
+        T.refresh(); }
+      // 천막 옆 물통·짐 상자: 텐트 고정 줄 뒤로 옮기고 다시 그림 (줄과 말뚝이 앞에 오게)
+      { const grass = (x, y) => { const n = vnoise(x, y, 701, 11), m = vnoise(x, y, 702, 7), v = h2(x, y, 703); return n < 0.3 ? (v < 0.5 ? '#2e2a1e' : '#35301f') : m < 0.35 ? '#24301e' : m < 0.7 ? '#263422' : '#2c3e26'; };
+        for (let y = 47; y <= 80; y++) for (let x = 164; x <= 188; x++) { const c = T.col(x, y); if (c === '#4e6e3c' || c === '#3a562e') continue; P.put(x, y, grass(x, y)); }
+        // 물통 (위에서 보이는 물 · 쇠테 두 줄 · 리벳 · 국자)
+        P.spr(['..rrrrrrr..', '.rWWWWWWWr.', 'rWwqwwwwwWr', 'rWwwwwqwwWr', '.rWWWWWWWr.', 'hHhhhhhhhhd', 'sSssssssDsd', 'sSsssSssDsd', 'sSssssssDsd', 'hHhhhhhhhhd', 'sSssssssDsd', '.sSssssDsd.', '..ddddddd..'],
+          { r: '#8a6a4a', W: '#5e4430', w: '#2a3a4e', q: '#6a8aaa', h: '#4a4856', H: '#8a8a96', s: '#6e5038', S: '#8e6e50', D: '#3a2a1e', d: '#2a1e14' }, 170, 47);
+        P.put(171, 52, '#b0aab8'); P.put(179, 52, '#b0aab8'); P.put(171, 56, '#b0aab8'); P.put(179, 56, '#b0aab8');
+        P.spr(['.ll', 'l..', 'l..', 'l..'], { l: '#9a9aa4' }, 178, 46, false);
+        // 짐 상자 (뒤로 젖힌 뚜껑 · 안의 천과 병 · 모서리 쇠붙이 · 못 · 찍힌 표식)
+        const cx = 165, cy = 62;
+        P.spr(['LLLLLLLLLLLLLL', 'lLlLLlLLLlLLlL', 'llllllllllllll'], { L: '#8e6e50', l: '#6e5038' }, cx + 1, cy - 4);
+        P.spr(['iiiiiiiiiiiiiiii', 'iDDcCcDDDDgDDDDi', 'iDccccDDDDgGDDDi', 'TwwwwwwwwwwwwwwT', 'TWWWWWWWWWWWWWWT', 'TwwwwwwwwwwwwwwT', 'nPPPPPPPPPPPPPPn', 'TwwwwwxwwxwwwwwT', 'TWWWWWWxxWWWWWWT', 'TwwwwwxwwxwwwwwT', 'nPPPPPPPPPPPPPPn', '.dddddddddddddd.'],
+          { i: '#4e3626', D: '#1e140e', c: '#7a2a2a', C: '#a04a40', g: '#2e5a3a', G: '#4e8a5a', w: '#7e5e44', W: '#6e5038', P: '#4e3626', T: '#8a8a96', n: '#b0aab8', x: '#2a1e14', d: '#2a1e14' }, cx, cy);
+        for (const [x, y] of [[cx + 3, cy + 4], [cx + 12, cy + 4], [cx + 3, cy + 8], [cx + 12, cy + 8]]) P.put(x, y, '#b0aab8');
+        // 고정 줄 · 말뚝을 다시 앞에
+        const sx = 172, sy = 77; P.line(156, 43, sx, sy, '#c8b890'); P.line(156, 44, sx, sy + 1, '#4a4848'); P.rect(sx - 1, sy - 1, 3, 5, K); P.rect(sx, sy, 1, 4, '#8e6e50'); P.put(sx, sy, '#b09070');
+        T.refresh(); }
+      const free = (x0, y0, w, h) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) if (!GR.has(T.col(x, y))) return false; return true; };
+      // 접지 그림자 (빛은 왼쪽 위 → 오른쪽 아래로)
+      for (const [gx, gy] of [[112, 110], [144, 110], [176, 110], [112, 146], [144, 146], [176, 146]]) T.oval(GR, gx + 3, gy + 1.5, 8, 2.4, '#141c12', gx + gy, 1.3);
+      T.oval(GR, 176, 75, 10, 2.4, '#141c12', 711, 1.3); T.oval(GR, 245, 150, 18, 2.6, '#141c12', 712, 1.2); T.oval(GR, 280, 156, 15, 2.2, '#141c12', 713, 1.2);
+      T.oval(GR, 92, 172, 6, 1.8, '#141c12', 714, 1.3); T.oval(GR, 304, 172, 6, 1.8, '#141c12', 715, 1.3); T.oval(GR, 128, 84, 44, 3, '#141c12', 716, 1);
+      T.refresh();
+      // 풀포기 (3가지 모양) · 들꽃 · 버섯 — 빈 풀밭에만, 격자 피해 흩뿌림
+      const TUFT = [['.g..g', 'gGg.G', '.Gg.g'], ['g.g', 'GgG'], ['..g.', '.gG.', 'gGgG']];
+      for (let i = 0; i < 70; i++) { const x = RX0 + 2 + Math.floor(h2(i, 1, 720) * (RX1 - RX0 - 8)), y = RY0 + 4 + Math.floor(h2(i, 2, 720) * (RY1 - RY0 - 8)), t = TUFT[i % 3];
+        if (!free(x - 1, y - 1, t[0].length + 2, t.length + 2)) continue;
+        P.spr(t, { g: '#4e6e3c', G: '#3a562e' }, x, y, false);
+        if (i % 6 === 0) { P.put(x + 1, y - 1, '#e8e0d0'); P.put(x + 1, y, '#c8b878'); } else if (i % 9 === 4) P.put(x + 2, y - 1, '#c88aa8'); }
+      for (const [x, y] of [[300, 98], [266, 104], [96, 116], [204, 76], [120, 166]]) if (free(x - 1, y - 1, 5, 5)) P.spr(['.rr.', 'rRrr', '.ww.'], { r: '#8a4a3a', R: '#c06a4a', w: '#d8d0c0' }, x, y);
+      // 마른 나무 밑 낙엽
+      for (let i = 0; i < 24; i++) { const a = h2(i, 3, 730) * Math.PI * 2, r = 4 + h2(i, 4, 730) * 20, x = Math.round(292 + Math.cos(a) * r * 1.3), y = Math.round(100 + Math.sin(a) * r * 0.5) + 2;
+        const c = ['#8a5a2a', '#6e4420', '#a06a30', '#5a3a1e'][i % 4]; if (GR.has(T.col(x, y)) && GR.has(T.col(x + 1, y))) { P.put(x, y, c); P.put(x + 1, y, i & 1 ? c : '#3a2614'); } }
+      // 흩어진 잔돌
+      for (let i = 0; i < 14; i++) { const x = RX0 + 4 + Math.floor(h2(i, 5, 740) * (RX1 - RX0 - 10)), y = RY0 + 6 + Math.floor(h2(i, 6, 740) * (RY1 - RY0 - 12)); if (!free(x - 1, y - 1, 4, 3)) continue; P.put(x, y, '#77717e'); P.put(x + 1, y, '#57525e'); P.put(x, y + 1, '#3a3542'); P.put(x + 1, y + 1, '#141814'); }
+    };
+  }
+
+  // ---------------------------------------------------------------- v2.97 단군의 은신처: 의뢰 중개인 고양이 「단군」(바 앞) + 바닥에 꽂아 세운 단도
+  // 얼굴형은 네로 기준 · 털은 흰 바탕 + 주황 얼룩(보는 쪽 왼쪽 얼굴 · 귀 · 머리 위 · 오른쪽 눈 위) · 분홍 코 · 올리브빛 호박색 눈 · 붉은 스카프 · 주황 꼬리
+  const DANGUN = [
+    "....k...k.....", "...kok.kok....", "..kpok.kopk...", "..koooooook...", ".kdooowoooOk..", "kdooEwwwEwwWk.", ".kooewwwewWk..", "..kowwNwwWkkk.",
+    ".kodRRrRRdokOk", "kooRRRrRRwwkok", "kowwkrrkwwwkok", ".kowwwwwwwokdk", "..kwwkkkkwwk..", "..kkkk..kkkk..",
+  ];
+  const DANGUN_PAL = { k: '#0b0a0e', w: '#f6f2ea', W: '#d8d0c4', o: '#d98a3e', O: '#eaa860', d: '#a8602a', p: '#e8a0a0', N: '#e8909a', E: '#1a1410', e: '#a8a04a', R: '#c03a30', r: '#8a2420' };
+  const DAGGER = ['.y.', '.g.', '.G.', '.g.', 'xXx', '.sS', '.sS', '.sS', '.sS', '.s.'], DAGGER_PAL = { k: '#0b0a0e', y: '#e0b040', g: '#5a3a22', G: '#8a6a3a', x: '#77717e', X: '#c8ccd4', s: '#e0e4ec', S: '#8a8e98' };
+  const NPC_ART = {};
+  const npcArt = (k, fn) => NPC_ART[k] || (NPC_ART[k] = fn());
+  function dangunRows(crouch, blink, tail) {
+    let R = DANGUN.map(r => r.split(''));
+    if (blink) { R[5][4] = 'o'; R[5][8] = 'w'; R[6][4] = 'E'; R[6][8] = 'E'; } // 감은 눈: 아래 칸만 진한 선
+    if (tail) { R[6][12] = 'k'; R[7][12] = 'k'; R[7][13] = 'k'; } // 꼬리 끝 1칸 까딱
+    R = R.map(r => r.join(''));
+    return crouch ? ['.'.repeat(R[0].length)].concat(R.slice(0, 10), R.slice(11)) : R; // 발은 그대로, 몸만 1칸 내려앉음
+  }
+  const DANGUN_LINES = ['좋은 의뢰가 들어왔다냥', '수수료는 일 끝나고 받겠다냥', '그 의뢰, 냄새가 좀 난다냥', '보수도 위험도 두둑하다냥', '게시판 의뢰는 다 내 손을 거쳤다냥', '소문 하나에 은화 한 닢이다냥', '누구한테 들었는지는 묻지 말라냥'];
+  const DANGUN_GREET = ['어이, 살아 돌아왔냥', '일거리 찾으러 왔냥?'];
+  SCENES.ranger.npc = { x: 238, y: 78, dag: [231, 80] };
+  // v3.11 하비: 그레이브의 라이벌이자 마지막 남은 동료 (흰 고양이 · 허리 뒤에 일자로 맨 더블배럴 샷건). 대사는 나중에
+  const HABI = {"f":{"base":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...",".KKKKKkaaauwwwuwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK","........kCCCkCCCkkWWkSSSK",".........kFFk.kFFkkkKKKK.",".........kkkk.kkkk......."],"baseB":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...",".KKKKKkaaanwwwnwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK","........kCCCkCCCkkWWkSSSK",".........kFFk.kFFkkkKKKK.",".........kkkk.kkkk......."],"idle":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...",".KKKKKkaaauwwwuwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK",".........kFFk.kFFkkkSSSSK",".........kkkk.kkkkKKKKKK."],"idleB":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...",".KKKKKkaaanwwwnwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK",".........kFFk.kFFkkkSSSSK",".........kkkk.kkkkKKKKKK."]},"p":{"1":"#b9b9c3","2":"#a9a9b4","3":"#8f8f9b","A":"#d8d4cc","B":"#5a5a62","C":"#c9c9d1","F":"#8a8a96","H":"#fbf9f5","K":"#0b0a0e","N":"#e8909a","S":"#4a3020","W":"#dcd8d0","a":"#fbf9f5","b":"#8d9097","c":"#dcdce2","k":"#0b0a0e","n":"#16120e","p":"#eaa4a8","s":"#6b4a2a","u":"#cfa628","w":"#fbf9f5","x":"#5e5e6a"}};
+  SCENES.gunner.npc2 = { x: 294, y: 122 }; // 칸 좌표 (발밑) — 파낸 무덤 흙더미 오른쪽, 마른 나무 아래 // 칸 좌표 (발밑) — 바 앞에 걸터앉은 자리
+
   // ================================================================ 게임 연결부
   // 칸(2px) 좌표로 그린 장면을 바닥 캔버스에 2배로 깔고, 방 테두리(A)를 장면의 방 사각형에 맞춘다.
   const INFO = {
     knight: { line: '…맹세를 지켜야 해.', obs: [[108, 60, 16], [262, 56, 14], [212, 98, 9], [228, 98, 9], [244, 98, 9], [260, 98, 9], [276, 98, 9], [106, 112, 6], [118, 112, 6], [130, 112, 6], [258, 136, 7], [270, 136, 7], [286, 134, 6]], wm: [6, 130] },
-    ranger: { line: '…피 냄새가 나.', obs: [[238, 66, 7], [252, 66, 7], [266, 66, 7], [281, 68, 7], [281, 82, 6], [186, 106, 10], [110, 150, 10], [108, 134, 6], [268, 150, 10], [268, 136, 6]], wm: [26, 157] },
+    ranger: { line: '…피 냄새가 나.', rects: [[96, 87, 131, 91], [143, 87, 156, 91], [152, 54, 156, 91]], obs: [[238, 66, 7], [252, 66, 7], [266, 66, 7], [281, 68, 7], [238, 77, 5], [232, 79, 2], [186, 106, 10], [110, 150, 10], [108, 134, 6], [268, 150, 10], [268, 136, 6]], wm: [26, 157] },
     mage: { line: '…하늘이 아직 저물지 않았네요.', obs: [[70, 48, 26], [314, 48, 26], [70, 182, 28], [314, 182, 28], [160, 90, 5], [262, 92, 6], [238, 110, 7], [252, 110, 7], [266, 110, 7], [276, 110, 6], [106, 95, 8], [288, 112, 5]], wm: [3, 146] },
     priest: { line: '…오늘도 대답이 없으시군요.', obs: [], wm: [16, 132] },
-    gunner: { line: '…묻을 놈이 하나 남았지.', obs: [[92, 64, 10], [108, 64, 10], [124, 64, 10], [140, 64, 10], [156, 64, 10], [172, 58, 6], [176, 72, 7], [112, 104, 5], [144, 104, 5], [176, 104, 5], [112, 140, 5], [144, 140, 5], [176, 140, 5], [208, 104, 9], [224, 104, 9], [260, 104, 12], [288, 88, 6], [236, 138, 8], [250, 138, 8], [278, 150, 10], [84, 166, 4], [304, 166, 4]], wm: [4, 157] },
+    gunner: { line: '…묻을 놈이 하나 남았지.', obs: [[294, 120, 6], [92, 64, 10], [108, 64, 10], [124, 64, 10], [140, 64, 10], [156, 64, 10], [175, 53, 6], [172, 70, 8], [112, 104, 5], [144, 104, 5], [176, 104, 5], [112, 140, 5], [144, 140, 5], [176, 140, 5], [208, 104, 9], [224, 104, 9], [260, 104, 12], [288, 88, 6], [236, 138, 8], [250, 138, 8], [278, 150, 10], [84, 166, 4], [304, 166, 4]], wm: [4, 157] },
   };
+  { // v2.86 관측탑: 칠판 · 보면대 · 혼천의는 그림 전체를 막고(뒤로 돌아가 위를 밟지 않게), 둥근 벽의 책장은 벽처럼 바닥선까지 막는다
+    const r = INFO.mage.rects = [[86, 58, 126, 98], [148, 48, 172, 96], [248, 56, 276, 96], [226, 56, 298, 121], [72, 40, 82, 200], [302, 40, 312, 200]]; // 책상 · 책 더미는 뒤로 못 들어가게 그림 전체
+    for (let x = 72; x < 312; x += 4) { let m = -1e9; for (let i = x; i < x + 4; i++) { const t = (i + 0.5 - 192) / 118; m = Math.max(m, Math.abs(t) <= 1 ? Math.round(114 + 64 * Math.sqrt(1 - t * t)) : 0); } if (m < 177) r.push([x, m, x + 4, 200]); } // 둥근 벽 아래쪽 · 옆쪽: 바닥 원 밖은 막음
+    for (let x = 72; x < 312; x += 4) { let m = 1e9; for (let i = x; i < x + 4; i++) { const t = (i + 0.5 - 192) / 118; if (Math.abs(t) <= 1) m = Math.min(m, Math.round(114 - 64 * Math.sqrt(1 - t * t))); } if (m < 1e9) r.push([x, 40, x + 4, m]); }
+  }
   { // 수도원: 신도석 줄 · 제단 · 종
     const o = INFO.priest.obs;
     [72, 92, 112, 132, 152].forEach((y, i) => { for (let x = 92; x <= 160; x += 12) o.push([x, y + 5, 6]); if (i !== 3) for (let x = 220; x <= 288; x += 12) o.push([x, y + 5, 6]); });
@@ -1223,6 +1600,7 @@
     const S = SCENES[cls], I = INFO[cls];
     const R = { id: 0, gx: 0, gy: 0, type: 'home', shape: shapeKey(cls), cls, doors: { n: null, s: null, w: null, e: null }, visited: true, seen: true, cleared: true, loot: [], seed: 7171, obs: [], props: [], style: { path: 'none' }, deco: [], sprites: [] };
     for (const [x, y, r] of I.obs) { const p = toW(cls, x, y); R.obs.push({ t: 'prop', c: true, x: p.x, y: p.y, r: r * 2 }); }
+    for (const [x0, y0, x1, y1] of I.rects || []) { const a = toW(cls, x0, y0), b = toW(cls, x1, y1); R.obs.push({ t: 'prop', c: false, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, w: b.x - a.x, h: b.y - a.y, x0: a.x, y0: a.y, x1: b.x, y1: b.y }); } // v2.96 직사각형 막기 (역참 다락 가장자리: 보이는 건 그대로, 사다리로만 오르내림)
     const e = toW(cls, S.exit[0], S.exit[1]); R.door = { x: e.x, y: A.y1 }; // v2.55 출구는 아래 문 (마법진 없음) — 문으로 걸어 나가면 출발
     R.nav = buildNav(R.obs);
     return R;
@@ -1244,6 +1622,42 @@
     for (const l of SCENES[R.cls].lights) { const p = toW(R.cls, l.x, l.y); list.push({ x: p.x, y: p.y, r: l.r * 2, a: Math.min(1, l.a * 1.5), c: l.c ? l.c.join(',') : undefined, ca: l.c ? 0.12 : 0 }); }
   }
 
+  // v2.97 시작 장소 NPC (깊이 정렬)
+  // v2.86 관측탑 둥근 벽(아래쪽 · 옆쪽)은 캐릭터 위에 덮어 그린다 — 벽 가장자리에 선 캐릭터의 꼬리·옷자락이 벽에 가려지게
+  let RING_FG = null;
+  function ringFg() {
+    if (RING_FG) return RING_FG;
+    const a = art('mage'), [c, g] = mk(GW, GH), src = a.c.getContext('2d').getImageData(0, 0, GW, GH), out = g.createImageData(GW, GH);
+    const ecx = 192, ecy = 114, erx = 118, ery = 64, inE = (x, y) => ((x + 0.5 - ecx) / erx) ** 2 + ((y + 0.5 - ecy) / ery) ** 2 <= 1;
+    for (let y = ecy - 30; y < GH; y++) for (let x = 0; x < GW; x++) { const d = ((x + 0.5 - ecx) / (erx + 8)) ** 2 + ((y + 0.5 - ecy) / (ery + 8)) ** 2;
+      if (d > 1 || inE(x, y) || (x >= 172 && x <= 212 && y >= 150)) continue; // 아래 계단 문은 빼고
+      const i = (y * GW + x) * 4; for (let k = 0; k < 4; k++) out.data[i + k] = src.data[i + k]; }
+    g.putImageData(out, 0, 0); return (RING_FG = c);
+  }
+  function ents(list) {
+    const R = G && G.dun && G.dun.cur; if (!R || R.type !== 'home') return;
+    if (R.cls === 'mage') { const o = off('mage'); list.push({ y: 1e9, d: () => { const im = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false; ctx.drawImage(ringFg(), o.x, o.y, GW * 2, GH * 2); ctx.imageSmoothingEnabled = im; } }); }
+    { const S2 = SCENES[R.cls], N2 = S2 && S2.npc2; if (N2) { const p = toW(R.cls, N2.x, N2.y); list.push({ y: p.y, d: () => { // v3.11 하비 (숨 고르기 · 깜빡임은 플레이어블 캐릭터와 같게)
+      const n = Math.floor((time + 0.3) / 0.6) % 2, bt = (time + 3.3) % 8.6, blink = bt < 0.12 || (bt >= 4.3 && bt < 4.42), fk = (n ? 'idle' : 'base') + (blink ? 'B' : '');
+      const c = npcArt('habi' + fk, () => { const rows = HABI.f[fk], [cv, g] = mk(rows[0].length * 2, rows.length * 2); rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.' || !HABI.p[ch]) return; g.fillStyle = HABI.p[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return cv; });
+      const fr = HABI.f.base[HABI.f.base.length - 1]; let a0 = -1, a1 = -1; for (let i = 0; i < fr.length; i++) if (fr[i] !== '.') { if (a0 < 0) a0 = i; a1 = i; }
+      const x = Math.round(p.x - (a0 + a1 + 1)) & ~1, y = (p.y - c.height + 2) & ~1;
+      ctx.fillStyle = 'rgba(10,6,4,.5)'; ctx.fillRect((p.x - 10) & ~1, p.y, 20, 2);
+      ctx.drawImage(c, x, y);
+    } }); } }
+    const S = SCENES[R.cls], N = S && S.npc; if (!N) return;
+    const p = toW(R.cls, N.x, N.y), dp = toW(R.cls, N.dag[0], N.dag[1]);
+    list.push({ y: dp.y, d: () => { const c = npcArt('dagger', () => gCanvas(gOutline(fromRows(DAGGER)), DAGGER_PAL)); ctx.fillStyle = 'rgba(10,6,4,.55)'; ctx.fillRect((dp.x - 2) & ~1, (dp.y) & ~1, 6, 2); ctx.drawImage(c, (dp.x - c.width / 2) & ~1, (dp.y - c.height + 4) & ~1); } });
+    list.push({ y: p.y, d: () => {
+      const n = Math.floor(time / 1.2), t = time % 1.2, crouch = t >= 0.6, tail = n % 3 === 0 && t < 0.3, bt = (time + 2.1) % 8.6, blink = bt < 0.12 || (bt >= 4.3 && bt < 4.42) || (bt >= 4.6 && bt < 4.72);
+      const c = npcArt('dangun' + (+crouch) + (+blink) + (+tail), () => gCanvas(fromRows(dangunRows(crouch, blink, tail)), DANGUN_PAL));
+      const x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + 2) & ~1;
+      ctx.fillStyle = 'rgba(10,6,4,.5)'; for (let i = 4; i < c.width - 4; i += 2) if ((i >> 1) & 1 || (i > 8 && i < c.width - 10)) ctx.fillRect(x + i, y + c.height - 2, 2, 2);
+      ctx.drawImage(c, x, y);
+      const P = G.player, near = P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < 80, say = npcTalk('dangun', near, DANGUN_LINES, DANGUN_GREET);
+      if (say) drawBubble(say.line, p.x, y + 2, 0);
+    } });
+  }
   // ---- 흐름: 원정 시작(선 채로 · 대사 → 장소 이름) · 아래 문으로 걸어 나가면 출발 · 엔딩 귀환(잠든 채, 11b가 진행)
   const SEQ = { title: [0.3, 2.5], line: 2.6 }; // 장소 이름이 먼저, 이름이 걷힌 뒤 대사
   let again = false;
@@ -1272,19 +1686,20 @@
       if (t > (h.re ? 2.7 : SEQ.line + 0.1)) G.home = null; }
     return false;
   }
-  function drawTitle(txt, k, out) { // 장소 이름: 진입 문구 제목과 같은 모양 (칸 단위 등장)
+  function drawTitle(txt, k, out, sub) { // 장소 이름: 진입 문구 제목과 같은 모양 (칸 단위 등장)
     if (k < 0) return;
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); if (out) ctx.globalAlpha = 0.5;
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.font = 'bold 24px Galmuri11';
     const R = G && G.dun && G.dun.cur, x = R ? Math.round((A.x0 + A.x1) / 2 - CAMX) : VW / 2, y = R ? Math.round((A.y0 + A.y1) / 2 - CAMY) + 8 : VH / 2 + 8; // 맵(방) 가운데
     ctx.fillStyle = '#000'; for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2], [2, 2]]) ctx.fillText(txt, x + dx, y + dy);
     ctx.fillStyle = '#5e0f16'; ctx.fillText(txt, x, y + 3); ctx.fillStyle = '#f2d78c'; ctx.fillText(txt, x, y);
+    if (sub) { ctx.font = '12px Galmuri11'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1]]) ctx.fillText(sub, x + dx, y + 22 + dy); ctx.fillStyle = '#c8b898'; ctx.fillText(sub, x, y + 22); } // v2.96 장소 설명 한 줄
     ctx.restore();
   }
   function screen() {
     const h = G && G.home; if (!h) return;
     const a = SEQ.title[0], b = SEQ.title[1]; // 다시 떠날 때는 대사 없이 이름만
-    if (h.t >= a && h.t < b) drawTitle(SCENES[G.cls].name, h.t - a, b - h.t < 0.2);
+    if (h.t >= a && h.t < b) drawTitle(SCENES[G.cls].name, h.t - a, b - h.t < 0.2, SCENES[G.cls].sub);
   }
   function interact() { // 아래 문 앞에서 F 원정 떠나기
     const R = G.dun && G.dun.cur, P = G.player; if (!R || R.type !== 'home' || !R.door || !P) return null;
@@ -1306,7 +1721,7 @@
   const name = cls => SCENES[cls] ? SCENES[cls].name : '';
   const line = cls => INFO[cls] ? INFO[cls].line : '…';
   return {
-    enter, place, update, busy, screen, drawTitle, interact, leave, paint, lights, wmPath, name, line,
+    enter, place, update, busy, screen, drawTitle, interact, leave, paint, lights, ents, wmPath, name, line,
     set again(v) { again = !!v; }, get again() { return again; },
   };
   })();
