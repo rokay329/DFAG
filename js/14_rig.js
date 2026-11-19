@@ -104,7 +104,7 @@
     // 떠오르는 빛 알갱이: 2px 칸 (번짐 조명 없음)
     if (Math.random() < (lv > 2 ? 0.3 : lv > 1 ? 0.25 : 0.12)) G.parts.push({ x: snap2(ax + rand(-12, 12)), y: snap2(ay - rand(4, (e.tall || 30) - 4)), vx: 0, vy: -rand(14, 30), t: rand(0.3, 0.6), c: inC, g: 0 });
   }
-  const NM_AURA = { gbrute: ['#ffb040', 2], boar: ['#ff4a30', 2], exec: ['#d02828', 2], mother: ['#9ae050', 2], mordred: ['#ff9a40', 2], queen: ['#b890ff', 2], urg: ['#ffd34d', 2], troll: ['#8ad0ff', 2],
+  const NM_AURA = { gbrute: ['#ffb040', 1], boar: ['#ff4a30', 1], exec: ['#d02828', 1], mother: ['#9ae050', 1], mordred: ['#ff9a40', 1], queen: ['#b890ff', 1], urg: ['#ffd34d', 1], troll: ['#8ad0ff', 1], // v2.93 엘리트도 준엘리트처럼 외곽선 한 줄
     boss: ['#c070ff', 2], coffin: ['#ff7a30', 1], herald: ['#ffd060', 1], ocharge: ['#ff6a2a', 1], odrum: ['#ff4030', 1], ogrip: ['#ff8a50', 1], otroll: ['#c0e070', 1] };
   const nmAuraOf = e => e.orc === 'krugash' ? (e.freed ? null : ['#ff5a2a', 2]) /* v2.84 저주가 풀린 크루가쉬는 붉은 기운 없음 */ : NM_AURA[e.type];
   function withAura(e, col, fn) { // 여러 부위로 그리는 보스(점액왕·잿빛 왕)

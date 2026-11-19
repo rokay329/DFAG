@@ -382,7 +382,7 @@
   }
   const isEliteT = t => t === 'panda' || t === 'reaper' || t === 'weasel' || t === 'shrewA' || t === 'shrewB' || t === 'butcher' || t === 'gbrute' || t === 'boar' || t === 'hob' || t === 'mother' || t === 'urg' || t === 'troll' || t === 'exec' || t === 'bearer' || t === 'mordred' || t === 'queen';
   const isElite = e => isEliteT(e.type);
-  const ELITE_NAMES = { weasel: '떠돌이 총잡이 「검은 안대」', shrewA: '형 땃쥐 「은고리」', shrewB: '아우 땃쥐 「금고리」', shrews: '차크람 땃쥐 형제', reaper: '떠돌이 수확자 「흑각」', panda: '떠돌이 석궁사수 「붉은 꼬리」', gbrute: '고블린 챔피언', boar: '가시등 멧돼지', hob: '고블린 대장', butcher: '누더기 거인', mother: '역병 어미', exec: '기사단 처형인', bearer: '타락한 기수', urg: '투기장 챔피언 우르그', troll: '사슬 풀린 트롤 그러크' };
+  const ELITE_NAMES = { weasel: '무법자 「검은 안대」', shrewA: '형 땃쥐 「은고리」', shrewB: '아우 땃쥐 「금고리」', shrews: '차크람 땃쥐 형제', reaper: '수확자 「흑각」', panda: '떠돌이 석궁사수 「붉은 꼬리」', gbrute: '고블린 챔피언', boar: '가시등 멧돼지', hob: '고블린 대장', butcher: '누더기 거인', mother: '역병 어미', exec: '기사단 처형인', bearer: '타락한 기수', urg: '투기장 챔피언 우르그', troll: '사슬 풀린 트롤 그러크' };
   const eliteName = e => ELITE_NAMES[e.kind === 'hob' ? 'hob' : e.type];
   const ELITE_TOP = { gbrute: 34, boar: 30, hob: 50, butcher: 52, mother: 38, exec: 38, bearer: 62 }; // v2.44 새 도트 키 // 머리 위 (이름표·HP 막대 높이)
   const SEMI_T = new Set(['ocharge', 'otroll', 'ogrip']), isSemi = e => SEMI_T.has(e.type);
@@ -1641,9 +1641,9 @@ huskUp:[
     ctx.save(); ctx.globalAlpha = o.alpha == null ? 0.92 : o.alpha;
     const top = Math.round(by - h); let topX = cx;
     for (let pass = 0; pass < 2; pass++) for (let i = 0; i < rows; i++) {
-      const t = (i + 0.5) / rows, J = o.jelly, wv = J ? 1 + Math.sin(i * 0.55 - time * 7 + J.ph) * J.wave * (1 - t * 0.6) : 1, hw = Math.round(rowW(t) * wv / px) * px + (pass === 0 ? px : 0), y = top + i * px - (pass === 0 && i === 0 ? px : 0);
+      const t = (i + 0.5) / rows, J = o.jelly, wv = J ? 1 + Math.sin(i * 0.55 - (J.t != null ? J.t : time) * 7 + J.ph) * J.wave * (1 - t * 0.6) : 1, hw = Math.round(rowW(t) * wv / px) * px + (pass === 0 ? px : 0), y = top + i * px - (pass === 0 && i === 0 ? px : 0);
       if (hw <= 0) continue;
-      const X = J ? Math.round((cx + J.lean * h * (1 - t) * (1 - t) * 0.9 + Math.sin(time * 5 - t * 4 + J.ph) * J.wave * 20 * (1 - t)) / px) * px : cx; if (i === 2) topX = X;
+      const X = J ? Math.round((cx + J.lean * h * (1 - t) * (1 - t) * 0.9 + Math.sin((J.t != null ? J.t : time) * 5 - t * 4 + J.ph) * J.wave * 20 * (1 - t)) / px) * px : cx; if (i === 2) topX = X;
       if (pass === 0) { ctx.fillStyle = o.white ? '#ffffff' : C.k; ctx.fillRect(Math.round(X - hw), y, hw * 2, px + (i === rows - 1 ? px : 0) + (i === 0 ? px : 0)); continue; }
       ctx.fillStyle = o.white ? '#ffffff' : C.m; ctx.fillRect(Math.round(X - hw), y, hw * 2, px);
       if (!o.white) {
@@ -1652,7 +1652,7 @@ huskUp:[
         if (i >= rows - 2) ctx.fillRect(Math.round(X - hw), y, hw * 2, px);
       }
     }
-    if (!o.white) {
+    if (!o.white && !o.noShine) { // v2.93 noShine: 왼쪽 위 반사광 없이 (점액왕)
       ctx.fillStyle = C.l;
       ctx.fillRect(Math.round(topX - w * 0.22) & ~1, top + px * 2, px * 2, px); ctx.fillRect(Math.round(topX - w * 0.28) & ~1, top + px * 3, px, px * 2);
       if (o.jelly) { ctx.fillRect(Math.round(topX - w * 0.16) & ~1, top + px * 2, px * 3, px); ctx.globalAlpha *= 0.6; ctx.fillRect(Math.round(topX - w * 0.32) & ~1, top + px * 6, px, px * 3); }
@@ -1857,35 +1857,94 @@ huskUp:[
       onFire: () => { b.state = 'roll'; b.dashLeft = 320; b.hitPlayer = false; sfx('whoosh'); dust(b.x, b.y, 12); } });
   }
   let CROWN_G = null;
+  // v2.93 점액왕: 눈 없이 삼킨 해골이 얼굴 자리에서 둥둥 떠다님 · 몸속 넓적다리뼈 · 갈비뼈 · 아래쪽 빛 띠 (왼쪽 위 반사광 없음)
+  const SK_BONE = { w: '#e0d8c4', W: '#a49c88', s: '#24301c' };
+  let SK_ART = null; // gOutline · fromRows는 05_dungeon.js에 있어서 처음 그릴 때 만든다
+  const skArt = () => SK_ART || (SK_ART = { // 플레이어 캐릭터와 같은 2등신: 큰 해골 · 작은 늑골 · 짧은 팔 · 작은 골반
+    skull: gOutline(fromRows(["..wwwwww..", ".wwwwwwwwW", "wwwwwwwwwW", "wssswwsssW", "wssswwsssW", "wwwwsswwwW", ".WwwwwwwW.", "..wswswW.."]), 's'),
+    skullO: gOutline(fromRows(["..wwwwww..", ".wwwwwwwwW", "wwwwwwwwwW", "wssswwsssW", "wssswwsssW", "wwwwsswwwW", ".WwwwwwwW.", "..........", "..wswswW.."]), 's'), // 턱이 벌어짐
+    rib: gOutline(fromRows([".wwwW.", "w.ww.W", ".wwwW.", "..wW.."]), 's'),
+    armL: gOutline(fromRows(["..w", ".wW", "ww.", "w.w"]), 's'),
+    armL2: gOutline(fromRows(["..w", "ww.", "w..", ".ww"]), 's'), // 팔이 다른 각도로 휘청
+    pelvis: gOutline(fromRows(["wwwwwW", "w....W"]), 's'),
+  });
+  const flipG = g => g.map(r => r.slice().reverse());
+  // 점액 속에 잠긴 색: 뼈 · 안구 색을 점액 색 쪽으로 섞는다 (점액 색마다 한 번만)
+  const SK_TINT = {};
+  const skTint = (pal, C, t) => { const k = C.m + t + Object.values(pal).join(); if (SK_TINT[k]) return SK_TINT[k];
+    const hx = v => [1, 3, 5].map(i => parseInt(v.slice(i, i + 2), 16)), m = hx(C.m), o = {};
+    for (const q in pal) { const c = hx(pal[q]); o[q] = '#' + c.map((x, i) => Math.round(x + (m[i] - x) * t).toString(16).padStart(2, '0')).join(''); }
+    return (SK_TINT[k] = o); };
+  let SK_EYEBALL_G = null;
+  Object.defineProperty(window, 'SK_EYEBALL', { configurable: true, get: () => SK_EYEBALL_G || (SK_EYEBALL_G = gOutline(fromRows(['.wwww.', 'wwwwwW', 'wwwwwW', 'rwwwwW', 'wrwwWW', '.WWWW.']), 's')) }); // 안구 6칸 (둥근 흰자 · 그늘 · 핏줄)
+  const SK_DRIFT = [[0, 0], [2, 0], [4, -2], [4, -4], [2, -4], [0, -4], [-2, -2], [-2, 0]]; // 해골이 떠도는 길 (2px 칸)
   function drawSlimeKing(e, ya, al) {
     const C = SLIME_COL[e.stage === 3 ? 'kingR' : 'king'], white = e.flash > 0, z = e.z || 0;
-    // 스프링 값으로 늘어나고(세로) 그만큼 퍼지며(가로, 부피 유지), 숨 쉬듯 출렁
-    let sy = 1 + (e.jy || 0) + Math.sin(time * 4) * 0.04 + Math.sin(time * 9.3) * 0.012, sx = 1 / Math.sqrt(Math.max(0.3, sy)) * (1 + Math.max(0, -(e.jy || 0)) * 0.35);
+    // 스프링 값으로 늘어나고(세로) 그만큼 퍼지며(가로, 부피 유지) — 시간은 초당 6장면, 크기는 가로 4px · 세로 2px 단위
+    const tq = Math.floor(time * 6) / 6;
+    let sy = 1 + (e.jy || 0) + Math.sin(tq * 4) * 0.04, sx = 1 / Math.sqrt(Math.max(0.3, sy)) * (1 + Math.max(0, -(e.jy || 0)) * 0.35);
     const W0 = 64, H0 = 50, cx = Math.round(e.x) & ~1, by = Math.round(e.y + 2 + ya - z) & ~1;
+    sx = Math.round(W0 * sx / 4) * 4 / W0; sy = Math.round(H0 * sy / 2) * 2 / H0;
     drawShadow(e.x, e.y + 2, 30 * (1 - Math.min(0.55, z / 200)));
     if (e.glow > 0 && !white) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; const gr = dRadial(ctx, cx, by - 24, 0, cx, by - 24, 50); gr.addColorStop(0, `rgba(160,255,90,${0.4 * e.glow})`); gr.addColorStop(1, 'rgba(160,255,90,0)'); ctx.fillStyle = gr.p(ctx); ctx.fillRect(cx - 50, by - 74, 100, 100); ctx.restore(); }
-    drawBlob(cx, by, W0 * sx, H0 * sy, C, { white, alpha: 0.9 * al, jelly: { lean: (e.jl || 0) + Math.sin(time * 2.6) * 0.04, wave: 0.035 + Math.min(0.08, Math.abs(e.jyv || 0) * 0.012), ph: e.x * 0.01 } });
+    drawBlob(cx, by, W0 * sx, H0 * sy, C, { white, noShine: true, alpha: 0.86 * al, jelly: { lean: Math.round(((e.jl || 0) + Math.sin(tq * 2.6) * 0.05) * 50) / 50, wave: 0.05 + Math.min(0.08, Math.abs(e.jyv || 0) * 0.012), ph: e.x * 0.01, t: tq } });
     const lx = (e.jl || 0) * H0 * sy * 0.5; // 이후 장식은 기울기 따라 옮긴다
     if (white) return;
-    const h = H0 * sy;
-    // 몸 속에 떠 있는 해골과 뼈 (삼킨 것들)
-    ctx.save(); ctx.globalAlpha = 0.5 * al;
-    const skx = Math.round(cx - 8 + Math.sin(time * 1.3) * 3), sky = Math.round(by - h * 0.42 + Math.cos(time * 1.1) * 2);
-    const sx2 = skx & ~1, sy2 = sky & ~1; ctx.fillStyle = '#d8d0b8'; ctx.fillRect(sx2, sy2, 8, 6); ctx.fillRect(sx2 + 2, sy2 + 6, 4, 2);
-    ctx.fillStyle = C.d; ctx.fillRect(sx2 + 2, sy2 + 2, 2, 2); ctx.fillRect(sx2 + 4, sy2 + 2, 2, 2);
-    ctx.fillStyle = '#d8d0b8'; ctx.fillRect(Math.round(cx + 10 + Math.sin(time) * 2) & ~1, Math.round(by - h * 0.25) & ~1, 8, 2);
-    if (e.state === 'roll') { ctx.fillStyle = C.l; for (let i = 0; i < 3; i++) { const aa = e.rollA + i * 2.1; ctx.fillRect(Math.round(cx + Math.cos(aa) * 20), Math.round(by - h / 2 + Math.sin(aa) * 14), 3, 3); } }
+    const h = H0 * sy, w = W0 * sx;
+    // 몸속 유골 (반쯤 비침, 칸 단위로 천천히 떠돎): 얼굴 자리의 해골 · 아래쪽 넓적다리뼈 · 갈비뼈 조각
+    ctx.save(); ctx.globalAlpha = 0.6 * al;
+    // 해골 · 늑골 · 양팔뼈가 한 몸처럼 둥둥 떠다니며(초당 3칸), 턱이 딱딱거리고 팔이 제각각 휘청인다 — 기괴하게
+    const A = skArt();
+    // 뼈마다 2px씩 떨어져 있고, 저마다 다른 박자로 떠돈다 (해골 · 늑골 · 골반은 떠도는 길의 다른 칸, 팔은 따로 휘청)
+    const fx = (Math.round(cx + e.face * 4 + lx * 0.62) & ~1) - 12, fy = Math.round(by - h * 0.88) & ~1, st = Math.floor(time * 3), N = SK_DRIFT.length;
+    const at = (ph, half) => { const d = SK_DRIFT[(st + ph) % N]; return half ? [Math.round(d[0] / 4) * 2, Math.round(d[1] / 4) * 2] : d; };
+    const dS = at(0), dR = at(3, true), dP = at(6, true), dAL = at(1, true), dAR = at(5, true);
+    const jaw = Math.floor(time * 3.5) % 3 === 0, swL = Math.floor(time * 2.4) % 2, swR = Math.floor(time * 1.9 + 0.5) % 2;
+    const BP = skTint(SK_BONE, C, 0.32); ctx.globalAlpha = 0.8 * al;
+    gPaint(ctx, A.pelvis, BP, fx + 4 + dP[0] * e.face, fy + 36 + dP[1]);
+    gPaint(ctx, swL ? A.armL2 : A.armL, BP, fx - 8 + dAL[0] * e.face, fy + 22 + dAL[1] + (swL ? 2 : 0));
+    gPaint(ctx, flipG(swR ? A.armL2 : A.armL), BP, fx + 22 + dAR[0] * e.face, fy + 22 + dAR[1] + (swR ? 2 : 0));
+    gPaint(ctx, A.rib, BP, fx + 4 + dR[0] * e.face, fy + 22 + dR[1]);
+    gPaint(ctx, jaw ? A.skullO : A.skull, BP, fx + dS[0] * e.face, fy + dS[1]);
+    // 점액 너머로 보이게: 몸속 물체 위로 점액 결(반투명 가로 띠)이 천천히 흘러내림
+    ctx.globalAlpha = 0.32 * al; ctx.fillStyle = C.m;
+    for (let k = 0; k < 7; k++) { const yy = (Math.round(by - h * 0.9) & ~1) + ((k * 8 + Math.floor(time * 3) * 2) % 56), t = (yy - (by - h)) / h; if (t <= 0.12 || t >= 0.9) continue; // 몸 모양(drawBlob과 같은 식) 안쪽으로만
+      const hw = Math.round(w * 0.5 * Math.sqrt(Math.max(0, 1 - Math.pow(1 - t, 2))) * 0.8 / 2) * 2; ctx.fillRect(cx - hw + (lx * (1 - t) & ~1), yy, hw * 2, k % 2 ? 2 : 4); }
+    ctx.globalAlpha = 0.6 * al;
+    // 떠다니는 안구 둘 (점액 결보다 앞, 잘 보이게): 흰자 · 핏줄, 눈동자는 플레이어 쪽을 칸 단위로 바라봄 (뼈와 엇박자)
+    { const P0 = G && G.player, lk = P0 ? [Math.sign(Math.round((P0.x - e.x) / 40)), Math.sign(Math.round((P0.y - (by - h * 0.5)) / 40))] : [e.face, 0];
+      for (const [ox, oy, ph] of [[-16, 0.68, 2], [8, 0.5, 7]]) { const d = SK_DRIFT[(Math.floor(time * 2) + ph) % SK_DRIFT.length], X = (cx + ox + d[1] + lx * 0.5) & ~1, Y = (Math.round(by - h * oy) & ~1) + d[0];
+        const a0 = ctx.globalAlpha; ctx.globalAlpha = 0.92 * al;
+        const EP = skTint({ w: '#f0ece0', W: '#c8c0b0', r: '#c03030', s: '#24301c', i: '#c83a30', I: '#6a1414', p: '#0c0606' }, C, 0.12);
+        gPaint(ctx, SK_EYEBALL, EP, X, Y);
+        const ix = X + 6 + lk[0] * 2, iy = Y + 4; // 홍채 3칸(가장자리 짙게) · 가운데 동공 · 왼쪽 위 흰 반사점
+        ctx.fillStyle = EP.I; ctx.fillRect(ix, iy, 6, 6); ctx.fillStyle = EP.i; ctx.fillRect(ix, iy, 6, 4); ctx.fillStyle = EP.p; ctx.fillRect(ix + 2, iy + 2, 2, 2);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(ix, iy, 2, 2);
+        ctx.globalAlpha = a0; } }
+    if (e.state === 'roll') { ctx.fillStyle = C.l; for (let i = 0; i < 3; i++) { const aa = e.rollA + i * 2.1; ctx.fillRect(Math.round(cx + Math.cos(aa) * 20) & ~1, Math.round(by - h / 2 + Math.sin(aa) * 14) & ~1, 4, 4); } }
     ctx.restore();
-    // 눈
-    const ey = Math.round(by - h * 0.62) & ~1, ex = (Math.round(cx + e.face * 6 + lx * 0.62)) & ~1;
-    ctx.fillStyle = '#0a0a0a'; ctx.fillRect(ex - 10, ey, 6, 6); ctx.fillRect(ex + 4, ey, 6, 6);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    ctx.fillStyle = e.stage === 3 ? 'rgba(255,70,140,.95)' : 'rgba(230,255,120,.9)'; ctx.fillRect(ex - 8, ey + 2, 2, 2); ctx.fillRect(ex + 6, ey + 2, 2, 2);
+    // 부글거림: 바닥에서 기포가 칸 단위로 떠올라(초당 6칸) 위에서 톡 터진다 — 작은 점 기포와 속이 빈 동그라미 기포
+    ctx.save(); ctx.globalAlpha = 0.9 * al; ctx.fillStyle = C.l;
+    const BUB = [[-22, 0, 1], [-8, 7, 0], [6, 3, 1], [18, 11, 0], [-14, 15, 0], [12, 18, 1]];
+    for (const [ox, ph, big] of BUB) {
+      const len = Math.round(h * 0.75 / 2), k = (Math.floor(time * 6) + ph * 3) % (len + 3), bx = (cx + ox + lx * 0.5) & ~1, yy = (by - 6 - k * 2) & ~1;
+      if (k >= len) { if (k === len) { ctx.fillRect(bx - 4, yy + 2, 2, 2); ctx.fillRect(bx + 4, yy + 2, 2, 2); ctx.fillRect(bx, yy - 2, 2, 2); } continue; } // 터짐
+      if (big && k > 3) { ctx.fillRect(bx, yy - 2, 2, 2); ctx.fillRect(bx - 2, yy, 2, 2); ctx.fillRect(bx + 2, yy, 2, 2); ctx.fillRect(bx, yy + 2, 2, 2); }
+      else ctx.fillRect(bx, yy, 2, 2);
+    }
     ctx.restore();
+    // 오른쪽 위 밝은 광원: 몸 가장자리를 따라 휘는 반사광 + 반짝임 (젤리 느낌)
+    ctx.save(); ctx.globalAlpha = 0.9 * al; ctx.fillStyle = e.stage === 3 ? '#ffd8ec' : '#e0fcc0';
+    const rx0 = (Math.round(cx + w * 0.4 + lx * 0.8) & ~1), ry0 = (Math.round(by - h * 0.66) & ~1);
+    ctx.fillRect(rx0 - 6, ry0 - 4, 4, 2); ctx.fillRect(rx0 - 2, ry0 - 2, 2, 2); ctx.fillRect(rx0, ry0, 2, 6); ctx.fillRect(rx0 + 2, ry0 + 6, 2, 4);
+    if (Math.floor(time * 2) % 3) { ctx.fillStyle = '#ffffff'; ctx.fillRect(rx0 - 6, ry0 + 2, 2, 2); }
+    ctx.restore();
+    // 아래쪽 안으로 비치는 빛 띠
+    ctx.save(); ctx.globalAlpha = 0.3 * al; ctx.fillStyle = C.l; ctx.fillRect(Math.round(cx - w * 0.28) & ~1, (by - 8) & ~1, Math.round(w * 0.4 / 2) * 2, 2); ctx.restore();
     // 왕관
     const crY = Math.round(by - h - 8 + Math.max(0, -(e.jy || 0)) * 6) & ~1, crX = Math.round(cx - 10 + e.face * 2 + lx) & ~1;
     gPaint(ctx, CROWN_G || (CROWN_G = gOutline(fromRows(['y...yy...y', 'yy.yyyy.yy', 'YyyyyrryyY', 'YYYYYYYYYY']))), { y: '#e8c060', Y: '#a8822e', r: '#b01c22', k: '#0b0a0e' }, crX, crY);
-    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(cx + Math.cos(time * 6 + i * 2.1) * 20), Math.round(by - h - 14 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); }
+    if (e.grogiT > 0) for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(cx + Math.cos(time * 6 + i * 2.1) * 20) & ~1, Math.round(by - h - 14 + Math.sin(time * 6 + i * 2.1) * 3) & ~1, 2, 2); }
   }
 
   // ---------- 초원 배경

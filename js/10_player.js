@@ -430,7 +430,22 @@
     MAPS[g] = R.map(r => r.join('')); PLAYER_MAPS.add(g); return g;
   };
   const gazeSide = P => { const a = P.state === 'attack' || P.state === 'butt' ? P.atkAng : P.ang; return a != null && Math.abs(Math.cos(a)) > 0.38; };
-  const heroMap = (k, P) => gazeSide(P) ? gazeMap(k) : k;
+  // v2.95 눈 깜빡임: 가끔 한 번, 두 번에 한 번은 연달아 두 번. 감은 눈은 정면 도트에서 눈 칸만 고침 (숨 고르기·걷기 장면은 한 줄 아래)
+  const BLINK_EYE = {
+    hKnight: (R, o, d) => [10, 14].forEach(c => { R[6 + o][c + d] = 'S'; }),
+    hRanger: (R, o, d) => [9, 13].forEach(c => { R[5 + o][c + d] = 'L'; R[6 + o][c + d] = 'k'; }),
+    hMage: (R, o, d) => [10, 14].forEach(c => { R[10 + o][c + d] = 'o'; R[11 + o][c + d] = 'k'; }),
+    hPriest: (R, o, d) => [9, 13].forEach(c => { R[8 + o][c + d] = 'S'; R[9 + o][c + d] = 'v'; }),
+    hGunner: (R, o) => [9, 10, 14, 15].forEach(c => { R[6 + o][c] = 'g'; R[7 + o][c] = 'k'; }),
+  };
+  const blinkMap = k => {
+    const g = k + 'B'; if (MAPS[g]) return g;
+    const base = Object.keys(BLINK_EYE).find(b => k.startsWith(b)); if (!base || !MAPS[k]) return k;
+    const R = MAPS[k].map(r => [...r]), off = /^[.]+$/.test(MAPS[k][0]) ? 1 : 0;
+    BLINK_EYE[base](R, off, base !== 'hGunner' && k.endsWith('G') ? 1 : 0); MAPS[g] = R.map(r => r.join('')); PLAYER_MAPS.add(g); return g; // 옆을 볼 때(시선 도트)는 눈이 앞으로 1칸
+  };
+  const heroBlink = P => { if (P.dead || P.hurtT > 0) return false; const t = time % 8.6; return t < 0.12 || (t >= 4.3 && t < 4.42) || (t >= 4.6 && t < 4.72); };
+  const heroMap = (k, P) => { const g = gazeSide(P) ? gazeMap(k) : k; return heroBlink(P) ? blinkMap(g) : g; };
   const walkMap = (m, f) => f === -2 ? idleMap(m) : f < 0 ? m : MAPS[m + 'W' + f] ? m + 'W' + f : m; // v2.44 W0·W2가 있으면 그 장면 (기사 망토·고양이 머플러가 휘날림)
   // ================================================================ v2.51 대기 동작: 아무 입력이 없으면 12초부터 고유 동작을 계속 반복, 30초부터 휴식(졸기). 입력하면 바로 끝남
   let IDLE_PING = false; // 키·마우스·터치 입력이 있었음

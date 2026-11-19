@@ -126,7 +126,7 @@
     }
     CL.flush(g);
     // 가운데 왕관 모자이크 (특별한 방·보스 방 제외, 문 앞 아님) — 금빛 테 + 붉은 보석 자리, 위에 재가 덮인다
-    if (!SR_LAYOUT[R.type] && R.type !== 'altar') { // v2.52 재의 제단 방은 낙인을 깔므로 모자이크 없음
+    if (R.type === 'boss') { // v2.88 왕관 모자이크는 대관식장(보스 방)에만 · v2.52 재의 제단 방은 낙인을 깔므로 모자이크 없음
       const rx = 64, ry = 40, cx0 = Math.round(CX / 2) * 2, cy0 = Math.round(CY / 2) * 2;
       for (let y = -ry; y <= ry; y += 2) for (let x = -rx; x <= rx; x += 2) {
         const q = Math.hypot(x / rx, y / ry); if (q > 1) continue;

@@ -227,7 +227,7 @@
     st.id = 'narrativeStyle';
     st.textContent = `
       .selc { position: relative; }
-      .selc .pv { position: relative; overflow: hidden; } .selc .pv .pvMini { position: absolute; left: -2px; bottom: 3px; width: 40px; height: 40px; z-index: 1; } .selc .pv .pvArt { position: relative; z-index: 2; } .selc .pv .pvFrame { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; z-index: 3; pointer-events: none; } /* v2.21 초상화 액자 */
+      .selc .pv { position: relative; overflow: visible; } .selc .pv .pvMini { position: absolute; left: -10px; bottom: 3px; width: 56px; height: 48px; z-index: 5; pointer-events: none; } /* v2.95 미니 도트는 액자 위 · 넓은 캔버스라 망토·꼬리가 안 잘림 */ .selc .pv .pvArt { position: relative; z-index: 2; } .selc .pv .pvFrame { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; z-index: 3; pointer-events: none; } /* v2.21 초상화 액자 */
       .chrCardBtn { position: absolute; top: 6px; left: 6px; z-index: 4; white-space: nowrap; display: flex; align-items: center; gap: 3px; padding: 1px 4px 1px 2px; cursor: pointer;
         font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; color: var(--gold-l); background: #0d0a10; border: 1px solid #000; box-shadow: inset 0 0 0 1px var(--gold-d); }
       .chrCardBtn img { width: 9px; height: 7px; image-rendering: pixelated; }

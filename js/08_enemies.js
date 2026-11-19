@@ -262,7 +262,15 @@
     return o;
   }
   function invDraw(e, ya, al, white) { const ox = e.x, p = invPose(e); e.x += p.dx; e.INVP = p; try { INV_DRAW[e.type](e, ya, al, white); } finally { e.x = ox; e.INVP = null; } }
-  const invWalk = e => e.moving && (e.ps === 'move' || !e.ps) ? Math.floor(time / 0.08) % 4 : -1; // 걷기 4프레임
+  // v2.93 난입자도 플레이어와 같은 걸음: 2·4장면은 몸이 1칸 내려가며 발을 들고(W1·W3), 3장면은 꼬리 · 옷자락이 한 칸 들썩(W2),
+  //        멈춰 있으면 플레이어처럼 0.6초마다 숨 고르기(몸통 한 줄이 접혀 1칸 내려앉음)
+  const invWalk = e => e.moving && (e.ps === 'move' || !e.ps) ? Math.floor(time / 0.08) % 4 : (!e.ps || e.ps === 'move' || e.ps === 'idle') && Math.floor(time / 0.6 + (e.x || 0) * 0.01) % 2 ? -2 : -1;
+  for (const k of ['invPanda', 'invReaper', 'invShrew', 'invShrewB', 'invWeasel']) { // W2: 발이 시작하는 칸 왼쪽(꼬리 · 옷자락)을 한 줄 들어 올림
+    if (!MAPS[k] || MAPS[k + 'W2']) continue;
+    const R = MAPS[k], H = R.length, feet = R[H - 2], f0 = Math.max(0, feet.search(/[^.k]/) - 1), g = R.map(r => r.split(''));
+    for (let x = 0; x < f0; x++) { for (let y = 0; y < H - 1; y++) g[y][x] = (R[y + 1] || '')[x] || '.'; g[H - 1][x] = '.'; }
+    MAPS[k + 'W2'] = g.map(r => r.join('')); PLAYER_MAPS.add(k + 'W2');
+  }
   const invOpt = (e, o) => { const p = e.INVP; return p ? Object.assign(o, { rot: p.rot, sx: p.sx, sy: p.sy }) : o; };
   function drawPanda(e, ya, al, white) {
     const I = invInit(), flip = e.face < 0;
@@ -287,7 +295,7 @@
   }
 
 
-  // ================================================================ v1.59 난입자 2장: 떠돌이 수확자 「흑각」 (검은 염소, 낫)
+  // ================================================================ v1.59 난입자 2장: 수확자 「흑각」 (검은 염소, 낫)
   // 붙어서 베는 근접형. 플레이어처럼 점멸로 피하고, 그림자 점멸(사라짐 → 바닥 경고 → 나타나 베기)로 파고든다. 떠난 자리의 잔상은 초승달 탄을 터뜨린다
   const RP = { cresN: [3, 5], cresSp: 240, cresGap: 0.32, cresWind: 0.4, reapR: 64, reapArc: 200 * DEG, reapWind: 0.36, shadowOut: 0.28, shadowMark: 0.62, spinWind: 0.45, spinN: 14, spinSp: 175, echoT: 0.55, echoN: 8, echoSp: 160, cd: [0.35, 0.65], after: 0.22 };
   function reaperSwing(e, from, to, dur) { e.sw = { from, to, t: 0, dur }; }
@@ -492,7 +500,7 @@
     if (e.ps === 'throw' && al > 0.5) holdGlow(e.x - e.face * 6, e.y - 18, 1 - e.t / SH.wind, gold ? '255,210,90' : '220,225,240');
   }
 
-  // ================================================================ v1.65 난입자 4장: 떠돌이 총잡이 「검은 안대」 (족제비, 쌍권총)
+  // ================================================================ v1.65 난입자 4장: 무법자 「검은 안대」 (족제비, 쌍권총)
   // 거너처럼 탄창이 있다: 12발을 다 쏘면 권총을 돌리며 재장전(공격 기회). 두 자루를 번갈아 쏘고, 제자리에서 돌며 나선을 그리고, 구르고 나서 바로 쏜다
   const WS = { mag: 12, reload: [1.1, 0.8], keep: [120, 200], twinN: 6, twinGap: 0.1, twinSp: 330, spiralN: 18, spiralGap: 0.07, spiralSp: 195, fanN: 7, fanSp: 265, fanGap: 0.13, cd: [0.35, 0.65] };
   function weaselShot(e, ang, sp, dmgK, hand) {

@@ -133,7 +133,7 @@ const OCC = (() => {
   // ---------------------------------------------------------------- 게임 함수 연결
   const ORIG = { decorRoom, paintRoomFloor, decBlock, withDecor, decFree };
   decorRoom = function (r, stage, keyPts) {
-    r.sprites = makeObsSprites(r); pruneObs(r);
+    r.sprites = makeObsSprites(r); r.nav = buildNav(r.obs); pruneObs(r); // v2.87 그림에 맞춰 판정 반경이 바뀔 수 있음
     const O0 = CUR, B0 = BUILD; CUR = build(r, keyPts); BUILD = true;
     try { ORIG.decorRoom(r, stage, keyPts); if (G.stage === 3) bloodSpot(r); }
     finally { CUR = O0; BUILD = B0; }

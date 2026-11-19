@@ -399,9 +399,12 @@
   }
 
   // (D) v2.55 처치 직후 무기별 시네마틱 「왕관의 잔향」 폐기 — 엔딩은 무기와 상관없이 하나
+  // v2.93 말끝의 ♪는 글꼴에 없어서 2px 칸 도트 음표로 그린다
+  const NOTE_G = ['..kkk', '..k.k', '..k..', 'kkk..', 'kkk..'];
   function paintBubble(text, x, y, side) { // (x, y) = 꼬리 끝. side 0: 몸통이 위, 꼬리 아래로 / side -1: 몸통이 왼쪽, 꼬리 오른쪽으로
+    const note = text.endsWith('♪'); if (note) text = text.slice(0, -1);
     ctx.font = '10px Galmuri9'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    const tw = Math.ceil(ctx.measureText(text).width), w = (tw + 14) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1;
+    const tw = Math.ceil(ctx.measureText(text).width) + (note ? 14 : 0), w = (tw + 14) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1;
     const bx = side < 0 ? X - 6 - w : (X - (w >> 1)) & ~1, by = side < 0 ? Y - 8 : Y - h - 6;
     ctx.fillStyle = '#0b0a0e'; ctx.fillRect(bx + 2, by - 2, w - 4, h + 4); ctx.fillRect(bx, by, w, h); ctx.fillRect(bx - 2, by + 2, w + 4, h - 4); // 외곽선(모서리 깎음)
     ctx.fillStyle = '#f4ead2'; ctx.fillRect(bx + 2, by, w - 4, h); ctx.fillRect(bx, by + 2, w, h - 4);
@@ -413,7 +416,8 @@
       const tx = X - 2; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(tx - 2, by + h, 8, 2); ctx.fillRect(tx, by + h + 2, 4, 2); ctx.fillRect(tx + 2, by + h + 4, 2, 2);
       ctx.fillStyle = '#d8c8a4'; ctx.fillRect(tx, by + h, 4, 2); ctx.fillStyle = '#f4ead2'; ctx.fillRect(tx, by + h - 2, 4, 2);
     }
-    ctx.fillStyle = '#2a1e18'; fillTextW(text, bx + w / 2, by + 12);
+    ctx.fillStyle = '#2a1e18'; fillTextW(text, bx + w / 2 - (note ? 7 : 0), by + 12);
+    if (note) { const nx = (bx + w - 18) & ~1, ny = by + 3; NOTE_G.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === 'k') ctx.fillRect(nx + i * 2, ny + j * 2, 2, 2); }); }
   }
   function drawPriceTag(price, x, y, ok) { // 동전 + 가격, 어두운 판 (y = 판 위쪽)
     ctx.font = '10px Galmuri9'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -427,12 +431,14 @@
     ctx.fillStyle = ok ? '#fff0b0' : '#c0a8a8'; ctx.fillRect(cx + 2, cy + 2, 2, 2);
     ctx.fillStyle = ok ? '#ffe08a' : '#ff7a6a'; fillTextW(t, bx + 15, by + 11);
   }
-  // 떠돌이 상인: 상자에 걸터앉아 있다
+  // 상인 「살구」(왕관앵무): 계산대 뒤에 서서 숨 쉬듯 들썩이고, 볏이 흔들리고, 펼친 날개를 이따금 두 번 퍼덕이고, 눈을 깜빡인다
   function drawShopKeeper(R) {
-    const x = ((R.keeper ? R.keeper.x : CX) + 2) & ~1, y = ((R.keeper ? R.keeper.y - 8 : CY - 30)) & ~1, bob = Math.floor(time * 1.5) % 2 ? 2 : 0, m = art('merch', () => gCanvas(MERCHANT, MERCHANT_PAL));
-    ctx.drawImage(m, x - m.width / 2, y - m.height + 2 - bob); // v1.11 계산대 뒤에 서 있음 (아랫몸은 계산대에 가려짐)
-    const P = G.player, sy = npcTalk('merchant', P && Math.hypot(P.x - x, P.y - y) < 120, ['싸게 줄게', '흐흐… 골라 봐', '이건 귀한 물건이야', '외상은 안 돼', '살아남으려면 사 둬'], ['어서 와', '손님이군, 흐흐']);
-    if (sy) drawBubble(sy.line, x + 2, y - m.height - 2 - bob);
+    const x = ((R.keeper ? R.keeper.x : CX) + 2) & ~1, y = ((R.keeper ? R.keeper.y - 8 : CY - 30)) & ~1, bob = Math.floor(time * 1.5) % 2 ? 2 : 0;
+    const ph = time % 2.6, wing = ph < 0.6 && Math.floor(ph * 6.67) % 2 === 0, crest = Math.floor(time * 1.4) % 2 === 1, blink = time % 3.7 < 0.15;
+    const m = merchantArt(wing, crest, blink);
+    ctx.drawImage(m, x - 18, y - m.height + 2 - bob); // 몸통 가운데가 x에 오게 (펼친 날개는 오른쪽으로)
+    const P = G.player, sy = npcTalk('merchant', P && Math.hypot(P.x - x, P.y - y) < 120, ['싸게 줄게', '골라 봐', '이건 귀한 물건이야', '외상은 안 돼', '살아남으려면 사 둬'], ['어서 와♪', '살구의 비밀상점이야♪']);
+    if (sy) drawBubble(sy.line, x, y - m.height + 6 - bob);
   }
   function drawShopItem(s) {
     const x = Math.round(s.x) & ~1, y = Math.round(s.y) & ~1, st = srArt('stand', G.stage, SR.stand); // v1.11 천 덮인 진열대
@@ -567,8 +573,8 @@
   function decorAsh(r, add, W0, H0) {
     const nx = DOOR.n.x, topY = A.y0 + 18, fight = r.type === 'combat';
     const n = Math.max(1, Math.floor(W0 / 240));
-    for (let i = 0; i < n; i++) if (Math.random() < 0.7) { const x = A.x0 + 50 + (i + rand(0.2, 0.8)) * (W0 - 100) / n; if (Math.abs(x - nx) > 70) add(pick(['ashLamp', 'ashLamp', 'armor']), x, topY); }
-    if (r.doors.n != null && Math.random() < 0.4) { add('armor', nx - 46, topY + 4); add('armor', nx + 46, topY + 4); }
+    for (let i = 0; i < n; i++) if (Math.random() < 0.7) { const x = A.x0 + 50 + (i + rand(0.2, 0.8)) * (W0 - 100) / n; if (Math.abs(x - nx) > 70) add(pick(['ashLamp', 'ashLamp', 'royalBanner']), x, topY); /* v2.89 갑옷 장식 → 그을린 왕실 깃대 */ }
+    if (r.doors.n != null && Math.random() < 0.4) { add('royalBanner', nx - 46, topY + 4); add('royalBanner', nx + 46, topY + 4); }
     const cnt = r.type === 'boss' ? 0 : r.shape === 'gallery' || r.shape === 'belfry' ? randi(1, 3) : randi(3, 6);
     let ambN = fight ? (Math.random() < 0.25 ? 0 : randi(1, 2)) : 0;
     for (let i = 0, tries = 0; i < cnt && tries < 40; tries++) {
@@ -576,8 +582,8 @@
       const nm = pick(['folkA', 'folkA', 'folkB', 'folkC']); if (!add(nm, x, y)) continue;
       i++; const p = r.props[r.props.length - 1]; if (ambN > 0) { p.amb = true; ambN--; }
     }
-    if (r.shape === 'sanctum' && Math.random() < 0.6) { const x = CX + rand(-W0 * 0.25, W0 * 0.25), y = CY + rand(-H0 * 0.2, H0 * 0.2); if (add('table', x, y) && Math.random() < 0.7) add('chairBroken', x + pick([-28, 28]), y + 6); }
-    if (Math.random() < 0.5) { const cs = [[A.x0 + 26, A.y0 + 30], [A.x1 - 26, A.y0 + 30]]; for (const c of cs) add('brazier', ...c); }
+    if (r.shape === 'sanctum' && Math.random() < 0.6) { const x = CX + rand(-W0 * 0.25, W0 * 0.25), y = CY + rand(-H0 * 0.2, H0 * 0.2); if (add('feastTable', x, y) && Math.random() < 0.7) add('feastChair', x + pick([-40, 40]), y + 6); } // v2.89 연회 식탁 · 의자
+    if (Math.random() < 0.5) { const cs = [[A.x0 + 26, A.y0 + 30], [A.x1 - 26, A.y0 + 30]]; for (const c of cs) add('crownBrazier', ...c); } // v2.89 왕관 테 화로
   }
   // 재의 사람들: 매복 조각상이 깨지며 적이 튀어나온다 (재 망자)
   function breakFolk(R, p, spawn) {
@@ -726,7 +732,7 @@
   }
   function drawProp(p) {
     if (PROPS[p.name].anim) { const sp = PROPS[p.name]; ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((p.x - (sp.r || 8)) & ~1, p.y, ((sp.r || 8) * 2) & ~1, 2); drawGroProp(p, sp); return; }
-    const c = ash4(propCanvas(p.name), 'prop_' + p.name), sp = PROPS[p.name], x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + (sp.foot || 0) * 2) & ~1;
+    const sp = PROPS[p.name], c = sp.raw ? propCanvas(p.name) : ash4(propCanvas(p.name), 'prop_' + p.name), x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + (sp.foot || 0) * 2) & ~1;
     ctx.fillStyle = 'rgba(0,0,0,.35)'; { const xa = x + 2, xb = x + c.width - 2; if (xb > xa) ctx.fillRect(xa, p.y, Math.ceil((xb - xa) / 2) * 2, 2); }
     if (p.amb && sp.folk) { // 매복 조각상: 눈에 희미한 불씨, 깨어나기 직전엔 떨린다
       const R = G.dun && G.dun.cur, on = R && !R.cleared, sx = p.warn && on ? (Math.floor(time * 24) % 2 ? 2 : -2) : 0, e = FOLK_EYE[p.name];
@@ -883,8 +889,12 @@
     for (let i = 0; i < 40 * area; i++) { const p = spot(6, 0); if (p) { const t = pick(['tuft1', 'tuft2', 'tuft3']); stamp(g, DECO_MAPS[t], Object.assign({}, DECO, Math.random() < 0.5 ? { m: '#4a7a34', M: '#78a850' } : { m: '#36602a', M: '#5a8a3a' }), p.x, p.y, 2, Math.random() < 0.5); } }
     for (let i = 0; i < 14 * area; i++) { const p = spot(6, 0); if (p) stamp(g, DECO_MAPS[pick(['flowerY', 'flowerP', 'flowerW'])], DECO, p.x, p.y, 2, Math.random() < 0.5); }
     // 바위 · 그루터기 · 통나무(버섯 돋은) · 덤불
-    for (let i = 0; i < randi(1, 4) * area; i++) { const p = spot(40, 20); if (p) { stamp(g, DECO_MAPS.rockBig, DECO, p.x, p.y, 2, Math.random() < 0.5); if (Math.random() < 0.6) stamp(g, DECO_MAPS.rockB, DECO, p.x + 24, p.y + 14, 2); } }
-    for (let i = 0; i < 8 * area; i++) { const p = spot(20, 6); if (p) stamp(g, DECO_MAPS[pick(['rockA', 'rockB', 'rockC', 'rockD'])], DECO, p.x, p.y, 2, Math.random() < 0.5); }
+    // v2.91 바위는 방 전체에 고르게 뿌리지 않고 몇 무더기로만 · 바위 장애물이 많은 방은 그만큼 덜 놓음
+    { const obsRock = R ? R.obs.filter(b => b.t === 'rock').length : 0, big = Math.max(0, Math.round(randi(0, 2) * Math.min(area, 1.6)) - (obsRock > 2 ? 1 : 0));
+      for (let i = 0; i < big; i++) { const p = spot(40, 20); if (p) { stamp(g, DECO_MAPS.rockBig, DECO, p.x, p.y, 2, Math.random() < 0.5); if (Math.random() < 0.6) stamp(g, DECO_MAPS.rockB, DECO, p.x + pick([-18, 24]), p.y + randi(5, 8) * 2, 2); } }
+      const clumps = Math.max(0, Math.round(randi(1, 3) * Math.min(area, 1.6)) - Math.floor(obsRock / 3));
+      for (let i = 0; i < clumps; i++) { const p = spot(24, 10); if (!p) continue; const m = randi(1, 3);
+        for (let j = 0; j < m; j++) { const x = p.x + (j ? randi(-9, 9) * 2 : 0), y = p.y + (j ? randi(-5, 5) * 2 : 0); if (j && !decFree(x, y, 6)) continue; stamp(g, DECO_MAPS[pick(j ? ['rockB', 'rockA'] : ['rockA', 'rockC', 'rockD'])], DECO, x, y, 2, Math.random() < 0.5); } } }
     for (let i = 0; i < randi(0, 3) * area; i++) { const p = spot(30, 12); if (p) { stamp(g, DECO_MAPS.stump, woodPal(), p.x, p.y, 2); if (Math.random() < 0.5) gPaint(g, SHROOMS.brown, SHROOM_PAL, p.x + 14, p.y + 4); } }
     for (let i = 0; i < randi(0, 2) * area; i++) { const p = spot(40, 16); if (p) { stamp(g, DECO_MAPS.log, woodPal(), p.x, p.y, 2, Math.random() < 0.5); for (let k = 0; k < randi(1, 3); k++) gPaint(g, pick([SHROOMS.brown, SHROOMS.red, SHROOMS.tall]), SHROOM_PAL, p.x + 4 + k * 8, p.y - 8); } }
     for (let i = 0; i < randi(2, 6) * area; i++) { const p = spot(20, 10); if (p) stamp(g, DECO_MAPS.bush2, Object.assign({}, DECO, pick([{ '6': '#c03040' }, { '6': '#6a40a0' }, { '6': '#e0c040' }])), p.x, p.y, 2, Math.random() < 0.5); }

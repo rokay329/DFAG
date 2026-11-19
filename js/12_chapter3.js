@@ -343,6 +343,25 @@
   }
   const WOLF_PAL = { k: '#0b0a0e', h: '#6a6470', l: '#4a4652', d: '#2e2a34', D: '#1c1a22', e: '#ff3a20', w: '#ece0c4', H: '#14121a' };
   PAL.wolfd = { k: '#0a080c', d: '#4a4652', D: '#26232c', l: '#6e6a78', L: '#8e8a98', t: '#e0d8c0', c: '#5a3a22', m: '#b4b8c0', e: '#ff3a20' };
+  // v2.93 늑대를 2장 사냥개(nDog)와 같은 칸 수 · 비율로 (20×14칸 · 머리 큰 짧은 몸) — 회색 털, 가죽 목줄과 뼈, 등에 붉은 칠
+  MAPS.nWolf = [
+    "...........kdk.kdk..",
+    "..........kdLdkdLdk.",
+    ".k........klddddddk.",
+    "kLk.......klddddddk.",
+    "kLLk......kldEedddkk",
+    "kdLLkkkkkkllddddLLLk",
+    ".kdLDDDDDdlcccdLLLLL",
+    ".kkdlDrDDdlcmcdkkttk",
+    "..kdllLLlddldkkkkk..",
+    "..kdddddddddk.......",
+    "..kDdDdddDdDk.......",
+    "..kDkDkkkDkDk.......",
+    "..kDkDk.kDkDk.......",
+    "...k.k...k.k........",
+  ];
+  MAPS.nWolfW1 = quadWalk(MAPS.nWolf, 3, 11); MAPS.nWolfW3 = quadWalk(MAPS.nWolf, 5, 9); // 걸음: 대각선 다리 한 쌍씩 들어 올림 (사냥개와 같음)
+  PAL.nWolf = { k: '#0a080c', d: '#5a5664', D: '#36323e', l: '#8a8694', L: '#b4b0bc', m: '#e0d8c0', t: '#e0d8c0', e: '#ff3a20', E: '#1a1010', c: '#5a3a22', r: '#9a2a20' };
   PAL.slave = { k: '#0e100c', s: '#7e8a6c', S: '#525c46', c: '#5a5048', C: '#3a342e', e: '#ff7a3a' };
 
   // 종류별 설정: 몸통·팔·무기·크기 (W·H 칸, 칸 하나 = 2px)
@@ -355,7 +374,7 @@
     // 주술사: 늙고 구부정, 짐승 두개골 머리장식, 털 망토, 흰 칠
     shaman: { body: { W: 17, H: 19, sh: 0.22, wa: 0.2, tor: 0.25, leg: 0.19, lean: 0.15, head: 2.1, hfwd: 0.2, hair: 'skull', cloak: true, paint: 'white', kilt: 'fur', backArm: true, tusk: 0, thigh: 0.13 }, skin: 'ash', arm: { len: 5, th: 2, kind: 'totem', wlen: 14, head: 4, bend: 40 }, tall: 38, rest: -60 },
     // 돌격대장: 땅딸막하고 넓적, 뿔 달린 쇠투구, 가슴 쇠판
-    ocharge: { body: { W: 22, H: 22, sh: 0.31, wa: 0.25, tor: 0.25, leg: 0.18, head: 2.1, hfwd: 0.15, hair: 'hornhelm', plate: true, pauld: 'metal', kilt: 'skirt', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'dark', arm: { len: 6, th: 3, kind: 'slasher', wlen: 14, head: 5, bend: 28 }, carry: { bend: 135, wdir: 135, ang: 45, front: true }, tall: 44, rest: -178, semi: '돌격대장' },
+    ocharge: { body: { W: 22, H: 22, sh: 0.31, wa: 0.25, tor: 0.25, leg: 0.18, head: 2.1, hfwd: 0.15, hair: 'hornhelm', plate: true, pauld: 'metal', kilt: 'skirt', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'dark', arm: { len: 6, th: 3, kind: 'slasher', wlen: 14, head: 5, bend: 28 }, carry: { bend: 135, wdir: 135, ang: 45, front: true }, tall: 44, rest: -178, semi: '오크 돌격대장' },
     // 북잡이: 배불뚝이, 땋은 머리, 배에 북
     odrum: { body: { W: 22, H: 21, sh: 0.28, wa: 0.24, belly: 1, tor: 0.27, leg: 0.17, head: 2.0, hfwd: 0.15, hair: 'braid', earring: true, kilt: 'fur', backArm: true, tusk: 2, thigh: 0.15 }, skin: 'olive', arm: { len: 5, th: 2, kind: 'hatchet', wlen: 7, head: 3, bend: 42 }, tall: 42, rest: 45, semi: '북잡이' },
     // 거구 오크: 가장 큰 근육질, 대머리, 사슬 목줄, 찢어진 눈 흉터, 굵은 팔
@@ -860,7 +879,7 @@
     else if (ln < -0.08) Object.assign(P, { dy: 2, ux: -2 * f, mx: 2 * f }); // 준비: 낮추며 뒤로
     else if (ln > 0.08) Object.assign(P, { ux: 2 * f, hx: 2 * f, hdy: 2, mx: -2 * f, dy: ln > 0.2 ? 2 : 0 }); // 내려찍음: 앞으로 쏠림
     else if (mv && (st === 'chase' || st === 'idle') && !e.steps) { const k = Math.floor(e.walk * 0.9) % 4;
-      if (k === 0 || k === 2) P.dy = 2; else { P.hdy = 2; if (k === 1) { P.lL = 2; P.mx = 2; } else { P.lR = 2; P.mx = -2; } } }
+      if (k === 0 || k === 2) { /* v2.93 걸음 높낮이는 걷기 도트(W1·W3)가 맡음 — 여기서 또 내리면 서로 상쇄되어 몸이 위아래로 안 움직였음 */ } else { P.hdy = 2; if (k === 1) { P.lL = 2; P.mx = 2; } else { P.lR = 2; P.mx = -2; } } }
     e._kpT = time; return (e._kp = P);
   }
   function drawKrugash(e, ya, al, lean) { // v2.46 새 정면 도트 (거대한 꼬인 뿔 투구) + 특대형 핏빛 대도끼
@@ -889,8 +908,8 @@
       return;
     }
     if (e.type === 'wolf') {
-      drawShadow(e.x, e.y + 1, 12);
-      nrQuad(e, e.dash ? 'wolfB' : 'wolfA', 'wolfd', e.x, e.y + 2 - z + ya, flip, { white, alpha: al }); // v1.54
+      drawShadow(e.x, e.y + 1, 11);
+      { const o = nmPose(e); if (e.dash) { o.wf = Math.floor(time * 22) % 4; o.sx = 1.1; o.sy = 0.92; o.rot = 0; } drawNM(e, 'nWolf', null, e.x, e.y + 2 - z + ya, o, white, al); } // v2.93 사냥개와 같은 비율 (돌진 중엔 빠른 걸음)
       if ((e.drumT > 0 || e.buffT > 0) && Math.random() < 0.3) G.parts.push({ x: e.x + rand(-8, 8), y: e.y - rand(10, 20), vx: 0, vy: -20, t: 0.3, c: '#ff4030', g: 0, glow: true });
       return;
     }
@@ -1709,7 +1728,7 @@
     for (let i = 0; i < n; i++) if (Math.random() < 0.75) { const x = A.x0 + 50 + (i + rand(0.2, 0.8)) * (W0 - 100) / n; if (Math.abs(x - nx) > 70) add(pick(['meatRack', 'meatGallows', 'orcCage', 'hideRack', 'orcFire', 'skullPike', 'skullPile']), x, topY + 4); }
     const cs = [[A.x0 + 26, A.y0 + 30], [A.x1 - 26, A.y0 + 30], [A.x0 + 26, A.y1 - 24], [A.x1 - 26, A.y1 - 24]].sort(() => Math.random() - 0.5);
     add('orcFire', ...cs[0]); if (Math.random() < 0.6) add('orcFire', ...cs[1]);
-    for (let i = 0; i < 3 + W0 * H0 / 160000; i++) add(pick(['boneHeap', 'boneHeap', 'skullPike', 'chopBlock', 'spikeBar', 'skullPile', 'orcCage', 'woodPile']), rand(A.x0 + 40, A.x1 - 40), rand(A.y0 + 40, A.y1 - 30));
+    for (let i = 0, nn = randi(2, 3) + Math.floor(W0 * H0 / 260000); i < nn; i++) add(pick(['boneHeap', 'boneHeap', 'skullPike', 'chopBlock', 'spikeBar', 'skullPile', 'orcCage', 'woodPile']), rand(A.x0 + 40, A.x1 - 40), rand(A.y0 + 40, A.y1 - 30)); // v2.91 방이 커도 덜 어지럽게
   }
 
   // 3px 칸으로 그리던 맵을 1.5배 칸 수로 늘려 2px 칸으로 (크기는 그대로, 외곽선은 1칸으로 다시)

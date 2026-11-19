@@ -473,11 +473,7 @@
       ctx.restore();
     }
     // 붉은 눈빛
-    ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    const ex = b.x + b.face * 2, ey = b.y - 42;
-    ctx.fillStyle = b.stage === 3 ? 'rgba(255,60,80,.9)' : 'rgba(210,130,255,.8)';
-    ctx.fillRect(Math.round(ex) - 3, Math.round(ey), 6, 2);
-    ctx.restore();
+    const ex = b.x + b.face * 2, ey = b.y - 42; // v2.93 옛 투구 틈 눈빛 막대는 없앰 (새 도트에 눈이 있음) — 3단계 붉은 입자만 남김
     if (b.stage === 3 && Math.random() < 0.9) G.parts.push({ x: b.x + rand(-14, 14), y: b.y - rand(4, 46), vx: rand(-8, 8), vy: -rand(30, 60), t: 0.45, c: pick(['#ff3050', '#b45cff', '#ff8060']), g: 0, glow: true });
     if (b.stage === 3 && Math.random() < 0.5) G.parts.push({ x: ex, y: ey, vx: -b.face * 40, vy: -10, t: 0.35, c: '#ff3050', g: 0, glow: true });
   }

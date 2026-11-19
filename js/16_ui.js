@@ -940,11 +940,23 @@
 
   // ---------------------------------------------------------------- 직업 선택
   let selCls = CUR;
+  // v2.95 선택 카드 미니 도트: f -1 정지 · 0~3 걷기 장면 (마우스를 올리면 제자리 걸음)
+  function selMini(mini, cls, f) {
+    const mg = mini.getContext('2d'); mg.imageSmoothingEnabled = false; mg.clearRect(0, 0, mini.width, mini.height); const C1 = CLASSES[cls], ash1 = SAVE.skin === 'ash' && skinOpen(), pal = ash1 ? ashPalKey(C1.pal) : C1.pal;
+    const base = sprite(C1.map, pal, 2), sp = f < 0 ? base : sprite(walkMap(C1.map, f), pal, 2);
+    const sx = Math.round((mini.width - base.width) / 4) * 2, sy = mini.height - 4 - sp.height; mg.fillStyle = '#060408'; mg.fillRect(sx + 2, mini.height - 6, base.width - 4, 2); mg.fillRect(sx + 4, mini.height - 4, base.width - 8, 2);
+    if (ash1) { const A1 = auraOf(sp, 2); mg.drawImage(A1.c, sx - A1.p, sy - A1.p); } mg.drawImage(sp, sx, sy);
+  }
+  let selAnim = null; // { el, raf }
+  function selMiniStart(el) {
+    selMiniStop(); const mini = el.querySelector('canvas[data-mini]'); if (!mini) return; const cls = el.dataset.cls; let last = -9;
+    const tick = () => { const f = Math.floor(performance.now() / 170) % 4; if (f !== last) { last = f; selMini(mini, cls, f); } selAnim.raf = requestAnimationFrame(tick); };
+    selAnim = { el, mini, cls, raf: 0 }; tick();
+  }
+  function selMiniStop() { if (!selAnim) return; cancelAnimationFrame(selAnim.raf); selMini(selAnim.mini, selAnim.cls, -1); selAnim = null; }
   function classPreview(c0, cls, base) { // base: 선택창 — 런은 맨손(기본 무기)으로 시작하니 기본 무기를 그린다 // v2.19 넓은 캔버스에 그린 뒤 캐릭터 중심을 맞춰 찍는다
     { const mini = c0.parentNode && c0.parentNode.querySelector('canvas[data-mini]'); // 선택 카드: 초상 왼쪽 아래에 실제 게임 속 모습(2px 칸) — 외형을 바꾸면 여기서 보인다
-      if (mini) { const mg = mini.getContext('2d'); mg.imageSmoothingEnabled = false; mg.clearRect(0, 0, mini.width, mini.height); const C1 = CLASSES[cls], ash1 = SAVE.skin === 'ash' && skinOpen(), sp = sprite(C1.map, ash1 ? ashPalKey(C1.pal) : C1.pal, 2);
-        const sx = Math.round((mini.width - sp.width) / 4) * 2, sy = mini.height - 4 - sp.height; mg.fillStyle = '#060408'; mg.fillRect(sx + 2, mini.height - 6, sp.width - 4, 2); mg.fillRect(sx + 4, mini.height - 4, sp.width - 8, 2);
-        if (ash1) { const A1 = auraOf(sp, 2); mg.drawImage(A1.c, sx - A1.p, sy - A1.p); } mg.drawImage(sp, sx, sy); } }
+      if (mini) selMini(mini, cls, -1); }
     const g0 = c0.getContext('2d'); g0.imageSmoothingEnabled = false; g0.clearRect(0, 0, c0.width, c0.height);
     const PVX = 40, [c, g] = mkCanvas(c0.width + PVX * 2, c0.height); g.imageSmoothingEnabled = false;
     const C = CLASSES[cls], ash = SAVE.skin === 'ash' && skinOpen(), spr = sprite(C.map, ash ? ashPalKey(C.pal) : C.pal, 4); // v1.99 잿불 외형 미리보기
@@ -997,7 +1009,7 @@
     const tTag = v => `<span style="color:${tCol(v)};font-weight:bold;text-align:right">${v}</span>`;
     $('selCards').innerHTML = Object.entries(CLASSES).map(([k, C]) => `
       <div class="selc pf" data-cls="${k}">
-        <div class="pv" style="background-image:url(${selArt(k, 44, 43).bg})"><img class="pvFrame" src="${selArt(k, 44, 43).frame}" alt=""><button class="chrCardBtn" data-chr="${k}" title="전기 읽기"><img src="${BOOK_ICON}" alt="">전기</button><canvas class="px pvMini" width="40" height="40" data-mini="${k}"></canvas><img class="px pvArt" src="${portraitArt(k)}" style="width:${PORTRAIT_W[k] * 2}px" alt=""><canvas class="px" width="108" height="88" data-pv="${k}" style="display:none"></canvas></div>
+        <div class="pv" style="background-image:url(${selArt(k, 44, 43).bg})"><img class="pvFrame" src="${selArt(k, 44, 43).frame}" alt=""><button class="chrCardBtn" data-chr="${k}" title="전기 읽기"><img src="${BOOK_ICON}" alt="">전기</button><canvas class="px pvMini" width="56" height="48" data-mini="${k}"></canvas><img class="px pvArt" src="${portraitArt(k)}" style="width:${PORTRAIT_W[k] * 2}px" alt=""><canvas class="px" width="108" height="88" data-pv="${k}" style="display:none"></canvas></div>
         <h3>${C.name}</h3><div class="role">${C.sub}</div>
         <div class="st">
           <span>체력</span><div class="selHearts" style="display:flex;gap:2px;align-items:center;justify-content:flex-end">${heartsHTML(C.base.hp, C.base.hp, 0)}</div>
@@ -1012,7 +1024,8 @@
       bt.addEventListener('click', e => { e.stopPropagation(); openChronicle(bt.dataset.chr); });
     });
     $('selCards').querySelectorAll('.selc').forEach(el => {
-      el.addEventListener('mouseenter', () => { if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; sfx('blip'); renderSelect(); } });
+      el.addEventListener('mouseenter', () => { if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; sfx('blip'); renderSelect(); } selMiniStart(el); });
+      el.addEventListener('mouseleave', () => { if (selAnim && selAnim.el === el) selMiniStop(); });
       el.addEventListener('touchstart', () => { el._wasSel = selCls === el.dataset.cls; }, { passive: true });
       el.addEventListener('click', () => { if (TOUCH.on && !el._wasSel) { el._wasSel = true; if (selCls !== el.dataset.cls) { selCls = el.dataset.cls; renderSelect(); } sfx('blip'); return; } chooseClass(el.dataset.cls); }); // v2.26 모바일: 첫 탭은 살펴보기, 다음 탭은 출정
     });
@@ -1066,8 +1079,8 @@
       <span class="key">${TOUCH.on ? '각성' : 'E'}</span><span><b>${C.awaken}</b> — ${C.awakenD}</span></div>`;
   }
   function openSelect() { mode = 'select'; selCls = CUR; $('ovTitle').classList.remove('on'); buildSelect(); renderSelect(); $('ovSelect').classList.add('on'); }
-  function closeSelect() { pxTip.hide(); $('ovSelect').classList.remove('on'); mode = 'title'; $('ovTitle').classList.add('on'); }
-  function chooseClass(cls) { CUR = cls; SAVE.lastCls = cls; persist(); start(); }
+  function closeSelect() { selMiniStop(); pxTip.hide(); $('ovSelect').classList.remove('on'); mode = 'title'; $('ovTitle').classList.add('on'); }
+  function chooseClass(cls) { selMiniStop(); CUR = cls; SAVE.lastCls = cls; persist(); start(); }
 
   // ---------------------------------------------------------------- 대장간
   let forgeFrom = 'title', forgeSel = null, forgeCls = CUR, forgeMsg = null;

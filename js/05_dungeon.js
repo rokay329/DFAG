@@ -27,7 +27,7 @@
     NC = Math.ceil((A.x1 - A.x0) / NAV); NR = Math.ceil((A.y1 - A.y0) / NAV);
   }
   const doorIn = (d, k = 26) => ({ x: DOOR[d].x + (d === 'w' ? k : d === 'e' ? -k : 0), y: DOOR[d].y + (d === 'n' ? k : d === 's' ? -k : 0) });
-  const ROOM_N = { altar: '왕도 성문', forge: '대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '모닥불', reward: '보물 방', shop: '상인', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
+  const ROOM_N = { altar: '왕도 성문', forge: '쿤의 대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '모닥불', reward: '보물 방', shop: '살구의 비밀상점', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
   // v1.21 챕터마다 다른 엘리트 방 이름·문구 (tier 4 = 첫째 엘리트 방, tier 9 = 둘째)
   const ELITE_ROOM = {
     1: { n: '우두머리의 굴', tag: '굴', foe: '우두머리', clear: '우두머리 처치', loot: '우두머리의 전리품',
@@ -164,7 +164,9 @@
     twinPits: () => [['pit', .3, .5, 150, 220], ['pit', .7, .5, 150, 220]],
     cross: () => [['w', .5, .2, 26, 110], ['w', .5, .86, 26, 90], ['w', .2, .52, 200, 26], ['w', .8, .52, 200, 26]],
     lanes: () => [['w', .5, .33, 560, 26], ['w', .5, .7, 560, 26], ['r', .14, .5, 16], ['r', .86, .5, 16]],
-    rubble: () => Array.from({ length: 8 }, () => ['r', rand(.15, .85), rand(.18, .85), rand(12, 22)]),
+    rubble: () => { const out = [], k = randi(2, 3); // v2.91 고르게 흩뿌린 8개 → 2~3무더기 (무더기마다 1~3개)
+      for (let i = 0; i < k; i++) { const u = rand(.18, .82), v = rand(.22, .8), m = randi(1, 3); for (let j = 0; j < m; j++) out.push(['r', u + (j ? rand(-.06, .06) : 0), v + (j ? rand(-.08, .08) : 0), j ? rand(10, 14) : rand(15, 22)]); }
+      return out; },
     pitBand: () => [['pit', .25, .52, 290, 64], ['pit', .75, .52, 290, 64], ['p', .5, .25], ['p', .5, .8]],
     blocks: () => [['w', .22, .27, 170, 90], ['w', .78, .27, 170, 90], ['w', .22, .78, 170, 90], ['w', .78, .78, 170, 90]],
     pitsScatter: () => [['pit', .25, .3, 110, 70], ['pit', .7, .25, 90, 80], ['pit', .5, .84, 130, 60], ['pit', .2, .75, 90, 60], ['pit', .82, .72, 100, 70], ['r', .4, .35, 15], ['r', .62, .82, 15]],
@@ -206,6 +208,23 @@
     if (k === 'r') return { t: 'rock', c: true, x: p.x, y: p.y, r: a };
     const t = k === 'w' ? 'wall' : 'pit';
     return { t, c: false, x: p.x, y: p.y, w: a, h: b, x0: p.x - a / 2, y0: p.y - b / 2, x1: p.x + a / 2, y1: p.y + b / 2 };
+  }
+  // v2.91 격자처럼 줄 맞춰 보이지 않게: 둥근 장애물(나무 · 기둥 · 바위)은 칸 단위로 살짝 비틀고, 많이 늘어선 배치는 몇 개를 뺀다
+  //        벽 · 구덩이도 조금 비튼다 (방 가운데 · 문 앞 · 길 연결 검사는 이 뒤에 그대로 함)
+  const NAT_ROW = { colonnade: 1, nave: 1, vColon: 1, trailEdge: 1, vEdge: 1, pillars6: 1, ring: 1, groves: 1 };
+  function naturalize(obs, name) {
+    const W = A.x1 - A.x0, H = A.y1 - A.y0, s2 = v => Math.round(v / 2) * 2;
+    const rnd = obs.filter(b => b.c), jx = Math.min(26, W * 0.035), jy = Math.min(22, H * 0.05);
+    for (const b of obs) {
+      if (b.c) { b.x = s2(b.x + rand(-jx, jx)); b.y = s2(b.y + rand(-jy, jy)); if (b.t === 'rock') b.r = Math.max(10, Math.round(b.r * rand(0.85, 1.12))); }
+      else { const dx = s2(rand(-10, 10)), dy = s2(rand(-8, 8)); b.x += dx; b.y += dy; b.x0 += dx; b.x1 += dx; b.y0 += dy; b.y1 += dy; }
+    }
+    if (NAT_ROW[name] && rnd.length >= 6) { // 줄지어 선 배치: 25%씩 빼되 4개는 남김
+      let left = rnd.length; const gone = new Set();
+      for (const b of rnd.slice().sort(() => Math.random() - 0.5)) if (left > 4 && Math.random() < 0.25) { gone.add(b); left--; }
+      obs = obs.filter(b => !gone.has(b));
+    }
+    return obs;
   }
   function obsHitL(list, x, y, r, solidOnly) {
     for (const b of list) {
@@ -281,7 +300,7 @@
       let obs = [];
       for (let tries = 0; tries < 12 && pool.length; tries++) {
         const name = pool.splice(randi(0, pool.length - 1), 1)[0];
-        obs = LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
+        obs = naturalize(LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)), name).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
         // 방 가운데(보상 상자·텔레포터 자리)는 비운다: 큰 벽·구덩이가 걸리면 다른 배치, 바위·기둥은 빼기 (v0.59)
         if (obs.some(b => !b.c && obsHitL([b], CX, CY - 10, CLEAR_R))) { obs = []; continue; }
         obs = obs.filter(b => !obsHitL([b], CX, CY - 10, CLEAR_R));
@@ -296,7 +315,7 @@
       if (realStage === 4) { // v1.23 왕도엔 구덩이 없음 — 그 자리엔 잔해·깨진 종이 줄지어 놓인다
         const add = [];
         for (const b of obs) if (b.t === 'pit') { const along = b.w >= b.h, L = along ? b.w : b.h, n = Math.max(1, Math.round(L / 70));
-          for (let i = 0; i < n; i++) { const t = (i + 0.5) / n - 0.5, rr = randi(12, 16); add.push({ t: 'rock', c: true, x: b.x + (along ? t * L : rand(-6, 6)), y: b.y + (along ? rand(-6, 6) : t * L), r: rr }); } }
+          for (let i = 0; i < n; i++) { if (n > 2 && Math.random() < 0.3) continue; const t = (i + 0.5) / n - 0.5 + rand(-0.12, 0.12) / n, rr = randi(11, 17), off = rand(-16, 16); add.push({ t: 'rock', c: true, x: Math.round((b.x + (along ? t * L : off)) / 2) * 2, y: Math.round((b.y + (along ? off : t * L)) / 2) * 2, r: rr }); } } // v2.91 한 줄로 반듯하게 늘어서지 않게
         obs = obs.filter(b => b.t !== 'pit').concat(add.filter(b => !obsHitL([{ t: 'x', c: true, x: CX, y: CY - 10, r: 0 }], b.x, b.y, CLEAR_R + b.r)));
       }
       if (stage === 3) for (const b of obs) {
@@ -404,7 +423,7 @@
     if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
     if (R.type === 'shop') shopHeartFix(R);
     if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner('모닥불', '불가에서 숨을 고르고 축복을 택한다 · F'); } }
-    if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('상인', '남은 골드로 보급을 구한다 · F'); }
+    if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('살구의 비밀상점', '네고 없음, 환불 불가'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
     if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
     if (fresh && R.type === 'boss' && hasRelic('gravedirt')) { addArmor(1); lootFeed('무덤 흙 — 방패 +1', '#c8a880'); }
@@ -666,7 +685,7 @@
     } else if (it.k === 'shop') {
       const s = it.o;
       const half = hasRelic('twincoin') && G.freeBuy !== G.stage, price = half ? Math.ceil(s.price / 2) : s.price; // v2.29 쌍둥이 동전: 챕터마다 1개 50%
-      if (G.gold < price) { sfx('block'); lootFeed(`골드가 부족하다 (${G.gold}/${price}G)`, '#ff7070'); return; }
+      if (G.gold < price) { sfx('block'); NPC_TALK.merchant = { line: pick([`${price - G.gold}G 모자라. 외상은 안 돼`, `${price - G.gold}G만 더 가져와`, `${price - G.gold}G가 모자라는데?`]), until: time + 2.6, next: time + 9, near: true }; return; } // v2.93 골드 부족은 상인이 말주머니로
       if (half) { G.freeBuy = G.stage; lootFeed(`쌍둥이 동전 — 반값 (${price}G)`, '#f0c040'); } G.gold -= price; rec('spent', price); s.sold = true; sfx('coin');
       if (s.k === 'iron') { G.iron += 3; lootFeed('철광석 조각 +3', '#c9b07a'); }
       else if (s.k === 'gear') spawnLoot('gear', s.x, s.y + 4, makeItem(G.cls, { grade: rollGradeW([0, 85, 14.5, 0.5]) }) /* v2.40 레전더리 1.5% → 0.5% */);
@@ -778,7 +797,7 @@
       if (R.type === 'home') { HOME.paint(fg, R); return; } // v2.55 시작 장소
       if (R.type === 'lab') { TRUTH.paintLab(fg, R); return; } // v2.58 구덩이 실험실
       const ac = G.stage === 4;
-      if (G.stage === 1) paintMeadowFloor(fmg); else if (G.stage === 3) { paintOrcFloor(fg, R); paintOrcWall(fg, R); } else { paintCastle.noRite = ac; paintCastle(fg); paintCastle.noRite = false; paintCastleWall(fg); if (R.type !== 'altar') withDecor(fg, R, () => paintCastleDecor(fg, R)); }
+      if (G.stage === 1) paintMeadowFloor(fmg); else if (G.stage === 3) { paintOrcFloor(fg, R); paintOrcWall(fg, R); } else { paintCastle.noRite = ac; paintCastle(fg); paintCastle.noRite = false; paintCastleWall(fg); if (R.type !== 'altar') { if (!ac) withDecor(fg, R, () => paintCastleDecor(fg, R)); } /* v2.89 4장은 21_ash4.js 바닥 자국 */ }
       const g = G.stage === 1 ? fmg : fg;
       for (const b of R.obs) if (b.t === 'pit') (G.stage === 1 ? paintPond : paintChasm)(g, b);
       if (ac) ashCityFloor(fg, R); // v1.22 왕도: 성채 바닥을 재로 덮고 가운데 왕관 모자이크 — 문보다 먼저 깔아 문이 재에 묻히지 않게
@@ -1086,10 +1105,19 @@
   const CHEST_PAL_B = {"k": "#0b0a0e", "K": "#160608", "w": "#c03a42", "b": "#7e2028", "B": "#4a1016", "y": "#e0a830", "Y": "#fff0a0", "o": "#ffe080"}; // 보스 전리품 상자: 핏빛 칠 · 금 장식
   const CHEST_PAL_S = {"k": "#0b0a0e", "K": "#120a1c", "w": "#9a7ac0", "b": "#5a3e84", "B": "#34224e", "y": "#a890d8", "Y": "#f4e8ff", "o": "#f0d8ff"}; // 비밀 방 상자: 보랏빛
   // 상인: 두건 쓴 떠돌이 상인과 짐수레
-  const MERCHANT = fromRows([
-    '....kkkk....', '...kCCCCk...', '..kCccccCk..', '..kCkkkkCk..', '.kCkeKKekCk.', '.kCkKKKKkCk.', '.kCCkkkkCCk.',
-    'kCccCCCCccCk', 'kCcsCccCscCk', 'kCcsCyyCscCk', 'kCccCyyCccCk', 'kCccCccCccCk', '.kCcCccCcCk.', '.kCcCccCcCk.', '.kCCCCCCCCk.', '..kkkkkkkk..']);
-  const MERCHANT_PAL = { k: '#0b0a0e', K: '#050407', C: '#3a2a40', c: '#56405e', e: '#ffd060', s: '#a08a5a', y: '#c9a24a' };
+  // v2.93 상인 「살구」: 왕관앵무 수인 (크림 노랑 몸 · 노란 얼굴 · 주황 볼 · 세로 눈 · 큰 등짐과 침낭 · 한쪽 날개를 펼쳐 손님을 반김)
+  const MERCHANT_ROWS = ['.'.repeat(20)].concat(["...Yy.............", "....yY.Yy.........", "rRRr.yYyY.YPPP....", "rSSr..yYyyYQQPP...", ".PP..gyYYyg.PcP...", ".PPPgyYYYYygPPQ...", ".QPgYYYYYYYYgPP...", ".PPgYeYYYeYYgPP...", ".PPooEYbbEYooPP...", ".QPgoYYBBYYogPdW..", ".PP.gyYYYYygGWWdW.", ".PdGPgcCcgPGWWdWd.", "..dWPggcggPdWdWd..", "..dWggggggg.d.d...", "...ddggggg........", "......ggg.........", "......l.l.........", ".....lL.lL........"].map(r => '.' + r + '.')); // 바깥 1칸 여백 (외곽선 자리)
+  const MERCHANT_PAL = {"k": "#0b0a0e", "y": "#f0cc40", "Y": "#fbe680", "o": "#e8703a", "b": "#b8a8a0", "B": "#7a6a66", "e": "#141014", "w": "#ffffff", "g": "#ead79a", "G": "#f8eecc", "d": "#c0a45c", "c": "#e8902a", "C": "#9a5210", "P": "#7a4e2c", "Q": "#a8744a", "E": "#6a3a22", "R": "#b04038", "S": "#7a2828", "r": "#e0c8a0", "W": "#dcc078", "l": "#d4a098", "L": "#9a6a62"};
+  // 장면: wing 펼친 날개를 한 칸 들어 퍼덕임 · crest 볏 끝이 한 칸 흔들림 · blink 눈 감음
+  function merchantGrid(wing, crest, blink) {
+    const g = MERCHANT_ROWS.map(r => r.split(''));
+    if (wing) { const mv = []; for (let y = 10; y <= 14; y++) for (let x = 12; x < 20; x++) if ('WdG'.includes(g[y][x])) { mv.push([y, x, g[y][x]]); g[y][x] = '.'; } for (const [y, x, c] of mv) g[y - 1][x] = c; }
+    if (crest) { for (const y of [1, 2]) { const r = g[y]; for (let x = 8; x >= 3; x--) if ('yY'.includes(r[x]) && r[x + 1] === '.') { r[x + 1] = r[x]; r[x] = '.'; } } }
+    if (blink) for (const x of [6, 10]) { g[8][x] = 'Y'; g[9][x] = 'e'; }
+    return gOutline(g);
+  }
+  const merchantArt = (wing, crest, blink) => art('merch' + (+wing) + (+crest) + (+blink), () => gCanvas(merchantGrid(wing, crest, blink), MERCHANT_PAL));
+  const MERCHANT = merchantGrid(false, false, false); // 예전 그림 자리 (노점 · 수레 장면)
   const CART = fromRows([
     '..kkkk.kkk..kkkk...', '.kbrrbkkggkkyyyyk..', '.kbrrbkgGGgkyooyk..', 'kkkkkkkkkkkkkkkkkk.', 'kwwwwwwwwwwwwwwwwk.', 'kbbbbbbbbbbbbbbbbkk', 'kBBBBBBBBBBBBBBBBk.', '.kkkkkkkkkkkkkkkk..', '..kkk.........kkk..', '.kgGgk.......kgGgk.', '..kkk.........kkk..']);
   const CART_PAL = { k: '#0b0a0e', w: '#8a6a48', b: '#6a4a30', B: '#4a3220', r: '#8a2030', g: '#3a5a7a', G: '#6a8aaa', y: '#c9a24a', o: '#e8d080' };
@@ -1289,15 +1317,15 @@
           }
         } else if (G.stage === 4) { // v1.23 왕도: 녹아내린 왕의 동상 · 부서진 기둥 / 깨진 종 · 잔해 / 마차 · 무너진 성벽, 모두 위에 재
           if (b.t === 'pillar') {
-            const king = Math.random() < 0.35 && false /* v2.82 녹아내린 왕 동상 삭제 (사용자 결정) — 부서진 기둥만 */, c = king ? gCanvas(genMeltKing(), KING4) : gCanvas(ashCap(genPillar(Math.random() < 0.6)), STONE4);
-            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: king });
+            const king = Math.random() < 0.35 && false /* v2.82 녹아내린 왕 동상 삭제 (사용자 결정) — 부서진 기둥만 */, lp = !king && typeof ASH4 !== 'undefined', c = king ? gCanvas(genMeltKing(), KING4) : lp ? ASH4.lamp() /* v2.89 녹아내린 가로등 */ : gCanvas(ashCap(genPillar(Math.random() < 0.6)), STONE4);
+            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: king || lp });
           } else if (b.t === 'rock') {
-            const bell = b.r >= 10 && Math.random() < 0.55, c = bell ? gCanvas(genBell(b.r), BELL4) : gCanvas(ashCap(genRubble(b.r)), STONE4);
-            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: bell });
+            const bell = b.r >= 10 && Math.random() < 0.55, jk = !bell && typeof ASH4 !== 'undefined', c = bell ? gCanvas(genBell(b.r), BELL4) : jk ? ASH4.junk(b) /* v2.87 4장 고유: 짐 더미 · 우물 · 분수 조각 · 무구 더미 */ : gCanvas(ashCap(genRubble(b.r)), STONE4);
+            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: bell || jk });
           } else {
             const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), cart = wc <= 60 && hc <= 40 && wc >= 14 && Math.random() < 0.5;
-            const { g, HH } = cart ? genCart(wc, hc) : genWallBlock(wc, hc);
-            out.push({ cv: cart ? gCanvas(g, CART4) : gCanvas(ashCap(g, hc), STONE4), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1, raw: cart });
+            const hs = !cart && typeof HOUSE4 !== 'undefined' && wc >= 24 && hc >= 8 /* v2.88 불탄 집 — 폭이 모자라면 성벽 덩어리 */, { g, HH } = cart ? genCart(wc, hc) : hs ? HOUSE4.gen(wc, hc) : genWallBlock(wc, hc);
+            out.push({ cv: cart ? gCanvas(g, CART4) : hs ? gCanvas(g, HOUSE4.pal) : gCanvas(ashCap(g, hc), STONE4), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1, raw: cart || hs });
           }
         } else {
           if (b.t === 'pillar') {
@@ -1338,9 +1366,9 @@
     drawAshClouds();
   }
   // v2.21 2~4장 좌우 문: 경첩 달린 두 짝 문 — 열려 있으면 통로 벽에 붙어 바깥을 향하고, 봉쇄되면 안쪽으로 닫혀 가운데서 맞물린다 (k: 0 열림 → 1 닫힘)
-  const LEAF_PAL = { 2: { k: '#0b0a0e', h: '#7a5a3a', l: '#5a3e26', d: '#3e2a18', b: '#4a4656', B: '#8a8498' }, 3: { k: '#0b0806', h: '#9a6a40', l: '#7a5030', d: '#553620', b: '#3a2a1a', B: '#c8a070' } };
+  const LEAF_PAL = { 4: { k: '#0b0a09', h: '#5a4232', l: '#3e2e22', d: '#241a12', b: '#3a3940', B: '#7c7a84' } /* v2.90 4장 탄 문짝 */, 2: { k: '#0b0a0e', h: '#7a5a3a', l: '#5a3e26', d: '#3e2a18', b: '#4a4656', B: '#8a8498' }, 3: { k: '#0b0806', h: '#9a6a40', l: '#7a5030', d: '#553620', b: '#3a2a1a', B: '#c8a070' } };
   function drawSideLeaves(d, k) {
-    const p = DOOR[d], pal = LEAF_PAL[G.stage === 3 ? 3 : 2], e = k * k * (3 - 2 * k), out = d === 'w' ? Math.PI : 0, one = G.stage !== 3, L = one ? 19 : 10; // 2·4장은 외짝 문(21칸, 위 경첩) · 3장은 두 짝(11칸씩)
+    const p = DOOR[d], pal = LEAF_PAL[G.stage === 3 ? 3 : G.stage === 4 ? 4 : 2], e = k * k * (3 - 2 * k), out = d === 'w' ? Math.PI : 0, one = G.stage !== 3, L = one ? 19 : 10; // 2·4장은 외짝 문(21칸, 위 경첩) · 3장은 두 짝(11칸씩)
     for (const s of one ? [-1] : [-1, 1]) { // 위 짝(s=-1) · 아래 짝(s=1)
       const hx = p.x, hy = p.y + s * 18, closed = s < 0 ? Math.PI / 2 : -Math.PI / 2, a = out + (((closed - out + Math.PI * 3) % TAU) - Math.PI) * e;
       const ca = Math.cos(a), sa = Math.sin(a), cells = new Map();
