@@ -386,6 +386,7 @@
   const setCount = (set, cls) => { const eq = eqOf(cls || (G ? G.cls : CUR)); let n = 0; for (const k in eq) { const it = SAVE.inv.find(i => i.id === eq[k]); if (it && it.set === set && canEquip(it, cls || (G ? G.cls : CUR))) n++; } return n; };
   function itemExtra(it, cls) {
     let h = '';
+    if (it.hold === 'card') return `<div class="fx">✦ ${BDC.CARD_D}</div>`; // v3.18
     if (it.grade === 'rby') { const r = rbyPal('r'), b = rbyPal('b'), g = rbyPal('g'), o = rbyOpts(), v = k => (o.find(x => x.k === k) || { v: 0 }).v; // v2.40 색마다 오르는 능력치가 다름
       return `<div class="fx" style="color:#ff6a6a">✦ 분노의 빛 2개마다 공격력이 1 증가합니다. (${r}개 · +${rbyVal() - 15})</div><div class="fx" style="color:#7aa8ff">✦ 평온의 빛 2개마다 쿨타임이 1% 감소합니다. 최대 30%입니다. (${b}개 · -${v('cdr')}%)</div><div class="fx" style="color:#7ad85a">✦ 희망의 빛 2개마다 치명타 확률이 1% 증가합니다. 최대 30%입니다. (${g}개 · +${v('crit')}%)</div>`; }
     if (it.wk != null && !it.fx) { const W0 = wcat(it.cls || 'knight')[it.wk]; if (W0 && W0.skill !== '—') h += `<div class="fx">✦ ${stripEmoji(W0.skill)}${W0.sk ? '' : ' <i style="opacity:.6">(준비 중)</i>'}</div>`; } // v2.03 무기 기술
@@ -399,7 +400,7 @@
   const gradeOf = it => isUnc(it) ? UNCOMMON : GRADES.find(g => g.k === it.grade);
   const slotOf = it => SLOTS.find(s => s.k === it.slot);
   const slotName = it => it.slot === 'weapon' ? CLASSES[it.cls || 'knight'].weapon : slotOf(it).n;
-  const canEquip = (it, cls) => it.slot !== 'weapon' || (it.cls || 'knight') === cls;
+  const canEquip = (it, cls) => it.slot !== 'weapon' || (!it.hold && (it.cls || 'knight') === cls); // v3.18 보관 전용 무기(칼날카드)는 장착 불가
   // v2.00 장착 칸: 무기 · 반지 · 반지 · 목걸이 (반지는 두 칸 어디든)
   const EQ_KEYS = ['weapon']; // v2.07 무기 한 칸 (반지·목걸이 없앰)
   const eqKeys = slot => slot === 'ring' ? ['ring', 'ring2'] : [slot];
@@ -419,7 +420,7 @@
   }
   function makeRoomFor(it, x, y) { // 새 무기를 받기 전에 칸 확보
     if (!G || it.slot !== 'weapon' || it.cls !== G.cls || !wFull(G.cls)) return null;
-    const out = eqWeapon(G.cls) || wOwned(G.cls)[0]; dropWeapon(out, x, y, true); return out; // 바꿔 드는 중이라 새 무기가 손에 들어온다
+    const out = it.hold ? (wOwned(G.cls).find(i => !isEq(G.cls, i)) || wOwned(G.cls)[0]) : (eqWeapon(G.cls) || wOwned(G.cls)[0]); dropWeapon(out, x, y, !it.hold); return out; // v3.18 칼날카드는 손에 들 수 없으니 들고 있지 않은 무기를 내려놓음 // 바꿔 드는 중이라 새 무기가 손에 들어온다
   }
   const PCT_STAT = { crit: '치명 확률', cdr: '쿨타임 감소' };
 
@@ -478,6 +479,7 @@
     if (G && cls === G.cls && G.relics && G.relics.includes('scales')) atkP += 2 * wOwned(cls).length; // v2.29 왕의 저울
     if (G && cls === G.cls && G.relics) { const R = G.relics; if (R.includes('wick') && G.pal) s.critDmg += 0.1 * hueTier('r'); if (R.includes('glassheart')) { s.hp -= 2; atkP += 25; } if (R.includes('banner5')) atkP += Math.min(15, Object.keys(SAVE.unl).length); } // v2.36
     if (G && cls === G.cls && G.relics) { const R = G.relics; if (R.includes('finger')) atkP += 5; if (R.includes('crown')) atkP += 30; if (R.includes('boots')) spdP += 12; if (R.includes('eye')) s.crit += 0.10; if (R.includes('hourglass')) s.cdr += 0.10; } // v2.19 유물 능력치
+    if (G && cls === G.cls && typeof BDC !== 'undefined') BDC.statMods(s, (k, v) => { if (k === 'atk') atkP += v; else spdP += v; }); // v3.18 뼈주사위 효과
     s.atk *= 1 + atkP / 100; s.hp = clamp(s.hp, 2, HEART_CAP); s.def = 0; s.spd *= 1 + spdP / 100; // v2.00 체력 = 반 칸 수, 방어력 없음
     s.cdr = Math.min(s.cdr, 0.5); s.crit = Math.min(s.crit, 0.8); s.critDmg = Math.min(s.critDmg, 2.5); /* v1.51 치명 피해 상한 250% */
     return s;

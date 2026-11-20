@@ -83,6 +83,7 @@ window.AudioSys = (() => {
     forge:  ['k.m.s.m.k.mms.m.'],
     forgeF: 'k.m.s.m.k.mmsTtt',
     vict:   ['k.h.s.h.k.h.s.h.'],
+    den:    ['t.......t..t....', 't.......t.....t.'], // v3.18 안전 놀이터: 손북만 낮게
   };
   const SONGS = {
     title: mk({ bpm: 92, rows: THEME,
@@ -178,6 +179,13 @@ window.AudioSys = (() => {
       ['Dm', 'A5:4 G5:2 F5:2'], ['Bb', 'F5:4 D5:2 Bb4:2'], ['Gm', 'G4:2 Bb4:2 D5:2 E5:2'], ['A', 'C#5:2 E5:2 A4:4'],
     ], lead: { i: 'piano', vol: 0.12 }, p2: { style: 'trem', i: 'strpad', vol: 0.03 }, bass: { style: 'long', i: 'contra' }, drum: null, echo: { t: 0.24, fb: 0.55, mix: 0.6 } }),
   };
+  // ---------------- v3.18 영수 명수의 안전 놀이터 — A단조, 어둡고 잔잔한 지하 도박장 (낮은 피아노 · 걷는 콘트라베이스 · 손북)
+  SONGS.den = mk({ bpm: 72, rows: [ // 음 사이를 넉넉히 비움
+    ['Am', 'E4:4 C5:4'], ['Dm', 'A4:6 -:2'], ['E7', 'G#4:4 B4:4'], ['Am', 'A4:6 -:2'],
+    ['F', 'C5:4 A4:4'], ['Dm', 'F4:6 -:2'], ['E7', 'B4:4 G#4:2 -:2'], ['Am', 'E4:8'],
+    ['Am', 'C5:3 E5:5'], ['G', 'D5:6 -:2'], ['F', 'A4:4 C5:4'], ['E', 'B4:6 -:2'],
+    ['Dm', 'D5:4 A4:4'], ['Am', 'C5:6 -:2'], ['E7', 'G#4:4 B4:2 -:2'], ['Am', 'A4:8'],
+  ], lead: { i: 'piano', vol: 0.11 }, p2: { style: 'trem', i: 'strpad', vol: 0.022 }, bass: { style: 'walk', i: 'bassP' }, drum: { pat: DR.den, kit: 'light', vol: 0.45 }, echo: { t: 0.24, fb: 0.5, mix: 0.5 } });
   // 옛 무드 이름 호환
   const ALIAS = { field: 's1', survive: 's1Survive', boss: 's1Boss', rest: 's1Rest', citadel: 's2', citadelSurvive: 's2Survive', citadelBoss: 's2Boss', citadelRest: 's2Rest', orc: 's3', orcboss: 's3Boss' };
 
@@ -408,7 +416,7 @@ window.AudioSys = (() => {
   function applyVol() {
     if (!ctx) return;
     const now = ctx.currentTime;
-    bgmGain.gain.setTargetAtTime(st.muted ? 0 : st.bgm * 0.9, now, 0.08);
+    bgmGain.gain.setTargetAtTime(st.muted ? 0 : st.bgm * 0.6, now, 0.08); // v3.18 기본 배경음을 전체적으로 작게 (0.9 → 0.6)
     sfxBus.gain.setTargetAtTime(st.sfx, now, 0.05);
   }
   const resolve = m => SONGS[m] ? m : ALIAS[m];

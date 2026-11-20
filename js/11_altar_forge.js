@@ -573,6 +573,7 @@
     if (Math.random() < 0.22) G.parts.push({ x: mx + 6 + rand(-3, 3), y: my - 60, vx: rand(-6, 6), vy: -rand(18, 40), t: rand(0.8, 1.6), c: pick(['#3a3438', '#2a2428']), g: -10 });
     if (Math.random() < 0.25) G.parts.push({ x: mx + rand(-5, 5), y: my - 6, vx: rand(-10, 10), vy: -rand(20, 50), t: rand(0.3, 0.7), c: pick(['#ffb060', '#ff6a2a']), g: 0, glow: true });
     if (Math.floor(time * 7) % 9 === 0) { ctx.fillStyle = '#ffb860'; ctx.fillRect((CX + d.lantern[0] - 2) & ~1, (CY + d.lantern[1]) & ~1, 2, 2); }
+    { const ox = CX + d.furn[0] - 148, oy = CY + d.furn[1] - 64; FW.smoke((x, y, c, al) => { ctx.globalAlpha = al; ctx.fillStyle = c; ctx.fillRect((ox + x * 2) & ~1, (oy + y * 2) & ~1, 2, 2); }, time); ctx.globalAlpha = 1; } // v3.18 아궁이 연기
     } else if (d.camp) { // C 모닥불
       const cx = CX + d.camp[0], cy = CY + d.camp[1];
       for (let yy = -8; yy <= 0; yy += 2) for (let xx = -4; xx <= 4; xx += 2) { const h = GX.hr(xx * 2.1 + yy * 1.3 + fl * 0.41), lv = (1 - Math.abs(xx) / 5) * (1 + yy / 10); if (lv <= 0 || h > lv + 0.15) continue; ctx.fillStyle = yy > -3 ? '#ffd060' : h < 0.5 ? '#ff8a2a' : '#c03a1a'; ctx.fillRect((cx + xx) & ~1, (cy + yy) & ~1, 2, 2); }
@@ -627,8 +628,8 @@
   function forgeEnts(ents) {
     const R = G.dun && G.dun.cur; if (!R || R.type !== 'forge') return;
     const st = R.stations, d = FORGE_V[R.fk], im = FORGE_IMG[R.fk];
-    for (const [sx, sy, w, h, x0, y0, by, nm] of d.spr) ents.push({ y: CY + by, d: () => { if (im.at.complete) ctx.drawImage(im.at, sx, sy, w, h, CX + x0, CY + y0, w * 2, h * 2); if (nm === 'wagon' || nm === 'campfire') drawForgeWagonFx(d, nm); } });
-    ents.push({ y: st.anvil.y, d: () => { const c = art('forge_anvil2', () => gCanvas(fromRows(FMAP.ANVIL), FPAL)); ctx.drawImage(c, (st.anvil.x - c.width / 2) & ~1, (st.anvil.y - c.height + 4) & ~1); } });
+    for (const [sx, sy, w, h, x0, y0, by, nm] of d.spr) ents.push({ y: CY + by, d: () => { const nc = forgeNewProp(w, h); if (nc) ctx.drawImage(nc, CX + x0 + nc.ox * 2, CY + y0 + nc.oy * 2); else if (im.at.complete) ctx.drawImage(im.at, sx, sy, w, h, CX + x0, CY + y0, w * 2, h * 2); if (nm === 'wagon' || nm === 'campfire') drawForgeWagonFx(d, nm); } });
+    ents.push({ y: st.anvil.y, d: () => { const c = forgeNewProp('anvil'), w = c.width / 2 - 8, h = c.height / 2 - 8; ctx.drawImage(c, (st.anvil.x - w + c.ox * 2) & ~1, (st.anvil.y - h * 2 + 8 + c.oy * 2) & ~1); } }); // v3.18 새 모루 세트
     ents.push({ y: R.smith.y, d: () => drawSmith(R) });
     ents.push({ y: Math.max(R.smith.y, R.stations.anvil.y) + 1, d: () => drawSmithHammer(R) }); // v2.94 망치는 모루 위
     ents.push({ y: 1e9, d: drawForgeLabels }); // v1.71 기능 패찰은 맨 위
@@ -682,7 +683,7 @@
     const h = art('forge_koonh_' + fr, () => gCanvas(fromRows(fr ? KH_B : KH_A), KOON_PAL));
     ctx.drawImage(h, k.x, k.y + k.hy + (k.crouch ? 2 : 0)); // 몸이 내려앉으면 손에 든 망치도 1칸
     const dt = time - (R.hitT || -9);
-    if (dt >= 0 && dt < 0.12) { const fx = (R.smith.x + 22) & ~1, fy = (R.smith.y - 10) & ~1, big = dt < 0.06;
+    if (dt >= 0 && dt < 0.12) { const fx = (R.smith.x + 22) & ~1, fy = (R.smith.y - 4) & ~1, big = dt < 0.06;
       ctx.fillStyle = '#ffffff'; ctx.fillRect(fx - 2, fy - 2, 4, 4);
       ctx.fillStyle = big ? '#fff0b0' : '#ffd060'; for (const [dx, dy] of [[-6, 0], [4, 0], [0, -6], [0, 4]]) ctx.fillRect(fx + dx - (dx ? 0 : 0), fy + dy, 2, 2);
       if (big) { ctx.fillStyle = '#ffd060'; for (const [dx, dy] of [[-10, 0], [8, 0], [0, -10], [-6, -6], [4, -6]]) ctx.fillRect(fx + dx, fy + dy, 2, 2); } }
@@ -987,3 +988,231 @@
     sfx('drop');
     setTimeout(() => { if (G && G.clear && mode === 'play') { if (G.stage < lastStage()) stageClear(); else showResult(true); } }, 900);
   }
+
+// ================================================================ v3.18 대장간 공통 소품 (코드 도트): 2px 칸 · 왼쪽 위 빛 · 밑동에 붙은 그림자 (오른쪽 2칸)
+const FP = (() => {
+  const K = '#0b0a0e';
+  const hh = (x, y, s) => { let h = (x * 374761393 + y * 668265263 + s * 2147483647) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  const B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], bay = (x, y) => (B4[((y % 4) + 4) % 4][((x % 4) + 4) % 4] + 0.5) / 16;
+  function Spr(w, h, pad = 4) { const S = { w, h, pad, M: new Map(), SH: new Map() }; S.set = (x, y, c) => { if (c) S.M.set(x + ',' + y, c); }; S.get = (x, y) => S.M.get(x + ',' + y); S.has = (x, y) => S.M.has(x + ',' + y); S.del = (x, y) => S.M.delete(x + ',' + y); return S; }
+  // 붙은 그림자: 칸마다 맨 아래 칸에서 아래 len줄 · 오른쪽 dx칸 밀림 · 끝줄 디더
+  function shadow(S, dx = 2, len = 2, band = 3, a = 0.55) { const low = new Map(); for (const k of S.M.keys()) { const [x, y] = k.split(',').map(Number); if (!low.has(x) || y > low.get(x)) low.set(x, y); } const ym = Math.max(...low.values()); for (const [x, y] of [...low]) if (y < ym - band) low.delete(x);
+    for (const [x, y] of low) for (let k = 1; k <= len + 1; k++) { const xx = x + dx - (k === 1 ? 1 : 0), yy = y + k; if (k <= len) S.SH.set(xx + ',' + yy, k === len ? a * 0.75 : a); else if ((xx + yy) & 1) S.SH.set(xx + ',' + yy, a * 0.5); }
+    const xr = Math.max(...low.keys()), yr = low.get(xr); for (let i = 1; i <= dx; i++) { S.SH.set((xr + i) + ',' + yr, a * 0.6); } }
+  function render(S, outline = true) { const W = S.w + 2 * S.pad, H = S.h + 2 * S.pad, c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2; const g = c.getContext('2d'), p = S.pad;
+    for (const [k, a] of S.SH) { if (S.M.has(k)) continue; const [x, y] = k.split(',').map(Number); g.fillStyle = `rgba(4,3,8,${a})`; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
+    if (outline) for (const k of S.M.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!S.M.has((x + dx) + ',' + (y + dy))) { g.fillStyle = K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
+    for (const [k, col] of S.M) { const [x, y] = k.split(',').map(Number); g.fillStyle = col; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
+    for (const O of (S.OV || [])) { for (const k of O.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!O.has((x + dx) + ',' + (y + dy))) { g.fillStyle = K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
+      for (const [k, col] of O) { const [x, y] = k.split(',').map(Number); g.fillStyle = col; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); } } // 겹 (따로 외곽선을 두른 작은 물건)
+    c.ox = -p; c.oy = -p; return c; }
+  const WD = { H: '#c49a6a', L: '#a87e52', m: '#8e6642', d: '#714e32', D: '#573a24', s: '#40291a', S: '#2a1a10' };
+  const IR = { h: '#d8dce4', l: '#a4aab4', m: '#6e747e', d: '#43474f', D: '#2a2c34' };
+
+  // ---------------------------------------------------------------- 나무 상자 둘 (아래 큰 상자 + 위에 엇갈려 얹은 작은 상자): 윗면 판자 결 · 앞면 테두리 각목 + 가운데 판자 둘 + 빗장 · 모서리 못 · 쿤의 발자국 낙인
+  function crates() { const S = Spr(19, 16);
+    const box = (x0, y0, w, th, fh, mark) => {
+      for (let y = y0; y < y0 + th; y++) for (let x = x0; x < x0 + w; x++) { const lx = x - x0, r = y - y0; let c = r === th - 1 ? WD.H : (lx % 4 === 3 ? WD.m : WD.L); if (lx === 0) c = WD.H; if (lx === w - 1) c = WD.d; S.set(x, y, c); }
+      for (let y = y0 + th; y < y0 + th + fh; y++) for (let x = x0; x < x0 + w; x++) { const lx = x - x0, r = y - y0 - th, fr = lx <= 1 || lx >= w - 2 || r === 0 || r === fh - 1; let c;
+        if (fr) c = lx <= 1 ? (lx === 0 ? WD.L : WD.m) : lx >= w - 2 ? (lx === w - 1 ? WD.s : WD.D) : r === 0 ? WD.m : WD.D;
+        else { const mid = Math.floor(fh / 2); c = r === mid ? WD.s : (r === mid - 1 || r === fh - 2 ? WD.D : WD.d); if (((lx * 3 + r * 5) % 11) === 0) c = WD.D; }
+        S.set(x, y, c); }
+      for (const [lx, r] of [[1, 0], [w - 2, 0], [1, fh - 1], [w - 2, fh - 1]]) S.set(x0 + lx, y0 + th + r, '#c8c8d0');
+      if (mark) { const mx = x0 + (w >> 1) + 1, my = y0 + th + 2; for (const [dx, dy] of [[0, 1], [1, 1], [0, 2], [1, 2], [-1, 0], [1, 0], [2, 0]]) S.set(mx + dx, my + dy, '#3a1e12'); } };
+    box(0, 6, 14, 3, 8, true); box(2, 1, 10, 3, 5, false); // 위 상자는 아래 상자 윗면 위에 가지런히 (앞면 밑선 = 아래 상자 윗면 앞 모서리)
+    shadow(S); return render(S); }
+
+  // ---------------------------------------------------------------- 통 (닫힌 뚜껑 판자 · 원기둥 음영 · 배 불룩 · 쇠테 둘 · 마개)
+  function barrel() { const S = Spr(10, 12); const w = 10, by = 10, h = 9, ry = 2, yT = by - h;
+    const ST = ['#6e4e32', '#c49a6a', '#b88e60', '#a88052', '#987248', '#886440', '#785838', '#684c30', '#5a4028', '#4a3420'];
+    const e = i => Math.round(ry * Math.sqrt(Math.max(0, 1 - (((i + 0.5) / w) * 2 - 1) ** 2)));
+    for (let i = 0; i < w; i++) { const y0 = yT + e(i), y1 = by + e(i); for (let y = y0; y <= y1; y++) { const r = y - y0, n = y1 - y0; let c = ST[i]; if (i % 3 === 2 && r > 1 && r < n - 1) c = ST[Math.min(9, i + 2)];
+        if (r === 2 || r === n - 2) c = i < 2 ? IR.h : i < 4 ? IR.l : i < 7 ? IR.m : IR.d; S.set(i, y, c); } }
+    for (let y = yT + 4; y <= by - 3; y++) { S.set(-1, y, ST[2]); S.set(w, y, '#3a2618'); }
+    for (let i = 0; i < w; i++) { const k = e(i); for (let y = yT - k; y <= yT + k; y++) { const edge = y === yT - k || y === yT + k || i === 0 || i === w - 1; S.set(i, y, edge ? (y === yT + k ? (i < 5 ? '#d8b080' : WD.m) : WD.d) : (i === 4 ? WD.d : i < 4 ? WD.H : WD.L)); } }
+    S.set(6, yT, '#3a2618'); S.set(6, yT - 1, '#6e4e32');
+    shadow(S); return render(S); }
+
+  // ---------------------------------------------------------------- 자루 둘 (선 자루: 묶은 주둥이 · 끈 / 누운 자루) — 거친 삼베 결 · 덧댄 천 · 찍힌 표식
+  function sacks() { const S = Spr(16, 11); const SK = ['#d8c28e', '#c4aa74', '#ac925e', '#90784a', '#715c38', '#4e3e26'];
+    const blob = (cx, cy, rx, ry, top) => { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry, d2 = dx * dx + dy * dy; if (d2 > 1) continue; if (top && y < top) continue;
+        const b = -0.55 * dx - 0.6 * dy + 0.6 * Math.sqrt(1 - d2); let k = Math.floor((0.9 - b) * 4 + bay(x, y) - 0.5); k = Math.max(0, Math.min(5, k)); if (((x + y * 2) % 5 === 0) && k < 5) k++; S.set(x, y, SK[k]); } };
+    // 누운 자루 (오른쪽 뒤)
+    blob(11, 7, 5, 3.2); for (let y = 5; y <= 9; y++) S.set(15 + (y === 7 ? 1 : 0), y, SK[3]); S.set(16, 6, SK[4]); S.set(16, 8, SK[4]); S.set(17, 7, SK[2]); // 묶은 끝
+    // 선 자루 (왼쪽 앞)
+    blob(5, 7, 4.6, 3.6); blob(5, 3.5, 3.2, 2.6);
+    for (const [x, y, c] of [[4, 1, SK[2]], [5, 1, SK[3]], [6, 1, SK[3]], [4, 0, SK[1]], [5, 0, SK[2]], [6, 0, SK[3]], [3, -1, SK[1]], [4, -1, SK[0]], [6, -1, SK[2]], [7, -1, SK[3]]]) S.set(x, y, c); // 묶은 주둥이 위로 퍼진 천
+    for (const x of [3, 4, 5, 6, 7]) S.set(x, 2, '#8a5a30'); S.set(8, 3, '#8a5a30'); S.set(8, 4, '#6a4224'); // 끈
+    for (const [x, y] of [[3, 6], [4, 6], [5, 6], [3, 8], [4, 8], [5, 8], [2, 7], [6, 7]]) S.set(x, y, '#6a3220'); // 찍힌 표식 (고리)
+    for (let y = 6; y < 9; y++) for (let x = 9; x < 12; x++) S.set(x, y, (x + y) & 1 ? '#9a8458' : '#86704a'); // 덧댄 천
+    S.set(9, 6, '#5a4a2c'); S.set(11, 8, '#5a4a2c');
+    shadow(S, 2, 2, 4); return render(S); }
+
+  // ---------------------------------------------------------------- 작은 궤짝 (쇠띠 · 모서리 쇠 · 자물쇠)
+  function chest() { const S = Spr(10, 9);
+    for (let y = 0; y < 3; y++) for (let x = 0; x < 10; x++) S.set(x, y, y === 0 ? WD.L : y === 2 ? WD.H : (x === 0 ? WD.H : WD.L));
+    for (let y = 3; y < 9; y++) for (let x = 0; x < 10; x++) { const r = y - 3; let c = x === 0 ? WD.L : x >= 8 ? WD.D : WD.m; if (r === 0) c = WD.s; if (r === 5) c = WD.S; if (r === 3 && x > 0) c = WD.d; S.set(x, y, c); }
+    for (const x of [2, 7]) for (let y = 0; y < 9; y++) S.set(x, y, y < 3 ? IR.l : x === 2 ? IR.m : IR.d);
+    for (const [x, y, c] of [[4, 4, '#d8b050'], [5, 4, '#a07828'], [4, 5, '#a07828'], [5, 5, '#6a4a18'], [4, 3, IR.l], [5, 3, IR.m]]) S.set(x, y, c);
+    shadow(S); return render(S); }
+
+  // ---------------------------------------------------------------- 안내판 (기둥 + 가로대에 걸린 판 · 그려 넣은 모루와 불꽃 · 닳은 가장자리 · 못)
+  function sign() { const S = Spr(16, 20);
+    for (let y = 2; y < 20; y++) { S.set(7, y, WD.L); S.set(8, y, WD.d); } S.set(7, 1, WD.H); S.set(8, 1, WD.m); // 기둥
+    for (let x = 1; x < 15; x++) { S.set(x, 2, x < 3 ? WD.H : WD.m); S.set(x, 3, WD.s); } // 가로대
+    for (const x of [3, 12]) { S.set(x, 4, IR.m); S.set(x, 5, IR.d); } // 고리
+    for (let y = 6; y < 14; y++) for (let x = 1; x < 15; x++) { const r = y - 6; let c = x === 1 ? WD.H : x === 14 ? WD.D : r === 0 ? WD.L : r === 7 ? WD.s : (r === 3 ? WD.d : WD.m); if ((x === 1 || x === 14) && (r === 0 || r === 7) && hh(x, y, 3) < 0.6) c = null; if (c) S.set(x, y, c); else S.del(x, y); }
+    // 새김: 망치 모양을 파낸 음각 (짙은 갈색 홈 · 홈의 위왼쪽 벽은 더 어둡고 아래오른쪽 턱은 빛을 받아 밝음)
+    const CUT = new Set(['3,10', '4,10', '5,10', '6,10', '7,10', '8,10', '9,10', '10,8', '10,9', '10,10', '10,11', '10,12', '11,8', '11,9', '11,10', '11,11', '11,12']); // 옆으로 누운 망치 (오른쪽 머리 · 왼쪽으로 뻗은 자루)
+    for (const k of CUT) { const [x, y] = k.split(',').map(Number); S.set(x, y, (!CUT.has((x - 1) + ',' + y) || !CUT.has(x + ',' + (y - 1))) ? '#24160c' : '#3a2414'); }
+    for (const k of CUT) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [0, 1]]) { const kk = (x + dx) + ',' + (y + dy); if (!CUT.has(kk) && S.has(x + dx, y + dy)) S.set(x + dx, y + dy, WD.H); } }
+    for (const [x, y] of [[2, 7], [13, 7], [2, 12], [13, 12]]) S.set(x, y, '#c8c8d0');
+    for (const [x, y] of [[5, 19], [10, 19], [6, 18]]) S.set(x, y, '#4e6e3c'); // 밑동 풀
+    shadow(S, 2, 2, 1); return render(S); }
+
+  // ---------------------------------------------------------------- 석탄 더미 (모난 덩이마다 윗왼쪽 푸른 반사 · 아래 짙음 · 군데군데 불씨)
+  function coal() { const S = Spr(18, 8); const C = ['#6e6c80', '#46445a', '#2e2c3a', '#1e1c26', '#141218'];
+    for (let x = 0; x < 18; x++) { const u = (x + 0.5 - 9) / 9, top = Math.round(7 - 6.2 * Math.sqrt(Math.max(0, 1 - u * u)) + (hh(x >> 1, 0, 5) < 0.4 ? 1 : 0)); for (let y = top; y < 8; y++) { const lump = hh(x >> 1, y >> 1, 7); let k = lump < 0.3 ? 1 : lump < 0.7 ? 2 : 3; if (((x >> 1) + (y >> 1)) % 2 === 0 && (x & 1) === 0 && (y & 1) === 0) k = Math.max(0, k - 1); if (y === top) k = Math.max(0, k - 1); if (y === 7) k = 4; S.set(x, y, C[k]); } }
+    for (const [x, y, c] of [[5, 5, '#ff8a2a'], [6, 5, '#c03a1a'], [11, 4, '#ffb050'], [12, 6, '#c03a1a'], [9, 6, '#7a1a10']]) S.set(x, y, c);
+    shadow(S, 2, 1, 1); return render(S); }
+
+  // ---------------------------------------------------------------- 모루 세트: 뿔 · 윗면 (닳아 반짝) · 구멍 둘 · 허리 · 발 / 통나무 받침 (나이테 단면 · 껍질 · 쇠테) / 기대 세운 집게 · 받침 옆 망치
+  function anvil() { const S = Spr(22, 18);
+    const ox = 2;
+    // 받침 통나무 (낮게): 위는 자른 단면 (나이테 · 갈라짐) · 옆은 세로 껍질 결 (왼쪽 밝음) · 밑동 뿌리 퍼짐
+    for (let y = 13; y < 18; y++) { const r = y - 13, sp = r >= 4 ? 1 : 0; for (let x = ox + 3 - sp; x < ox + 15 + sp; x++) { const lx = x - ox - 3; let c;
+      if (r < 2) { const q = ((lx - 5.5) / 6) ** 2 + ((r - 0.5) / 1.2) ** 2; c = r === 1 ? '#8a6644' : q < 0.15 ? '#a07a50' : q < 0.5 ? '#c8a070' : '#b08860'; }
+      else { const v = hh(x, y, 21); c = lx <= 0 ? '#7a5a3a' : lx === 1 ? '#6a4c30' : lx >= 10 ? '#3a2618' : v < 0.3 ? '#4a3220' : v < 0.65 ? '#5a3e28' : '#644630'; if (x % 3 === 0) c = '#40291a'; }
+      if (r === 4) c = '#2e1e14'; S.set(x, y, c); } }
+    S.set(ox + 9, 13, '#7a5a3a'); // 갈라짐
+    // 모루 몸 (뿔은 왼쪽)
+    const A = ['..HHHHHHHHHHHHHH.', 'hhHlllllllllllllh', '.hhmmmmmmmmmmmmdd', '....dmmmmmmmmdd..', '......dmmmmdd....', '......dmmmmdd....', '.....dmmmmmmdd...', '....dddddddddddd.'];
+    A.forEach((r, j) => [...r].forEach((ch, i) => { if (ch === '.') return; const c = { H: IR.h, h: IR.l, l: '#c4c8d2', m: IR.m, d: IR.d }[ch]; S.set(ox + i, 6 + j, c); }));
+    S.set(ox + 12, 7, '#2a2c34'); S.set(ox + 14, 7, '#2a2c34'); // 구멍
+    for (const x of [ox + 4, ox + 5]) S.set(x, 6, '#ffffff'); // 반짝
+    // 집게 (받침 오른쪽에 기대섬)
+    for (let i = 0; i < 7; i++) { S.set(ox + 17 + (i > 4 ? 1 : 0), 10 + i, i < 3 ? IR.m : IR.d); S.set(ox + 18 + (i > 4 ? 1 : 0) + (i < 2 ? 1 : 0), 10 + i, i < 2 ? IR.l : IR.m); }
+    // 망치 (받침 앞 바닥)
+    for (const [x, y, c] of [[ox, 16, IR.l], [ox + 1, 16, IR.m], [ox, 17, IR.m], [ox + 1, 17, IR.d], [ox + 2, 17, '#a07a54'], [ox + 3, 17, '#8a6644']]) S.set(x, y, c);
+    shadow(S, 2, 2, 2); return render(S); }
+
+  return { crates, barrel, sacks, chest, sign, coal, anvil, Spr, render, shadow, hh, bay, WD, IR, K };
+})();
+
+// ================================================================ v3.18 쿤의 마차 (코드 도트, 94×60칸 자리 그대로): 둥근 테 덮개 천 (테마다 솟고 사이는 처짐 · 밑단 끈 · 발자국 칠 · 기운 자국) · 마부 자리 · 끌채 · 등불 · 짐칸 옆판 (기둥 · 쇠띠 · 걸어 둔 집게와 망치) · 뒤칸 벽돌 화덕 (아치 아가리 · 열린 쇠문 · 그을음 · 연통과 갓) · 풀무 · 석탄 통 · 바퀴 (쇠 테 · 바퀴살 여덟 · 굴대 머리) · 붙은 그림자
+const FW = (() => {
+  const { Spr, render, hh, bay, WD, IR, K } = FP;
+  function wagon() { const S = Spr(94, 60, 6), set = S.set;
+    const CV = { T: '#f2e8d0', H: '#e4d6b6', L: '#d4c4a0', m: '#c0ae88', d: '#a49270', D: '#857456', s: '#665844' };
+    // ---- 바닥 그림자 (마차 몸 밑 · 오른쪽 아래로)
+    for (let y = 50; y <= 61; y++) for (let x = 12; x <= 94; x++) { const q = ((x - 54) / 41) ** 2 + ((y - 56) / 5.5) ** 2; if (q > 1) continue; S.SH.set(x + ',' + y, q < 0.6 ? 0.5 : ((x + y) & 1 ? 0.35 : 0)); }
+    // ---- 끌채 (두 장대 + 끝 가로대) · 받침 토막
+    for (let i = 0; i <= 14; i++) { const x = 15 - i, y = 41 + Math.round(i * 0.78); set(x, y, i % 4 === 0 ? WD.m : WD.L); set(x, y + 1, WD.D); }
+    for (let y = 50; y <= 55; y++) { set(1, y, WD.m); set(2, y, WD.D); } set(0, 50, WD.L); set(3, 50, WD.L);
+    for (const [x, y, c] of [[0, 56, '#5a5562'], [1, 56, '#77717e'], [2, 56, '#5a5562'], [3, 56, '#46424e'], [1, 55, '#8a8490']]) set(x, y, c);
+    // ---- 짐칸 (옆판): 윗테 밝음 · 판자 셋 · 기둥 · 모서리 쇠띠 · 볼트
+    for (let y = 33; y <= 42; y++) for (let x = 12; x <= 87; x++) { const r = y - 33; let c = r === 0 ? WD.H : r === 1 ? WD.L : r === 9 ? WD.S : (r === 4 || r === 7 ? WD.s : WD.m);
+      if (r >= 2 && r <= 8 && (x === 20 || x === 40 || x === 60 || x === 80)) c = r === 2 ? WD.L : WD.d; // 기둥
+      if (r > 1 && r < 9 && r !== 4 && r !== 7 && hh(x >> 2, r, 31) < 0.18) c = WD.d;
+      if (x === 12) c = r < 2 ? WD.H : WD.L; if (x === 87) c = WD.s;
+      if ((x <= 14 || x >= 85) && r >= 1 && r <= 8) c = x <= 14 ? (r % 3 === 1 ? IR.h : IR.l) : IR.d; // 모서리 쇠띠
+      set(x, y, c); }
+    for (const x of [20, 40, 60, 80]) { set(x, 35, '#d8dce4'); set(x, 39, '#a4aab4'); }
+    for (let x = 22; x <= 84; x++) for (const y of [36, 39]) if (x % 20 !== 0 && hh(x >> 2, y, 33) < 0.3 && (x % 4) < 2) set(x, y, WD.d); // 판자 결
+    // 옆판 나무못에 걸어 둔 밧줄 사리 (따로 외곽선)
+    { const O = new Map(); for (let a2 = 0; a2 < 6.3; a2 += 0.3) { const x = Math.round(57 + Math.cos(a2) * 2.4), y = Math.round(38 + Math.sin(a2) * 2.8); O.set(x + ',' + y, a2 > 2.4 && a2 < 5.2 ? '#e0c890' : '#a88c5c'); } O.set('57,35', '#c8ac78'); (S.OV = S.OV || []).push(O); set(57, 33, '#3a2618'); }
+    // 옆판에 걸어 둔 집게 · 망치 (나무못에 걸림 · 따로 외곽선을 둘러 옆판과 떨어져 보이게)
+    { const pal = { h: IR.h, l: IR.l, m: IR.m, d: IR.d, r: '#f0f0f6', w: '#b88a5a', W: '#7a5a3a', p: '#3a2618' }, ov = (rows, x0, y0) => { const O = new Map(); rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') O.set((x0 + i) + ',' + (y0 + j), pal[ch]); })); (S.OV = S.OV || []).push(O); };
+      ov(['h.h', 'l.m', '.r.', 'l.m', 'l.m', 'l.d', 'l.d', 'l.d'], 44, 34); // 집게: 물림 끝 · 리벳 · 긴 손잡이 둘
+      ov(['hhhl', 'llmd', '.w..', '.w..', '.w..', '.W..', '.W..'], 50, 34); // 망치: 쇠 머리 (윗면 밝음) · 나무 자루
+      for (const x of [45, 51]) set(x, 33, '#3a2618'); }
+    // 굴대 · 바닥 밑 그늘 (바퀴 사이)
+    for (let x = 18; x <= 82; x++) { set(x, 43, WD.S); if (x > 36 && x < 60) set(x, 47, '#2a2a34'); }
+    // 물 양동이 (짐칸 밑에 걸림)
+    for (const [x, y, c] of [[46, 44, IR.d], [50, 44, IR.d], [46, 45, WD.L], [47, 45, WD.m], [48, 45, WD.m], [49, 45, WD.d], [50, 45, WD.D], [46, 46, IR.l], [47, 46, IR.m], [48, 46, IR.m], [49, 46, IR.d], [50, 46, IR.d], [47, 47, WD.m], [48, 47, WD.d], [49, 47, WD.D]]) set(x, y, c);
+    // ---- 마부 자리 (등받이 · 앉는 판 · 발판)
+    for (let x = 7; x <= 15; x++) { set(x, 30, x < 9 ? WD.H : WD.L); set(x, 31, WD.D); set(x, 37, x < 9 ? WD.L : WD.m); set(x, 38, WD.s); }
+    for (let y = 24; y <= 30; y++) { set(15, y, WD.L); set(16, y, WD.D); } set(15, 23, WD.H);
+    for (let y = 31; y <= 37; y++) set(8, y, WD.d);
+    // ---- 덮개 천 (테 다섯 · 사이 처짐 · 앞뒤 불룩)
+    const HOOP = [19, 29, 39, 49, 58], top = x => { let t = 6; for (let i = 0; i < HOOP.length - 1; i++) if (x >= HOOP[i] && x <= HOOP[i + 1]) t = 6 + Math.round(1.4 * Math.sin(Math.PI * (x - HOOP[i]) / (HOOP[i + 1] - HOOP[i]))); if (x < 19) t = 6 + Math.round((19 - x) ** 2 * 0.35); if (x > 58) t = 6 + Math.round((x - 58) ** 2 * 0.45); return t; };
+    const TONE = [CV.T, CV.H, CV.L, CV.m, CV.d, CV.D, CV.s];
+    for (let x = 15; x <= 62; x++) { const t = top(x); for (let y = t; y <= 33; y++) { const r = y - t;
+        let near = 99; for (const hx of HOOP) if (x >= hx) near = Math.min(near, x - hx); const bw = 10, u = near > 50 ? 0.5 : near / bw;
+        // 세로: 위는 밝고 아래로 둥글게 말려 어두워짐 · 칸: 테 바로 옆은 솟아 밝고 오른쪽으로 갈수록 어두워짐
+        let v = 1.2 + (y - 6) / 27 * 3.6 + u * 1.1 - (r === 0 ? 1 : 0); if (x <= 17) v += 0.6 - (x - 15) * 0.2; if (x >= 59) v += (x - 58) * 0.45;
+        let k = Math.floor(v); k = Math.max(0, Math.min(6, k)); // 디더 없이 깔끔한 띠 (몸체 · 바퀴 · 화덕과 같은 그림 방식)
+        if (HOOP.includes(x)) k = Math.max(0, Math.min(k, 2) - (r < 3 ? 1 : 0));
+        if (y >= 32) k = 6;
+        set(x, y, TONE[k]); } }
+    // 끈 묶은 자리마다 당겨진 주름 (V) · 밑단 끈
+    for (let x = 18; x <= 60; x += 5) { set(x, 31, '#7a5a34'); set(x, 32, '#5a4024'); set(x - 1, 30, CV.D); set(x + 1, 30, CV.D); set(x - 2, 29, CV.d); set(x + 2, 29, CV.d); }
+    // 덮개 디테일: 가로 박음질 한 줄 (밝은 땀 · 어두운 땀 번갈아) · 앞 끝 졸라맨 주름 (앞 테에서 앞 모서리로 모이는 선) · 앞 테 아래 졸라맨 끈 매듭
+    for (let x = 20; x <= 57; x++) { if (HOOP.includes(x)) continue; const y = 21 + (x > 50 ? 0 : 0); set(x, y, (x & 1) ? '#f2e8d0' : '#a49270'); }
+    for (const [x0, y0, x1, y1] of [[19, 10, 15, 16], [19, 16, 15, 20], [19, 23, 16, 26], [19, 28, 16, 30]]) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) set(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), i < n / 2 ? CV.d : CV.D); }
+    set(16, 31, '#7a5a34'); set(15, 31, '#5a4024'); set(16, 32, '#5a4024');
+    // 발자국 칠 (쿤의 표식, 가운데 칸) · 기운 자국 · 얼룩
+    const paw = [[36, 15], [37, 15], [38, 15], [36, 16], [37, 16], [38, 16], [39, 16], [35, 17], [36, 17], [37, 17], [38, 17], [39, 17], [36, 18], [37, 18], [38, 18], [33, 13], [35, 12], [38, 12], [40, 13], [34, 13], [36, 12], [39, 12], [40, 14]];
+    for (const [x, y] of paw) set(x, y, '#9a3a2a'); for (const [x, y] of [[35, 18], [39, 18], [34, 14]]) set(x, y, '#7a2a1e');
+    for (let y = 12; y < 19; y++) for (let x = 50; x < 56; x++) { const bd = x === 50 || x === 55 || y === 12 || y === 18; set(x, y, bd ? ((x + y) & 1 ? '#6e6048' : CV.d) : (y < 15 ? '#b8a07a' : '#a89068')); }
+    for (const [x, y] of [[23, 22], [24, 23], [25, 22], [44, 25], [45, 26]]) set(x, y, CV.d);
+    // ---- 등불 (덮개 앞 쇠 팔에 걸림): 갓 · 유리 (불) · 받침
+    for (const [x, y, c] of [[17, 7, IR.m], [18, 7, IR.m], [16, 7, IR.d], [18, 8, IR.d], [17, 9, IR.d], [18, 9, IR.l], [19, 9, IR.d], [17, 10, '#ffe08a'], [18, 10, '#fff4c8'], [19, 10, '#ffc050'], [17, 11, '#ffc050'], [18, 11, '#ffd060'], [19, 11, '#e09030'], [17, 12, '#ffc050'], [18, 12, '#e09030'], [19, 12, '#c07028'], [17, 13, IR.d], [18, 13, IR.m], [19, 13, IR.d], [18, 14, IR.d]]) set(x, y, c);
+    // ---- 뒤칸 화덕: 윗판 · 벽돌 몸 (줄마다 엇갈림 · 아가리 둘레 그을음) · 아치 아가리 · 열린 쇠문 · 연통
+    const BR = { L: '#c46a44', m: '#a85438', d: '#8a4230', D: '#6a3226', mo: '#3a2420', so: '#2a1c1a' };
+    for (let x = 63; x <= 85; x++) { set(x, 13, x < 66 ? '#a8a2ae' : '#8a8490'); set(x, 14, '#5e5866'); }
+    for (let y = 15; y <= 32; y++) for (let x = 64; x <= 84; x++) { const r = y - 15, row = Math.floor(r / 3), lr = r % 3 === 2 ? 1 : 0, off = row & 1 ? 4 : 0, joint = (x - 64 + off) % 8 === 7; let c = lr === 1 ? BR.mo : joint ? BR.mo : (x <= 65 ? BR.L : x >= 83 ? BR.D : (hh((x + off) / 8 | 0, row, 41) < 0.35 ? BR.d : BR.m)); if (lr === 0 && r % 3 === 0 && c !== BR.mo && x > 65 && x < 83) c = c === BR.d ? BR.m : BR.L; // 벽돌 윗줄 밝음
+        const dx = x - 74, dy = y - 29, soot = dx * dx / 30 + (dy + 6) * (dy + 6) / 40; if (soot < 0.7 && c !== BR.mo) c = BR.D; // 아가리 위 그을음
+        set(x, y, c); }
+    // 아가리 (아치) — 안은 어둠 (불은 움직임에서)
+    for (let y = 25; y <= 33; y++) for (let x = 70; x <= 78; x++) { const dx = (x - 74) / 4.2, dy = (y - 30) / 5; if (y < 30 && dx * dx + dy * dy > 1) continue; set(x, y, y === 33 ? '#3a3440' : y >= 31 ? '#4a1a10' : '#140a08'); }
+    for (const [x, y] of [[69, 30], [69, 31], [69, 32], [79, 30], [79, 31], [79, 32], [70, 27], [71, 26], [72, 25], [76, 25], [77, 26], [78, 27], [73, 24], [74, 24], [75, 24]]) set(x, y, '#d8a080'); // 아치 둘레 돌 (밝은 테)
+    for (let x = 71; x <= 77; x++) set(x, 32, '#2a2a34'); // 쇠살대
+    // 아궁이 안 타는 석탄: 쇠살대 위 봉긋한 덩이 · 윗면은 달아오른 주황 · 틈은 노랑 · 아래는 검붉음
+    for (const [x, y, c] of [[71, 31, '#3a1a10'], [72, 31, '#c04020'], [73, 31, '#ff8a2a'], [74, 31, '#ffd060'], [75, 31, '#ff8a2a'], [76, 31, '#c04020'], [77, 31, '#3a1a10'],
+      [72, 30, '#5a2414'], [73, 30, '#ff8a2a'], [74, 30, '#ffb040'], [75, 30, '#c04020'], [76, 30, '#5a2414'], [73, 29, '#7a2a14'], [74, 29, '#ff8a2a'], [75, 29, '#7a2a14']]) set(x, y, c);
+    // 열린 쇠문 (오른쪽 경첩)
+    for (let y = 26; y <= 32; y++) { set(80, y, IR.m); set(81, y, IR.d); } set(80, 29, IR.h); set(81, 29, IR.l);
+    // 연통 (쇠 · 띠 둘 · 갓 · 그을음)
+    for (let y = 2; y <= 12; y++) { set(76, y, IR.l); set(77, y, IR.m); set(78, y, IR.d); if (y === 5 || y === 10) { set(76, y, IR.h); set(77, y, IR.l); set(78, y, IR.m); } }
+    for (let x = 74; x <= 80; x++) { set(x, 1, x < 76 ? IR.l : IR.m); set(x, 0, x === 74 || x === 80 ? null : IR.d); } set(77, -1, IR.d);
+    for (const [x, y] of [[76, 3], [77, 2], [78, 4]]) set(x, y, '#3a3440');
+    // ---- 풀무 (화덕 왼쪽, 짐칸 위): 쐐기꼴 · 위아래 나무판 · 가죽 주름 · 쇠 주둥이 · 손잡이
+    for (let x = 56; x <= 63; x++) { const hgt = Math.round(7 - (x - 56) * 0.55), y0 = 32 - hgt; set(x, y0, x < 58 ? WD.H : WD.L); set(x, 32, WD.d); for (let y = y0 + 1; y < 32; y++) set(x, y, (y - y0) % 2 ? '#5e3e28' : (x < 58 ? '#9a7048' : '#7e5a38')); }
+    for (const [x, y, c] of [[64, 29, IR.l], [65, 29, IR.m], [64, 30, IR.m], [55, 24, WD.L], [54, 23, WD.L], [53, 23, WD.H]]) set(x, y, c);
+    // 석탄 통 (짐칸 뒤 끝 고리에 걸림 · 따로 외곽선): 둥근 쇠 들통 (윗테 밝음 · 몸통 원기둥 음영 · 띠 · 리벳) · 반원 손잡이 · 소복한 석탄 (푸른 반사 · 불씨 하나)
+    { const O = new Map(), o = (x, y, c) => O.set(x + ',' + y, c), x0 = 87, y0 = 33;
+      const BODY = [IR.l, IR.l, IR.m, IR.m, IR.d, IR.d, IR.D];
+      for (let y = y0 + 3; y <= y0 + 9; y++) { const r = y - y0 - 3, inset = r >= 5 ? 1 : 0; for (let i = inset; i < 7 - inset; i++) { let c = BODY[i]; if (r === 2) c = i < 2 ? IR.h : i < 5 ? IR.m : IR.d; if (r === 6) c = i < 3 ? IR.m : IR.D; o(x0 + i, y, c); } }
+      for (const [dx, dy] of [[1, 5], [5, 5]]) o(x0 + dx, y0 + dy, '#f4f4f8'); // 리벳
+      for (let i = 0; i < 7; i++) o(x0 + i, y0 + 2, i < 3 ? '#e4e8ee' : i < 6 ? IR.l : IR.m); // 윗테
+      for (const [dx, dy, c] of [[1, 1, '#46445a'], [2, 1, '#6e6c80'], [3, 1, '#2c2a36'], [4, 1, '#5a5868'], [5, 1, '#2c2a36'], [2, 0, '#2c2a36'], [3, 0, '#6e6c80'], [4, 0, '#46445a'], [4, 1, '#ff8a2a']]) o(x0 + dx, y0 + dy, c); // 석탄
+      for (const [dx, dy] of [[0, 1], [-1, 0], [-1, -1], [0, -2], [1, -3], [2, -3], [3, -3], [4, -3], [5, -3], [6, -2], [7, -1], [7, 0], [6, 1]]) o(x0 + dx, y0 + dy, dy < -2 ? IR.l : IR.m); // 손잡이 (반원)
+      (S.OV = S.OV || []).push(O); set(86, 34, '#3a2618'); set(86, 35, IR.d); }
+    // ---- 바퀴 (쇠 테 · 나무 테 · 바퀴살 여덟 · 굴대 머리) — 왼쪽 위 빛
+    const wheel = (cx, cy, R) => { const WO = new Map(); (S.OV = S.OV || []).push(WO); const set = (x, y, c) => WO.set(x + ',' + y, c); for (let y = cy - R - 1; y <= cy + R + 1; y++) for (let x = cx - R - 1; x <= cx + R + 1; x++) { const dx = x + 0.5 - cx, dy = y + 0.5 - cy, d = Math.hypot(dx, dy), lit = (-dx - dy) / (d || 1); if (d > R + 0.5) continue;
+        let c = null;
+        if (d > R - 0.7) c = lit > 0.3 ? IR.h : lit > -0.3 ? IR.l : IR.d; // 쇠 테
+        else if (d > R - 2.6) c = lit > 0.3 ? WD.H : lit > -0.3 ? WD.m : WD.D; // 나무 테
+        else if (d < 2.4) c = d < 1.2 ? IR.h : lit > 0 ? IR.l : IR.m; // 굴대 머리
+        else { const a = Math.atan2(dy, dx), k = ((a / (Math.PI / 4)) % 1 + 1) % 1; if (k < 0.2 || k > 0.8) c = (k < 0.07 || k > 0.93) ? (lit > 0 ? WD.H : WD.m) : (lit > 0 ? WD.L : WD.d); }
+        if (c) set(x, y, c); } WHEEL[cx] = WO; };
+    const WHEEL = {};
+    wheel(28, 48, 11); wheel(70, 48, 11);
+    for (const cx of [28, 70]) { for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 + Math.PI / 8, x = Math.round(cx + Math.cos(an) * 10.3 - 0.5), y = Math.round(48 + Math.sin(an) * 10.3 - 0.5); set(x, y, '#f0f0f6'); } // 쇠 테 못
+      for (const an of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) { const x = Math.round(cx + Math.cos(an + 0.4) * 8.6 - 0.5), y = Math.round(48 + Math.sin(an + 0.4) * 8.6 - 0.5); WHEEL[cx].set(x + ',' + y, WD.S); } // 나무 테 이음
+      WHEEL[cx].set((cx - 1) + ',47', '#f0f0f6'); }
+    return render(S); }
+  // 움직임: 화덕 불 (게임과 같은 방식) + 아궁이에서 모락모락 올라오는 연기. (fx는 마차 칸 기준 → 화면 px = o + 칸 × 2)
+  function fx(g, t, ox, oy) { const cell = (x, y, c, a) => { g.globalAlpha = a; g.fillStyle = c; g.fillRect(ox + x * 2, oy + y * 2, 2, 2); };
+    const fl = Math.floor(t * 12), hr = v => { const s2 = Math.sin(v * 12.9898) * 43758.5453; return s2 - Math.floor(s2); };
+    for (let yy = -3; yy <= 0; yy++) for (let xx = -3; xx <= 3; xx++) { const h = hr(xx * 3.4 + yy * 1.8 + fl * 0.37), lv = (1 - Math.abs(xx) / 3.5) * (1 + yy / 4); if (lv <= 0 || h > lv + 0.2) continue; cell(74 + xx, 31 + yy, yy > -1 ? (h < 0.4 ? '#fff0b0' : '#ffd060') : h < 0.5 ? '#ff8a2a' : '#c03a1a', 1); }
+    smoke(cell, t); g.globalAlpha = 1; }
+  function smoke(cell, t) { for (let i = 0; i < 10; i++) { const ph = (t * 0.22 + i / 10) % 1, y = 24 - ph * 17, x = 74 + Math.sin(ph * 7 + i * 1.7) * 1.6 - ph * 4, a = Math.min(1, ph * 6) * (1 - ph) * 0.8, big = ph > 0.3;
+      const c = ph < 0.3 ? '#b4aeba' : '#8a8494'; cell(Math.round(x), Math.round(y), c, a); if (big) { cell(Math.round(x) + 1, Math.round(y), c, a * 0.8); cell(Math.round(x), Math.round(y) - 1, c, a * 0.6); } } }
+  return { wagon, fx, smoke };
+})();
+
+// v3.18 대장간 공통 소품: 옛 아틀라스 칸 크기로 알아보고 새 코드 도트로 바꿔 그림 (마차 · 상자 · 통 · 자루 · 궤짝 · 안내판 · 석탄 · 모루)
+const FORGE_NEW = {}, FORGE_SIG = { '94x60': 'wagon', '19x16': 'crates', '10x12': 'barrel', '16x11': 'sacks', '10x9': 'chest', '16x20': 'sign', '18x8': 'coal' };
+function forgeNewProp(w, h) { const k = h === undefined ? w : FORGE_SIG[w + 'x' + h]; if (!k) return null; return FORGE_NEW[k] || (FORGE_NEW[k] = k === 'wagon' ? FW.wagon() : FP[k]()); }

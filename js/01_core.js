@@ -440,6 +440,11 @@
   // 효과음: 여러 레이어(톤·노이즈·아르페지오)를 겹쳐 만든다. [종류, 파형/필터, 시작Hz, 끝Hz, 길이, 볼륨]
   const SFX = {
     legend:  [['tone', 'triangle', 523, 1046, 0.55, 0.35], ['tone', 'sine', 784, 1568, 0.7, 0.28], ['noise', 'highpass', 3000, 8000, 0.45, 0.18]],
+    // v3.18 안전 놀이터 (7번째 값 = 늦게 시작하는 시간)
+    denCard: [['noise', 'bandpass', 1800, 900, 0.07, 0.4], ['noise', 'lowpass', 700, 250, 0.06, 0.2]],
+    denDice: [0, 0.08, 0.17, 0.24, 0.36, 0.45, 0.6, 0.78].flatMap((d, i) => [['noise', 'bandpass', 1500 - i * 60, 1100, 0.035, 0.42 - i * 0.035, d], ['tone', 'triangle', 640 - i * 20, 420, 0.04, 0.14 - i * 0.012, d]]),
+    denWin:  [['arp', [69, 72, 76, 81], 0.08, 0.16], ['noise', 'bandpass', 1600, 1200, 0.03, 0.35, 0], ['noise', 'bandpass', 1500, 1100, 0.03, 0.3, 0.07], ['noise', 'bandpass', 1400, 1000, 0.03, 0.28, 0.14]],
+    denLose: [['arp', [64, 60, 57], 0.14, 0.15], ['tone', 'triangle', 196, 98, 0.5, 0.14, 0.3]],
     swing:   [['noise', 'bandpass', 700, 2600, 0.16, 0.55], ['tone', 'triangle', 320, 110, 0.1, 0.18]],
     whoosh:  [['noise', 'bandpass', 400, 2400, 0.3, 0.7], ['tone', 'sawtooth', 160, 55, 0.22, 0.14]],
     hit:     [['noise', 'lowpass', 4000, 700, 0.09, 0.8], ['tone', 'square', 240, 60, 0.08, 0.32], ['tone', 'sine', 110, 40, 0.14, 0.7]],
@@ -487,14 +492,15 @@
     if (sfxLast[name] && t - sfxLast[name] < 0.035) return; // 같은 소리가 한 프레임에 겹쳐 터지지 않게
     sfxLast[name] = t;
     const bus = window.AudioSys.sfxBus, GAIN = 1.4; // 음악 위로 확실히 들리도록
+    const t0 = t;
     for (const ly of L) {
       if (ly[0] === 'tone') {
-        const [, type, f0, f1, dur, vol] = ly, o = AC.createOscillator(), g = AC.createGain();
+        const [, type, f0, f1, dur, vol] = ly, t = t0 + (ly[6] || 0), o = AC.createOscillator(), g = AC.createGain();
         o.type = type; o.frequency.setValueAtTime(f0 * pitch, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1 * pitch), t + dur);
         g.gain.setValueAtTime(vol * GAIN, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
         o.connect(g); g.connect(bus); o.start(t); o.stop(t + dur + 0.02);
       } else if (ly[0] === 'noise') {
-        const [, ft, f0, f1, dur, vol] = ly, n = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+        const [, ft, f0, f1, dur, vol] = ly, t = t0 + (ly[6] || 0), n = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
         n.buffer = noiseBuffer(); f.type = ft; f.Q.value = ft === 'bandpass' ? 1.4 : 0.7;
         f.frequency.setValueAtTime(f0 * pitch, t); f.frequency.exponentialRampToValueAtTime(Math.max(30, f1 * pitch), t + dur);
         g.gain.setValueAtTime(vol * GAIN, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);

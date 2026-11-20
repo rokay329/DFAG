@@ -12,12 +12,26 @@
     s.near = near;
     return time < s.until ? s : null;
   }
-  const BUBBLES = [];
+  const BUBBLES = [], BUB_RECTS = [], BUB_LAST = new Map(); // BUB_RECTS: 이번 화면에 그린 말주머니 · 키 안내 자리 (화면 좌표) — 그 위에선 마우스 커서를 숨김
   function drawBubble(text, x, y, side = 0) { BUBBLES.push([text, x, y, side]); }
+  // v3.18 대화 말주머니의 F 안내: 방금 그린 말주머니 오른쪽 위 모서리에, 말주머니 오른쪽 끝을 넘지 않게 (화면 좌표)
+  function bubbleKey(text, label, fx, fy) { const b = BUB_LAST.get(text); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const bob = Math.floor(time * 2.5) % 2;
+    if (!b) drawKeyTag(ctx, fx, fy, 'F', label, { left: true });
+    else { ctx.font = '9px Galmuri9'; const lw = Math.round(ctx.measureText(label).width); ctx.font = '8px Galmuri7'; const kw = Math.max(11, Math.round(ctx.measureText('F').width) + 8), tw = 4 + kw + 4 + lw + 6, x0 = Math.round(b.x + b.w - 6);
+      if (x0 + tw <= VW - 2) drawKeyTag(ctx, x0, b.y + 8 + bob, 'F', label, { left: true }); // 평소: 말주머니 오른쪽 위 모서리에 걸쳐 바깥으로 (글자를 가리지 않음)
+      else drawKeyTag(ctx, b.x + b.w, b.y - 8 + bob, 'F', label, { right: true }); } // 화면 오른쪽 끝이라 나가면: 말주머니 위로 올려 오른쪽 끝에 맞춤
+    ctx.restore(); }
   function flushBubbles() {
+    BUB_LAST.clear();
     if (G && G.player && !G.player.dead && P_BUBBLE.until > time && P_BUBBLE.text) {
       drawBubble(P_BUBBLE.text, G.player.x, G.player.y - 38 - (G.player.lift || 0), 0);
     }
+    // v3.18 말주머니끼리 겹치면 나중 것을 겹친 말주머니 위로 올려 쌓음 (겹쳐 그려져 깨져 보이지 않게)
+    const placed = []; ctx.font = '10px Galmuri9';
+    for (const b of BUBBLES) { if (b[3] < 0) continue; const note = b[0].endsWith('♪'), t = note ? b[0].slice(0, -1) : b[0], w = ((Math.ceil(ctx.measureText(t).width) + (note ? 14 : 0) + 14) & ~1) + 6, h = 30;
+      for (let k = 0; k < 6; k++) { const x0 = b[1] - w / 2, y0 = b[2] - h, hit = placed.find(p => x0 < p[0] + p[2] && p[0] < x0 + w && y0 < p[1] + p[3] && p[1] < y0 + h); if (!hit) break; b[2] = hit[1] - 2; }
+      placed.push([b[1] - w / 2, b[2] - h, w, h]); }
     for (const b of BUBBLES) paintBubble(b[0], b[1], b[2], b[3]);
     BUBBLES.length = 0;
   }
@@ -405,7 +419,10 @@
     const note = text.endsWith('♪'); if (note) text = text.slice(0, -1);
     ctx.font = '10px Galmuri9'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
     const tw = Math.ceil(ctx.measureText(text).width) + (note ? 14 : 0), w = (tw + 14) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1;
-    const bx = side < 0 ? X - 6 - w : (X - (w >> 1)) & ~1, by = side < 0 ? Y - 8 : Y - h - 6;
+    let bx = side < 0 ? X - 6 - w : (X - (w >> 1)) & ~1; const by = side < 0 ? Y - 8 : Y - h - 6;
+    { const m = ctx.getTransform(); // v3.18 화면 밖으로 잘리지 않게 몸통만 안쪽으로 (꼬리는 그대로) · 말주머니 자리를 기록해 마우스 커서를 숨김
+      if (side >= 0 && m.a === 1) { const sx = bx + m.e, lo = 4 - sx, hi = VW - 4 - (sx + w); if (lo > 0) bx += (lo + 1) & ~1; else if (hi < 0) bx -= (-hi + 1) & ~1; bx = Math.max(Math.min(bx, X - 6), X + 6 - w); } // 꼬리는 몸통 안쪽에 남게
+      BUB_RECTS.push([m.a * (bx - 2) + m.e, m.d * (by - 2) + m.f, m.a * (w + 4), m.d * (h + 10)]); BUB_LAST.set(text, { x: m.a * bx + m.e, y: m.d * by + m.f, w: m.a * w }); }
     ctx.fillStyle = '#0b0a0e'; ctx.fillRect(bx + 2, by - 2, w - 4, h + 4); ctx.fillRect(bx, by, w, h); ctx.fillRect(bx - 2, by + 2, w + 4, h - 4); // 외곽선(모서리 깎음)
     ctx.fillStyle = '#f4ead2'; ctx.fillRect(bx + 2, by, w - 4, h); ctx.fillRect(bx, by + 2, w, h - 4);
     ctx.fillStyle = '#d8c8a4'; ctx.fillRect(bx + 2, by + h - 2, w - 4, 2); // 아래 그늘
@@ -433,7 +450,7 @@
   }
   // 상인 「살구」(왕관앵무): 계산대 뒤에 서서 숨 쉬듯 들썩이고, 볏이 흔들리고, 펼친 날개를 이따금 두 번 퍼덕이고, 눈을 깜빡인다
   function drawShopKeeper(R) {
-    const x = ((R.keeper ? R.keeper.x : CX) + 2) & ~1, y = ((R.keeper ? R.keeper.y - 8 : CY - 30)) & ~1, bob = Math.floor(time * 1.5) % 2 ? 2 : 0;
+    const x = ((R.keeper ? R.keeper.x : CX) + 2) & ~1, y = ((R.keeper ? R.keeper.y - 4 : CY - 26)) & ~1, bob = Math.floor(time * 1.5) % 2 ? 2 : 0;
     const ph = time % 2.6, wing = ph < 0.6 && Math.floor(ph * 6.67) % 2 === 0, crest = Math.floor(time * 1.4) % 2 === 1, blink = time % 3.7 < 0.15;
     const m = merchantArt(wing, crest, blink);
     ctx.drawImage(m, x - 18, y - m.height + 2 - bob); // 몸통 가운데가 x에 오게 (펼친 날개는 오른쪽으로)
@@ -1213,7 +1230,9 @@
     c.save(); c.textBaseline = 'alphabetic';
     c.font = '9px Galmuri9'; const lw = label ? Math.round(c.measureText(label).width) : 0;
     c.font = '8px Galmuri7'; const kw = Math.max(11, Math.round(c.measureText(key).width) + 8);
-    const gap = label ? 4 : 0, w = 4 + kw + gap + lw + 6, X = Math.round(o.left ? x : x - w / 2), Y = Math.round(y) - 11, H = 15;
+    const gap = label ? 4 : 0, w = 4 + kw + gap + lw + 6, Y = Math.round(y) - 11, H = 15; let X = Math.round(o.right ? x - w : o.left ? x : x - w / 2);
+    { const m = c.getTransform(); if (c === ctx && m.a === 1) { const sx = X + m.e; if (sx + w > VW - 2) X -= sx + w - (VW - 2); else if (sx < 2) X += 2 - sx; } // v3.18 화면 끝에서 잘리지 않게
+      if (c === ctx) BUB_RECTS.push([m.a * X + m.e, m.d * Y + m.f, m.a * w, m.d * H]); }
     if (!o.bare) { c.fillStyle = 'rgba(10,8,14,.88)'; c.fillRect(X, Y, w, H); c.strokeStyle = o.border || '#c9a24a'; c.lineWidth = 1; c.strokeRect(X + 0.5, Y + 0.5, w - 1, H - 1); }
     keyCap(c, X + 4, Y + 2, key, !!o.capOff);
     if (label) { c.font = '9px Galmuri9'; c.textAlign = 'left'; c.fillStyle = o.color || '#ffe9b0'; c.fillText(label, X + 4 + kw + gap, Y + 11); }

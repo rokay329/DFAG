@@ -1134,7 +1134,7 @@ function ceilingDrips(t) {
   function hud() {
     PEEK = null; TRUTH2.hud(); boxHud();
     if (DLG && !DLG.box && mode === 'play') { const [who, text] = DLG.lines[DLG.i], p = speakerPos(who); ctx.save(); ctx.font = '10px Galmuri9'; const tw = Math.ceil(ctx.measureText(text).width), w = (tw + 14) & ~1; ctx.restore();
-      const X = Math.round(p.x - CAMX), Y = Math.round(p.y - CAMY); keyHint(DLG.i < DLG.lines.length - 1 ? '넘기기' : '닫기', X + (w >> 1) - 6, Y - 22 - 2); }
+      const X = Math.round(p.x - CAMX), Y = Math.round(p.y - CAMY); bubbleKey(text, DLG.i < DLG.lines.length - 1 ? '넘기기' : '닫기', X + (w >> 1) - 6, Y - 14); }
     return; // v2.59 의뢰 패널은 띄우지 않음 (알림 한 줄만)
     const q = G && G.tq1, show = q && (q.q === 1 || q.q === 2) && mode === 'play' && G.stage === 1;
     if (!QEL) { if (!show) return; QEL = document.createElement('div'); QEL.className = 'hud pf glass'; QEL.id = 'trQuest'; QEL.style.cssText = 'right:8px;top:184px;width:150px;box-sizing:border-box;padding:5px 8px;'; document.getElementById('ui').appendChild(QEL); }

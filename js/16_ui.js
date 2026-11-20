@@ -592,13 +592,13 @@
     $('p1').classList.toggle('dead', P.dead);
     $('p1').classList.toggle('hurt', P.hurtT > 0);
     const relicTags = (G.relics || []).map(k => `<span class="tag relicTag relicRow" style="--c:${RELICS[k].c}" data-name="${RELICS[k].n}" data-tip="${RELICS[k].d}"><img class="px" src="${relicIconURL(k)}"></span>`).join(''); /* 유물은 하트 아래, 이름에 마우스를 올리면 설명 */
-    const statusTags = (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '') + G.buffs.map(b => `<span class="tag relicTag relicRow buffTag" style="--c:${MEAL_C[b]}" data-name="${BISTRO.dishName(b) || BUFFS[b].n}" data-tip="${BUFFS[b].d}"><img class="px" src="${buffIconURL(b)}"></span>`).join(''); // v3.10 잠깐 걸리는 상태는 글자 칩 · 식사 효과는 아이콘 칩 (마우스를 올리면 설명)
+    const statusTags = (P.awakenT > 0 || P.state === 'awaken' ? '<span class="tag aw">각성</span>' : '') + (P.state === 'storm' ? '<span class="tag aw">폭풍</span>' : '') + (P.poisonT > 0 ? '<span class="tag" style="background:#4a2060;color:#d8b0ff">중독</span>' : '') + BDC.tags() + G.buffs.map(b => `<span class="tag relicTag relicRow buffTag" style="--c:${MEAL_C[b]}" data-name="${BISTRO.dishName(b) || BUFFS[b].n}" data-tip="${BUFFS[b].d}"><img class="px" src="${buffIconURL(b)}"></span>`).join(''); // v3.10 잠깐 걸리는 상태는 글자 칩 · 식사 효과는 아이콘 칩 (마우스를 올리면 설명)
     /* 유물은 패널에 표시하지 않음 (장비창에서 확인) */
     if (statusTags !== hudPrev.status) { $('p1status').innerHTML = statusTags; hudPrev.status = statusTags; }
     // 페이즈
     { const R = G.dun && G.dun.cur, rs = G.rs || {};
-      $('phaseText').textContent = R ? (R.type === 'archive' || R.type === 'rest' ? roomName(R.type) : `${G.stage} · ${roomName(R.type)}`) : ''; // v3.10 긴 장소 이름은 번호 없이
-      { const n = $('phaseText').textContent.length; $('phaseText').style.letterSpacing = n >= 14 ? '0' : ''; $('phaseText').style.whiteSpace = n >= 14 ? 'nowrap' : ''; $('phaseText').style.fontSize = n >= 14 ? '10px' : ''; } // v3.10 긴 장소 이름은 한 줄로 (기록 보관소 지하 · 출장 비스트로)
+      $('phaseText').textContent = R ? (R.type === 'archive' || R.type === 'rest' || R.type === 'den' ? roomName(R.type) : `${G.stage} · ${roomName(R.type)}`) : ''; // v3.10 긴 장소 이름은 번호 없이
+      { const n = R && R.type === 'den' ? 14 : $('phaseText').textContent.length; /* v3.17 안전 놀이터 이름도 한 줄로 */ $('phaseText').style.letterSpacing = n >= 14 ? '0' : ''; $('phaseText').style.whiteSpace = n >= 14 ? 'nowrap' : ''; $('phaseText').style.fontSize = n >= 14 ? '10px' : ''; } // v3.10 긴 장소 이름은 한 줄로 (기록 보관소 지하 · 출장 비스트로)
       let sub = ''; // v2.51 방 모양·봉인 글자는 빼고, 전투 중일 때만 남은 적 (보스 문 열쇠는 따로 #bkPanel)
       if (R && R.type === 'survive' && rs.state === 'run') { const left = SURV_PT() - (rs.phT || 0), al = G.enemies.filter(e => !e.dead).length; sub = rs.ph >= SURV_N - 1 && left <= 0 ? `남은 적 ${al}` : `남은 시간 ${Math.max(0, Math.ceil(left))}초`; }
       else if (R && R.waves && (rs.state === 'run' || rs.state === 'intro')) sub = `남은 적 ${G.enemies.filter(e => !e.dead).length + G.spawning}`;
@@ -690,7 +690,7 @@
       const cell = k => { const r = RELICS[k], u = UNLOCKS.find(x => x.kind === 'r' && x.key === k), lock = u && !unlocked(u.id), cur = u ? Math.min(u.n, SAVE.rec[u.rec] || 0) : 0;
         const sub = !u ? '기본' : lock ? `${u.how} ${fmt(cur)}/${fmt(u.n)}` : '해금됨';
         return `<div class="arcC${lock ? ' lock' : ''}" ${aTip(lock ? '???' : r.n, lock ? (u.s || `${u.how} ${fmt(u.n)}`) : r.d, lock ? '#9a8ea5' : r.c)}><img src="${relicIconURL(k)}"><span><span class="an">${lock ? '???' : r.n}</span><span class="ac">${sub}</span>${lock ? `<span class="bar"><b style="width:${Math.round(cur / u.n * 100)}%"></b></span>` : ''}</span></div>`; };
-      const keys = Object.keys(RELICS), base = keys.filter(k => !UNLOCKS.some(u => u.key === k)), ext = keys.filter(k => UNLOCKS.some(u => u.key === k)), got = ext.filter(k => !relicLocked(k)).length;
+      const keys = Object.keys(RELICS), base = keys.filter(k => !UNLOCKS.some(u => u.key === k) && !RELICS[k].den), ext = keys.filter(k => UNLOCKS.some(u => u.key === k)), got = ext.filter(k => !relicLocked(k)).length;
       body = `<div class="arcH">해금 유물<i>${got} / ${ext.length}</i></div><div class="arcGrid">${ext.map(cell).join('')}</div>`
         + `<div class="arcH">기본 유물<i>${base.length}</i></div><div class="arcGrid">${base.map(cell).join('')}</div>`;
     } else if (arcTab === 'truth') { // v2.58 진엔딩 단서: 진실 기록 3칸 (얻기 전엔 잠긴 칸 + 짧은 힌트)
@@ -763,6 +763,7 @@
   function toTitle() {
     ['ovResult', 'ovPause', 'ovRest', 'ovInv'].forEach(id => $(id).classList.remove('on'));
     G = null; mode = 'title'; titleMats(); showTitlePanel('main'); $('ovTitle').classList.add('on');
+    { const bk = $('bkPanel'); if (bk) bk.style.display = 'none'; hudPrev.bk = ''; } // v3.18 원정을 끝내고 타이틀로 오면 보스 문 열쇠 패널이 남지 않게
     window.AudioSys.setMood('title', true);
   }
   function openPause() { mode = 'pause'; syncVol(); $('ovPause').classList.add('on'); sfx('blip'); }
@@ -843,8 +844,8 @@
     g.imageSmoothingEnabled = false; g.drawImage(src, sx, sy, THUMB, THUMB, 0, 0, THUMB, THUMB);
     return (iconCache[ck] = c.toDataURL());
   }
-  const itemIcon = it => (it.slot === 'weapon' && weaponIconURL(it)) || itemIconURL(iconKeyOf(it), gradeOf(it).c);
-  const iconImg = it => { const w = it.slot === 'weapon' && weaponIconURL(it); return w ? `<img class="thumb" src="${w}">` : `<img src="${itemIconURL(iconKeyOf(it), gradeOf(it).c)}">`; };
+  const itemIcon = it => (it.hold === 'card' && BDC.cardIconURL()) || (it.slot === 'weapon' && weaponIconURL(it)) || itemIconURL(iconKeyOf(it), gradeOf(it).c);
+  const iconImg = it => { const w = it.hold === 'card' ? BDC.cardIconURL() : it.slot === 'weapon' && weaponIconURL(it); return w ? `<img class="thumb" src="${w}">` : `<img src="${itemIconURL(iconKeyOf(it), gradeOf(it).c)}">`; };
   const INV_TABS = [['all', '전체', () => true], ['weapon', '무기', it => it.slot === 'weapon']];
   const INV_STATS = [['atk', '공격력', v => v.toFixed(0)], ['hp', '최대 체력', v => (v / 2) + '칸'], ['crit', '치명 확률', v => (v * 100).toFixed(0) + '%'], ['critDmg', '치명 피해', v => (v * 100).toFixed(0) + '%'], ['cdr', '쿨타임 감소', v => (v * 100).toFixed(0) + '%'], ['spd', '이동 속도', v => v.toFixed(0)]];
   const INV_COLS = 10, GO = { rby: -1, legend: 0, unique: 1, rare: 2, common: 3 };
@@ -864,7 +865,8 @@
     return s;
   }
   function equipNow(it, on) {
-    const cls = invCls(); if (!it || (on && !canEquip(it, cls))) return;
+    const cls = invCls(); if (on && it && it.hold) { lootFeed('장착할 수 없는 무기입니다.', '#ff9a9a', 1400); sfx('blip', 0.6); return; } // v3.18 칼날카드
+    if (!it || (on && !canEquip(it, cls))) return;
     if (on) equipIt(cls, it); else unequipIt(cls, it);
     if (G) { const P = G.player, oldHp = G.stats.hp; G.stats = calcStats(G.buffs); if (P) P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp); }
     persist(); sfx(on ? 'select' : 'blip'); renderInv();
@@ -875,6 +877,7 @@
     if (!P || P.dead || G.trans) return;
     if (!it) { lootFeed(`${i + 1}번 칸 비어 있음`, '#8a8090', 1200); sfx('blip', 0.6); return; }
     if (isEq(G.cls, it)) return;
+    if (it.hold) { lootFeed('장착할 수 없는 무기입니다.', '#ff9a9a', 1400); sfx('blip', 0.6); return; } // v3.18 칼날카드
     if (!['idle', 'rattack'].includes(P.state)) { pressed[String(i + 1)] = true; return; } // 공격·기술 중이면 끝나고 바꾼다
     equipIt(G.cls, it); const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
     P.state = 'idle'; P.combo = 0; P.chainL = null; P.whipL = null;
@@ -905,7 +908,7 @@
     if (invSel != null && typeof invSel === 'number' && !list.some(i => i.id === invSel)) invSel = null;
     if (invSel == null && list[0]) invSel = list[0].id;
     const wcell = it => { const g = gradeOf(it), on = ids.has(it.id);
-      return `<button class="eqSlot wSlot ${it.id === invSel ? 'sel' : ''} ${canEquip(it, cls) ? '' : 'off'} ${invSeen.has(it.id) ? '' : 'new'}" data-id="${it.id}" style="--c:${g.c}"><div class="box">${iconImg(it)}${it.lv ? `<i class="lv">+${it.lv}</i>` : ''}${on ? '<i class="eq">E</i>' : pasOf(it, cls) ? '<i class="pas">보관</i>' : ''}<i class="key">${list.indexOf(it) + 1}</i></div></button>`; };
+      return `<button class="eqSlot wSlot ${it.id === invSel ? 'sel' : ''} ${canEquip(it, cls) || it.hold ? '' : 'off'} ${invSeen.has(it.id) ? '' : 'new'}" data-id="${it.id}" style="--c:${g.c}"><div class="box">${iconImg(it)}${it.lv ? `<i class="lv">+${it.lv}</i>` : ''}${on ? '<i class="eq">E</i>' : it.hold || pasOf(it, cls) ? '<i class="pas">보관</i>' : ''}<i class="key">${list.indexOf(it) + 1}</i></div></button>`; };
     $('eqL').innerHTML = '';
     $('eqR').innerHTML = Array.from({ length: Math.max(WCAP, list.length) }, (_, i) => list[i] ? wcell(list[i]) : `<div class="eqSlot wSlot empty"><div class="box"></div></div>`).join('');
     $('invStats').innerHTML = INV_STATS.map(([k, n, f]) => `<span>${n}</span><b>${f(s[k])}</b>`).join('');
@@ -946,6 +949,7 @@
   function invTipHTML(it) {
     const cls = invCls(), cur = G ? G.stats : calcStats([], cls);
     const g = gradeOf(it), v = itemVal(it), on = isEq(cls, it), ok = canEquip(it, cls);
+    if (it.hold) return BDC.cardTip(it, cls, TOUCH.on && invCanDrop() ? '<button class="tHold"><i></i>길게 눌러 버리기</button>' : '<div class="tDrop"><i></i></div>'); // v3.18 칼날카드
     const curIt = on ? null : eqCurFor(cls, it);
     const main = PCT_STAT[it.stat] ? `${PCT_STAT[it.stat]} +${v}%` : `${slotOf(it).label} +${v}`;
     let right = '';
@@ -1152,7 +1156,7 @@
   function forgeList() {
     const ids = new Set(Object.values(eqOf(forgeCls)));
     const go = { rby: -1, legend: 0, unique: 1, rare: 2, common: 3 };
-    return SAVE.inv.slice().sort((a, b) => (ids.has(b.id) - ids.has(a.id)) || (go[a.grade] - go[b.grade]) || ((b.lv || 0) - (a.lv || 0)) || (b.id - a.id));
+    return SAVE.inv.filter(i => !i.hold).sort((a, b) => (ids.has(b.id) - ids.has(a.id)) || (go[a.grade] - go[b.grade]) || ((b.lv || 0) - (a.lv || 0)) || (b.id - a.id));
   }
   function renderForge() {
     $('fgGold').textContent = SAVE.gold; $('fgIron').textContent = SAVE.mats.iron; $('fgCrystal').textContent = SAVE.mats.crystal;

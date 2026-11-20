@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>주사위 미니게임 시안 23</title>
+<link rel="stylesheet" href="../fonts.css">
+<style>
+  :root { --bg: #070509; --panel: #1a141f; --panel2: #231a2a; --hi: #5d4a6a; --lo: #07050a; --gold: #c9a24a; --gold-l: #f2d78c; --gold-d: #6e5320; --ink: #efe6d2; --quiet: #9a8ea5; --dim: #5e5466; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: var(--ink); font-family: 'Galmuri9', monospace; font-size: 10px; -webkit-font-smoothing: none; font-smooth: never; }
+  #wrap { position: absolute; left: 50%; top: 50%; width: 1152px; height: 648px; margin: -324px 0 0 -576px; overflow: hidden; transform-origin: 50% 50%; } /* 게임처럼 창 한가운데 */
+  #cv { position: absolute; left: 0; top: 0; image-rendering: pixelated; image-rendering: crisp-edges; }
+  #ui { position: absolute; left: 0; top: 0; width: 768px; height: 432px; transform-origin: 0 0; transform: scale(1.5); }
+  #ui > *, #labs > * { position: absolute; }
+  .out { text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
+  .f7 { font-family: 'Galmuri7'; font-size: 8px; } .f11 { font-family: 'Galmuri11'; font-size: 12px; }
+  /* 게임의 픽셀 프레임: 검은 외곽 + 금테 + 안쪽 명암 + 네 모서리 리벳 */
+  .pf { background: var(--panel); border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-d), 0 0 0 2px #000; }
+  .pf::before { content: ''; position: absolute; inset: -3px; pointer-events: none; background:
+    linear-gradient(var(--gold-l), var(--gold-l)) 0 0 / 3px 3px no-repeat, linear-gradient(var(--gold-l), var(--gold-l)) 100% 0 / 3px 3px no-repeat,
+    linear-gradient(var(--gold-l), var(--gold-l)) 0 100% / 3px 3px no-repeat, linear-gradient(var(--gold-l), var(--gold-l)) 100% 100% / 3px 3px no-repeat; }
+  .key { display: inline-block; font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; padding: 0 3px; color: #1a1208; background: var(--gold-l); border: 1px solid #000; box-shadow: inset 0 -1px 0 #a8883a, inset 0 1px 0 #fff4c8; }
+  #info { left: 10px; top: 384px; padding: 5px 9px 6px; display: flex; gap: 12px; white-space: nowrap; font-family: 'Galmuri11'; font-size: 12px; }
+  #info .nm { font-family: 'Galmuri11'; font-size: 12px; color: var(--gold-l); } #info .sub { color: var(--quiet); margin-top: 1px; }
+  #info .ln { display: flex; justify-content: space-between; margin-top: 5px; } #info .ln b { font-weight: normal; color: #ffd34d; }
+  #info b { font-weight: normal; color: #ffd34d; } #info i { font-style: normal; color: var(--quiet); }
+  #stat { right: 10px; top: 384px; padding: 5px 9px 6px; white-space: nowrap; font-family: 'Galmuri11'; font-size: 12px; } #stat i { font-style: normal; color: var(--quiet); }
+  #msg { left: 0; right: 0; top: 163px; text-align: center; } #msg .m { font-family: 'Galmuri11'; font-size: 12px; } #msg .s { color: var(--quiet); margin-top: 3px; }
+  #msg .m.w { color: var(--gold-l); } #msg .m.l { color: #ff9090; }
+  /* 게임의 스테이지 진입 배너와 같은 글꼴 · 그림자 */
+  #title { left: 0; right: 0; top: 150px; text-align: center; opacity: 0; transition: opacity .2s steps(3); pointer-events: none; } #title.on { opacity: 1; }
+  #title .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l); text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
+  #title .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
+  .lab { color: #cfe0c8; white-space: nowrap; } .tot { padding: 2px 6px 3px; font-family: 'Galmuri11'; font-size: 12px; white-space: nowrap; } .tot.bust { color: #ff9090; } .tot.bj { color: var(--gold-l); } .tot .r { font-family: 'Galmuri9'; font-size: 10px; color: var(--quiet); margin-left: 5px; }
+  #bar { left: 0; right: 0; top: 384px; display: flex; justify-content: center; gap: 14px; } #bar > * { position: relative; }
+  .bt { padding: 5px 4px 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Galmuri11'; font-size: 12px; color: var(--ink); text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; } .bt .key { text-shadow: none; }
+  .bt:hover, .bt.sel { color: var(--gold-l); } .bt.sel span:last-child { border-bottom: 1px solid var(--gold-l); }
+  .bt.off { color: var(--dim); cursor: default; } .bt.off .key { background: var(--dim); box-shadow: none; }
+  #rule { left: 0; right: 0; top: 419px; text-align: center; color: var(--dim); }
+
+  #pay { left: 10px; top: 8px; width: 150px; padding: 6px 8px 7px; } #pay .h { font-family: 'Galmuri11'; font-size: 12px; color: var(--gold-l); margin-bottom: 4px; }
+  #pay .r { display: flex; align-items: center; gap: 3px; margin-top: 3px; white-space: nowrap; } #pay .r img { width: 14px; height: 14px; image-rendering: pixelated; } #pay .r span { margin-left: 3px; } #pay .r b { margin-left: auto; font-weight: normal; color: #ffd34d; } #pay .r b.l { color: #ff9090; }
+  #pay .n { color: var(--quiet); margin-top: 6px; line-height: 1.5; }
+  #msg { top: 92px; } #title { top: 76px; }
+  .fr { width: 14px; height: 18px; image-rendering: pixelated; vertical-align: -5px; margin-right: 3px; } .bt .fr { margin-right: 2px; } #info { align-items: center; padding-top: 2px; padding-bottom: 3px; }
+  /* v3.18 글자 수에 따라 상자 크기가 바뀌지 않게 고정 */
+  #info { width: 84px; justify-content: center; overflow: hidden; } #stat { display: none !important; } /* v3.18 승무패 전적은 표시하지 않음 */ .tot { width: 112px; text-align: center; overflow: hidden; }
+</style></head><body>
+<div id="wrap"><canvas id="cv" width="1152" height="648"></canvas>
+  <div id="ui">
+    <div id="pay" class="pf"></div><div id="info" class="pf"></div><div id="stat" class="pf"></div>
+    <div id="title"><div class="b1">도박사 영수의 주사위</div><div class="b2">판돈을 고르고 주사위를 던집니다. 개다래나무 가지 칩이 모자라면 가진 만큼만 잃습니다.</div></div>
+    <div id="msg" class="out"><div class="m"></div><div class="s"></div></div>
+    <div id="labs"></div><div id="bar"></div>
+  </div></div>
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d'), C = 2, VW = 1152, VH = 648, W = VW / 2, H = VH / 2;
+ctx.imageSmoothingEnabled = false;
+const snap = v => Math.round(v / 2) * 2, $ = id => document.getElementById(id);
+const hsh = (x, y, s = 0) => { const v = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); };
+const vn = (x, y, sc, s) => { const fx = x / sc, fy = y / sc, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0, a = hsh(x0, y0, s), b = hsh(x0 + 1, y0, s), c = hsh(x0, y0 + 1, s), d = hsh(x0 + 1, y0 + 1, s); return (a + (b - a) * tx) * (1 - ty) + (c + (d - c) * tx) * ty; };
+const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+// ------------------------------------------------------------ 3D 주사위: 정육면체를 칸(2px) 단위로 직접 그림 (비스듬히 내려다보는 시점 · 면마다 밝기가 다름 · 눈도 면을 따라 기울어짐)
+const EL = 66 * Math.PI / 180, SE = Math.sin(EL), CE = Math.cos(EL), HS = 13;                                   // 내려다보는 각도 66° · 반 변 9칸
+const FACES = [[[1, 0, 0], [0, 1, 0], [0, 0, 1], 2], [[-1, 0, 0], [0, 1, 0], [0, 0, 1], 5], [[0, 1, 0], [1, 0, 0], [0, 0, 1], 3], [[0, -1, 0], [1, 0, 0], [0, 0, 1], 4], [[0, 0, 1], [1, 0, 0], [0, 1, 0], 1], [[0, 0, -1], [1, 0, 0], [0, 1, 0], 6]]; // 법선 · 면의 두 축 · 눈 (마주 보는 면의 합은 7)
+const PIPS = { 1: [[0, 0]], 2: [[-.5, -.5], [.5, .5]], 3: [[-.55, -.55], [0, 0], [.55, .55]], 4: [[-.5, -.5], [.5, -.5], [-.5, .5], [.5, .5]], 5: [[-.55, -.55], [.55, -.55], [0, 0], [-.55, .55], [.55, .55]], 6: [[-.5, -.6], [.5, -.6], [-.5, 0], [.5, 0], [-.5, .6], [.5, .6]] };
+const TONE = ['#f8f2e0', '#eadfc2', '#cfc096', '#a8946a', '#857050'], LIGHT = [-0.5, 0.15, 0.85];
+const mul = (R, v) => [R[0][0] * v[0] + R[0][1] * v[1] + R[0][2] * v[2], R[1][0] * v[0] + R[1][1] * v[1] + R[1][2] * v[2], R[2][0] * v[0] + R[2][1] * v[1] + R[2][2] * v[2]];
+const mm = (A, B) => A.map(r => [0, 1, 2].map(j => r[0] * B[0][j] + r[1] * B[1][j] + r[2] * B[2][j]));
+function rotAxis(ax, t) { const l = Math.hypot(...ax) || 1, [x, y, z] = ax.map(v => v / l), c = Math.cos(t), s = Math.sin(t), k = 1 - c; return [[c + x * x * k, x * y * k - z * s, x * z * k + y * s], [y * x * k + z * s, c + y * y * k, y * z * k - x * s], [z * x * k - y * s, z * y * k + x * s, c + z * z * k]]; }
+function restR(n) { const f = FACES.find(F => F[3] === n), nn = f[0], q = Math.floor(Math.random() * 4), u0 = f[1], w0 = [nn[1] * u0[2] - nn[2] * u0[1], nn[2] * u0[0] - nn[0] * u0[2], nn[0] * u0[1] - nn[1] * u0[0]]; // n번 눈이 위로 · 옆으로는 90° 단위로만 돌아 있음
+  const u = q === 0 ? u0 : q === 1 ? w0 : q === 2 ? u0.map(v => -v) : w0.map(v => -v), w = [nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0]]; return [u, w, nn]; }
+const BONE = ['#f4ead0', '#e2d4ac', '#c6b488', '#a28e64', '#7e6a48'];                                            // 뼈 주사위: 누르스름한 다섯 단계
+function drawCube(g, cx, cy, R, seed = 0, hs = HS, crude = true) { const ox = Math.round(cx / 2), oy = Math.round(cy / 2), vis = [], T = crude ? BONE : TONE;
+  for (const [n, a, b, val] of FACES) { const wn = mul(R, n), depth = -wn[1] * CE + wn[2] * SE; if (depth <= 0.02) continue; const wa = mul(R, a), wb = mul(R, b), P = w => [w[0] * hs, -(w[1] * SE + w[2] * CE) * hs];
+    const c = P(wn), A = P(wa), B = P(wb), det = A[0] * B[1] - A[1] * B[0]; if (Math.abs(det) < 1e-6) continue; const br = wn[0] * LIGHT[0] + wn[1] * LIGHT[1] + wn[2] * LIGHT[2], ti = br > 0.7 ? 0 : br > 0.4 ? 1 : br > 0.05 ? 2 : br > -0.3 ? 3 : 4; vis.push({ c, A, B, det, val, ti, pips: depth > 0.55 }); }
+  const N = Math.ceil(hs * 1.8), grid = new Map(), bev = new Map(), key = (i, j) => i * 100 + j;
+  for (let j = -N; j <= N; j++) for (let i = -N; i <= N; i++) { const px = i + 0.5, py = j + 0.5; for (const f of vis) { const dx = px - f.c[0], dy = py - f.c[1], u = (dx * f.B[1] - dy * f.B[0]) / f.det, v = (f.A[0] * dy - f.A[1] * dx) / f.det; if (Math.abs(u) > 1 || Math.abs(v) > 1) continue;
+      const au = Math.abs(u), av = Math.abs(v), fs = seed * 7 + f.val; let col;
+      if (crude) { const cr = 0.2 + hsh(u > 0 ? 1 : 0, v > 0 ? 1 : 0, fs) * 0.2; if (au > 1 - cr && av > 1 - cr && (au - 1 + cr) ** 2 + (av - 1 + cr) ** 2 > cr * cr) { bev.set(key(i, j), T[Math.min(4, f.ti + 2)]); break; }                      // 모서리가 제각각 둥글게 닳음 (큰 것은 이가 나간 자리)
+        let k = f.ti + (Math.max(au, av) > 0.86 ? 1 : 0); const gu = Math.floor((u + 1) * 4.5), gv = Math.floor((v + 1) * 4.5);
+        if (hsh(gu, gv, fs) < 0.1) k++;                                                                                                                              // 뼈의 잔구멍 · 얼룩
+        if (f.val === (seed % 6) + 1 && Math.abs(u - 0.25 - Math.sin(v * 4 + seed) * 0.12) < 0.07 && v > -0.5) k += 2;                                                    // 한 면을 가로지르는 실금
+        if (f.val === ((seed + 3) % 6) + 1 && Math.abs(v + 0.45 - Math.sin(u * 5 + seed) * 0.08) < 0.06 && u < 0.3) k += 1;
+        col = T[Math.min(4, k)];
+        if (f.pips) PIPS[f.val].forEach(([pu, pv], q) => { const ju = pu + (hsh(q, 1, fs) - 0.5) * 0.1, jv = pv + (hsh(q, 2, fs) - 0.5) * 0.1, rr = (f.val === 1 ? 0.34 : 0.2) * (0.88 + hsh(q, 3, fs) * 0.3), d2 = Math.hypot(u - ju, v - jv);   // 손으로 뚫은 눈: 자리와 크기가 조금씩 다름
+          if (d2 < rr) col = f.val === 1 ? ((u - ju) + (v - jv) < -rr * 0.5 ? '#6e1c16' : '#9a2a20') : ((u - ju) + (v - jv) < -rr * 0.5 ? '#0b0a0e' : '#2a1c12'); else if (d2 < rr + 0.09 && (u - ju) + (v - jv) > 0) col = T[Math.max(0, f.ti - 1)]; }); } // 파인 구멍: 위쪽 안은 어둡고 아래쪽 턱은 밝음
+      else { col = T[Math.min(4, f.ti + (Math.max(au, av) > 0.88 ? 1 : 0))]; const rr = f.val === 1 ? 0.36 : 0.21; if (f.pips) for (const [pu, pv] of PIPS[f.val]) if ((u - pu) ** 2 + (v - pv) ** 2 < rr * rr) col = f.val === 1 ? '#c0392b' : '#1a1410'; }
+      grid.set(key(i, j), col); break; } }
+  { // 깎인 모서리: 주사위 바깥 꼭짓점(두 방향 이상 트인 곳)만 비우고, 면과 면이 만나는 자리에 뜬 틈은 뼈의 그늘 색으로 메움
+    const D4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], fill = [];
+    for (const [k, c] of bev) { const i = Math.round(k / 100), j = k - i * 100; let open = 0; for (const [a, b] of D4) { for (let st = 1; st <= 6; st++) { const kk = key(i + a * st, j + b * st); if (grid.has(kk)) break; if (!bev.has(kk)) { open++; break; } } } if (open < 2) fill.push([k, c]); }
+    for (const [k, c] of fill) grid.set(k, c); }
+  g.fillStyle = '#0b0a0e'; for (const k of grid.keys()) { const i = Math.round(k / 100), j = k - i * 100; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!grid.has(key(i + di, j + dj))) g.fillRect((ox + i + di) * 2, (oy + j + dj) * 2, 2, 2); }
+  for (const [k, col] of grid) { const i = Math.round(k / 100), j = k - i * 100; g.fillStyle = col; g.fillRect((ox + i) * 2, (oy + j) * 2, 2, 2); } }
+const ICON = {}; function dieArt(n) { if (ICON[n]) return ICON[n]; const c = document.createElement('canvas'); c.width = c.height = 40; const f = FACES.find(F => F[3] === n), nn = f[0], u = f[1], w = [nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0]]; drawCube(c.getContext('2d'), 20, 24, [u, w, nn], 0, 9, false); return (ICON[n] = c); }
+// ------------------------------------------------------------ 탁자: 어두운 나무 탁자 + 분필로 그린 원 (양탄자 · 사발 · 소품 없음)
+const TABLES = [], FLK = { i: 0, next: 0 }, RCX = 288, RCY = 146, RRX = 214, RRY = 124, BOWL = { cx: 288, cy: 148, rx: 86, ry: 54 };
+function bake() {
+  const M = Array.from({ length: H }, () => new Array(W).fill('#000000')), put = (x, y, c) => { if (x >= 0 && y >= 0 && x < W && y < H) M[y][x] = c; };
+  const TN = [['#b07e4a', '#8e5e34', '#7a4c2a'], ['#a4703e', '#82542c', '#6e4424'], ['#96683c', '#76502c', '#623e22'], ['#b8884e', '#966838', '#80522e']], DK = '#35200f', MID = '#5e3a20';
+  { let y = -2, i = 0; while (y < H + 2) { const h = 18 + Math.floor(hsh(i, 1, 5) * 18), tone = Math.floor(hsh(i, 2, 5) * 4), off = Math.floor(hsh(i, 3, 5) * 200), len = 110 + (i * 37) % 70;
+      for (let yy = y; yy < y + h; yy++) for (let x = 0; x < W; x++) { const T = TN[tone], py = yy - y - Math.round(vn(x, i * 9, 40, 21) * 2.4 - 1.2), bx = (x + off) % len; let c;
+        if (py <= 0 || bx === 0) c = DK; else if (py === 1) c = T[0]; else { const gr = hsh((x + off + py * 5) >> 4, i * 31 + py, 3), bl = vn(x, yy, 26, 31 + i); c = gr < 0.24 ? T[2] : gr > 0.92 ? T[0] : T[1]; if (bl > 0.72 && (x + yy) % 2) c = T[2]; if (bl < 0.2 && (x + yy) % 2) c = T[0]; }
+        if (bx >= 3 && bx <= 4 && (py === 5 || py === 6) && hsh(i, bx, 8) < 0.8) c = DK; put(x, yy, c); } y += h; i++; } }
+  // 나무 탁자의 세월: 갈라진 틈 · 옹이 (분필 고양이 얼굴 안쪽은 깨끗하게 비움)
+  const earF = a => { const d = v => Math.max(0, 1 - Math.abs(Math.atan2(Math.sin(a - v), Math.cos(a - v))) / 0.27); return Math.max(d(-2.12), d(-1.02)); };
+  const inFace = (x, y, pad = 1.1) => { const dx = (x - 288) / 150, dy = (y - 164) / 88, a = Math.atan2(dy, dx); return Math.hypot(dx, dy) < (1 + 0.5 * earF(a) ** 1.25) * pad; };
+  for (let k = 0; k < 9; k++) { const x0 = 40 + Math.floor(hsh(k, 2, 40) * (W - 120)), y0 = 20 + Math.floor(hsh(k, 3, 40) * (H - 80)), L = 10 + Math.floor(hsh(k, 4, 40) * 30); if (inFace(x0, y0) || inFace(x0 + L, y0) || inFace(x0 + L / 2, y0)) continue;
+    for (let i = 0; i < L; i++) { const y = y0 + Math.round(Math.sin(i * 0.5 + k) * 1.2); put(x0 + i, y, DK); if (i > 2 && i < L - 3 && i % 5 < 3) put(x0 + i, y + 1, MID); } }
+  for (let k = 0; k < 6; k++) { const cx = 50 + Math.floor(hsh(k, 5, 41) * (W - 100)), cy = 20 + Math.floor(hsh(k, 6, 41) * (H - 70)); if (inFace(cx, cy, 1.14)) continue; for (let y = -3; y <= 3; y++) for (let x = -4; x <= 4; x++) { const d = (x * x) / 16 + (y * y) / 9; if (d <= 1) put(cx + x, cy + y, d < 0.25 ? DK : d < 0.65 ? MID : DK); } }
+  { // 분필 얼굴 안에 칼로 여러 번 긁어서 새긴 눈 · 코 · 입 · 수염: 한 획이 곧은 칼자국 여러 줄의 다발 — 줄마다 길이 · 각도 · 자리가 어긋나고 끝이 삐져나감 · 겹친 자리일수록 깊고 어두움
+    const KX = 288, KY = 166, LT = '#d0a870', Dp = new Map(), key = (x, y) => y * 1000 + x; let sid = 0;
+    const scratch = (x0, y0, x1, y1) => { const dx = x1 - x0, dy = y1 - y0, n = Math.ceil(Math.max(Math.abs(dx), Math.abs(dy))), seen = new Set(); for (let i = 0; i <= n; i++) { const k = key(Math.round(KX + x0 + dx * i / n), Math.round(KY + y0 + dy * i / n)); if (!seen.has(k)) { seen.add(k); Dp.set(k, (Dp.get(k) || 0) + 1); } } };
+    const hack = (x0, y0, x1, y1, w, n) => { const L = Math.hypot(x1 - x0, y1 - y0), ux = (x1 - x0) / L, uy = (y1 - y0) / L, nx = -uy, ny = ux; sid++;
+      for (let i = 0; i < n; i++) { const r = q => hsh(i, q, 300 + sid), o0 = (r(1) - 0.5) * w, o1 = o0 + (r(2) - 0.5) * w * 0.7, t0 = i < 2 ? -2 : -4 + r(3) * L * 0.3, t1 = i < 2 ? L + 2 : L * (0.7 + r(4) * 0.3) + r(5) * 7;   // 앞의 두 줄은 끝까지, 나머지는 길이가 제각각
+        scratch(x0 + ux * t0 + nx * o0, y0 + uy * t0 + ny * o0, x0 + ux * t1 + nx * o1, y0 + uy * t1 + ny * o1); } };
+    hack(-52, -32, -50, -11, 8, 18); hack(52, -31, 54, -10, 8, 18);                                      // 두 눈
+    hack(-9, 6, 9, 7, 6, 12); hack(0, 7, 0, 17, 5, 9);                                                  // 코
+    hack(0, 16, -18, 29, 6, 12); hack(0, 16, 19, 28, 6, 12);                                             // 입
+    hack(-34, 10, -90, 2, 7, 16); hack(-34, 21, -88, 33, 7, 16); hack(34, 10, 92, 3, 7, 16); hack(34, 21, 89, 34, 7, 16);   // 수염 네 가닥
+    scratch(-70, -24, -62, -8); scratch(66, -4, 84, -9); scratch(-24, 30, -6, 36); scratch(22, 2, 31, -3);              // 손이 미끄러져 빗나간 칼자국
+    // 긁혀서 드러난 속살: 겉은 세월에 어두워졌지만 속은 밝은 생나무색 — 한 번 긁힌 자리는 옅게, 겹쳐 깊이 파인 자리일수록 밝게 · 깊은 홈의 위쪽 벽에만 그늘이 끊겨 가며 짐 (음각)
+    for (const [k, d] of Dp) { const y = Math.floor(k / 1000), x = k - y * 1000; if (M[y] && M[y][x] !== DK) put(x, y, d >= 3 ? '#ecd29c' : d === 2 ? '#d8b47a' : '#c09460'); }
+    for (const [k, d] of Dp) { if (d < 2) continue; const y = Math.floor(k / 1000), x = k - y * 1000; if (!Dp.has(key(x, y - 1)) && M[y - 1] && M[y - 1][x] !== DK && vn(x, y, 7, 79) > 0.5) put(x, y - 1, MID); } }
+  // 분필로 투박하게 그린 고양이 얼굴 실루엣 (둥근 얼굴 + 뾰족한 두 귀): 굵은 선 · 손으로 그려 찌그러짐 · 군데군데 끊김 · 끝이 겹쳐 지나감 · 널 사이 틈에서는 끊김
+  { const CH = ['#efe8d6', '#cfc6b0', '#a89e88'], cxc = 288, cyc = 164, RX = 150, RY = 88, ear = a => { const d = v => Math.max(0, 1 - Math.abs(Math.atan2(Math.sin(a - v), Math.cos(a - v))) / 0.27); return Math.max(d(-2.12), d(-1.02)); };
+    for (let k = 0; k < 5200; k++) { const t = k / 5200, a = 1.2 + t * (Math.PI * 2 + 0.3), wob = (vn(a * 30 + 200, 1, 11, 91) - 0.5) * 0.09 + t * 0.03, m = 1 + wob + 0.5 * ear(a) ** 1.25;   // 턱 아래에서 시작해 한 바퀴 조금 넘게
+      const th = 6 + Math.floor(vn(a * 30 + 200, 5, 7, 92) * 4.4), ul = Math.hypot(Math.cos(a) * RX, Math.sin(a) * RY), ux = Math.cos(a) * RX / ul, uy = Math.sin(a) * RY / ul, press = vn(a * 30 + 200, 9, 5, 93); if (press < 0.14) continue;                                                   // 분필이 떴던 자리
+      for (let w = 0; w < th; w++) { const x = Math.round(cxc + Math.cos(a) * RX * m + ux * w), y = Math.round(cyc + Math.sin(a) * RY * m + uy * w); if (!M[y] || M[y][x] === DK) continue;   // 틈에는 안 묻음
+        const dust = hsh(x, y, 94), rim = w === 0 || w === th - 1; if ((press < 0.42 || rim) && dust < (rim ? 0.4 : 0.3)) continue; put(x, y, !rim && press > 0.5 && dust > 0.25 ? CH[0] : dust < 0.3 ? CH[2] : CH[1]); } }
+    for (let k = 0; k < 160; k++) { const a = hsh(k, 1, 95) * 6.28, r = (1 + 0.5 * ear(a) ** 1.25) * (1.05 + hsh(k, 2, 95) * 0.07), x = Math.round(cxc + Math.cos(a) * RX * r), y = Math.round(cyc + Math.sin(a) * RY * r); if (hsh(k, 3, 95) < 0.5 && M[y] && M[y][x] !== DK) { put(x, y, CH[2]); put(x + 1, y, CH[2]); } } } // 번진 분필 가루
+  { // 분필 한 자루 (오른쪽 아래에 비스듬히 누운 원통): 몸통은 둥글게 말린 명암(디더) · 오른쪽 끝은 동그란 단면이 보이고 · 왼쪽 끝은 쓰다 닳아 둥글게 뭉툭함 · 둘레에 가루
+    const X0 = 403, Y0 = 224, X1 = 487, Y1 = 194, L = Math.hypot(X1 - X0, Y1 - Y0), dx = (X1 - X0) / L, dy = (Y1 - Y0) / L, RAD = 7.7, FA = RAD * 0.42, TIP = RAD * 1.1, cells = new Map(), has = (x, y) => cells.has(x + ',' + y);
+    const T = ['#fffaf0', '#f3ecdc', '#e2d9c4', '#c9bfa8', '#a89e88', '#857c68'];
+    for (let y = Math.min(Y0, Y1) - 16; y <= Math.max(Y0, Y1) + 16; y++) for (let x = X0 - 16; x <= X1 + 16; x++) { const px = x + 0.5 - X0, py = y + 0.5 - Y0, t = px * dx + py * dy, w = -px * dy + py * dx, q = w / RAD; if (Math.abs(q) > 1) continue;
+      const arc = Math.sqrt(1 - q * q), face = t > L && (t - L) <= FA * arc, tip = t < 0 && -t <= TIP * arc * (1 - Math.max(0, q) * 0.35);       // 오른쪽: 타원 단면 · 왼쪽: 닳아 둥근 끝 (아래쪽이 더 깎임)
+      if (!(t >= 0 && t <= L) && !face && !tip) continue; let c;
+      if (face) { const fd = Math.hypot((t - L) / FA, q) ; c = fd > 0.82 ? T[2] : ((x + y) % 2 && fd > 0.5) ? T[1] : (hsh(x >> 1, y >> 1, 96) < 0.12 ? T[2] : T[1]); if (q > 0.55) c = T[3]; }   // 단면: 평평하고 밝음 · 아래쪽만 살짝 그늘
+      else { const s2 = q + 0.42 + (tip ? (-t / TIP) * 0.5 : 0), v = Math.max(0, Math.min(4.999, s2 < 0 ? -s2 * 2.4 + 0.2 : s2 * 3.5 + 0.2)), k = Math.floor(v); c = T[Math.min(5, k + ((v - k) * 16 > BAYER[y & 3][x & 3] ? 1 : 0))];  // 원통 명암: 위쪽 가까이에 반짝임 띠, 아래로 갈수록 디더로 어두워짐
+        if (hsh(x >> 1, y >> 1, 98) < 0.045 && q > -0.3 && q < 0.6 && t > 8 && t < L - 6) c = T[Math.min(5, k + 2)];                                                                  // 표면의 잔구멍
+        if (t > L - 1.2 && t <= L) c = T[Math.min(5, k + 1)]; }                                                                                                                      // 단면과 만나는 모서리
+      cells.set(x + ',' + y, [x, y, c]); }
+    for (const [x, y] of cells.values()) for (const [ox, oy] of [[3, 4], [4, 4], [3, 5], [4, 5], [2, 5]]) if (!has(x + ox, y + oy)) put(x + ox, y + oy, DK);
+    for (const [x, y] of cells.values()) for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!has(x + ox, y + oy)) put(x + ox, y + oy, '#0b0a0e');
+    for (const [x, y, c] of cells.values()) put(x, y, c);
+    for (let k = 0; k < 150; k++) { const r = hsh(k, 1, 99), a2 = hsh(k, 2, 99) * 6.28, d = 12 + r * 26, x = Math.round(X0 - 8 + Math.cos(a2) * d * 1.3), y = Math.round(Y0 + 6 + Math.sin(a2) * d * 0.7); if (!has(x, y) && !has(x + 1, y) && M[y] && M[y][x] !== DK && M[y][x] !== '#0b0a0e') { put(x, y, r < 0.4 ? '#cfc6b0' : '#a89e88'); put(x + 1, y, '#a89e88'); } } // 닳은 끝 둘레의 분필 가루
+    { // 얼굴을 새긴 칼 한 자루 (왼쪽 위에 비스듬히 누움 · 분필과 같은 그리기): 놋쇠 마구리 · 손때 묻고 닳은 가죽 끈을 감은 나무 자루 · 놋쇠 코등이 · 이가 빠진 외날 · 칼끝 둘레에 나무 부스러기
+      const K = 1.92, X0 = 76, Y0 = 204, X1 = 208, Y1 = 72, L = Math.hypot(X1 - X0, Y1 - Y0), dx = (X1 - X0) / L, dy = (Y1 - Y0) / L, HL = 30 * K, GD = 4 * K, HW = 5.6 * K, BW = 6.4 * K, cells = new Map(), has = (x, y) => cells.has(x + ',' + y);
+      const ST = ['#f4f6f8', '#d3dae0', '#a8b2bc', '#7a8591', '#505a66'], BR = ['#f0d070', '#c9982e', '#8a6420', '#5a4014'], WD = ['#8a5430', '#6e3f22', '#54301a', '#3a2012'], dith = (v, x, y) => { const k = Math.floor(v); return k + ((v - k) * 16 > BAYER[y & 3][x & 3] ? 1 : 0); };
+      for (let y = Math.min(Y0, Y1) - 26; y <= Math.max(Y0, Y1) + 26; y++) for (let x = X0 - 26; x <= X1 + 26; x++) { const px = x + 0.5 - X0, py = y + 0.5 - Y0, t = px * dx + py * dy, w = -px * dy + py * dx; let c = null;
+        if (t < 0) { if (Math.hypot(t / (5 * K), w / (5.2 * K)) <= 1) c = BR[Math.min(3, dith(Math.max(0, (w / (5.2 * K) + 0.5) * 2.2 + 0.3), x, y))]; }                                         // 마구리 (둥근 놋쇠)
+        else if (t < HL) { const P = 7, LT5 = ['#b89c7c', '#8c6c4c', '#604632', '#3e2a1c', '#22140c'], inWrap = t > 3 && t < HL - 2, two = t > HL * 0.6, tt = t + (w / HW) * 2.4 + (two ? 3 : 0), bi = Math.floor(tt / P), b = tt - bi * P;   // 가죽 끈: 한 바퀴씩 겹쳐 감겨 층이 짐 · 코등이 쪽은 한 겹 더 덧감아 두꺼움
+            const swell = inWrap ? (1 - (2 * b / P - 1) ** 2) * 1.5 + (two ? 1.8 : 0) : 0, hw = HW + swell, q = w / hw;                                                                              // 바퀴마다 불룩해서 자루 윤곽이 올록볼록함
+            if (Math.abs(q) <= 1) { c = WD[Math.min(3, dith(Math.max(0, (q + 0.45) * 2 + 0.3), x, y))];
+              const torn = hsh(bi, Math.floor((q + 1) * 1.5), 131) < 0.1 && !two;
+              if (inWrap && !torn) { const base = (q + 0.62) * 1.7, lay = b < 1.3 ? 3 : b < 2.8 ? 1.1 : b > P - 1.8 ? -0.9 : 0; c = LT5[Math.max(0, Math.min(4, b < 1.3 ? 4 : dith(Math.max(0, base + lay), x, y)))];   // 앞 바퀴 밑으로 들어간 쪽은 그늘, 다음 바퀴 위로 올라탄 가장자리는 밝음
+                const grip = Math.max(0, 1 - Math.abs(t / HL - 0.42) * 2.6), grime = vn(x, y, 6, 132) * 0.55 + grip * 0.5;                                                                          // 손때: 쥐는 가운데일수록 까맣게 절어 있음
+                if (b >= 1.3 && (grime > 0.86 || (grime > 0.64 && (x + y) % 2 === 0))) c = q < -0.4 ? LT5[3] : LT5[4];
+                if (two && Math.abs(t - HL * 0.6) < 1.1) c = LT5[4]; } } }                                                                                                                             // 덧감은 겹이 시작되는 턱
+        else if (t < HL + GD) { if (Math.abs(w) <= 10 * K) c = Math.abs(w) > 10 * K - 2 ? BR[2] : t < HL + 1.2 ? BR[0] : BR[Math.min(3, dith(Math.max(0, (w / (10 * K) + 0.5) * 2 + 0.2), x, y))]; }                 // 코등이
+        else if (t <= L) { const u = t - HL - GD, BL = L - HL - GD, top = -BW * Math.min(1, Math.pow(Math.max(0, BL - u) / (18 * K), 0.85)), bot = BW * Math.min(1, Math.pow(Math.max(0, BL - u) / (30 * K), 0.75)) - (hsh(Math.floor(u / 4), 7, 120) < 0.16 && u > 8 && u < BL - 18 ? 1.6 : 0);   // 칼등은 곧고 끝에서만 꺾임 · 날은 길게 휘어 끝으로 모임 · 군데군데 이가 빠짐
+          if (w >= top && w <= bot) { c = w > bot - 2.4 ? ST[0] : w < top + 2 ? ST[3] : w < 0 ? ST[Math.min(4, 1 + dith(Math.max(0, hsh(x >> 1, y >> 1, 121) * 0.9), x, y))] : ST[Math.min(4, 2 + dith(Math.max(0, (w / BW) * 1.3), x, y))];                   // 날 끝은 밝게 벼려짐 · 칼등 쪽은 어두움
+            if (Math.abs(w) < 0.8 && u < BL - 16) c = ST[3]; if (hsh(Math.floor(u / 2), Math.floor(w + 9), 122) < 0.05 && w < -0.8 && w > top + 1.5 && u > 3) c = ST[3]; } }                  // 가운데 골과 잔 흠집
+        if (c) cells.set(x + ',' + y, [x, y, c]); }
+      for (const [x, y] of cells.values()) for (const [ox, oy] of [[3, 4], [4, 4], [3, 5], [4, 5], [2, 5]]) if (!has(x + ox, y + oy)) put(x + ox, y + oy, DK);
+      for (const [x, y] of cells.values()) for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!has(x + ox, y + oy)) put(x + ox, y + oy, '#0b0a0e');
+      for (const [x, y, c] of cells.values()) put(x, y, c);
+      for (let k = 0; k < 46; k++) { const r = hsh(k, 1, 123), a2 = hsh(k, 2, 123) * 6.28, d = 8 + r * 24, x = Math.round(X1 + 4 + Math.cos(a2) * d * 1.2), y = Math.round(Y1 + 8 + Math.sin(a2) * d * 0.7); if (!has(x, y) && !has(x + 1, y) && M[y] && M[y][x] !== DK && M[y][x] !== '#0b0a0e' && M[y][x + 1] !== '#0b0a0e') { put(x, y, r < 0.5 ? '#ecd29c' : '#c09460'); put(x + 1, y, '#c09460'); } } }   // 칼끝 둘레의 나무 부스러기
+  }
+  const LV = [[0, 0, 0], [0.13, 0.13, 0.2], [0.3, 0.3, 0.4], [0.52, 0.52, 0.6], [0.77, 0.77, 0.8], [1, 1, 1]], memo = {};
+  const shade = (col, l) => { const k = col + l; if (memo[k]) return memo[k]; const n = parseInt(col.slice(1), 16), f = LV[l]; return (memo[k] = `rgb(${Math.round((n >> 16) * f[0])},${Math.round(((n >> 8) & 255) * f[1])},${Math.round((n & 255) * f[2])})`); };
+  const FL = [[0.985, 0, 0], [0.977, 1, 0], [0.969, -1, 0.5], [0.961, 0.5, -0.5], [0.953, -0.5, 0]];
+  const level = (x, y, [rad, sx, sy]) => { const ax = Math.abs(x - W / 2 - sx) / (W / 2), ay = Math.abs(y - 140 - sy) / 140, d = Math.pow(ax ** 3 + ay ** 3, 1 / 3), t = Math.max(0, Math.min(4.999, (rad - d) / 0.075)), i = Math.floor(t); return Math.min(5, i + ((t - i) * 16 > BAYER[y & 3][x & 3] ? 1 : 0)); };
+  const base = new Uint8Array(W * H), c0 = document.createElement('canvas'); c0.width = VW; c0.height = VH; const g0 = c0.getContext('2d');
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const l = base[y * W + x] = level(x, y, FL[0]); g0.fillStyle = shade(M[y][x], l); g0.fillRect(x * 2, y * 2, 2, 2); } TABLES.push(c0);
+  for (let k = 1; k < FL.length; k++) { const c2 = document.createElement('canvas'); c2.width = VW; c2.height = VH; const g2 = c2.getContext('2d'); g2.drawImage(c0, 0, 0);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const l = level(x, y, FL[k]); if (l !== base[y * W + x]) { g2.fillStyle = shade(M[y][x], l); g2.fillRect(x * 2, y * 2, 2, 2); } } TABLES.push(c2); }
+}
+// ------------------------------------------------------------ 규칙 (친치로): 세 개를 던져 끗을 만든다 · 끗이 없으면 세 번까지 다시 던짐
+// 1·1·1 > 같은 눈 셋(6이 가장 높음) > 4·5·6 > 끗(같은 눈 둘 + 남은 하나의 눈, 6끗이 가장 높음) > 끗 없음 > 1·2·3
+function read(a) { const s = a.slice().sort(), k = s.join(''); if (k === '111') return { r: 13, m: 5, n: '1 · 1 · 1' }; if (s[0] === s[2]) return { r: 6 + s[0], m: 3, n: `${s[0]} 셋` }; if (k === '456') return { r: 7, m: 2, n: '4 · 5 · 6' }; if (k === '123') return { r: -1, m: 1, bad: true, n: '1 · 2 · 3' };
+  if (s[0] === s[1]) return { r: s[2], m: 1, n: `${s[2]}끗` }; if (s[1] === s[2]) return { r: s[0], m: 1, n: `${s[0]}끗` }; return null; }
+const NONE = { r: 0, m: 1, none: true, n: '끗 없음' };
+const S = { ph: 'bet', gold: 10, bet: 1, t: 0, q: [], msg: '', sub: '', res: null, dice: [], D: null, P: null, tries: 0, who: null, kept: [], stat: { n: 0, w: 0, p: 0, l: 0 } };
+// ------------------------------------------------------------ 개다래나무 가지 — 짧은 나뭇가지 (피 하나를 바치고 받는 도박 전용 재화 · 도박사 둘이 함께 씀)
+const FRUIT_MAP = ['.....kk', '....kTk', '.kk.kBk', 'kgGkBbk', '.kkBBk.', '.kBbk..', 'kBbk...', 'kTk....', '.k.....'], FRUIT_PAL = { k: '#0e0a0c', g: '#6cc040', G: '#2e6a1a', B: '#8a5a34', b: '#5e3a20', T: '#d8b47a' };
+const FRUIT_URL = (() => { const c = document.createElement('canvas'); c.width = 14; c.height = 18; const g = c.getContext('2d'); FRUIT_MAP.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; g.fillStyle = FRUIT_PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })();
+const fr = n => `<img class="fr" src="${FRUIT_URL}">${n}개`, BETS = [1, 2, 5];
+let HUBMODE = false;                                                                                          /* 교환 화면에서 열렸으면 가지를 그쪽과 함께 씀 */
+addEventListener('message', e => { const d = e.data; if (d && d.dfag === 'hub') { HUBMODE = true; S.gold = d.n; fixBet(); ui(); } });
+if (parent !== window) parent.postMessage({ dfag: 'ready' }, '*');
+const idle = () => S.ph === 'bet' || S.ph === 'end';
+function leave() { if (HUBMODE && idle()) parent.postMessage({ dfag: 'leave', n: S.gold }, '*'); }
+function fixBet() { while (S.bet > S.gold && BETS.indexOf(S.bet) > 0) S.bet = BETS[BETS.indexOf(S.bet) - 1]; }
+function refill() { if (!HUBMODE && S.gold < 1 && idle()) { S.gold = 10; fixBet(); } }
+function tail(bar) { if (HUBMODE) bar.appendChild(bt('ESC', '일어나기', leave)); else if (S.gold < 1) bar.appendChild(bt('R', '개다래나무 가지 칩 다시 받기 (시안용)', refill)); }
+const BCX = 576, BCY = 320;                                                                                   // 사발 가운데 (px)
+function later(t, f) { S.q.push({ t: S.t + t, f }); }
+const snd = k => { if (parent !== window) parent.postMessage({ dfag: 'sfx', k }, '*'); }; // v3.18 효과음은 게임 쪽에서 냄 (카드 · 주사위 · 칩 땀 · 칩 잃음)
+
+function throwDice(done) { snd('dice'); const v = [0, 0, 0].map(() => 1 + Math.floor(Math.random() * 6)), base = [[-96, -10], [0, 30], [98, -18]], from = S.who === 'D' ? -1 : 1;   // 영수는 위에서, 나는 아래에서 던짐
+  S.dice = v.map((n, i) => { const fx = BCX + base[i][0] + Math.round(Math.random() * 40 - 20), fy = BCY + 6 + base[i][1] + Math.round(Math.random() * 24 - 12), sx = fx + (Math.random() * 120 - 60), sy = fy + from * (210 + Math.random() * 40), mv = Math.atan2(fy - sy, fx - sx);
+    return { n, seed: Math.floor(Math.random() * 97) + i * 13, fx, fy, sx, sy, t0: S.t + i * 0.05, dur: 0.95 + i * 0.1, Rf: restR(n), ax: [Math.cos(mv + Math.PI / 2), -Math.sin(mv + Math.PI / 2), Math.random() * 0.5 - 0.25], amp: 13 + Math.random() * 5 }; });
+  later(1.45, () => done(v)); }
+function turn(who) { S.who = who; S.tries = 0; if (who === 'D') { S.msg = '영수가 던집니다.'; S.sub = ''; ui(); later(0.5, () => roll()); } else { S.ph = 'play'; S.msg = '주사위를 던집니다.'; S.sub = '끗이 나올 때까지 세 번 던질 수 있습니다.'; ui(); } }
+function roll() { if (S.who === 'P') { if (S.ph !== 'play') return; S.ph = 'wait'; } S.tries++; throwDice(v => { const h = read(v), who = S.who, name = who === 'D' ? '영수' : '나';
+    if (!h && S.tries < 3) { S.msg = `${name}: 끗이 없습니다.`; S.sub = `다시 던집니다. (남은 기회 ${3 - S.tries}번)`; if (who === 'D') later(0.9, roll); else S.ph = 'play'; ui(); return; }
+    const res = h || NONE; S[who] = res; S.kept.push({ who, v, res, R: S.dice.map(d => d.Rf), seeds: S.dice.map(d => d.seed) });
+    if (who === 'D') { S.msg = `영수: ${res.n}`; S.sub = ''; ui(); later(1.0, () => { S.dice = []; turn('P'); }); } else end(); ui(); }); ui(); }
+function start() { if (S.ph !== 'bet' && S.ph !== 'end') return; if (S.gold < S.bet) return; S.first = false; S.ph = 'deal'; S.res = null; S.D = S.P = null; S.kept = []; S.dice = []; turn('D'); }
+function end() { const D = S.D, P = S.P, b = S.bet; let r, m = 1;
+  if (P.r > D.r) { r = 'w'; m = Math.max(P.m, D.bad ? 2 : 1); } else if (P.r < D.r || (P.none && D.none)) { r = 'l'; m = Math.max(D.m, P.bad ? 2 : 1); } else r = 'p';   // 둘 다 끗이 없으면 딜러 승
+  const g = b * m, lose = Math.min(g, S.gold);                                                                // 개다래나무 가지 칩이 모자라면 가진 만큼만 잃음
+  if (r === 'w') { S.gold += g; S.msg = `${P.n}${P.n.endsWith('1') ? '로' : '으로'} 이겼습니다. 개다래나무 가지 칩 ${g}개를 받습니다.`; } else if (r === 'l') { S.gold -= lose; S.msg = P.none && D.none ? `둘 다 끗이 없습니다. 개다래나무 가지 칩 ${lose}개를 잃습니다.` : `영수의 ${D.n}에 졌습니다. 개다래나무 가지 칩 ${lose}개를 잃습니다.`; } else S.msg = '비겼습니다. 판돈을 돌려받습니다.';
+  S.sub = m > 1 ? (r === 'l' && lose < g ? `${m}배로 세지만 가진 개다래나무 가지 칩만 잃습니다.` : `${m}배로 셉니다.`) : ''; S.res = r; if (r !== 'p') snd(r === 'w' ? 'win' : 'lose'); S.ph = 'end'; fixBet(); S.stat.n++; S.stat[r]++; }
+// ------------------------------------------------------------ UI
+function bt(key, label, fn, cls = '') { const b = document.createElement('div'); b.className = 'bt ' + cls; b.innerHTML = `<span class="key">${key}</span><span>${label}</span>`; if (!cls.includes('off')) b.onclick = () => { fn(); ui(); }; return b; }
+function ui() { const bar = $('bar'); bar.innerHTML = '';
+  if (idle()) { BETS.forEach((v, i) => bar.appendChild(bt(i + 1, fr(v), () => { S.bet = v; }, S.gold < v ? 'off' : S.bet === v ? 'sel' : '')));
+    bar.appendChild(bt('SPACE', S.ph === 'end' ? '한 판 더' : '시작하기', start, S.gold < S.bet ? 'off' : '')); tail(bar); }
+  else bar.appendChild(bt('SPACE', `주사위 던지기 (${Math.min(3, S.tries + 1)} / 3)`, roll, S.ph === 'play' ? '' : 'off'));
+  $('info').innerHTML = `<span title="개다래나무 가지 칩"><b>${fr(S.gold)}</b></span>`;
+  $('stat').innerHTML = `<i>승</i> ${S.stat.w} <i>무</i> ${S.stat.p} <i>패</i> ${S.stat.l}`;
+  $('title').classList.toggle('on', S.ph === 'bet'); const m = $('msg'); m.children[0].textContent = S.msg; m.children[0].className = 'm ' + (S.ph === 'end' ? S.res : ''); m.children[1].textContent = S.sub; }
+function payTable() { const d = n => `<img src="${dieArt(n).toDataURL()}">`, row = (ds, label, mul, cls = '') => `<div class="r">${ds.map(d).join('')}<span>${label}</span><b class="${cls}">${mul}</b></div>`;
+  $('pay').innerHTML = `<div class="h">끗 순서</div>` + row([1, 1, 1], '', '5배') + row([6, 6, 6], '같은 눈 셋', '3배') + row([4, 5, 6], '', '2배') + row([3, 3, 5], '5끗', '1배') + row([2, 4, 6], '끗 없음', '1배') + row([1, 2, 3], '', '2배 잃음', 'l')
+    + `<div class="n f7">같은 눈 둘이 나오면 남은 하나가 끗입니다.</div>`; }
+addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === ' ') { e.preventDefault(); if (S.ph === 'play') roll(); else start(); } else if ('123'.includes(k) && idle() && S.gold >= BETS[+k - 1]) S.bet = BETS[+k - 1]; else if (k === 'r') refill(); else if (k === 'escape') leave(); ui(); });
+// ------------------------------------------------------------ 그리기
+const LABS = {};
+function lab(id, html, x, y, cls) { let e = LABS[id]; if (!e) { e = LABS[id] = document.createElement('div'); $('labs').appendChild(e); } e.className = cls; if (e._h !== html) { e.innerHTML = html; e._h = html; } e.style.left = Math.round(x / 1.5) + 'px'; e.style.top = Math.round(y / 1.5) + 'px'; e.style.display = ''; e._on = true; }
+function shadow(x, y, z) { const w = Math.max(8, 28 - z * 0.16) | 0, X = snap(x), Y = snap(y) + 22; ctx.fillStyle = z > 30 ? 'rgba(8,4,2,.3)' : 'rgba(8,4,2,.5)'; for (let j = -3; j <= 3; j++) { const hw = snap(w * Math.sqrt(1 - (j / 4) ** 2)); ctx.fillRect(X - hw + 6, Y + j * 2, hw * 2, 2); } } // 바닥 그림자: 높이 뜰수록 작고 옅음
+const REST = {}; const restOf = d => d.Rf;
+let last = performance.now();
+function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now; S.t += dt;
+  const due = S.q.filter(e => e.t <= S.t); S.q = S.q.filter(e => e.t > S.t); if (due.length) { due.forEach(e => e.f()); ui(); }
+  FLK.next -= dt; if (FLK.next <= 0) { FLK.next = 0.18 + Math.random() * 0.32; const r = Math.random(); FLK.i = Math.max(0, Math.min(TABLES.length - 1, FLK.i + (r < 0.42 ? -1 : r < 0.7 ? 1 : 0))); }
+  ctx.drawImage(TABLES[FLK.i], 0, 0);
+  for (const k in LABS) LABS[k]._on = false;
+  for (const kp of S.kept) { if (kp.who !== 'D') continue; kp.v.forEach((n, i) => { const x = BCX - 70 + i * 70, y = 84; shadow(x, y, 0); drawCube(ctx, x, y, kp.R[i], kp.seeds[i]); }); lab('kd', `영수 <span class="r">${kp.res.n}</span>`, BCX + 124, 70, 'pf tot' + (kp.res.bad ? ' bust' : kp.res.m > 1 ? ' bj' : '')); } // 영수의 주사위는 위쪽에 놓아 둠
+  const live = S.dice.map(d => { const k = Math.max(0, Math.min(1, (S.t - d.t0) / d.dur)), e = 1 - (1 - k) ** 2.2, x = d.sx + (d.fx - d.sx) * e, y = d.sy + (d.fy - d.sy) * e;
+    const z = k >= 1 ? 0 : 90 * (1 - k) ** 1.6 * Math.abs(Math.cos(k * Math.PI * 3.5)), th = d.amp * (1 - k) ** 2, R = k >= 1 ? d.Rf : mm(rotAxis(d.ax, th), d.Rf); return { d, x, y, z, R, k }; }).sort((a, b) => a.y - b.y);
+  for (const o of live) if (S.t >= o.d.t0) shadow(o.x, o.y, o.z);
+  for (const o of live) if (S.t >= o.d.t0) drawCube(ctx, o.x, o.y - o.z, o.R, o.d.seed);
+  if (S.P && S.ph === 'end') lab('kp', `나 <span class="r">${S.P.n}</span>`, BCX + 176, BCY - 14, 'pf tot' + (S.P.bad ? ' bust' : S.P.m > 1 ? ' bj' : ''));
+  for (const k in LABS) if (!LABS[k]._on) LABS[k].style.display = 'none';
+  requestAnimationFrame(frame); }
+const fit = () => { const k = Math.min(1, innerWidth / VW, innerHeight / VH); $('wrap').style.transform = k < 1 ? `scale(${k})` : ''; }; addEventListener('resize', fit); fit();
+bake(); payTable(); ui(); document.fonts.ready.then(() => requestAnimationFrame(frame)); window.S = S; window.read = read;
+</script></body></html>

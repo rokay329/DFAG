@@ -335,6 +335,7 @@
       weaponOnHit(e, o, crit); // v2.03 무기 기술
       pasOnHit(e, o, crit); // v2.22 보관 패시브
       engOnHit(e, o, crit, coef); // v2.41 빛의 각인
+      BDC.onHit(e, o); // v3.18 뼈주사위
     }
     const killing = e.hp <= 0, small = e.type !== 'boss' && !isElite(e) && !isSemi(e);
     const top = e.tall || (e.type === 'boss' ? 62 : isElite(e) ? 52 : 36);

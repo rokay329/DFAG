@@ -640,6 +640,26 @@
   #rotate { position: fixed; inset: 0; z-index: 60; background: #070509; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 10px; color: var(--gold-l); font-family: 'Galmuri11', monospace; font-size: 15px; text-align: center; }
   #rotate b { font-size: 34px; }
   body.touch.portrait #rotate { display: flex; }
+
+  /* v3.17 영수 명수의 안전 놀이터: 환전하기 창 · 미니게임 틀 */
+  .exWin { width: 604px; max-width: none; } .exTop { display: flex; justify-content: space-between; align-items: center; } .exTop h2 { margin: 0; }
+  .exHold { display: flex; gap: 12px; color: var(--ink); } .exHold span { display: flex; align-items: center; gap: 4px; } .exHold b { color: var(--gold-l); font-weight: normal; }
+  .exSay { margin: 6px 0 2px !important; color: var(--ink) !important; }
+  .exWin canvas { image-rendering: pixelated; display: block; margin: 0; }
+  .choice.ex { width: 138px; display: flex; flex-direction: column; }
+  .choice.ex .exPic { display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; margin: -2px -2px 6px; background: #120d17; border: 1px solid #000; box-shadow: inset 1px 1px 0 var(--lo), inset -1px -1px 0 #2a2030; }
+  .choice.ex .exPic canvas { width: auto; height: auto; margin: 0; } .choice.ex .exPic i { font-style: normal; color: var(--gold-l); font-family: 'Galmuri7'; font-size: 8px; margin-left: -3px; align-self: flex-end; padding-bottom: 8px; }
+  .choice.ex .d { color: var(--quiet); line-height: 1.5; min-height: 45px; }
+  .choice.ex .w span { display: block; color: var(--gold-l); } .choice.ex .w { color: #ff9090; min-height: 26px; margin-top: 6px; padding-top: 5px; border-top: 1px solid #3a2f40; line-height: 1.3; }
+  .choice.ex .key { align-self: flex-start; } .choice.ex[disabled] { opacity: .45; cursor: not-allowed; } .choice.ex[disabled]:hover { background: var(--panel); box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--lo), 0 0 0 1px var(--gold-d), 0 0 0 2px #000; }
+  .exMsg { min-height: 15px; margin: 8px 0 0 !important; color: var(--gold-l) !important; }
+  /* v3.18 환전하기 창: 글자 수에 따라 크기가 바뀌지 않게 높이 · 폭 고정 */
+  #game.noCur { cursor: none !important; } /* v3.18 말주머니 위에선 커서 숨김 */
+  #ovDen { z-index: 30; } /* 선택 창은 HUD보다 늘 위 */
+  .exHold b { display: inline-block; width: 30px; } .exSay { height: 15px; overflow: hidden; white-space: nowrap; }
+  .choice.ex .d { height: 45px; min-height: 0; overflow: hidden; } .choice.ex .w { box-sizing: border-box; height: 34px; min-height: 0; overflow: hidden; word-break: keep-all; font: 8px/12px Galmuri7; } /* 사유 문구: 작은 글꼴로 두 줄까지 들어가게 높이 확보 */
+  .exMsg { height: 30px; min-height: 0; overflow: hidden; }
+  #denGame { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: none; z-index: 60; background: #070509; }
 </style>
 </head>
 <body>
@@ -738,6 +758,17 @@
         <h2>쿠키 · 쿠오의 출장 비스트로</h2>
         <p>식사를 하면 체력이 모두 회복되고 이로운 효과를 얻습니다.</p>
         <div class="choices" id="restChoices"></div>
+      </div>
+    </div>
+
+    <!-- v3.17 영수 명수의 안전 놀이터: 환전하기 -->
+    <div class="ov" id="ovDen">
+      <div class="pf win exWin">
+        <div class="exTop"><h2>환전하기</h2><div class="exHold"><span><canvas data-ic="heart" data-s="1"></canvas>최대 체력 <b id="denHp"></b></span><span><canvas data-ic="twig" data-s="1"></canvas>개다래나무 가지 칩 <b id="denTw"></b></span></div></div>
+        <p class="exSay" id="denSay"></p>
+        <div class="choices" id="denCh"></div>
+        <p class="exMsg" id="denMsg"></p>
+        <div class="row" style="justify-content:space-between;align-items:center"><span class="f7" style="color:var(--quiet)">개다래나무 가지 칩은 2스테이지를 벗어나면 모두 사라집니다.</span><button class="pbtn" id="denClose">돌아가기 <span class="key kc">ESC</span></button></div>
       </div>
     </div>
 
@@ -868,6 +899,7 @@ window.addEventListener('error',function(e){show('오류: '+e.message+'\n위치:
 window.addEventListener('unhandledrejection',function(e){show('오류(promise): '+(e.reason&&e.reason.message||e.reason));});})();</script>
 <script src="music.js"></script>
 <!-- 게임 코드: js/ 폴더를 번호 순서대로 불러온다 (순서 중요 — 앞 파일의 함수·상수를 뒤 파일이 쓴다. 새 파일은 번호 사이에 끼워 넣기) -->
+<iframe id="denGame" title="미니게임"></iframe>
 <script src="js/01_core.js"></script>
 <script src="js/02_weapons.js"></script>
 <script src="js/03_state.js"></script>
@@ -883,6 +915,7 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/11c_home.js"></script>
 <script src="js/11f_archive.js"></script>
 <script src="js/11g_bistro.js"></script>
+<script src="js/11h_den.js"></script>
 <script src="js/11d_truth.js"></script>
 <script src="js/12_chapter3.js"></script>
 <script src="js/13_update_render.js"></script>
@@ -901,5 +934,6 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/25_habi_ult.js"></script>
 <script src="js/26_casings.js"></script>
 <script src="js/27_bounty.js"></script>
+<script src="js/28_den_relics.js"></script>
 </body>
 </html>

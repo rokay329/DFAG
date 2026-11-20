@@ -97,7 +97,7 @@ void main() {
       else lights.push({ x: e.x, y: e.y - 8, r: 22, a: 0.25 });
     }
     for (const t of G.tele) if (t.shape !== 'spawn' && !(t.r > 600)) { const lx = t.shape === 'line' ? t.x + Math.cos(t.ang) * t.len / 2 : t.x, ly = t.shape === 'line' ? t.y + Math.sin(t.ang) * t.len / 2 : t.y; lights.push({ x: lx, y: ly, r: (t.shape === 'line' ? t.len / 2 : t.r) + 16, a: 0.45, c: t.mark ? '170,60,220' : '240,30,30', ca: 0.1 + 0.12 * (t.t / t.dur) }); }
-    gearLights(lights); forgeLights(lights); CA.lights(lights); END.lights(lights); HOME.lights(lights); ARCH.lights(lights); TRUTH.lights(lights);
+    gearLights(lights); forgeLights(lights); CA.lights(lights); END.lights(lights); HOME.lights(lights); ARCH.lights(lights); TRUTH.lights(lights); DEN.lights(lights);
     for (const f of G.fx) if (f.kind === 'skybeam') lights.push({ x: f.x, y: f.y - 20, r: 90, a: 0.7 * (f.t / f.max), c: f.c, ca: 0.25 * (f.t / f.max) });
     for (const t of G.tele) if (t.shape !== 'spawn') { const c = teleCenter(t), boss = t.mark || isBossTele(t); lights.push({ x: c.x, y: c.y, r: (t.shape === 'line' ? t.len * 0.5 : t.r) + 20, a: boss ? 0.45 : 0.35, c: t.mark ? '190,100,255' : boss ? '255,160,80' : '255,70,50', ca: 0.06 }); } // 바닥 경고가 어둠에 묻히지 않게
     for (const h of G.hazards) lights.push({ x: h.x, y: h.y, r: 40, a: 0.35, c: '120,200,60', ca: 0.08 });
@@ -275,6 +275,8 @@ void main() {
     TS.ash = TS.ash.filter(a => a.y < 216); TS.emb = TS.emb.filter(e => e.t > 0 && e.y < 216);
   }
   function render() {
+    { const hide = BUB_RECTS.some(r => mouse.x >= r[0] && mouse.x < r[0] + r[2] && mouse.y >= r[1] && mouse.y < r[1] + r[3]); // v3.18 말주머니가 마우스 커서보다 위로 보이게: 그 위에선 커서를 숨김
+      cv.classList.toggle('noCur', hide); BUB_RECTS.length = 0; }
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, VH);
@@ -301,20 +303,20 @@ void main() {
     drawMeteorMark(); drawMeteorAim();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) if (!t.mark) drawTele(t); DITHER_ON = dz; } // v1.79 공격 예고는 잘 보이게 디더 제외
     // 보스 전조(경고)는 보스·캐릭터 그래픽 아래에 (v0.74)
-    drawSqueeze(); drawRiteGround(); TRUTH.ground(); // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
+    drawSqueeze(); drawRiteGround(); TRUTH.ground(); DEN.ground(); // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
     drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     drawBuffBatch(); // v2.50 바닥 강화 고리 한 장으로
     const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.y, d: () => drawEnemyShk(e) }));
     if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
     ents.push({ y: G.player.y, d: drawPlayer });
-    roomEnts(ents); gearEnts(ents); forgeEnts(ents); CA.ents(ents); END.ents(ents); sqzEnts(ents); TRUTH.ents(ents); if (typeof HABIULT !== 'undefined') HABIULT.ents(ents); if (typeof CASING !== 'undefined') CASING.ents(ents); // v2.57 크루가쉬 방책 말뚝도 깊이 정렬
+    roomEnts(ents); gearEnts(ents); forgeEnts(ents); CA.ents(ents); END.ents(ents); sqzEnts(ents); TRUTH.ents(ents); DEN.ents(ents); BDC.ents(ents); if (typeof HABIULT !== 'undefined') HABIULT.ents(ents); if (typeof CASING !== 'undefined') CASING.ents(ents); // v2.57 크루가쉬 방책 말뚝도 깊이 정렬
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
     { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); for (const l of G.loot) drawLoot(l); /* v2.80 보상은 늘 맨 위 층 (상자 · 소품 · 캐릭터에 가려지지 않게) */ BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); G._wt = ctx.getTransform();
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
-    enemySays(); TRUTH.top(); // v2.58
+    enemySays(); TRUTH.top(); BDC.top(); // v2.58 · v3.18 머리 위 뼈주사위
     flushBubbles(); // v1.10 말주머니는 모든 물체 위에
     drawGearTop();
     drawWproj(); // v2.05
@@ -325,6 +327,7 @@ void main() {
     for (const d of G.drops) drawDrop(d);
     for (const f of G.fx) if (f.kind !== 'rockspike') drawFx(f);
     for (const pr of G.proj) drawProj(pr);
+    BDC.air(); // v3.18 칼날카드
     for (const pr of G.mproj) drawMProj(pr);
     drawMeteorRock(); drawAimLine();
     for (const p of G.parts) { ctx.globalAlpha = Math.min(1, p.t * 3); ctx.fillStyle = p.c; ctx.fillRect(snap2(p.x), snap2(p.y), 2, 2); } // 2px 칸
@@ -399,7 +402,7 @@ void main() {
     hudFade(); // v2.38 캐릭터·적이 좌우 패널 뒤로 가면 패널을 흐리게
     if (mode !== 'map' && !(G && G.cine) && !(G && END.busy()) && !(G && G.dun && G.dun.home)) drawMinimap(); // v1.92 TAB 지도를 열면 미니맵은 숨김
     drawCombo();
-    CA.screen(); END.screen(); HOME.screen(); ARCH.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
+    CA.screen(); END.screen(); HOME.screen(); ARCH.screen(); DEN.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
     if (flashT > 0) { ctx.globalAlpha = Math.min(0.6, flashT * 2.5); ctx.fillStyle = flashColor; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1; }
     if (mode === 'map') drawMapOverlay();
     if (G && G.cine) drawCinematic();

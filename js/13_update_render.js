@@ -117,7 +117,7 @@
   }
 
   // ---------------------------------------------------------------- 업데이트
-  const SAFE = { cx: (136 + VW) / 2, cy: (70 + 350) / 2 }; // UI 패널을 뺀 화면 영역의 중심
+  const SAFE = { cx: VW / 2, cy: (70 + 350) / 2 }; // v3.18 캐릭터는 화면 가로 가운데 (예전: UI 패널을 뺀 영역의 중심이라 오른쪽으로 쏠림)
   // ---------------------------------------------------------------- 압박감 (v0.31)
   // 가까이 몰린 적이 많을수록 화면이 조여 오고(줌·어두운 테두리) 심장이 뛴다. 공격 직전 적은 으르렁거린다. 맞으면 살짝 밀려난다
   const WIND_STATES = new Set(['wind', 'hold', 'sqz', 'leap', 'dash', 'spit', 'bilecharge', 'dive']);
@@ -149,7 +149,7 @@
     cam.bx = (cam.bx || 0) + (bxT - (cam.bx || 0)) * bk; cam.by = (cam.by || 0) + (byT - (cam.by || 0)) * bk;
     let tx = P.x - SAFE.cx + cam.bx, ty = P.y - 10 - SAFE.cy + cam.by;
     { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100), y1 = A.y1 + 88 - VH;
-      const cx = x1 >= x0 ? clamp(tx, x0, x1) : (x0 + x1) / 2, cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
+      const cx = x1 >= x0 ? clamp(tx, x0, x1) : (A.x0 + A.x1 - VW) / 2, /* v3.18 화면보다 좁은 방은 방 가운데를 화면 가운데에 */ cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
     cam.x = tx; cam.y = ty;
     bannerPlace();
   }
@@ -163,6 +163,7 @@
     if (G && CA.busy()) { CA.update(rdt); return; } // v2.52 재의 제단 연출 중엔 조작 없음
     if (G && END.busy()) { END.update(rdt); return; } // v2.54 엔딩 연출 중엔 조작 없음
     if (G && TRUTH.busy()) { TRUTH.update(rdt); return; } // v2.58 진엔딩 단서 대화 · 연출 중엔 조작 없음
+    if (G && DEN.busy()) { DEN.update(rdt); return; } // v3.18 안전 놀이터 도박사 대화 중엔 조작 없음 (F로 넘김)
     if (G && G.dun && G.dun.arch && ARCH.update(rdt)) return; // v3.00 코코아의 기록 보관소: 인사 · ESC로 나가기
     if (G && G.dun && G.dun.home && HOME.update(rdt)) return; // v2.55 시작 장소: 대사 · 장소 이름 · 아래 문으로 나가면 출발
     if (take('escape')) { openPause(); return; }
@@ -186,6 +187,7 @@
     if (dbgK('y')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
     if (dbgK('b') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
     if (dbgK('r') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
+    if (dbgK('u') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
     if (dbgK('x')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
     if (dbgK('g') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환
 
@@ -205,7 +207,7 @@
     ascTick(dt); // v1.96 잿빛 왕관
     updatePressure(dt);
     updateRoom(dt);
-    TRUTH.tick(dt); // v2.58
+    TRUTH.tick(dt); DEN.tick(dt); BDC.tick(dt); // v2.58 · v3.17 안전 놀이터
     updateCamera(dt);
     updateProj(dt);
     const fxE0 = G.fx.length, ptE0 = G.parts.length; // v2.28 적이 만든 이펙트 표시 (반격 시간 흑백용)

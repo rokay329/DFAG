@@ -612,7 +612,7 @@
   }
 
   // ---------- 마법사
-  function rangedWave() { const P = G.player; if (G.stats.efx.has('wave3') && ((P.shotN = (P.shotN || 0) + 1) % 3 === 0)) fireWave(P.ang); }
+  function rangedWave() { BDC.onAttack(); /* v3.18 칼날카드 */ const P = G.player; if (G.stats.efx.has('wave3') && ((P.shotN = (P.shotN || 0) + 1) % 3 === 0)) fireWave(P.ang); }
   function castBolt() { rangedWave();
     const P = G.player; P.boltN = (P.boltN || 0) + 1; // v1.76 마력 소모 없음 (다른 PC v1.69 이식)
     const big = P.boltN % 3 === 0, tp = staffTip();
@@ -1003,6 +1003,7 @@
   // 거너 조준점: 총구에서 탄이 닿는 곳까지 점선, 끝에 조준경 (적을 겨누면 붉게)
   function drawGunAim() {
     const P = G.player; if (G.cls !== 'gunner' || P.dead || P.state === 'aim' || P.state === 'butt') return;
+    if (G.cine || TRUTH.busy() || DEN.busy() || CA.busy() || END.busy()) return; // v3.18 대화 · 연출 중엔 조준점을 숨김 (말 건 자리에 멈춰 남지 않게)
     const m = muzzle(), ang = P.blade, hits = rayHits(m.x, m.y, ang, GUN_RANGE, 5), L = hits.length ? hits[0].along : rayEnd(m.x, m.y, ang, GUN_RANGE);
     const ready = P.reload <= 0, on = hits.length > 0, col = on ? '255,80,60' : '240,230,210';
     ctx.save();
@@ -1097,6 +1098,7 @@
   function startAttack(i) {
     if (G.tut && G.tut.step === 1) G.tut.atkN++;
     const P = G.player, st = swingTable()[i];
+    BDC.onAttack(); // v3.18 칼날카드
     P.state = 'attack'; P.combo = i; P.t = 0; P.queued = false; P.atkAng = P.ang; P.hitSet = new Set();
     P.face = Math.cos(P.ang) > 0 ? 1 : -1; P.sign = P.face;
     P.swingRel = st.a0 * DEG; P.prevRel = P.swingRel;

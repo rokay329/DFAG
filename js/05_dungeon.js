@@ -40,7 +40,7 @@
       sub: { 4: '근위대장 모르드레드가 주인 없는 문을 여전히 지킨다', 9: '상복의 왕비가 빈 왕좌 앞에서 재를 매만진다' } },
   };
   const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
-  const roomName = t => t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
+  const roomName = t => t === 'den' ? DEN.name() : t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
   const roomTag = t => t === 'elite' ? ER().tag : ROOM_TAG[t];
   const ROOM_TAG = { altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '비스트로', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
 
@@ -428,6 +428,7 @@
     if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
     if (fresh && R.type === 'boss' && hasRelic('gravedirt')) { addArmor(1); lootFeed('무덤 흙 — 방패 +1', '#c8a880'); }
     if (R.type === 'secret' && !R.greeted) { rec('secret'); R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
+    if (R.type === 'den') setMood('den'); else // v3.18 안전 놀이터 전용 곡
     setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
     if (R.type === 'start') {
       spawnDummy(); // v2.04 시작 방 허수아비 (무기 시험용)
@@ -624,6 +625,7 @@
     { const ei = END.interact(); if (ei) return ei; } // v2.54 떨어진 왕관
     { const hi = HOME.interact(); if (hi) return hi; } // v2.55 시작 장소 출구
     { const ri = ARCH.interact(); if (ri) return ri; } // v3.00 코코아의 기록 보관소
+    { const di = DEN.interact(); if (di) return di; } // v3.17 영수 명수의 안전 놀이터
     if (R.chest && (!R.chest.opened || R.chest.pending) && !R.chest.fall && near(R.chest, 36)) return { k: 'chest', o: R.chest, x: R.chest.x, y: R.chest.y - 30, t: R.chest.pending ? 'F 보류한 전리품 고르기' : R.chest.kind === 'boss' ? 'F 보스의 전리품' : 'F 상자 열기' };
     { const gl = nearGear(); if (gl) return { k: 'gear', o: gl, x: gl.x, y: gl.y - 30, t: wFull(G.cls) && gl.it.cls === G.cls ? 'F 바꿔 들기' : 'F 줍기' }; }
     if (R.socks && !G.dun.bossOpen && !G.dun.gate) for (const s of R.socks) if (!(s.dual ? G.dun.sock[0] && G.dun.sock[1] : G.dun.sock[s.i]) && near(s, 36)) { const K = SK(), y = s.y - SOCK_H[SST()] - 8; return G.dun.keys > 0 ? { k: 'sock', o: s, x: s.x, y, t: `F ${K.act}` } : { k: 'none', o: s, x: s.x, y, t: K.need, bad: true }; }
@@ -673,6 +675,7 @@
     if (it.k === 'bounty') { BOUNTY.open(); return; } // v3.16 단군의 난입자 의뢰서
     if (it.k === 'homeTalk') { HOME.talkNpc(it.who); return; } // v3.16 하비 · 단군 대화
     if (it.k === 'arch') { ARCH.act(it); return; } // v3.00 코코아의 기록 보관소
+    if (it.k === 'den') { DEN.act(it); return; } // v3.17 영수 명수의 안전 놀이터
     if (it.k === 'bis') { BISTRO.act(it); return; } // v3.10 쿠오 · 쿠키 대화
     if (it.k === 'none') { sfx('block'); return; }
     if (it.k === 'sock') { placeSeal(it.o); return; }
@@ -728,7 +731,7 @@
   }
   // v0.98 보스 전리품 상자: 열면 장비가 튀어나와 등급 빛기둥을 세우고, 잠시 뒤 대장간(또는 결과 화면)으로
   function chestRelic(c, i, n) { // v2.32 상자에서 유물: 아직 없고 해금된 것 중 하나 (바닥에 떨어진 것도 제외)
-    const onFloor = new Set(G.loot.filter(l => l.type === 'relic' && l.life > 0).map(l => l.relic)), left = Object.keys(RELICS).filter(k => !hasRelic(k) && !relicLocked(k) && !onFloor.has(k));
+    const onFloor = new Set(G.loot.filter(l => l.type === 'relic' && l.life > 0).map(l => l.relic)), left = Object.keys(RELICS).filter(k => !hasRelic(k) && !relicLocked(k) && !onFloor.has(k) && !RELICS[k].den); // v3.18 놀이터 전용 유물은 보스가 떨어뜨리지 않음
     if (!left.length) return false;
     const l0 = G.loot.length; spawnLoot('relic', c.x, c.y + 6); const L = G.loot[l0]; if (!L) return false; L.relic = pick(left);
     if (n > 1) { const a = Math.PI / 2 + (i - (n - 1) / 2) * 0.7; L.vx = Math.cos(a) * 90 + (i - (n - 1) / 2) * 40; L.vy = Math.sin(a) * 70; L.vz = 170; }
@@ -793,13 +796,13 @@
   // ---------- 그리기: 바닥(문·구덩이), 구조물 스프라이트
   const FL_CACHE = []; // v2.35 최근 방 바닥 4개 (방 들어갈 때 바닥을 새로 그리던 60~90ms 멈춤 제거)
   function floorCached(R) {
-    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
-    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
+    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
+    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
       ROOMSTYLE = R.style || { path: 'wind' }; CUR_ROOM = R;
       if (m) { fmg.clearRect(0, 0, W, H); fmg.drawImage(c.a, 0, 0); ffg.clearRect(0, 0, W, H); ffg.drawImage(c.b, 0, 0); FRONT_ON = true; } else { fg.clearRect(0, 0, W, H); fg.drawImage(c.a, 0, 0); }
       return; }
     paintRoomFloor(R);
-    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive') return;
+    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive' || R.type === 'den') return;
     let c = FL_CACHE.length >= 4 ? FL_CACHE.pop() : null; if (!c) c = { a: mkCanvas(W, H)[0], b: mkCanvas(W, H)[0] };
     c.key = key; c.dun = G.dun; const ga = c.a.getContext('2d'), gb = c.b.getContext('2d'); ga.clearRect(0, 0, W, H); gb.clearRect(0, 0, W, H);
     ga.drawImage(m ? floorM : floor, 0, 0); if (m) gb.drawImage(frontM, 0, 0); FL_CACHE.unshift(c);
@@ -811,6 +814,7 @@
       if (R.type === 'home') { HOME.paint(fg, R); return; } // v2.55 시작 장소
       if (R.type === 'archive') { ARCH.paint(fg, R); return; } // v3.00 코코아의 기록 보관소
       if (R.type === 'lab') { TRUTH.paintLab(fg, R); return; } // v2.58 구덩이 실험실
+      if (R.type === 'den') { DEN.paint(fg, R); return; } // v3.17 영수 명수의 안전 놀이터
       const ac = G.stage === 4;
       if (G.stage === 1) paintMeadowFloor(fmg); else if (G.stage === 3) { paintOrcFloor(fg, R); paintOrcWall(fg, R); } else { paintCastle.noRite = ac; paintCastle(fg); paintCastle.noRite = false; paintCastleWall(fg); if (R.type !== 'altar') { if (!ac) withDecor(fg, R, () => paintCastleDecor(fg, R)); } /* v2.89 4장은 21_ash4.js 바닥 자국 */ }
       const g = G.stage === 1 ? fmg : fg;
