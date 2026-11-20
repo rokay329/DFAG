@@ -321,5 +321,5 @@ const ARCH = (() => {
     document.head.appendChild(st);
   }
   miDither();
-  return { fromTitle, fromResult, interact, act, update, screen, paint, lights, ents, name, floorSub, spk, closed, get busy() { return !!pan; } };
+  return { pan: k => D.pan[k], sprCv, fromTitle, fromResult, interact, act, update, screen, paint, lights, ents, name, floorSub, spk, closed, get busy() { return !!pan; } };
 })();

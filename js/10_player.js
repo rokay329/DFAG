@@ -23,6 +23,7 @@
   const PIVOT_Y = 10;
   function updatePlayer(dt) {
     const P = G.player, s = G.stats;
+    if (typeof HABIULT !== 'undefined') HABIULT.update(dt); if (typeof CASING !== 'undefined') CASING.update(dt); // v3.16 탄피
     for (const t of P.trail) t.t -= dt;
     P.trail = P.trail.filter(t => t.t > 0);
     for (const t of P.trail2) t.t -= dt;
@@ -79,7 +80,7 @@
     }
     if (wantAwk && P.gauge >= 100 && free) {
       if (G.tut && G.tut.step === 3) G.tut.awkN++;
-      if (G.cls === 'ranger') startStorm(); else if (G.cls === 'mage') { if (wSkill() === 'hourglass') timeStop(); else if (!document.body.classList.contains('touch')) { G.meteorAim = true; sfx('aim'); } else startMeteor(); } else if (G.cls === 'priest') startMiracle(); else if (G.cls === 'gunner') startSnipe(); else startAwaken();
+      if (G.cls === 'ranger') startStorm(); else if (G.cls === 'mage') { if (wSkill() === 'hourglass') timeStop(); else if (!document.body.classList.contains('touch')) { G.meteorAim = true; sfx('aim'); } else startMeteor(); } else if (G.cls === 'priest') startMiracle(); else if (G.cls === 'gunner') HABIULT.start(); /* v3.15 등 맡기기 (마력응축탄 대체) */ else startAwaken();
     }
     if (wantSkill && free) {
       const slot = P.chargeCd.findIndex((c, i) => i < charges && c <= 0);
@@ -559,6 +560,7 @@
       ctx.fillStyle = '#b8b8c4'; [[0, -2], [2, -4], [2, -6], [0, -8]].slice(0, 2 + k).forEach(([dx, dy]) => ctx.fillRect(mx + dx * f, my + dy * 2 - 2, 2, 2)); }
   }
   function staffTip() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 30, y: h.y + Math.sin(P.blade) * 30 }; }
+  function goldCasing() { const P = G.player, h = heroHand(); if (typeof CASING !== 'undefined') CASING.spawn('gold', h.x, h.y, P.y, P.ang); } // v3.16 그레이브 금색 탄피 (작살총 제외)
   function muzzle() { const P = G.player, h = heroHand(); return { x: h.x + Math.cos(P.blade) * 37, y: h.y - 2 + Math.sin(P.blade) * 37 }; }
   // 직선 위의 적 (along 순 정렬)
   function rayHits(x, y, ang, len, w) {
@@ -903,6 +905,7 @@
     P.state = 'rattack'; P.t = 0; P.blade = P.ang; P.atkAng = P.ang; P.ammo = Math.max(0, P.ammo - 1); const last = P.ammo === 0; if (last && k !== 'harpoon') startReload(); P.recoil = 1;
     P.gunN = (P.gunN || 0) + 1;
     const m = muzzle();
+    if (k !== 'harpoon') goldCasing();
     if (k === 'puffer' && Math.random() < 0.1) { sfx('blip', 0.6); G.nums.push({ x: m.x, y: m.y - 14, v: '퉤!', t: 0.6, c: '#ffd34d', s: 1 }); for (let i = 0; i < 6; i++) G.parts.push({ x: m.x, y: m.y, vx: rand(-40, 40), vy: rand(-80, -30), t: 0.4, c: pick(['#ffe070', '#5a8a9a']), g: 260 }); P.x -= Math.cos(P.ang) * 8; P.y -= Math.sin(P.ang) * 8; return; } // 복어가 싫다고 튕겨 나옴
     if (k === 'cannon') { (G.wproj = G.wproj || []).push({ k: 'ball', x: m.x, y: m.y, ang: P.ang, t: 1.1 }); G.fx.push({ kind: 'muzzle', x: m.x, y: m.y, ang: P.ang, s: 2, t: 0.18, max: 0.18 }); sfx('shotgun', 0.7); if (!segSolid(P.x, P.y, P.x - Math.cos(P.ang) * 18, P.y - Math.sin(P.ang) * 18)) { P.x -= Math.cos(P.ang) * 18; P.y -= Math.sin(P.ang) * 18; } return; }
     if (k === 'duck') { G.nums.push({ x: m.x, y: m.y - 12, v: '꽥', t: 0.4, c: '#ffe070', s: 1 }); if (P.gunN % 5 === 0) { (G.wproj = G.wproj || []).push({ k: 'duckb', x: m.x, y: m.y, ang: P.ang, t: 0.9 }); sfx('blip', 1.6); return; } }
@@ -965,7 +968,7 @@
       if (d < 150 + e.r && Math.abs(angDiff(angTo(P, e), P.ang)) < 0.62) damageEnemy(e, 2.4 * (1 - Math.min(d, 150) / 150 * 0.5), { ang: angTo(P, e), kb: 300, grogi: 5, stagger: 0.7, heavy: true, gauge: 4 });
     }
     P.x -= Math.cos(P.ang) * 26; P.y -= Math.sin(P.ang) * 26;
-    sfx('shotgun'); addShake(7, P.ang + Math.PI); flashT = 0.05; flashColor = '#ffd080';
+    goldCasing(); sfx('shotgun'); addShake(7, P.ang + Math.PI); flashT = 0.05; flashColor = '#ffd080';
   }
   function startSnipe() {
     const P = G.player;
@@ -995,7 +998,7 @@
     for (let i = 0; i < 30; i++) { const k = Math.random() * L; G.parts.push({ x: m.x + Math.cos(ang) * k, y: m.y + Math.sin(ang) * k, vx: rand(-30, 30), vy: rand(-40, 0), t: rand(0.3, 0.7), c: pick(['#ffd080', '#fff0d0', '#5b5560']), g: 0, glow: Math.random() < 0.5 }); }
     P.x -= Math.cos(ang) * 40; P.y -= Math.sin(ang) * 40;
     P.state = 'rattack'; P.t = 0; P.recoil = 2.5; P.reload = 0; P.ammo = gunMag();
-    sfx('snipe'); addShake(12, ang + Math.PI); flashT = 0.12; flashColor = '#fff0d0'; slowmo = Math.max(slowmo, 0.35); /* v1.08 역경직 제거 */
+    goldCasing(); sfx('snipe'); addShake(12, ang + Math.PI); flashT = 0.12; flashColor = '#fff0d0'; slowmo = Math.max(slowmo, 0.35); /* v1.08 역경직 제거 */
   }
   // 거너 조준점: 총구에서 탄이 닿는 곳까지 점선, 끝에 조준경 (적을 겨누면 붉게)
   function drawGunAim() {
@@ -1224,7 +1227,10 @@
   MAPS.heartHalfX = ["..kkk...kkk..", ".kRRRk.keeEk.", "kRWPRRkeeeeEk", "kRWRRRkeeeeEk", "kRPRRRkeeeeEk", "kRRRRRkeeeeEk", ".kRRRRkeeeEk.", "..kRRRkeeEk..", "...kRRkeEk...", "....kRkEk....", ".....kkk.....", "......k......"];
   MAPS.heartUpX = ["..kkk...kkk..", ".kYYYk.kYYYk.", "kYoeEYkYEeeYk", "kYeeeeYeeeeyk", "kYeeeeoeeeeyk", "kYeeeoooeeeyk", ".kYeeeoeeeyk.", "..kYeeeeeyk..", "...kYeeeyk...", "....kYeyk....", ".....kyk.....", "......k......"];
   MAPS.shieldPkX = [".kkkkkkkkkk.", "kyYYYYYYYYyk", "kYTTSSSSSsYk", "kYTSSSSSSsYk", "kYSSSXXSSsYk", "kYSSXXXXSsYk", "kYSSSXXSSsYk", ".kYSSSSSsYk.", ".kYSSSSSsYk.", "..kYSSSsYk..", "...kYSsYk...", "....kYYk....", ".....kk....."];
-  MAPS.orbX = ["....kkkk....", "..kkyYYykk..", ".kyYYooYYyk.", ".kYYoWWoYYk.", "kyYoWWoYYYyk", "kyYYooYYYYyk", "kyYYYYYYYyyk", ".kyYYYYYyyk.", ".kyyYYYyyyk.", "..kkyyyykk..", "....kkkk...."];
+  MAPS.orbX = [".......k......", "......kEk.....", ".....kDEBk....", "....kDDEBBk...", "...kDDEEBBBk..", "..kDDDEEBBBBk.", ".kCCCECCAAAAAk", "..kCCCCCAAAAk.", "..kCCCCCAAAAk.", "...kCCCCAAAk..", "...kCCCCAAAk..", "....kCCCAAk...", "....kCCCAAk...", "..k..kCCAk.k..", ".kBk.kCCAkkCk.", "kCAk..kCk.kABk", ".kk....k...kk."]; // v3.13 투지 결정 (투지 구슬 대체)
+  PAL.lootOrb = {"A": "#b0441a", "B": "#e8702a", "C": "#ffaa3c", "D": "#ffd34d", "E": "#fff6c8", "k": "#0b0a0e"};
+  MAPS.pouchX = ["...kk.kk.kk.k....", "..kIIkFFkDDkDk...", "..kIDIFDFFBDBk...", "...kIIFFFDDBk....", "....kIIFFDDk.....", ".....kFFDDk......", "....kGGGCCC......", "..kkIGIFFFCkk....", ".kIIJIFAAFDCDk...", "kIIJIFFMLDDDDDk..", "kIIJFAFLLHADDDk..", "kIIFFALHHEADDBk..", "kIFFFFAHEADDBBk..", ".kFFFFDAADDBBkkk.", ".kFFFFDDDDBBBkMLk", "..kkFDDDDBBkkkHEk", "....kkkkkkk...kk."]; // v3.13 금화 주머니 (상점 아이템 수준 2px 칸)
+  PAL.lootPouch = {"A": "#48240e", "B": "#6e3c1a", "C": "#8a2a20", "D": "#9a5c2c", "E": "#a06a12", "F": "#c88446", "G": "#d24a3a", "H": "#e0a02a", "I": "#e8b478", "J": "#f8d8a8", "L": "#ffd34d", "M": "#fff6c0", "k": "#0b0a0e"};
   MAPS.crumbX = [".......kkkkkk..", ".....kkQWAQQQk.", ".kkkkQWAQQAQAjk", "kAaaQQQQqqqjjjk", ".kAaQQqqqqjjjk.", ".kAaQqjjjjjjk..", ".kaaajjjjjkk...", "..kaakkkkk.....", "...kk.........."]; // v2.51 상점 아이템 수준 음식 도트 (2px 칸)
   MAPS.carrotX = ["........k....", ".....k.kGk.k.", "....kGkkGkkgk", ".....kLGGkgk.", "....kOOGgddk.", "....kOooddk..", "...kOWoook...", "...kWoUUUUk..", "..kOOoUUUk...", "..kOUUUUk....", ".kOoUUkk.....", ".kUUUk.......", "koUkk........", "kok..........", ".k..........."];
   MAPS.fishX = ["......kkk.......", ".....kssDk....k.", "..kkkTTSkDk.kksk", ".kTTTTTTSSSkSDDk", "kTTkSSssSDDSskk.", "kDSssssssDDDskk.", ".ksTSSSSSDSkssDk", "..kDDSSSSDk.kDDk", "...kkkkkkk...kDk", "..............k."];
@@ -1235,8 +1241,8 @@
     hue: { n: '색 조각', map: 'hue_r', sc: 2, c: '#ff5a4a' }, // v2.34 (색은 l.hue)
     meat:  { n: '하트 반 칸', map: 'heartHalfX', pal: 'lootHi', sc: 2, c: '#ff6a6a', light: '255,60,70' }, // v2.01 물약 → 하트
     bigmeat: { n: '하트', map: 'heartFullX', pal: 'lootHi', sc: 2, c: '#ff6a6a', light: '255,60,70' },
-    orb:   { n: '투지 구슬', map: 'orbX', pal: 'lootHi', sc: 2, c: '#ffd34d', light: '255,210,90' },
-    pouch: { n: '금화 주머니', map: 'pouch', sc: 3, c: '#ffd34d', light: '255,210,120' },
+    orb:   { n: '투지 결정', map: 'orbX', pal: 'lootOrb', sc: 2, c: '#ffaa3c', light: '255,170,60' }, // v3.13 투지 구슬 → 투지 결정
+    pouch: { n: '금화 주머니', map: 'pouchX', pal: 'lootPouch', sc: 2, c: '#ffd34d', light: '255,210,120' }, // v3.13 새 도트
     vial:  { n: '핏빛 영약', map: 'vialX', pal: 'lootHi', sc: 2, c: '#e070d0', light: '220,60,200' },
     armor: { n: '방패 조각', map: 'shieldPkX', pal: 'lootHi', sc: 2, c: '#c8d8e0', light: '200,220,240' }, // v2.00
     relic: { n: '유물', map: 'relic', sc: 3, c: '#ff8a3a', light: '255,140,60' }, // v2.07

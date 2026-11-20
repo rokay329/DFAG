@@ -661,7 +661,7 @@
     const mul = G.stage === 4 ? 1.9 : G.stage === 2 ? 1.3 : G.stage === 3 ? 1.6 : 1;
     s.k = alt[0]; s.price = Math.round(alt[1] * mul * ASCF.shop() / 5) * 5;
   }
-  const SHOP_N = { heartUp: '빈 하트 그릇', meat: '하트 반 칸', orb: '투지 구슬', vial: '핏빛 영약', gear: '장비 꾸러미', iron: '철광석 3개', armor: '방패 조각' };
+  const SHOP_N = { heartUp: '빈 하트 그릇', meat: '하트 반 칸', orb: '투지 결정', vial: '핏빛 영약', gear: '장비 꾸러미', iron: '철광석 3개', armor: '방패 조각' };
   function rollGradeW(w) { w = ascGradeW(w); let r = Math.random() * w.reduce((a, b) => a + b, 0); const ks = ['common', 'rare', 'unique', 'legend']; for (let i = 0; i < 4; i++) { if (r < w[i]) return ks[i]; r -= w[i]; } return 'common'; }
   function doInteract(it) {
     const R = G.dun.cur;
@@ -670,6 +670,8 @@
     if (it.k === 'crownAltar') { CA.start(); return; } // v2.52
     if (it.k === 'endCrown') { END.start(); return; } // v2.54
     if (it.k === 'homeExit') { HOME.leave(); return; } // v2.55
+    if (it.k === 'bounty') { BOUNTY.open(); return; } // v3.16 단군의 난입자 의뢰서
+    if (it.k === 'homeTalk') { HOME.talkNpc(it.who); return; } // v3.16 하비 · 단군 대화
     if (it.k === 'arch') { ARCH.act(it); return; } // v3.00 코코아의 기록 보관소
     if (it.k === 'bis') { BISTRO.act(it); return; } // v3.10 쿠오 · 쿠키 대화
     if (it.k === 'none') { sfx('block'); return; }
@@ -2144,7 +2146,7 @@
   const SR_LAYOUT = {
     shop: st => [['stall', -100, -36, [134, 14]], ['counter', -100, -20, [100, 8]], ['rugRack', 62, -54, 14], ['crates', 124, -50, 18], ['fbarrel', 170, -40, 9], ['lampPost', 30, -40, 5],
       /* v2.80 금화 자루 뺌 (그 자리로 밀려오던 상자 더미도 뺌) */ ['banner', 212, -78, 0, 1], ['banner', -212, -78, 0, 1], ['fbarrel', -150, 104, 9]],
-    rest: st => [['tent', -138, -42, [72, 14]], ['wood', 128, -60, 18], ['log', -78, 46, [52, 8]], ['log', 78, 46, [52, 8]], /* v3.10 비스트로: 짐 꾸러미 대신 채소 상자 · 통나무는 손님 자리로 앞쪽에 */ ['wood', 180, 98, 18], ...(st === 2 ? [['banner', 0, -112, 0, 1]] : [])],
+    rest: st => [/* v3.12 비스트로: 텐트 · 장작 대신 출장 식당 소품(수레 · 술통 · 볏짚 포대)은 BISTRO가 그림 · 통나무 의자는 그대로 */ ['log', -78, 46, [52, 8]], ['log', 78, 46, [52, 8]], ...(st === 2 ? [['banner', 0, -112, 0, 1]] : [])],
     reward: st => [['statue', -118, -74, 14], ['statue', 118, -74, 14], ['brazier', -64, -36, 9], ['brazier', 64, -36, 9], ['gold', -96, 34, 20], ['coins', 98, 38, 12], /* v2.80 보물 더미 하나 + 작은 금화 더미 하나 */
       ['banner', -196, -86, 0, 1], ['banner', 196, -86, 0, 1], ['brazier', -190, 90, 9], ['brazier', 190, 90, 9]],
     secret: st => [['altar', 0, -11, [92, 14]]], // v1.11 대리석 제단 위 상자 하나만

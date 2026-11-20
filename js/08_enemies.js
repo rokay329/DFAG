@@ -154,6 +154,7 @@
       e.aimedT = on && P.reload <= 0 && P.state !== 'aim' && d < 420 ? (e.aimedT || 0) + dt : 0;
       if (e.aimedT > 0.28 && Math.random() < dt * 4) { e.aimedT = 0; return side(P.ang); }
     }
+    if (typeof HABIULT !== 'undefined') { const a = HABIULT.threat(e); if (a != null) return a; } // 등 맡기기: 하비 산탄도 읽고 점멸
     if (G.meteor && !G.meteor.fell && Math.hypot(e.x - G.meteor.x, e.y - G.meteor.y) < G.meteor.r + 10 && G.meteor.t > G.meteor.dur * 0.5) return Math.atan2(e.y - G.meteor.y, e.x - G.meteor.x) + rand(-0.4, 0.4); // 운석 밖으로
     return null;
   }

@@ -1237,7 +1237,23 @@
     }
     c.restore(); return W;
   }
+  // v3.13 줍지 않고 남겨 둔 아이템 가까이 가면 이름표 (이름 · 이유 한 줄, 가장 가까운 하나만)
+  const LT_WHY = { meat: '체력이 가득 찼습니다', bigmeat: '체력이 가득 찼습니다', crumb: '체력이 가득 찼습니다', carrot: '체력이 가득 찼습니다', fish: '체력이 가득 찼습니다', mochi: '체력이 가득 찼습니다', orb: '투지가 가득 찼습니다', armor: '방패가 가득 찼습니다', heartUp: '최대 하트가 한도에 도달했습니다', medal: '최대 하트가 한도에 도달했습니다' };
+  function lootTag() {
+    const P = G.player; if (!P || P.dead || mode !== 'play') return;
+    let best = null, bd = 26;
+    for (const l of G.loot) { if (!LT_WHY[l.type] || lootWanted(l)) continue; const d = Math.hypot(l.x - P.x, (l.y - P.y) * 1.3); if (d < bd) { bd = d; best = l; } }
+    if (!best) return;
+    const L = LOOT[best.type], x = Math.round(best.x) & ~1, top = (Math.round(best.y) - 30) & ~1;
+    ctx.textBaseline = 'alphabetic'; ctx.font = '9px Galmuri9'; ctx.textAlign = 'left';
+    const a = L.n, b = ' · ' + LT_WHY[best.type], wa = ctx.measureText(a).width, wb = ctx.measureText(b).width, w = (Math.ceil(wa + wb) + 12) & ~1, h = 14, bx = (x - w / 2) & ~1, by = top - h;
+    ctx.fillStyle = '#0b0a0e'; ctx.fillRect(bx + 2, by - 2, w - 4, h + 4); ctx.fillRect(bx, by, w, h); ctx.fillRect(bx - 2, by + 2, w + 4, h - 4); // 외곽선 (모서리 깎음)
+    ctx.fillStyle = '#1e1826'; ctx.fillRect(bx + 2, by, w - 4, h); ctx.fillRect(bx, by + 2, w, h - 4); ctx.fillStyle = '#2c2436'; ctx.fillRect(bx + 2, by, w - 4, 2);
+    ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 4, by + h, 8, 2); ctx.fillRect(x - 2, by + h + 2, 4, 2); ctx.fillStyle = '#1e1826'; ctx.fillRect(x - 2, by + h, 4, 2); // 꼬리
+    ctx.fillStyle = L.c || '#ffe9b0'; ctx.fillText(a, bx + 6, by + 10); ctx.fillStyle = '#a89cb4'; ctx.fillText(b, bx + 6 + wa, by + 10);
+  }
   function drawPrompt() {
+    lootTag();
     const p0 = G.prompt; if (!p0 || p0.hide || mode !== 'play') return;
     const p = TOUCH.on ? Object.assign({}, p0, { t: p0.t.replace(/^F\s+/, '') }) : p0; // v2.26 모바일은 F 없이 (오른쪽 행동 버튼)
     if (!TOUCH.on && /^F\s+/.test(p0.t)) { drawKeyTag(ctx, p.x, p.y + Math.sin(time * 4) * 1.5, 'F', p0.t.replace(/^F\s+/, ''), p.bad ? { border: '#a04040', color: '#ff9090' } : {}); return; } // v2.62 키 캡 모양 통일

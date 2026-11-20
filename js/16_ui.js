@@ -303,6 +303,47 @@
     a.layer('main'); M.forEach((r, y) => { for (let x = 0; x < r.length; x++) if (C[r[x]]) a.rect(x * 2, y * 2, x * 2 + 1, y * 2 + 1, C[r[x]]); });
     a.layer('top'); a.rect(28, 4, 29, 5, '#ffffff'); a.rect(2, 22, 3, 23, '#d8f0ff');
   });
+
+  // v3.15 그레이브 탄환 아이콘 셋 — 좌클릭: 머스킷 탄 / 우클릭(파열탄): 짧고 통통한 산탄 / 각성(등 맡기기): 서로 스쳐 지나가는 두 탄
+  // 45° 대각선 탄환: s = x - y (탄 길이 방향, 오른쪽 위로 갈수록 큼), t = x + y (가로지르는 방향, 작을수록 왼쪽 위 = 빛 받는 쪽)
+  const DIAG = (a, s0, s1, tc, hw, col) => { for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) { const S = x - y, T = x + y; if (S < s0 || S > s1) continue; const h = typeof hw === 'function' ? hw(S) : hw; if (Math.abs(T - tc) > h) continue; const c = col(S, T - tc, h); if (c) a.px(x, y, c); } };
+  ICON32.musket = icon32(['#100c0a', '#241a14', '#4a3020'], a => { // 머스킷 탄: 놋쇠 탄피 + 구리 탄두 · 끝에 반짝임 (반듯한 45°)
+    a.layer('back'); a.glow(16, 16, 12, ['#241a14', '#4a3020', '#7a4a20']);
+    a.layer('main');
+    DIAG(a, -24, -3, 32, 4, (S, d) => S < -21 ? (d < -1 ? '#e0b860' : d > 1 ? '#6a4810' : '#a8802a') : d <= -3 ? '#f8e08a' : d <= -1 ? '#e0b860' : d < 2 ? '#c9a24a' : '#8a6420'); // 놋쇠 탄피 (아래 끝은 테)
+    DIAG(a, -2, 20, 32, S => S < 4 ? 3 : Math.max(0, 3 - Math.floor((S - 4) / 4)), (S, d) => d <= -2 ? '#f8b070' : d <= 0 ? '#d07a38' : '#8a4418'); // 구리 탄두 (끝으로 갈수록 가늘게)
+    a.layer('top'); a.star(26, 5, 2, '#ffe0a0', '#ffffff');
+  });
+  const SHELL45 = (a, s0, s1, sHead, tc, hw, dir) => { // 짧고 통통한 산탄 (45°): dir 1 = 머리가 왼쪽 아래 · 끝이 오른쪽 위 / -1 = 반대
+    DIAG(a, s0, s1, tc, hw, (S, d) => { const k = dir > 0 ? S - s0 : s1 - S, head = k <= sHead, end = k >= (s1 - s0) - 2;
+      if (head) return k < 2 ? (d < -1 ? '#e0b860' : '#7a5414') : d <= -4 ? '#fff0b0' : d <= -2 ? '#f0d27a' : d < 2 ? '#c9a24a' : '#8a6420'; // 놋쇠 머리 (끝 테)
+      if (end) return d <= -2 ? '#c8302a' : '#7a1414';                                                                       // 접어 막은 끝
+      return d <= -4 ? '#ff9a8a' : d <= -2 ? '#e8504a' : d < 2 ? '#c8302a' : '#7a1414'; });
+  };
+  ICON32.shotgun = icon32(['#140a06', '#2e1408', '#5a2a10'], a => { // 파열탄: 짧고 통통한 붉은 산탄 · 아래 놋쇠 머리에 반짝임 (반듯한 45°)
+    a.layer('back'); a.glow(16, 16, 12, ['#2e1408', '#5a2a10', '#8a3a14']);
+    a.layer('main'); SHELL45(a, -16, 12, 9, 32, 6.5, 1);
+    a.layer('top'); a.star(7, 18, 2, '#fff0b0', '#ffffff');
+  });
+  ICON32.duo = icon32(['#081414', '#0e2a28', '#1a4a44'], a => { // v3.15 등 맡기기: 머스킷 탄(오른쪽 위로)과 산탄(왼쪽 아래로)이 서로 빗나가듯 스쳐 지나감 · 스친 자리에 불티
+    a.layer('back'); a.glow(16, 16, 13, ['#0e2a28', '#1a4a44', '#2a6a60']);
+    a.layer('main');
+    DIAG(a, -21, -7, 27, 3, (S, d) => S < -19 ? (d < 0 ? '#e0b860' : '#6a4810') : d <= -2 ? '#f8e08a' : d <= 0 ? '#e0b860' : d < 2 ? '#c9a24a' : '#8a6420'); // 머스킷 놋쇠 탄피
+    DIAG(a, -6, 7, 27, S => S < -3 ? 3 : Math.max(0, 3 - Math.floor((S + 3) / 3)), (S, d) => d <= -2 ? '#f8b070' : d <= 0 ? '#d07a38' : '#8a4418'); // 구리 탄두 (오른쪽 위)
+    SHELL45(a, -3, 21, 7, 38, 4.5, -1);                                                                                     // 산탄 (머리가 오른쪽 위 · 끝이 왼쪽 아래)
+    a.layer('top'); a.star(17, 15, 2, '#ffd080', '#ffffff'); a.px(19, 14, '#fff0c0'); a.px(15, 17, '#fff0c0'); // 스친 자리 불티
+  });
+
+
+
+  ICON32.blink = icon32(['#081020', '#0e2040', '#1a3a70'], a => { // v3.15 회피(점멸) 다시 그림 — 날카로운 초승달 잔상 두 겹이 몸을 감싸듯 비켜 감 · 끝의 별빛
+    a.layer('back'); a.glow(16, 16, 13, ['#0e2040', '#1a3a70', '#2a5aa0']);
+    a.arc(16, 16, 12, 120, 380, 0.3, 3.6, ['#1a3a70', '#2a5aa0', '#4a80c0', '#7ab4f0']);                             // 바깥 초승달 (흐린 잔상)
+    a.layer('main');
+    a.arc(16, 16, 8.5, 150, 400, 0.3, 4.4, ['#2a5aa0', '#7ab4f0', '#cfe6ff', '#ffffff']);                            // 안쪽 초승달 (밝음)
+    for (const [x, y, c] of [[5, 22, '#3a6ab0'], [3, 17, '#2a5aa0'], [7, 27, '#1e3a6a']]) a.rect(x, y, x + 1, y + 1, c);
+    a.layer('top'); a.star(23, 9, 3, '#9fd2ff', '#ffffff'); a.px(28, 4, '#cfe6ff'); a.px(26, 26, '#9fd2ff'); a.px(12, 13, '#cfe6ff');
+  });
   ICON32.soup = icon32(['#180e08', '#2e1a10', '#5a3418'], a => { // v2.10 끓는 수프 그릇
     const M = ['', '', '......w....w....', '.....w....w.....', '......w....w....', '', '..LLLLLLLLLLLL..', '.LssgssSsgsssL..', '.BBBBBBBBBBBBBB.', '..BBbBBBBBBbBB..', '..BBBBBBBBBBBB..', '...DBBBBBBBBD...', '....DDDDDDDD....'];
     const C = { w: '#e8ecf0', L: '#f0e0b8', s: '#e8903a', S: '#ffc060', g: '#6aa040', B: '#b0683a', b: '#f0e0b8', D: '#6a3a20' };

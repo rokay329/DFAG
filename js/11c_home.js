@@ -1552,11 +1552,25 @@
     R = R.map(r => r.join(''));
     return crouch ? ['.'.repeat(R[0].length)].concat(R.slice(0, 10), R.slice(11)) : R; // 발은 그대로, 몸만 1칸 내려앉음
   }
-  const DANGUN_LINES = ['좋은 의뢰가 들어왔다냥', '수수료는 일 끝나고 받겠다냥', '그 의뢰, 냄새가 좀 난다냥', '보수도 위험도 두둑하다냥', '게시판 의뢰는 다 내 손을 거쳤다냥', '소문 하나에 은화 한 닢이다냥', '누구한테 들었는지는 묻지 말라냥'];
-  const DANGUN_GREET = ['어이, 살아 돌아왔냥', '일거리 찾으러 왔냥?'];
+  // v3.16 단군 대사 정리 (인사 · 혼잣말 · F 대화)
+  const DANGUN_LINES = ['좋은 의뢰가 들어왔다냥.', '수수료는 일 끝나고 받겠다냥.', '게시판 의뢰는 다 내 손을 거쳤다냥.', '누구한테 들었는지는 묻지 말라냥.'];
+  const DANGUN_GREET = ['어이, 살아 돌아왔냥.', '일거리 찾으러 왔냥?', '눈 떴냥? 일감이 밀렸다냥.'];
+  const DANGUN_TALKS = ['이번 의뢰인 이름? 그건 나도 모른다냥. 계약서가 올 때부터 찢겨 있었다냥. 보수만 확실하면 이름은 상관없다냥.',
+    '바닥에 꽂힌 단도는 건드리지 말라냥. 떼인 수수료 대신 받아 둔 거다냥. 주인이 찾으러 올 때까진 내 거다냥.',
+    '역마차가 끊긴 지 오래다냥. 그래도 소문은 마차보다 빠르다냥. 길은 끊겨도 내 장사는 안 끊긴다냥.',
+    '넌 일은 깔끔한데 말이 없어서 좋다냥. 말 많은 놈은 꼭 수수료를 깎으려 든다냥.',
+    '왕도 쪽 의뢰는 다들 피한다냥. 돌아온 놈이 없으니 보수를 받아 간 놈도 없다냥. …그러니 네가 첫 번째가 되라냥.'];
   SCENES.ranger.npc = { x: 238, y: 78, dag: [231, 80] };
   // v3.11 하비: 그레이브의 라이벌이자 마지막 남은 동료 (흰 고양이 · 허리 뒤에 일자로 맨 더블배럴 샷건). 대사는 나중에
   const HABI = {"f":{"base":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...",".KKKKKkaaauwwwuwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK","........kCCCkCCCkkWWkSSSK",".........kFFk.kFFkkkKKKK.",".........kkkk.kkkk......."],"baseB":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...",".KKKKKkaaanwwwnwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK","........kCCCkCCCkkWWkSSSK",".........kFFk.kFFkkkKKKK.",".........kkkk.kkkk......."],"idle":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...",".KKKKKkaaauwwwuwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK",".........kFFk.kFFkkkSSSSK",".........kkkk.kkkkKKKKKK."],"idleB":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...",".KKKKKkaaanwwwnwAAkkHk...","KBbbbbbkaawwNwwAAkKkHkKK.","KBBBBBBBkk11SSSkkBskHkssK","KBbbbbbk23CCBCCCckskHkssK",".KKKKKKkAk23xCckakkWWkssK",".........kFFk.kFFkkkSSSSK",".........kkkk.kkkkKKKKKK."]},"p":{"1":"#b9b9c3","2":"#a9a9b4","3":"#8f8f9b","A":"#d8d4cc","B":"#5a5a62","C":"#c9c9d1","F":"#8a8a96","H":"#fbf9f5","K":"#0b0a0e","N":"#e8909a","S":"#4a3020","W":"#dcd8d0","a":"#fbf9f5","b":"#8d9097","c":"#dcdce2","k":"#0b0a0e","n":"#16120e","p":"#eaa4a8","s":"#6b4a2a","u":"#cfa628","w":"#fbf9f5","x":"#5e5e6a"}};
+  // v3.16 하비 대사: 그레이브에게 빚이 있는 현상금 사냥꾼 (라이벌이라는 말은 대사에 넣지 않음)
+  const HABI_GREET = ['일어났나, 그레이브.', '삽은 내려놔라. 오늘은 납과 화약이 필요한 날이다.', '…또 그 표정이군.'];
+  const HABI_LINES = ['묘지는 고요해서 좋군.', '빚은 잊지 않는다.', '두 발이면 충분하다.'];
+  const HABI_TALKS = ['빚진 건 기억한다. 언제 갚을지는 내가 정한다.',
+    '우린 그 녀석들의 머릿수로 먹고살지. 요즘은 영 수지타산이 맞지 않아. 아니… 살기 좋아졌다고 보는 게 맞겠지.',
+    '잿빛 왕에게 걸린 현상금은 없다. 돈이 안 되는 일엔 안 끼는 게 원칙이다. …원칙은 빚 앞에선 접어 두지.',
+    '내 이름은 비석에 새기지 마라. 빚진 채로 묻히긴 싫으니까.'];
+  const TK = { habi: 0, dangun: 0, on: null }; // v3.16 시작 장소 NPC F 대화 (말 걸 때마다 다음 대사)
   SCENES.gunner.npc2 = { x: 294, y: 122 }; // 칸 좌표 (발밑) — 파낸 무덤 흙더미 오른쪽, 마른 나무 아래 // 칸 좌표 (발밑) — 바 앞에 걸터앉은 자리
 
   // ================================================================ 게임 연결부
@@ -1645,6 +1659,7 @@
       ctx.fillStyle = 'rgba(10,6,4,.5)'; ctx.fillRect((p.x - 10) & ~1, p.y, 20, 2);
       ctx.drawImage(c, x, y);
     } }); } }
+    { const hp = habiPos(); if (hp && TK.on !== 'habi') { const P = G.player, near = P && !P.dead && Math.hypot(P.x - hp.x, P.y - hp.y) < 80, say = npcTalk('habi', near, HABI_LINES, HABI_GREET); if (say) list.push({ y: hp.y, d: () => drawBubble(say.line, hp.x, hp.y - 26, 0) }); } } // v3.16 하비 인사 · 혼잣말
     const S = SCENES[R.cls], N = S && S.npc; if (!N) return;
     const p = toW(R.cls, N.x, N.y), dp = toW(R.cls, N.dag[0], N.dag[1]);
     list.push({ y: dp.y, d: () => { const c = npcArt('dagger', () => gCanvas(gOutline(fromRows(DAGGER)), DAGGER_PAL)); ctx.fillStyle = 'rgba(10,6,4,.55)'; ctx.fillRect((dp.x - 2) & ~1, (dp.y) & ~1, 6, 2); ctx.drawImage(c, (dp.x - c.width / 2) & ~1, (dp.y - c.height + 4) & ~1); } });
@@ -1654,7 +1669,7 @@
       const x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + 2) & ~1;
       ctx.fillStyle = 'rgba(10,6,4,.5)'; for (let i = 4; i < c.width - 4; i += 2) if ((i >> 1) & 1 || (i > 8 && i < c.width - 10)) ctx.fillRect(x + i, y + c.height - 2, 2, 2);
       ctx.drawImage(c, x, y);
-      const P = G.player, near = P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < 80, say = npcTalk('dangun', near, DANGUN_LINES, DANGUN_GREET);
+      const P = G.player, near = P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < 80, say = TK.on === 'dangun' ? null : npcTalk('dangun', near, DANGUN_LINES, DANGUN_GREET);
       if (say) drawBubble(say.line, p.x, y + 2, 0);
     } });
   }
@@ -1701,8 +1716,18 @@
     const a = SEQ.title[0], b = SEQ.title[1]; // 다시 떠날 때는 대사 없이 이름만
     if (h.t >= a && h.t < b) drawTitle(SCENES[G.cls].name, h.t - a, b - h.t < 0.2, SCENES[G.cls].sub);
   }
+  function habiPos() { const R = G && G.dun && G.dun.cur, N = R && R.type === 'home' && SCENES[R.cls] && SCENES[R.cls].npc2; return N ? toW(R.cls, N.x, N.y) : null; }
+  function dangunPos() { const R = G && G.dun && G.dun.cur, N = R && R.type === 'home' && SCENES[R.cls] && SCENES[R.cls].npc; return N ? toW(R.cls, N.x, N.y) : null; }
+  const npcPos = who => who === 'habi' ? habiPos() : who === 'dangun' ? dangunPos() : null;
+  function spk(who) { const p = npcPos(who); if (!p) return null; return { x: p.x, y: who === 'dangun' ? p.y - DANGUN.length * 2 + 4 : p.y - 26 }; } // 말풍선 꼬리 끝 = 머리 위
+  function talkNpc(who) { // v3.16 F 대화: 멈춰 서서 한 문장씩
+    const LS = who === 'habi' ? HABI_TALKS : DANGUN_TALKS, L = LS[TK[who]++ % LS.length]; TK.on = who; if (NPC_TALK[who]) NPC_TALK[who].until = 0;
+    TRUTH.talk(L.split(/(?<=[.!?])\s+/).filter(Boolean).map(l => [who, l]), () => { TK.on = null; if (NPC_TALK[who]) { NPC_TALK[who].next = time + rand(6, 9); NPC_TALK[who].near = true; } });
+  }
   function interact() { // 아래 문 앞에서 F 원정 떠나기
     const R = G.dun && G.dun.cur, P = G.player; if (!R || R.type !== 'home' || !R.door || !P) return null;
+    if (R.cls === 'ranger' && typeof BOUNTY !== 'undefined') { const b = toW('ranger', 170, 0); if (Math.abs(P.x - b.x) < 34 && P.y < A.y0 + 46) return { k: 'bounty', x: b.x, y: A.y0 + 4, t: 'F 의뢰서 보기' }; } // v3.16 찢긴 의뢰 게시판 → 단군의 난입자 의뢰서
+    if (!TK.on) for (const who of ['habi', 'dangun']) { const q = npcPos(who); if (q && Math.hypot(P.x - q.x, P.y - q.y) < 40) return { k: 'homeTalk', who, x: q.x, y: q.y + 16, t: 'F 대화하기' }; } // v3.16 하비 · 단군
     if (Math.abs(P.x - R.door.x) > 26 || P.y < R.door.y - 40) return null;
     return { k: 'homeExit', o: R.door, x: R.door.x, y: R.door.y - 46, t: 'F 원정 떠나기' };
   }
@@ -1721,7 +1746,7 @@
   const name = cls => SCENES[cls] ? SCENES[cls].name : '';
   const line = cls => INFO[cls] ? INFO[cls].line : '…';
   return {
-    enter, place, update, busy, screen, drawTitle, interact, leave, paint, lights, ents, wmPath, name, line,
+    enter, place, update, busy, screen, drawTitle, interact, leave, talkNpc, spk, paint, lights, ents, wmPath, name, line,
     set again(v) { again = !!v; }, get again() { return again; },
   };
   })();

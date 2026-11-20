@@ -884,7 +884,7 @@ WF.knight = (H) => {
       const cy = 5; stock(put, cy, 's', 'S'); for (let x = 7; x < 28; x++) put(x, cy - 1, x % 7 === 0 ? 'B' : 'b');
       for (const [x, y] of [[8, cy - 2], [9, cy - 3], [10, cy - 3], [11, cy - 4], [12, cy - 4], [13, cy - 3]]) put(x, y, 'c'); put(14, cy - 3, 'e'); put(14, cy - 4, 'y');
     }));
-    add('legend', '장의사의 머스킷', '관 모양 개머리판에 은 십자 못과 은 해골, 초록 혼불 룬, 낫 모양 총검이 달린 총입니다.', '그로기 상태인 적에게 마력응축탄의 피해가 2배로 들어갑니다. 처치한 큰 적은 관이 되어 굴러가며 피해를 줍니다.', cw(42, 13, 9, 6, { s: '#2a1e22', S: '#140e10', n: '#c8ccd4', b: '#2e322e', B: '#c8c0a8', i: '#ece8e0', I: '#9a948a', g: '#7aff9a', G: '#2a9a4a', k: '#0b0a0e', m: '#a8acb4', w: '#eef2f6' }, put => {
+    add('legend', '장의사의 머스킷', '관 모양 개머리판에 은 십자 못과 은 해골, 초록 혼불 룬, 낫 모양 총검이 달린 총입니다.', '등 맡기기에서 하비가 쏘는 산탄의 피해가 150%로 증가합니다. 처치한 큰 적은 관이 되어 굴러가며 피해를 줍니다.', cw(42, 13, 9, 6, { s: '#2a1e22', S: '#140e10', n: '#c8ccd4', b: '#2e322e', B: '#c8c0a8', i: '#ece8e0', I: '#9a948a', g: '#7aff9a', G: '#2a9a4a', k: '#0b0a0e', m: '#a8acb4', w: '#eef2f6' }, put => {
       const cy = 6;
       for (let x = 0; x < 9; x++) { const hw = x < 1 ? 1 : x < 3 ? 2 : x < 6 ? 3 : 2; for (let y = cy - hw; y <= cy + hw; y++) put(x, y, y === cy - hw || y === cy + hw || x === 0 ? 'S' : 's'); }
       put(4, cy - 1, 'n'); put(4, cy, 'n'); put(4, cy + 1, 'n'); put(3, cy, 'n'); put(5, cy, 'n'); put(1, cy - 2, 'n'); put(1, cy + 2, 'n'); put(7, cy - 2, 'n'); put(7, cy + 2, 'n');

@@ -329,6 +329,7 @@
   .choice.dish { width: 172px; display: flex; flex-direction: column; }
   .choice.dish .dishPic { display: flex; align-items: center; justify-content: center; height: 64px; margin: -2px -2px 6px; background-size: 160px 64px; background-position: center; background-repeat: no-repeat; image-rendering: pixelated; border: 1px solid #000; box-shadow: inset 0 0 0 1px #3a2f40; }
   .choice.dish .dishPic img { image-rendering: pixelated; display: block; }
+  .choice.dish .dishPic canvas { width: 56px; height: 56px; margin: 0; image-rendering: pixelated; display: block; } /* v3.12 메뉴 화면 요리 애니메이션 */
   .choice.dish .chef { font: 9px 'Galmuri7'; color: var(--quiet); margin-bottom: 2px; }
   .choice.dish .key { align-self: flex-start; margin-top: auto; }
   .choice.dish br { display: none; }
@@ -897,5 +898,8 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/22_house4.js"></script>
 <script src="js/23_sr4.js"></script>
 <script src="js/24_wall4.js"></script>
+<script src="js/25_habi_ult.js"></script>
+<script src="js/26_casings.js"></script>
+<script src="js/27_bounty.js"></script>
 </body>
 </html>
