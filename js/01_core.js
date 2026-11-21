@@ -1635,3 +1635,59 @@
     spriteCache[key] = c;
     return c;
   }
+
+  // ================================================================ v3.19 외곽선 기준: 구조물 안에 들어간 작은 물건은 검은 외곽선 대신 제 색을 한 단계 어둡게 (셀아웃)
+  // get(x,y) → '#rrggbb' | null(빈칸) · set(x,y,hex). 사각형 [x0,x1]×[y0,y1] 안의 검은 칸만 바꾼다.
+  //  · 빈칸이나 사각형 밖과 맞닿은 검은 칸 = 덩어리 바깥 외곽선 → 그대로
+  //  · 물건 색으로 둘러싸인 작은 검은 점·구멍(눈구멍 · 열쇠 구멍) → 그대로
+  //  · 나머지: 옆에 물건 색이 있으면 그 색 ×0.62, 없으면 옆 배경 색 (keepLine이면 물건과 닿은 칸만 바꾸고 구조물 선은 남김)
+  function deOutlineCells(get, set, x0, y0, x1, y1, o = {}) {
+    const rgb = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+    const hx = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+    const kMax = o.kMax != null ? o.kMax : 0x1a, isK = c => !!c && Math.max(...rgb(c)) <= kMax;
+    const f = o.f || 0.62, dk = c => { const [r, g, b] = rgb(c); return '#' + hx(r * f) + hx(g * f) + hx(b * f); };
+    const inR = (x, y) => x >= x0 && x <= x1 && y >= y0 && y <= y1, key = (x, y) => x + ',' + y, N4 = [[0, -1], [-1, 0], [1, 0], [0, 1]];
+    // 배경 색: 주어지지 않으면 사각형 안에서 가장 흔한 색부터 몫(bgShare)이 찰 때까지
+    let bg = o.bg ? new Set(o.bg) : null;
+    if (!bg) { const cnt = new Map(); let tot = 0; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const c = get(x, y); if (!c || isK(c)) continue; cnt.set(c, (cnt.get(c) || 0) + 1); tot++; }
+      bg = new Set(); let acc = 0; for (const [c, n] of [...cnt].sort((a, b) => b[1] - a[1])) { if (acc >= tot * (o.bgShare || 0.45)) break; bg.add(c); acc += n; } }
+    const isBg = c => bg.has(c) || (o.isBg && o.isBg(c));
+    const pend = new Set();
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { if (!isK(get(x, y))) continue;
+      let edge = false; for (const [dx, dy] of N4) { const X = x + dx, Y = y + dy; if (!inR(X, Y) || !get(X, Y)) { edge = true; break; } }
+      if (!edge || o.noEdge) pend.add(key(x, y)); }
+    // 작은 구멍 (물건 색으로만 둘러싸인 검은 덩어리, hole칸 이하)은 남김
+    const seen = new Set(), hole = o.hole != null ? o.hole : 4;
+    for (const k0 of pend) { if (seen.has(k0)) continue; const comp = [k0], q = [k0]; seen.add(k0); let enclosed = true;
+      while (q.length) { const [x, y] = q.pop().split(',').map(Number); for (const [dx, dy] of N4) { const X = x + dx, Y = y + dy, k = key(X, Y), c = get(X, Y);
+        if (pend.has(k)) { if (!seen.has(k)) { seen.add(k); comp.push(k); q.push(k); } } else if (!c || isK(c) || isBg(c)) enclosed = false; } }
+      if (enclosed && comp.length <= hole) comp.forEach(k => pend.delete(k)); }
+    const base = new Map(); // 원래 물건 색 (한 번만 어둡게)
+    for (let pass = 0; pass < 8 && pend.size; pass++) {
+      const next = [];
+      for (const k of pend) { const [x, y] = k.split(',').map(Number), items = new Map(); let bgc = null, any = null;
+        for (const [dx, dy] of N4) { const X = x + dx, Y = y + dy, kk = key(X, Y); if (pend.has(kk) || !inR(X, Y)) continue; const c = get(X, Y); if (!c || isK(c)) continue;
+          if (base.has(kk)) { any = any || c; continue; } if (isBg(c)) { bgc = bgc || c; continue; } items.set(c, (items.get(c) || 0) + 1); }
+        if (items.size && o.sepOnly && bgc) next.push([k, x, y, bgc, true]); // 어두운 바닥 위: 바닥과 닿은 테두리는 바닥색 (물건끼리 닿은 곳만 어둡게)
+        else if (items.size) { const c = [...items].sort((a, b) => b[1] - a[1])[0][0]; next.push([k, x, y, dk(c), true]); }
+        else if (bgc || any) next.push([k, x, y, bgc || any, false]); }
+      if (o.keepLine) for (let i = next.length - 1; i >= 0; i--) if (!next[i][4]) next.splice(i, 1); // 물건과 닿지 않은 검은 선(선반 · 판 테두리)은 그대로
+      if (!next.length) break;
+      for (const [k, x, y, c, it] of next) { set(x, y, c); pend.delete(k); if (it) base.set(k, 1); }
+    }
+    if (o.fill) for (const k of pend) { const [x, y] = k.split(',').map(Number); set(x, y, o.fill); }
+  }
+  // 캔버스용 (1칸 = 1px)
+  function deOutlineCtx(g, x0, y0, x1, y1, o = {}) {
+    const W = x1 - x0 + 1, H = y1 - y0 + 1, im = g.getImageData(x0, y0, W, H), d = im.data, hx = n => n.toString(16).padStart(2, '0');
+    const get = (x, y) => { if (x < x0 || y < y0 || x > x1 || y > y1) return null; const i = ((y - y0) * W + (x - x0)) * 4; return d[i + 3] < 128 ? null : '#' + hx(d[i]) + hx(d[i + 1]) + hx(d[i + 2]); };
+    const set = (x, y, c) => { const i = ((y - y0) * W + (x - x0)) * 4; d[i] = parseInt(c.slice(1, 3), 16); d[i + 1] = parseInt(c.slice(3, 5), 16); d[i + 2] = parseInt(c.slice(5, 7), 16); d[i + 3] = 255; };
+    deOutlineCells(get, set, x0, y0, x1, y1, Object.assign({ noEdge: true }, o)); g.putImageData(im, x0, y0);
+  }
+  // 글자 칸 그림용 (g = 글자 배열의 배열, pal에 새 색 글자를 더함)
+  function deOutlineGrid(g, pal, x0, y0, x1, y1, o = {}) {
+    const inv = new Map(Object.entries(pal).map(([k, v]) => [String(v).toLowerCase(), k]));
+    const get = (x, y) => { const ch = g[y] && g[y][x]; if (!ch || ch === '.') return null; const c = pal[ch]; return c ? String(c).toLowerCase() : null; };
+    const set = (x, y, c) => { let ch = inv.get(c); if (!ch) { let n = 0x100; while (pal[String.fromCharCode(n)]) n++; ch = String.fromCharCode(n); pal[ch] = c; inv.set(c, ch); } g[y][x] = ch; };
+    deOutlineCells(get, set, x0, y0, x1, y1, o); return g;
+  }

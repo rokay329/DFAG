@@ -788,7 +788,7 @@
   // ============================================================ 3. 세리안 · 외딴 관측탑 (배경 유지, 시설물 다시 그림)
   {
     const base = SCENES.mage.draw;
-    SCENES.mage.line = '…하늘이 아직 저물지 않았네요.';
+    SCENES.mage.line = '…별자리 하나가 끝내 이어지지 않네요.';
     SCENES.mage.labels = [['그을린 책장', 112, 50], ['가는 창', 192, 22], ['보면대 · 읽던 책', 160, 64], ['혼천의', 262, 50], ['별자리 도표 책상', 256, 94], ['수식 칠판', 107, 58], ['바닥 별자리 상감', 192, 158], ['계단 문', 192, 192]];
     SCENES.mage.draw = function (P) {
       // 배경(둥근 벽·책장·창·바닥·상감)만 기존 그대로: 기존 draw를 돌린 뒤 시설물 자리를 바닥으로 다시 덮는 대신, 시설물 없는 버전을 그린다
@@ -1872,22 +1872,26 @@
       // 창틀
       P.rect(WX - 3, WY - 3, WW + 6, WH + 5, K); P.rect(WX - 2, WY - 2, WW + 4, WH + 3, W.m); P.rect(WX - 2, WY - 2, WW + 4, 1, W.L); P.rect(WX - 2, WY - 2, 1, WH + 3, W.l); P.rect(WX + WW + 1, WY - 1, 1, WH + 2, W.D);
       // 하늘
-      const SKY = [[0, '#f6d49a'], [3, '#f0b070'], [6, '#e88858'], [9, '#c86058'], [12, '#8a4058']];
+      const NT = window.NIGHT !== false; // v3.19 해가 뜨지 않는 세계: 밤하늘 · 달 · 별 (false면 예전 노을)
+      const SKY = NT ? [[0, '#141430'], [3, '#1a1c3c'], [6, '#222448'], [9, '#2c2e56'], [12, '#3a3a64']] : [[0, '#f6d49a'], [3, '#f0b070'], [6, '#e88858'], [9, '#c86058'], [12, '#8a4058']];
       for (let y = 0; y < WH; y++) for (let x = 0; x < WW; x++) { let i = 0; while (i < SKY.length - 1 && y >= SKY[i + 1][0]) i++; let c = SKY[i][1]; if (i < SKY.length - 1 && y === SKY[i + 1][0] - 1 && ((x + y) & 1)) c = SKY[i + 1][1]; if (i > 0 && y === SKY[i][0] && ((x + y) & 1) === 0 && (x & 2)) c = SKY[i - 1][1]; put(WX + x, WY + y, c); }
       // 구름 줄 · 해 · 먼 언덕 · 가까운 언덕 + 마른 나무
-      for (let x = 2; x < 10; x++) put(WX + x, WY + 2, '#fbe4b8'); for (let x = 14; x < 21; x++) if (x !== 17) put(WX + x, WY + 6, '#f4a878');
-      for (let y = -3; y <= 0; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 9) put(WX + 7 + x, WY + 10 + y, x * x + y * y <= 3 ? '#fff4d0' : '#ffd890');
+      if (NT) { for (let x = 1; x < 9; x++) if (x !== 5) put(WX + x, WY + 8, '#30325a'); for (let x = 15; x < 22; x++) put(WX + x, WY + 9, '#30325a'); // 옅은 구름 띠
+        for (let y = -2; y <= 2; y++) for (let x = -2; x <= 2; x++) { const d = x * x + y * y, cut = (x - 1) * (x - 1) + (y + 1) * (y + 1); if (d <= 5 && cut > 3) put(WX + 6 + x, WY + 3 + y, d <= 1 ? '#f4f0dc' : '#d8d4c0'); } // 초승달
+        for (const [x, y, c] of [[2, 1, '#c8ccf0'], [10, 3, '#9aa0d0'], [15, 2, '#e8ecff'], [20, 4, '#9aa0d0'], [3, 6, '#8a90c0'], [21, 7, '#c8ccf0'], [9, 9, '#8a90c0']]) put(WX + x, WY + y, c); } // 별
+      else { for (let x = 2; x < 10; x++) put(WX + x, WY + 2, '#fbe4b8'); for (let x = 14; x < 21; x++) if (x !== 17) put(WX + x, WY + 6, '#f4a878');
+      for (let y = -3; y <= 0; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 9) put(WX + 7 + x, WY + 10 + y, x * x + y * y <= 3 ? '#fff4d0' : '#ffd890'); }
       for (let x = 0; x < WW; x++) { const fh = 10 + Math.round(1.5 + Math.sin(x / 3.5) * 1.2), nh = 11 + Math.round(1.6 + Math.sin(x / 2.6 + 2) * 1.4 - (x > 14 ? 1 : 0));
-        for (let y = fh; y < WH; y++) put(WX + x, WY + y, '#7a3a50'); for (let y = nh; y < WH; y++) put(WX + x, WY + y, '#3e2234'); }
-      P.spr(['x.x', '.x.', 'xx.', '.x.', '.x.'], { x: '#3e2234' }, WX + 18, WY + 6, false);
+        for (let y = fh; y < WH; y++) put(WX + x, WY + y, NT ? '#24203c' : '#7a3a50'); for (let y = nh; y < WH; y++) put(WX + x, WY + y, NT ? '#141220' : '#3e2234'); }
+      P.spr(['x.x', '.x.', 'xx.', '.x.', '.x.'], { x: NT ? '#141220' : '#3e2234' }, WX + 18, WY + 6, false);
       // 유리 때: 모서리마다 뿌연 얼룩
-      for (let y = 0; y < WH; y++) for (let x = 0; x < WW; x++) { const ex = Math.min(x, WW - 1 - x, Math.abs(x - 11.5) - 1), ey = Math.min(y, WH - 1 - y, Math.abs(y - 6) - 0.5), e = Math.min(ex, ey); if (x >= 13 && y < 6) continue; if (e < 1.5 && bay(x, y) < 0.35) { const [r, g, b] = rgbOf(SKY[0][1]); put(WX + x, WY + y, (y > 9) ? '#5a3040' : toHex(r * 0.82, g * 0.7, b * 0.6)); } }
+      for (let y = 0; y < WH; y++) for (let x = 0; x < WW; x++) { const ex = Math.min(x, WW - 1 - x, Math.abs(x - 11.5) - 1), ey = Math.min(y, WH - 1 - y, Math.abs(y - 6) - 0.5), e = Math.min(ex, ey); if (x >= 13 && y < 6) continue; if (e < 1.5 && bay(x, y) < 0.35) { const [r, g, b] = rgbOf(SKY[0][1]); put(WX + x, WY + y, NT ? ((y > 9) ? '#1c1a2c' : '#2c2e52') : (y > 9) ? '#5a3040' : toHex(r * 0.82, g * 0.7, b * 0.6)); } }
       // 깨진 칸 (오른쪽 위): 맑게 뚫리고 가장자리에 날카로운 유리 조각만 남음
-      P.spr(['bbbbb.....', 'bbb.......', 'bb........', 'b.........', 'bb........', 'b.........'], { b: '#fff0d0' }, WX + 13, WY, false);
-      P.spr(['....bb', '.....b', '......', '......', '.....b', '....bb'], { b: '#fff0d0' }, WX + 18, WY, false);
-      put(WX + 14, WY + 1, '#c08060'); put(WX + 22, WY + 5, '#c08060');
+      P.spr(['bbbbb.....', 'bbb.......', 'bb........', 'b.........', 'bb........', 'b.........'], { b: NT ? '#4c5284' : '#fff0d0' }, WX + 13, WY, false);
+      P.spr(['....bb', '.....b', '......', '......', '.....b', '....bb'], { b: NT ? '#4c5284' : '#fff0d0' }, WX + 18, WY, false);
+      put(WX + 14, WY + 1, NT ? '#5a6088' : '#c08060'); put(WX + 22, WY + 5, NT ? '#5a6088' : '#c08060');
       // 창살 (십자)
-      P.rect(WX + 11, WY, 2, WH, W.D); put(WX + 11, WY, W.l); for (let y = 1; y < WH; y++) put(WX + 11, WY + y, W.m); P.rect(WX, WY + 6, WW, 1, W.D); P.rect(WX, WY + 6, 11, 1, W.m); P.rect(WX + 13, WY + 6, 11, 1, W.m); P.rect(WX, WY + 7, WW, 1, '#5a2a30');
+      P.rect(WX + 11, WY, 2, WH, W.D); put(WX + 11, WY, W.l); for (let y = 1; y < WH; y++) put(WX + 11, WY + y, W.m); P.rect(WX, WY + 6, WW, 1, W.D); P.rect(WX, WY + 6, 11, 1, W.m); P.rect(WX + 13, WY + 6, 11, 1, W.m); P.rect(WX, WY + 7, WW, 1, NT ? '#24223a' : '#5a2a30');
       // 오른쪽: 떨어져 나간 덧문 — 경첩에 걸린 판자 조각만
       P.rect(WX + WW + 2, WY + 1, 2, 2, IR.m); put(WX + WW + 2, WY + 1, IR.h); // 판자 조각은 바람에 흔들리므로 움직임(fx)에서 그림
       // 창턱 (앞으로 튀어나옴) + 마른 화분
@@ -2054,7 +2058,7 @@
       for (let i = 0; i < 7; i++) put(tx - 3 + i, ty + 4, '#5e4430'); put(tx + 3, ty - 1, '#5e4430');
       P.spr(['.h.', 'hHh', '.g.', '.s.', '.S.'], { h: '#2a1e14', H: '#5a4230', g: '#c8a040', s: '#d8dce4', S: '#8a8e98' }, tx - 1, ty - 6);
       // 맥주잔 (거품 마름) · 동전 셋
-      P.spr(['.kkkk..', 'keEEekh', 'kmMMmkh', 'kmMMmk.', '.kkkk..'], { k: K, e: '#bfb090', E: '#d8ccb0', m: '#6e5038', M: '#8e6e50', h: '#4e3626' }, tx + 5, ty - 4, false);
+      P.spr(['.kkkk..', 'keEEekh', 'kmMMmkh', 'kmMMmk.', '.kkkk..'], { k: window.DEOUT !== false ? '#3e2a1c' : K, e: '#bfb090', E: '#d8ccb0', m: '#6e5038', M: '#8e6e50', h: '#4e3626' }, tx + 5, ty - 4, false); // v3.19 외곽선 기준: 탁자 위 잔은 검은 선 대신 어두운 나무색 테
       for (const [x, y] of [[tx - 9, ty], [tx - 7, ty + 1], [tx - 8, ty - 2]]) { put(x, y, '#e0b040'); put(x + 1, y, '#9a7028'); } }
     // 왼쪽 의자 · 쓰러진 의자
     stool(171, 118);
@@ -2083,7 +2087,7 @@
     { const D = P.g.getImageData(0, 0, GW, GH).data;
       const lighten = (x, y, tint, k) => { const i = (y * GW + x) * 4, r = D[i], g = D[i + 1], b = D[i + 2]; put(x, y, toHex(r + (tint[0] - r) * k + 16 * k, g + (tint[1] - g) * k + 16 * k, b + (tint[2] - b) * k + 16 * k)); };
       const glowAt = (x, y, lv, tint) => { if (x < 0 || y < 0 || x >= GW || y >= GH) return; if (lv < bay(x, y) * 0.9) return; lighten(x, y, tint, lv > 0.72 ? 0.5 : lv > 0.45 ? 0.34 : 0.2); };
-      const SUN = rgbOf('#f0a070'), SUN2 = rgbOf('#f8c088'), LAMP = rgbOf('#f0b050');
+      const NT = window.NIGHT !== false, SUN = rgbOf(NT ? '#7080b0' : '#f0a070'), SUN2 = rgbOf(NT ? '#8a98c8' : '#f8c088'), LAMP = rgbOf('#f0b050'); // v3.19 밤: 창빛은 푸른 달빛
       const skip = (x, y) => x >= WX - 3 && x < WX + WW + 3 && y >= WY - 3 && y < WY + WH + 2; // 창 안쪽은 빼기
       // 창 둘레 벽 후광
       for (let y = top; y < RY0 - 2; y++) for (let x = WX - 20; x <= WX + WW + 20; x++) { if (skip(x, y)) continue; const d = Math.hypot((x - WX - WW / 2) / 26, (y - WY - WH / 2) / 15); if (d < 1) glowAt(x, y, (1 - d) * 0.6, SUN); }
@@ -2109,7 +2113,7 @@
     // 바람: 약 8.7초마다 1.4초 동안 (가운데가 가장 셈)
     const gt = t % 8.7, gust = gt < 1.4 ? Math.sin(Math.PI * gt / 1.4) : 0;
     // 창빛 속 먼지: 빛 자리 안에서만 아주 천천히 떠다님 (빛 가장자리로 가며 사라짐)
-    { const WX = 196, WW = 24, y0 = RY0 + 2, y1 = RY0 + 34;
+    if (false) { const WX = 196, WW = 24, y0 = RY0 + 2, y1 = RY0 + 34; // v3.19 뺌: 창빛 속 먼지 (사용자 요청)
       for (let i = 0; i < 8; i++) { const sp = 0.012 + h2(i, 1, 701) * 0.01, ph = (t * sp * (1 + gust * 0.8) + h2(i, 2, 701)) % 1, yy = y0 + ph * (y1 - y0), tt = (yy - y0) / (y1 - y0);
         const xl = WX + 1 - tt * 20, xr = WX + WW - 1 - tt * 15, u = h2(i, 3, 701), xx = xl + (xr - xl) * (0.1 + u * 0.8) + Math.sin(t * 0.7 + i * 2.1) * 1.6 + gust * tt * 2;
         const a = Math.min(1, Math.min(ph, 1 - ph) * 6) * (0.55 + 0.35 * Math.sin(t * 1.3 + i)); if (a > 0.05) cell(Math.round(xx), Math.round(yy), i % 3 ? '#ffe2b4' : '#fff4d8', a); } }
@@ -2139,7 +2143,7 @@
   // 불빛 깜빡임: 등불 · 초 (빛 목록의 fl 값마다 다른 박자)
   const homeFlick = (seed, t) => seed >= 10 ? 0.9 + Math.sin(t * 0.55 + seed) * 0.05 + Math.sin(t * 0.23 + seed * 2) * 0.05 : 0.9 + Math.sin(t * 11 + seed * 5) * 0.04 + Math.sin(t * 6.3 + seed * 2) * 0.04 + (h2(Math.floor(t * 9 + seed * 3), seed, 703) - 0.5) * 0.08; // v3.18 fl 10 이상: 색유리 빛이 천천히 흐려졌다 돌아옴
   // 빛 목록 (지금 것 + 등불 · 초 깜빡임 fl + 초 두 개 작은 빛)
-  SCENES.ranger.lights = [{ x: 208, y: 52, r: 48, a: 0.48, c: [240, 150, 100], sy: 0.8 }, { x: 140, y: 44, r: 32, a: 0.4, c: [240, 170, 90], fl: 1 }, { x: 192, y: 190, r: 30, a: 0.18, c: [120, 120, 160] }, { x: 281, y: 57, r: 12, a: 0.3, c: [250, 180, 90], fl: 2 }, { x: 142, y: 54, r: 10, a: 0.26, c: [250, 180, 90], fl: 3 }];
+  SCENES.ranger.lights = [{ x: 208, y: 52, r: 48, a: 0.48, c: [240, 150, 100], sy: 0.8, win: 1 }, { x: 140, y: 44, r: 32, a: 0.4, c: [240, 170, 90], fl: 1 }, { x: 192, y: 190, r: 30, a: 0.18, c: [120, 120, 160] }, { x: 281, y: 57, r: 12, a: 0.3, c: [250, 180, 90], fl: 2 }, { x: 142, y: 54, r: 10, a: 0.26, c: [250, 180, 90], fl: 3 }];
   // ---------------------------------------------------------------- 3. 외딴 관측탑 디테일: 창 빛 웅덩이 · 접지 그림자 · 흩어진 양피지 · 잉크 자국 · 분필 가루 · 벽 밑 이끼 · 바닥 금
   {
     const base = SCENES.mage.draw;
@@ -2291,12 +2295,13 @@
           if (Math.abs(x + 0.5 - ecx) < 10) for (let y = yt; y < yb; y++) { const ly = y - yt, row = Math.floor(ly / 3), lx = (x + (row & 1 ? 4 : 0)) & 7; put(x, y, ly % 3 === 2 || lx === 7 ? '#24202a' : ly % 3 === 0 ? '#4a4652' : '#3a3644'); } } } } // 창 둘레 석벽
     // ================================================================ 3. 창: 노을 하늘 (디더 띠) · 별 셋 · 먼 언덕 · 돌 창틀 (두께 · 왼쪽 밝음) · 창턱
     const WX = ecx - 6, WY = wallTop(ecx) - 21;
-    { const SKY = [[0, '#2a1e44'], [4, '#3a2650'], [8, '#5e3058'], [11, '#9a4a58'], [14, '#d07050'], [17, '#f0a060']];
+    { const NT = window.NIGHT !== false, SKY = NT ? [[0, '#0e0e24'], [4, '#141430'], [8, '#1a1c3e'], [11, '#22244a'], [14, '#2a2c54'], [17, '#34365e']] : [[0, '#2a1e44'], [4, '#3a2650'], [8, '#5e3058'], [11, '#9a4a58'], [14, '#d07050'], [17, '#f0a060']]; // v3.19 밤하늘
       P.rect(WX - 3, WY - 2, 18, 24, K);
       for (let y = -1; y < 21; y++) for (let x = -2; x < 14; x++) { const inner = x >= 0 && x < 12 && y >= 0 && y < 20 && !(y < 6 && Math.hypot(x + 0.5 - 6, y - 6) > 6), frame = !(y < 6 && Math.hypot(x + 0.5 - 6, y - 6) > 8);
         if (!inner) { if (frame) put(WX + x, WY + y, x < 0 ? (x === -2 ? '#8a8490' : '#6a6572') : x >= 12 ? (x === 13 ? '#34303c' : '#46424e') : '#77717e'); continue; }
         let i = 0; while (i < SKY.length - 1 && y >= SKY[i + 1][0]) i++; let c = SKY[i][1]; if (i < SKY.length - 1 && y === SKY[i + 1][0] - 1 && ((x + y) & 1)) c = SKY[i + 1][1]; put(WX + x, WY + y, c); }
-      for (let x = 0; x < 12; x++) { const hh = 17 + Math.round(1 + Math.sin(x / 2.2) * 1.2); for (let y = hh; y < 20; y++) put(WX + x, WY + y, '#2a1a2e'); }
+      for (let x = 0; x < 12; x++) { const hh = 17 + Math.round(1 + Math.sin(x / 2.2) * 1.2); for (let y = hh; y < 20; y++) put(WX + x, WY + y, NT ? '#120e1c' : '#2a1a2e'); }
+      if (NT) for (const [x, y, c] of [[2, 5, '#8a90c0'], [5, 3, '#c8ccf0'], [9, 6, '#9aa0d0'], [7, 10, '#8a90c0'], [3, 12, '#6a70a0'], [10, 13, '#6a70a0']]) put(WX + x, WY + y, c); // 별 (반짝이는 별은 움직임에서)
       P.rect(WX - 3, WY + 20, 18, 1, '#a8a2ae'); P.rect(WX - 3, WY + 21, 18, 1, '#55505e'); }
   
     // ================================================================ 4. 마법진 (새로 새김): 바깥 두 겹 놋쇠 고리 (홈) · 고리 사이 룬 열둘 · 안쪽 고리 · 육각별 · 가운데 초승달
@@ -2463,7 +2468,7 @@
     // ================================================================ 10. 빛 (디더 글로우): 창 노을빛이 바닥으로 길게 · 마법진 은은한 금빛 · 책상 촛불 후광
     { const D = P.g.getImageData(0, 0, GW, GH).data;
       const glowAt = (x, y, lv, tint) => { if (x < 0 || y < 0 || x >= GW || y >= GH) return; if (lv < bay(x, y) * 0.9) return; const k = lv > 0.72 ? 0.5 : lv > 0.45 ? 0.34 : 0.2, i = (y * GW + x) * 4; put(x, y, toHex(D[i] + (tint[0] - D[i]) * k + 14 * k, D[i + 1] + (tint[1] - D[i + 1]) * k + 14 * k, D[i + 2] + (tint[2] - D[i + 2]) * k + 14 * k)); };
-      const SUN = rgbOf('#f0a070'), GOLD = rgbOf('#e8c070'), CAN = rgbOf('#f0b050');
+      const SUN = rgbOf(window.NIGHT !== false ? '#7484b8' : '#f0a070'), GOLD = rgbOf('#e8c070'), CAN = rgbOf('#f0b050'); // v3.19 밤: 창빛은 푸른 달빛
       const floorOnly = (x, y) => inE(x, y) && !kept(x, y);
       // 노을빛: 창 아래에서 바닥 가운데로 길쭉하게
       for (let y = wallTop(ecx) + 1; y < 112; y++) { const t = (y - wallTop(ecx)) / (112 - wallTop(ecx)), w = 7 + t * 12; for (let x = Math.floor(ecx - w - 2); x <= ecx + w + 2; x++) { if (!floorOnly(x, y)) continue; const e = Math.abs(x + 0.5 - ecx) / w; if (e > 1.15) continue; glowAt(x, y, (1 - Math.min(1, e) ** 2) * (0.5 - t * 0.28) * Math.min(1, (112 - y) / 8), SUN); } }
@@ -2506,7 +2511,7 @@
     // 두루마리 끝: 바람 불 때 오른쪽 끝이 들림
     if (gust > 0.3) { cell(188, 103, '#ece0c4', 1); cell(188, 104, '#d4c4a0', 1); cell(189, 103, '#0b0a0e', 1); cell(189, 104, '#0b0a0e', 1); cell(188, 102, '#0b0a0e', 1); }
   };
-  SCENES.mage.lights = [{ x: 192, y: 40, r: 50, a: 0.42, c: [230, 130, 110], sy: 0.7 }, { x: 277, y: 94, r: 40, a: 0.55, c: [255, 200, 110], fl: 1 }, { x: 192, y: 132, r: 46, a: 0.24, c: [255, 220, 140], fl: 12 }, { x: 192, y: 82, r: 30, a: 0.16, c: [240, 150, 100] }];
+  SCENES.mage.lights = [{ x: 192, y: 40, r: 50, a: 0.42, c: [230, 130, 110], sy: 0.7, win: 1 }, { x: 277, y: 94, r: 40, a: 0.55, c: [255, 200, 110], fl: 1 }, { x: 192, y: 132, r: 46, a: 0.24, c: [255, 220, 140], fl: 12 }, { x: 192, y: 82, r: 30, a: 0.16, c: [240, 150, 100], win: 1 }];
   // ---------------------------------------------------------------- 4. 종이 멈춘 수도원 디테일: 판석 바닥 · 색유리 빛 · 융단 무늬 · 신도석 다시 그림 · 벽 기둥 · 제단 소품 · 무너진 돌 · 이끼
   {
     const base = SCENES.priest.draw;
@@ -2983,6 +2988,33 @@
   const DANGUN_PAL = { k: '#0b0a0e', w: '#f6f2ea', W: '#d8d0c4', o: '#d98a3e', O: '#eaa860', d: '#a8602a', p: '#e8a0a0', N: '#e8909a', E: '#1a1410', e: '#a8a04a', R: '#c03a30', r: '#8a2420' };
   const DAGGER = ['.y.', '.g.', '.G.', '.g.', 'xXx', '.sS', '.sS', '.sS', '.sS', '.s.'], DAGGER_PAL = { k: '#0b0a0e', y: '#e0b040', g: '#5a3a22', G: '#8a6a3a', x: '#77717e', X: '#c8ccd4', s: '#e0e4ec', S: '#8a8e98' };
   const NPC_ART = {};
+  // v3.19 단군 대기 동작: 꽂아 둔 단도를 뽑아 → 돌리며 위로 던졌다 받고 → 손끝에서 빙글빙글 → 역수로 고쳐 쥐고 번쩍 → 바닥에 내리꽂음 (떨림 · 먼지)
+  const DG_ROT = {};
+  function dagRot(i) { i = ((i % 16) + 16) % 16; if (DG_ROT[i]) return DG_ROT[i]; // 16방향 (0 = 칼끝이 아래) · 그림 가운데(11,11)칸이 손잡이
+    const N = 23, a = i / 16 * Math.PI * 2, ca = Math.cos(a), sa = Math.sin(a), g = Array.from({ length: N }, () => Array(N).fill('.'));
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const u = x + 0.5 - 11.5, v = y + 0.5 - 11.5, sx = Math.floor(ca * u + sa * v + 1.5), sy = Math.floor(-sa * u + ca * v + 2.5); const r = DAGGER[sy]; if (r && r[sx] && r[sx] !== '.') g[y][x] = r[sx]; }
+    return (DG_ROT[i] = gCanvas(gOutline(g), DAGGER_PAL)); }
+  const DG_CYC = 14, DG_T = { reach: 6.0, pull: 6.25, toss1: 6.45, catchR: 7.05, spinR: 7.3, toss2: 8.2, catchL: 8.8, spinL: 9.05, flour: 9.95, throw: 10.35, stuck: 10.53, done: 10.95 };
+  function dgAnim(t, p, dp) { // t: 한 바퀴(14초) 안의 시각 · p: 단군 발 · dp: 단도 꽂힌 자리 → 단도 · 앞발 · 자세
+    // 뽑기 → 머리 위로 던져 오른손으로 받기 → 멈춤 → 돌리기 → 왼손으로 던져 받기 → 멈춤 → 돌리기 → 역수로 쥐고 번쩍 → 바닥에 내리꽂기
+    const grip0 = { x: dp.x, y: dp.y - 11 }, L = { x: p.x - 9, y: p.y - 17 }, R = { x: p.x + 9, y: p.y - 17 }, T = DG_T, ease = k => k * k * (3 - 2 * k);
+    const toss = (k, a, b) => ({ x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k - 26 * 4 * k * (1 - k) }); // 머리 위로 넘어가는 포물선
+    const hold = (t0, h, side) => { const hh = t - t0 < 0.08 ? { x: h.x, y: h.y + 2 } : h; return { dag: { x: hh.x, y: hh.y, i: 0 }, paw: hh, side }; }; // 탁 받고 잠깐 멈춤 (받는 순간 앞발이 한 칸 눌림)
+    const spin = (t0, t1, h, side) => { const k = (t - t0) / (t1 - t0), sp = 0.5 - 0.5 * Math.cos(Math.PI * k), d = side; return { dag: { x: h.x, y: h.y, i: Math.round(sp * 32) * d }, paw: h, side, arc: { a: sp * 2 * Math.PI * 2 * d, v: Math.sin(Math.PI * k), d } }; }; // 두 바퀴 (빨라졌다 느려짐 · 오른손은 반대로 돎)
+    if (t < T.reach || t >= T.done + 0.6) return { stuck: true };
+    if (t < T.pull) return { stuck: true, lean: -1, crouch: true, paw: grip0, side: -1 };
+    if (t < T.toss1) { const k = (t - T.pull) / (T.toss1 - T.pull), y = grip0.y - 8 * ease(k); return { dag: { x: grip0.x, y, i: 0 }, paw: { x: grip0.x, y }, lean: -1, side: -1 }; }
+    if (t < T.catchR) { const k = (t - T.toss1) / (T.catchR - T.toss1), q = toss(k, { x: grip0.x, y: grip0.y - 8 }, R); return { dag: { x: q.x, y: q.y, i: -Math.round(k * 32) }, look: true }; }
+    if (t < T.spinR) return hold(T.catchR, R, 1);
+    if (t < T.toss2) return spin(T.spinR, T.toss2, R, 1);
+    if (t < T.catchL) { const k = (t - T.toss2) / (T.catchL - T.toss2), q = toss(k, R, L); return { dag: { x: q.x, y: q.y, i: Math.round(k * 32) }, look: true }; }
+    if (t < T.spinL) return hold(T.catchL, L, -1);
+    if (t < T.flour) return spin(T.spinL, T.flour, L, -1);
+    if (t < T.throw) { const k = (t - T.flour) / (T.throw - T.flour); return { dag: { x: L.x, y: L.y, i: 8 }, paw: L, side: -1, glint: k > 0.25 && k < 0.75, tail: true }; } // 역수로 고쳐 쥐고 칼끝이 위에서 번쩍
+    if (t < T.stuck) { const k = (t - T.throw) / (T.stuck - T.throw); return { dag: { x: L.x + (grip0.x - L.x) * k, y: L.y + (grip0.y - L.y) * k, i: 0 }, lean: -1 }; }
+    if (t < T.done) { const k = (t - T.stuck) / (T.done - T.stuck), w = Math.floor(k * 14) % 2 ? 2 : -2; return { stuck: true, wob: k < 0.8 ? w : 0, hit: t - T.stuck < 0.05 }; } // 꽂히며 떨림
+    return { stuck: true, pose: true };
+  }
   const npcArt = (k, fn) => NPC_ART[k] || (NPC_ART[k] = fn());
   function dangunRows(crouch, blink, tail) {
     let R = DANGUN.map(r => r.split(''));
@@ -2995,7 +3027,7 @@
   const DANGUN_LINES = ['좋은 의뢰가 들어왔다냥.', '수수료는 일 끝나고 받겠다냥.', '게시판 의뢰는 다 내 손을 거쳤다냥.', '누구한테 들었는지는 묻지 말라냥.'];
   const DANGUN_GREET = ['어이, 살아 돌아왔냥.', '일거리 찾으러 왔냥?', '눈 떴냥? 일감이 밀렸다냥.'];
   const DANGUN_TALKS = ['이번 의뢰인 이름? 그건 나도 모른다냥. 계약서가 올 때부터 찢겨 있었다냥. 보수만 확실하면 이름은 상관없다냥.',
-    '바닥에 꽂힌 단도는 건드리지 말라냥. 떼인 수수료 대신 받아 둔 거다냥. 주인이 찾으러 올 때까진 내 거다냥.',
+    '단도 건들지 마라냥. 손목 날아간다냥.',
     '역마차가 끊긴 지 오래다냥. 그래도 소문은 마차보다 빠르다냥. 길은 끊겨도 내 장사는 안 끊긴다냥.',
     '넌 일은 깔끔한데 말이 없어서 좋다냥. 말 많은 놈은 꼭 수수료를 깎으려 든다냥.',
     '왕도 쪽 의뢰는 다들 피한다냥. 돌아온 놈이 없으니 보수를 받아 간 놈도 없다냥. …그러니 네가 첫 번째가 되라냥.'];
@@ -3407,7 +3439,7 @@
   const INFO = {
     knight: { line: '…맹세를 지켜야 해.', obs: [[108, 60, 16], [262, 56, 14], [212, 98, 9], [228, 98, 9], [244, 98, 9], [260, 98, 9], [276, 98, 9], [106, 112, 6], [118, 112, 6], [130, 112, 6], [258, 140, 6], [270, 140, 6]] /* v3.18 작아진 무기 거치대 */, wm: [6, 130] },
     ranger: { line: '…피 냄새가 나.', rects: [[96, 87, 131, 91], [143, 87, 156, 91], [152, 54, 156, 91]], obs: [[238, 66, 7], [252, 66, 7], [266, 66, 7], [281, 68, 7], [238, 77, 5], [232, 79, 2], [188, 106, 12], [110, 150, 10], [108, 134, 7], [122, 138, 6], [131, 143, 6], [268, 150, 10], [268, 136, 6], [281, 154, 5]] /* v3.18 역참: 넓어진 탁자 · 포대 · 옆 상자 */, wm: [26, 157] },
-    mage: { line: '…하늘이 아직 저물지 않았네요.', obs: [[70, 48, 26], [314, 48, 26], [70, 182, 28], [314, 182, 28], [130, 125, 6], [137, 92, 6], [184, 87, 6], [192, 87, 6], [200, 87, 6], [212, 88, 3], [262, 92, 6], [238, 110, 7], [252, 110, 7], [266, 110, 7], [276, 110, 6], [106, 95, 8], [288, 112, 5]] /* v3.18 보면대 · 책 더미 옮김 */, wm: [3, 146] },
+    mage: { line: '…별자리 하나가 끝내 이어지지 않네요.', obs: [[70, 48, 26], [314, 48, 26], [70, 182, 28], [314, 182, 28], [130, 125, 6], [137, 92, 6], [184, 87, 6], [192, 87, 6], [200, 87, 6], [212, 88, 3], [262, 92, 6], [238, 110, 7], [252, 110, 7], [266, 110, 7], [276, 110, 6], [106, 95, 8], [288, 112, 5]] /* v3.18 보면대 · 책 더미 옮김 */, wm: [3, 146] },
     priest: { line: '…오늘도 대답이 없으시군요.', obs: [], wm: [16, 132] },
     gunner: { line: '…묻을 놈이 하나 남았지.', obs: [[294, 120, 6], [94, 82, 8], [110, 74, 10], [126, 80, 8], [138, 72, 8], [171, 74, 7], [188, 74, 5], [109, 106, 5], [145, 105, 5], [181, 105, 5], [116, 141, 5], [141, 145, 5], [178, 139, 5], [212, 104, 8], [226, 104, 8], [248, 92, 7], [216, 68, 7], [229, 68, 7], [291, 97, 5], [236, 138, 8], [250, 138, 8], [270, 148, 7], [282, 148, 7], [84, 166, 4], [304, 166, 4], [171, 172, 7], [213, 172, 7]], wm: [4, 157] },
   };
@@ -3421,10 +3453,13 @@
     [72, 92, 112, 132, 152].forEach((y, i) => { for (let x = 92; x <= 160; x += 12) o.push([x, y + 5, 6]); if (i !== 3) for (let x = 220; x <= 288; x += 12) o.push([x, y + 5, 6]); });
     o.push([176, 48, 8], [192, 48, 8], [208, 48, 8], [146, 46, 4], [236, 46, 4], [270, 146, 9]);
   }
+  // v3.19 외곽선 기준: 구조물 안에 놓인 작은 물건은 검은 외곽선 대신 제 색을 어둡게 (장면을 다 그린 뒤 그 자리만 바꿈)
+  SCENES.ranger.deOut = P => { const top = RY0 - 22; deOutlineCtx(P.g, 233, top, 284, top + 20, { keepLine: true }); }; // 버려진 역참 · 벽 선반 2단
+  SCENES.mage.deOut = P => deOutlineCtx(P.g, 239, 101, 280, 111, { bg: ['#9c7a56', '#a8845e', '#8e6e50', '#c8a880', '#b89470', '#6e5038'] }); // 외딴 관측탑 · 책상 윗면
   const ART = {};
   function art(cls) { // 장면 그림 (칸 384×216) — 한 번만 만든다
     if (ART[cls]) return ART[cls];
-    const S = SCENES[cls]; setRoom(S.room); const P = Grid(); S.draw(P);
+    const S = SCENES[cls]; setRoom(S.room); const P = Grid(); S.draw(P); if (S.deOut && window.DEOUT !== false) S.deOut(P);
     const d = P.g.getImageData(0, 0, 1, 1).data, d2 = P.g.getImageData(0, GH - 1, 1, 1).data;
     return (ART[cls] = { c: P.c, room: [RX0, RY0, RX1, RY1], top: `rgb(${d[0]},${d[1]},${d[2]})`, bot: `rgb(${d2[0]},${d2[1]},${d2[2]})` });
   }
@@ -3467,7 +3502,7 @@
   // 빛: 장면의 빛 목록을 게임 광원으로
   function lights(list) {
     const R = G && G.dun && G.dun.cur; if (!R || R.type !== 'home') return;
-    for (const l of SCENES[R.cls].lights) { const p = toW(R.cls, l.x, l.y); list.push({ x: p.x, y: p.y, r: l.r * 2, a: Math.min(1, l.a * 1.5 * (l.fl != null ? homeFlick(l.fl, time) : 1)), /* v3.18 fl: 등불 · 초 깜빡임 */ c: l.c ? l.c.join(',') : undefined, ca: l.c ? 0.12 : 0 }); }
+    for (const l of SCENES[R.cls].lights) { const p = toW(R.cls, l.x, l.y); const nb = window.NIGHT !== false && l.fl != null ? 1.3 : 1; /* v3.19 밤: 깜빡이는 불(등불 · 초 · 화로)은 더 넓고 밝게 — 광원이 읽히게 */ list.push({ x: p.x, y: p.y, r: l.r * 2 * (nb > 1 ? 1.2 : 1), a: Math.min(1, l.a * 1.5 * nb * (l.fl != null ? homeFlick(l.fl, time) : 1)), /* v3.18 fl: 등불 · 초 깜빡임 */ c: l.c ? (l.win && window.NIGHT !== false ? '130,150,215' : l.c.join(',')) : undefined, ca: l.c ? 0.12 : 0 }); } // v3.19 밤: 창빛(win)은 푸른 달빛
   }
 
   // v2.97 시작 장소 NPC (깊이 정렬)
@@ -3500,16 +3535,34 @@
     { const hp = habiPos(); if (hp && TK.on !== 'habi') { const P = G.player, near = P && !P.dead && Math.hypot(P.x - hp.x, P.y - hp.y) < 80, say = npcTalk('habi', near, HABI_LINES, HABI_GREET); if (say) list.push({ y: hp.y, d: () => drawBubble(say.line, hp.x, hp.y - 26, 0) }); } } // v3.16 하비 인사 · 혼잣말
     const S = SCENES[R.cls], N = S && S.npc; if (!N) return;
     const p = toW(R.cls, N.x, N.y), dp = toW(R.cls, N.dag[0], N.dag[1]);
-    list.push({ y: dp.y, d: () => { const c = npcArt('dagger', () => gCanvas(gOutline(fromRows(DAGGER)), DAGGER_PAL)); ctx.fillStyle = 'rgba(10,6,4,.55)'; ctx.fillRect((dp.x - 2) & ~1, (dp.y) & ~1, 6, 2); ctx.drawImage(c, (dp.x - c.width / 2) & ~1, (dp.y - c.height + 4) & ~1); } });
+    const tt = (time + 3.1) % DG_CYC, A = TK.on === 'dangun' ? { stuck: true } : dgAnim(tt, p, dp); // 대화하는 동안에는 묘기를 멈추고 단도는 제자리에
+    if (A.hit && !dgAnim.hitT0) { dgAnim.hitT0 = true; dust(dp.x, dp.y + 2, 5); } else if (!A.hit) dgAnim.hitT0 = false;
+    const daggerC = () => npcArt('dagger', () => gCanvas(gOutline(fromRows(DAGGER)), DAGGER_PAL));
+    list.push({ y: dp.y, d: () => { ctx.fillStyle = 'rgba(10,6,4,.55)'; ctx.fillRect((dp.x - 2) & ~1, (dp.y) & ~1, 6, 2); if (!A.stuck) return; const c = daggerC(); ctx.drawImage(c, ((dp.x - c.width / 2) & ~1) + (A.wob || 0), (dp.y - c.height + 4) & ~1); } });
     list.push({ y: p.y, d: () => {
-      const n = Math.floor(time / 1.2), t = time % 1.2, crouch = t >= 0.6, tail = n % 3 === 0 && t < 0.3, bt = (time + 2.1) % 8.6, blink = bt < 0.12 || (bt >= 4.3 && bt < 4.42) || (bt >= 4.6 && bt < 4.72);
+      const n = Math.floor(time / 1.2), t = time % 1.2, crouch = A.crouch || (!A.dag && !A.lean && t >= 0.6), tail = A.tail || A.pose || (n % 3 === 0 && t < 0.3), bt = (time + 2.1) % 8.6, blink = !A.dag && (bt < 0.12 || (bt >= 4.3 && bt < 4.42) || (bt >= 4.6 && bt < 4.72));
       const c = npcArt('dangun' + (+crouch) + (+blink) + (+tail), () => gCanvas(fromRows(dangunRows(crouch, blink, tail)), DANGUN_PAL));
-      const x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + 2) & ~1;
-      ctx.fillStyle = 'rgba(10,6,4,.5)'; for (let i = 4; i < c.width - 4; i += 2) if ((i >> 1) & 1 || (i > 8 && i < c.width - 10)) ctx.fillRect(x + i, y + c.height - 2, 2, 2);
+      const x = ((p.x - c.width / 2) & ~1) + (A.lean || 0) * 2, y = (p.y - c.height + 2) & ~1;
+      ctx.fillStyle = 'rgba(10,6,4,.5)'; for (let i = 4; i < c.width - 4; i += 2) if ((i >> 1) & 1 || (i > 8 && i < c.width - 10)) ctx.fillRect(x - (A.lean || 0) * 2 + i, y + c.height - 2, 2, 2);
       ctx.drawImage(c, x, y);
+      if (A.look) { ctx.fillStyle = '#1a1410'; ctx.fillRect(x + 8, y + 10, 2, 2); ctx.fillRect(x + 16, y + 10, 2, 2); ctx.fillStyle = '#f6f2ea'; ctx.fillRect(x + 8, y + 12, 2, 2); ctx.fillStyle = '#d98a3e'; ctx.fillRect(x + 16, y + 12, 2, 2); } // 위로 치켜뜬 눈
       const P = G.player, near = P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < 80, say = TK.on === 'dangun' ? null : npcTalk('dangun', near, DANGUN_LINES, DANGUN_GREET);
       if (say) drawBubble(say.line, p.x, y + 2, 0);
     } });
+    // 손에 든 단도 · 검 궤적 · 앞발: 손끝 오른쪽(몸 쪽)으로 넘어간 부분은 단군 뒤에, 나머지는 앞에 (몸 옆에서 세로로 도는 느낌)
+    const held = back => { if (!A.dag) return; const D = A.dag, hx = A.paw ? A.paw.x : D.x, sd = A.side || -1, isBack = x => sd < 0 ? x > hx + 1 : x < hx - 1; // 몸 쪽으로 넘어간 부분은 뒤에
+      if (A.arc && A.arc.v > 0.12) { const { a, v, d } = A.arc, sw = 0.5 + 2.4 * v, seen = new Set(); // 흰 검 궤적: 칼끝이 지나간 자리를 가는 초승달로 (앞은 하얗고 두 칸 → 꼬리는 한 칸으로 가늘어지며 흩어짐)
+        for (let q = 0; q <= 48; q++) { const f = q / 48, b = a - f * sw * d, ro = 16 - f * 1.5, ri = f < 0.35 ? ro - 4 : f < 0.7 ? ro - 2 : ro - 0.5;
+          for (let r = ri; r <= ro; r += 1) { const x = (D.x - Math.sin(b) * r) & ~1, y = (D.y + Math.cos(b) * r) & ~1, key = x + ',' + y; if (seen.has(key) || isBack(x) !== back) continue; seen.add(key);
+            if (f > 0.55 && ((x + y) >> 1) & 1) continue; if (f > 0.82 && ((x >> 1) + (y >> 1) * 3) % 3) continue;
+            ctx.fillStyle = f < 0.35 ? (r > ro - 2 ? '#ffffff' : '#dfe3ee') : f < 0.7 ? '#c8ccd8' : '#9a9eaa'; ctx.fillRect(x, y, 2, 2); } } }
+      const ta = D.i / 16 * Math.PI * 2, tipBack = isBack(D.x - Math.sin(ta) * 10); if (tipBack !== back && !(A.arc == null && !back)) { if (A.arc || back) return; }
+      if (!A.arc && back) return;
+      const r = dagRot(D.i); ctx.drawImage(r, (D.x - 23) & ~1, (D.y - 23) & ~1);
+      if (A.glint && !back) { const gx = (D.x) & ~1, gy = (D.y - 16) & ~1; ctx.fillStyle = '#ffffff'; ctx.fillRect(gx, gy - 4, 2, 10); ctx.fillRect(gx - 4, gy, 10, 2); ctx.fillStyle = '#fff4c8'; ctx.fillRect(gx - 2, gy - 2, 2, 2); ctx.fillRect(gx + 2, gy + 2, 2, 2); } }; // 칼끝 번쩍
+    list.push({ y: p.y - 0.5, d: () => held(true) });
+    list.push({ y: Math.max(p.y, dp.y) + 1, d: () => { held(false); // 앞발은 늘 앞에
+      if (A.paw) { const px = (A.paw.x - 2) & ~1, py = (A.paw.y - 2) & ~1; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(px - 2, py, 8, 4); ctx.fillRect(px, py - 2, 4, 8); ctx.fillStyle = '#f6f2ea'; ctx.fillRect(px, py, 4, 4); ctx.fillStyle = '#d8d0c4'; ctx.fillRect(px, py + 2, 4, 2); } } });
   }
   // ---- 흐름: 원정 시작(선 채로 · 대사 → 장소 이름) · 아래 문으로 걸어 나가면 출발 · 엔딩 귀환(잠든 채, 11b가 진행)
   const SEQ = { title: [0.3, 2.5], line: 2.6 }; // 장소 이름이 먼저, 이름이 걷힌 뒤 대사
@@ -3523,7 +3576,7 @@
     Object.assign(G.player, { x: p.x, y: p.y, state: 'idle', t: 0, face: 1, idleT: sleep ? 40 : 0, moving: false, inv: 0, iframe: 0, hurtT: 0 }); // 방에 들어올 때 붙는 무적 깜빡임 없이
     G.flies = null; G.prompt = null;
     try { updateCamera(0, true); } catch (e) { /* 카메라 */ }
-    try { window.AudioSys.setMood('title', true); } catch (e) { /* 소리 없음 */ }
+    try { window.AudioSys.setMood('pro_' + G.cls, true); if (G) G.mood = 'pro_' + G.cls; } catch (e) { /* 소리 없음 */ } // v3.19 캐릭터별 프롤로그 곡
     return R;
   }
   function enter() { // newRun 끝에서 — 원정을 시작할 때는 깨어 있는 채로 (잠든 연출은 엔딩에서 이어질 때만)

@@ -354,7 +354,7 @@
     const swinging = P.state === 'attack' || P.state === 'shadow' || storm;
     const col = storm ? '120,255,180' : P.state === 'shadow' ? '190,140,255' : weaponTrailCol(weaponTex('ranger'), 0.4); // v2.19 평타 궤적은 무기 색
     if (swinging) {
-      const sc = storm ? SLASH_COL.storm : P.state === 'shadow' ? SLASH_COL.shadow : SLASH_COL.ranger; // v2.50 도트 궤적
+      const sc = storm ? SLASH_COL.storm : P.state === 'shadow' ? SLASH_COL.shadow : rbySlash('ranger', SLASH_COL.ranger); // v2.50 도트 궤적 · v3.19 RGB? 무지개
       drawSlashPx(P.trail, fhx, fhy, storm ? 34 : 42, sc, P.combo === 2);
       drawSlashPx(P.trail2, bhx, bhy, storm ? 34 : 42, sc, P.combo === 2);
     }
@@ -378,9 +378,10 @@
     if (P.bladeShow == null || Math.abs(angDiff(P.blade, P.bladeShow)) > th) P.bladeShow = P.blade;
     if (P.blade2 != null && (P.blade2Show == null || Math.abs(angDiff(P.blade2, P.blade2Show)) > th)) P.blade2Show = P.blade2;
     PPOSE = playerPose(); if (PPOSE) { P.x += PPOSE.dx; P.y += PPOSE.dy; } // v2.43 공격 모션: 몸과 손이 같이 움직임
+    if (P.state === 'dodge' && P.rolling) { const rp = rollPose(P); P.rollGY = snap2(P.y); P.y -= rp.lift; ROLL_HIDEW = rp.air; } // v3.19 구르기: 공중에 뜬 높이 · 그림자는 땅에
     P.x = snap2(P.x); P.y = snap2(P.y); P.blade = P.bladeShow; if (P.blade2 != null) P.blade2 = P.blade2Show;
     ASH_DRAW = SAVE.skin === 'ash' && skinOpen(); STEALTH_DRAW = G.player.stealthT > 0; // v1.99 잿불 외형 · v2.05 숨기
-    try { drawPlayerInner(); } finally { PPOSE = null; ASH_DRAW = false; STEALTH_DRAW = false; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
+    try { drawPlayerInner(); } finally { PPOSE = null; ASH_DRAW = false; STEALTH_DRAW = false; ROLL_HIDEW = false; P.rollGY = null; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
   }
   function drawPlayerInner() {
     if (G.cls === 'ranger') return drawRanger();
@@ -398,12 +399,12 @@
       drawSprite('hKnight', 'hKnight', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
       return;
     }
-    if (P.state === 'dodge' && P.t < BLINK) return; // 점멸 중에는 보이지 않는다
+    if (P.state === 'dodge' && P.t < BLINK && !P.rolling) return; // 점멸 중에는 보이지 않는다 (구르기는 보임)
     const blink = P.inv > 0 && Math.floor(time * 16) % 2 === 0;
-    drawShadow(P.x, P.y + 1, 8 - Math.min(3, lift * 0.3));
+    drawShadow(P.x, (P.rollGY != null ? P.rollGY : P.y) + 1, 8 - Math.min(3, lift * 0.3));
     if (holy) { ctx.fillStyle = `rgba(255,211,77,${0.22 + Math.sin(time * 11) * 0.07})`; ctx.beginPath(); ctx.ellipse(P.x, P.y, 20, 8, 0, 0, TAU); ctx.fill(); }
     let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
-    if (P.state === 'dodge') { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; }
+    if (P.state === 'dodge') { if (P.rolling) rot = rollPose(P).rot; else { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; } }
     if (P.state === 'charge') { rot = 0.3 * P.face; sx = 1.1; }
     if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'skill') { rot = (P.t < SKILL.wind ? -0.25 : 0.2) * P.face; sx = 1.06; sy = P.t < SKILL.wind ? 0.9 : 1.04; }
@@ -414,11 +415,12 @@
     const giantK = P.state === 'awaken' ? (P.giant || 0) : 0;
     const rout = giantK > 0 ? tex.reach * (1 + 1.7 * giantK) : P.state === 'skill' ? SKILL.reach : tex.reach + 2;
     if (swinging) {
-      drawSlashPx(P.trail, hx, hy + 4, rout, P.state === 'skill' ? SLASH_COL.ice : holy ? SLASH_COL.holy : SLASH_COL.knight, P.state !== 'attack' || P.combo === 2); // v2.50 도트 궤적
+      drawSlashPx(P.trail, hx, hy + 4, rout, P.state === 'skill' ? SLASH_COL.ice : holy ? SLASH_COL.holy : rbySlash('knight', SLASH_COL.knight), P.state !== 'attack' || P.combo === 2); // v2.50 도트 궤적 · v3.19 RGB? 무지개
     }
     if (brk) drawBlade(breadHalf(1), P.x - P.face * 8, hy + 4, P.blade + Math.PI * 0.85 * P.face, alpha); // 반대 손의 반 토막
     if (behind && !ifr) { drawBlade(tex, hx - P.face * 2, hy + 2, P.blade, alpha); if (!holy && !brk) weaponAura(tex, hx - P.face * 2, hy + 2, P.blade, 'knight'); }
-    drawSprite(ifr ? ifr.key : heroMap(walkMap('hKnight', wFr), P), 'hKnight', 2, P.x, P.y + 2 - lift, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    const rmk = rollMap(P, 'hKnight'), [rox, roy] = rmk ? rollOff(rmk, rot) : [0, 0];
+    drawSprite(rmk || (ifr ? ifr.key : heroMap(walkMap('hKnight', wFr), P)), 'hKnight', 2, P.x + rox, P.y + 2 - lift + roy, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     if (ifr) { idleKnightBlade(ifr, tex, snap2(P.x), snap2(P.y + 2 - lift), P.face < 0, alpha); idleZz(ifr, snap2(P.x), snap2(P.y + 2 - lift), P.face < 0); } // v2.51 대기 동작
     if (giantK > 0) {
       { const sc = 1 + 1.7 * giantK; // v2.19 빛의 거대검도 들고 있는 무기 모양 · 배율마다 회전 그림을 새로 만들면 끊기므로 배율 1 그림을 늘려 그린다

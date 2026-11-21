@@ -13,9 +13,29 @@
   }
 
   // ↓ 06_rooms_decor.js에서 옮겨 옴 (이 파일을 불러올 때 바로 쓰임)
+  // v3.19 옛 돌길 (징검돌 자리): 폐허와 같은 돌빛의 판석 세 줄 · 군데군데 빠진 돌 · 이끼 · 금 · 틈새 풀 — 흙 오솔길과 같은 역할
+  function paintPaved(g, c) {
+    const L = 150, C = ['#676b60', '#565a51', '#474b44', '#3a3d39', '#1a2816'], MO = ['#3e6228', '#325220', '#26421a'], GR = ['#4a7a34', '#56883a', '#3e6a2c']; // 숲 바닥에 묻히게 폐허보다 두 단계 어둡게
+    const fade = t => { const r = Math.min(1, c.fadeA ? (t - c.a) / L : 1, c.fadeB ? (c.b - t) / L : 1); return r * r * (3 - 2 * r); };
+    const px = (x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 2, 2); };
+    for (let t = c.a & ~1; t < c.b; t += 2) { const m = Math.round(c.at(t) / 2) * 2, f = fade(t); for (let o = -14; o < 16; o += 2) if (Math.random() < 0.28 * f) px(c.vert ? m + o : t, c.vert ? t : m + o, Math.random() < 0.5 ? '#2a3020' : '#34361f'); } // 돌 밑 흙 바탕
+    for (let ri = 0; ri < 3; ri++) { let t = (c.a & ~1) - (ri === 1 ? 6 : ri === 2 ? 2 : 0);
+      while (t < c.b - 6) { const len = 10 + 2 * randi(0, 3), f = fade(t + len / 2), m = Math.round(c.at(t + len / 2) / 2) * 2, o = -14 + ri * 10 + (Math.random() < 0.2 ? 2 : 0);
+        const x = c.vert ? m + o : t, y = c.vert ? t : m + o, w = c.vert ? 8 : len, h = c.vert ? len : 8;
+        if (t >= c.a && Math.random() < (ri === 1 ? 0.88 : 0.62) * (0.1 + 0.9 * f)) { const base = Math.random() < 0.3 ? 2 : 1;
+          for (let j = 0; j < h; j += 2) for (let i = 0; i < w; i += 2) { const cor = (i === 0 || i === w - 2) && (j === 0 || j === h - 2); if (cor && Math.random() < 0.6) continue; px(x + i, y + j, j === 0 || i === 0 ? C[base - 1] : (j === h - 2 || i === w - 2) ? C[base + 1] : C[base]); }
+          for (let i = 2; i < w; i += 2) px(x + i, y + h, C[4]);
+          const r = Math.random();
+          if (r < 0.4) { const mx = x + (Math.random() < 0.5 ? 0 : w - 4), my = y + (Math.random() < 0.5 ? 0 : h - 4); px(mx, my, MO[0]); px(mx + 2, my, MO[1]); px(mx, my + 2, MO[1]); if (Math.random() < 0.5) px(mx + 2, my + 2, MO[2]); }
+          else if (r < 0.5 && w >= 10 && h >= 8) { const cx0 = x + 2 * randi(1, (w >> 1) - 3); px(cx0, y + 2, C[3]); px(cx0 + 2, y + 4, C[3]); }
+        } else if (t >= c.a && Math.random() < 0.6 * f) { const gx = x + 2 * randi(0, (w >> 1) - 1), gy = y + 4; g.fillStyle = pick(GR); g.fillRect(gx, gy, 1, 3); g.fillRect(gx + 1, gy - 2, 1, 4); g.fillRect(gx + 3, gy, 1, 2); }
+        t += len + 2; } }
+  }
   function paintMeadowCurve(g, c) {
+    if (c.kind === 'stones') return paintPaved(g, c);
     const L = 150, B4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
     for (let t = c.a & ~1; t < c.b; t += 2) {
+      if (c.clip && !c.clip(t)) continue;
       const m = Math.round(c.at(t) / 2) * 2;
       const rawFade = Math.min(1, c.fadeA ? (t - c.a) / L : 1, c.fadeB ? (c.b - t) / L : 1), f = rawFade * rawFade * (3 - 2 * rawFade);
       if (c.kind === 'stones') { if (t % 22 === 0 && Math.random() < 0.08 + 0.92 * f) gPaint(g, STONEPAD, STONEPAD_PAL, (c.vert ? m : t) - 6 + randi(-4, 4), (c.vert ? t : m) - 4 + randi(-4, 4)); continue; }
@@ -29,7 +49,7 @@
       }
       if (c.kind === 'brook' && t % 40 === 0 && Math.random() < 0.6) stamp(g, DECO_MAPS.rockB, DECO, (c.vert ? m : t) - 6, (c.vert ? t : m) - 4, 2);
     }
-    if (c.kind === 'brook' && CUR_ROOM && CUR_ROOM.bridges) for (const b of CUR_ROOM.bridges) { const gr = genBridge(c.vert); gPaint(g, gr, BRIDGE_PAL, b.x - gr[0].length, b.y - gr.length); }
+    if (c.kind === 'brook' && !c.noBridge && CUR_ROOM && CUR_ROOM.bridges) for (const b of CUR_ROOM.bridges) { const gr = genBridge(c.vert); gPaint(g, gr, BRIDGE_PAL, b.x - gr[0].length, b.y - gr.length); }
   }
 
   // ↓ 06_rooms_decor.js에서 옮겨 옴 (이 파일을 불러올 때 바로 쓰임)
@@ -39,14 +59,14 @@
     if (st === 'none' && !doors.length) return out;
     // 문이 있는 방에서는 장식용 길 없음 스타일도 문 앞까지 가는 흙길로 바꾼다.
     const pathStyle = st === 'none' ? 'wind' : st;
-    const kind = pathStyle === 'stones' ? 'stones' : pathStyle === 'brook' ? 'brook' : 'dirt';
+    const kind = pathStyle === 'brook' ? 'brook' : ROOMSTYLE.pave ? 'stones' : 'dirt'; // v3.19 흙길이 기본 · 폐허(벽)나 저수지가 있는 방만 옛 돌길
     // 길·개울은 벽까지 닿지 않고 방 안에서 가늘어지며 끝난다 (ea·eb·ec = 끝에서 비우는 비율)
     const ea = ROOMSTYLE.ea != null ? ROOMSTYLE.ea : 0.12, eb = ROOMSTYLE.eb != null ? ROOMSTYLE.eb : 0.12, ec = ROOMSTYLE.ec != null ? ROOMSTYLE.ec : 0.12;
     const full = kind === 'brook'; // 개울은 맵 끝까지 이어진다
     if (kind === 'brook' && ROOMSTYLE.side) { // v0.68: 개울은 가운데가 아니라 문이 없는 벽 쪽 가장자리를 따라 흐른다
       const sd = ROOMSTYLE.side, ph = ROOMSTYLE.ph || 0;
-      if (sd === 'n' || sd === 's') { const amp = Math.min(12, h * 0.035), base = sd === 's' ? A.y1 - Math.max(30, h * 0.13) : A.y0 + Math.max(34, h * 0.14); out.push({ vert: false, kind, at: x => base + Math.sin(x * 0.009 + ph) * amp + Math.sin(x * 0.025) * 3, a: A.x0 - 80, b: A.x1 + 80, fadeA: false, fadeB: false }); }
-      else { const amp = Math.min(12, w * 0.035), base = sd === 'e' ? A.x1 - Math.max(30, w * 0.11) : A.x0 + Math.max(30, w * 0.11); out.push({ vert: true, kind, at: y => base + Math.sin(y * 0.011 + ph) * amp + Math.sin(y * 0.03) * 3, a: A.y0 - 80, b: A.y1 + 80, fadeA: false, fadeB: false }); }
+      if (sd === 'n' || sd === 's') { const amp = Math.min(12, h * 0.035), base = sd === 's' ? A.y1 - Math.max(30, h * 0.13) : A.y0 + Math.max(34, h * 0.14); out.push({ vert: false, kind, at: x => base + Math.sin(x * 0.009 + ph) * amp + Math.sin(x * 0.025) * 3, a: A.x0 - 400, b: A.x1 + 400, fadeA: false, fadeB: false }); } // v3.19 개울이 숲 가운데서 뚝 끊기지 않게 맵 끝까지
+      else { const amp = Math.min(12, w * 0.035), base = sd === 'e' ? A.x1 - Math.max(30, w * 0.11) : A.x0 + Math.max(30, w * 0.11); out.push({ vert: true, kind, at: y => base + Math.sin(y * 0.011 + ph) * amp + Math.sin(y * 0.03) * 3, a: A.y0 - 40, b: A.y1 + 400, fadeA: false, fadeB: false }); }
       return out;
     }
     const ph = ROOMSTYLE.ph || 0;
@@ -1237,13 +1257,19 @@ huskUp:[
     if (open('e') && tx + w > A.x1 && ty < DOOR.e.y + PW && ty + h > DOOR.e.y - PW) return true;
     return false;
   }
+  // v3.19 개울이 숲을 지날 때: 숲 구간의 개울은 나무보다 먼저 그리고(앞쪽 나무가 개울을 가림), 물에 밑동이 잠기는 나무는 세우지 않음
+  function brookCurve() { if (typeof ROOMSTYLE === 'undefined' || !ROOMSTYLE || ROOMSTYLE.path !== 'brook' || !ROOMSTYLE.side) return null; const c = meadowCurves()[0]; return c && c.kind === 'brook' ? c : null; }
+  const brookIn = (c, t) => c.vert ? t >= A.y0 - 20 && t <= A.y1 + 12 : t >= A.x0 - 12 && t <= A.x1 + 12; // 방 안 구간 (울타리 포함)
+  const brookWet = (c, x, y) => Math.abs((c.vert ? x : y) - c.at(c.vert ? y : x)) < 20;
   function paintTreeline(g) {
+    const bk = brookCurve(); if (bk && bk.vert) paintMeadowCurve(g, Object.assign({}, bk, { clip: t => t < A.y0 - 20, noBridge: true }));
     const row = (yBase, dim, step) => {
       for (let x = -20; x < W + 20; x += randi(step[0], step[1])) {
         const r = Math.random(), kind = r < 0.38 ? 'round' : r < 0.66 ? 'pine' : r < 0.82 ? 'birch' : 'dead';
         const palK = kind === 'pine' ? (Math.random() < 0.5 ? 'deep' : 'green') : kind === 'birch' ? 'birch' : kind === 'dead' ? 'green' : pick(['green', 'green', 'deep', 'autumn', 'gold', 'dusk']);
         const c = treeCv(kind, palK, '#140e22', dim, randi(0, 3)), y = Math.max(12, yBase - c.height + randi(-6, 6)); // v2.21 바닥 캔버스 위 끝(카메라 최상단)에서 나무 꼭대기가 잘리지 않게
         if (onDoorPath(x - c.width * 0.2, y, c.width * 0.4, c.height)) continue; // 잎 가운데 40%만 판정
+        if (bk && bk.vert && !dim && brookWet(bk, x, y + c.height)) continue;
         stampTree(g, c, x - c.width / 2, y, Math.random() < 0.5);
       }
     };
@@ -1269,6 +1295,8 @@ huskUp:[
       stamp(g, DECO_MAPS[m], woodPal(), x, A.y0 - 18, 2);
     }
     if (DR.n != null) { stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x - 32, A.y0 - 18, 2); stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x + 22, A.y0 - 18, 2); }
+    // v3.19 위쪽 울타리 발치의 덤불 · 풀은 울타리 위로 올라오게 (울타리를 찍은 뒤에 한 번 더)
+    for (let x = A.x0 - 4 + randi(0, 30); x < A.x1 - 8; x += randi(40, 90)) { if (DR.n != null && x + 16 > DOOR.n.x - 30 && x < DOOR.n.x + 30) continue; stamp(g, DECO_MAPS[pick(['bush', 'bush', 'tuft1', 'tuft2'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 - 8 + randi(-3, 3), 2, Math.random() < 0.5); }
     // 양옆 세로 울타리
     for (let y = A.y0 + 8; y < A.y1 - 20; y += 22) for (const x of [A.x0 - 10, A.x1 + 2]) {
       if (((x < CX && DR.w != null) || (x > CX && DR.e != null)) && y + 22 > CY - 24 && y < CY + 24) continue;
@@ -1966,6 +1994,7 @@ huskUp:[
     g.fillRect(0, A.y0 + 12, A.x0 - 4, H); g.fillRect(A.x1 + 4, A.y0 + 12, W - A.x1, H); g.fillRect(0, A.y1 + 4, W, H - A.y1); // v2.21 위쪽 나무 줄 밑동을 덮어 잘라먹지 않게 A.y0+12부터
     g.fillStyle = '#070d07'; { const F = 96; if (A.x0 - F > 0) g.fillRect(0, A.y0 + 12, A.x0 - F, H); g.fillRect(A.x1 + F, A.y0 + 12, W, H); g.fillRect(0, A.y1 + F, W, H); } // 먼 숲 바닥은 한 단계 더 어둡게 (망점 없이)
     if (CUR_ROOM && G) paintMeadowDoorPaths(g, CUR_ROOM); // 문 길은 숲 나무보다 먼저
+    const bk = brookCurve(); if (bk) paintMeadowCurve(g, Object.assign({}, bk, { clip: t => !brookIn(bk, t) && (!bk.vert || t > A.y1), noBridge: true }));
     const pts = [];
     const band = (x0, x1, y0, y1) => { for (let y = y0; y < y1; y += 30) for (let x = x0; x < x1; x += 26) pts.push({ x: x + rand(-8, 8), y: y + rand(-8, 8) }); };
     band(Math.min(A.x0 - 230, -10), A.x0 - 6, A.y0 + 10, A.y1 + 200); band(A.x1 + 10, Math.max(A.x1 + 240, W + 10), A.y0 + 10, A.y1 + 200); /* v2.21 좁은 방에서도 화면 끝까지 숲이 차게 */ band(A.x0 - 6, A.x1 + 10, A.y1 + 30, A.y1 + 200);
@@ -1981,6 +2010,7 @@ huskUp:[
       if (p.x < A.x0) tx = Math.min(tx, A.x0 - 12 - c.width); else if (p.x > A.x1) tx = Math.max(tx, A.x1 + 12); else ty = Math.max(ty, A.y1 + 10);
       ty = Math.max(ty, 12); // v2.21 위 끝에서 꼭대기가 잘리지 않게
       if (onDoorPath(tx + c.width * 0.3, ty + c.height * 0.2, c.width * 0.4, c.height * 0.8)) continue;
+      if (bk && brookWet(bk, tx + c.width / 2, ty + c.height - 4)) continue;
       stampTree(g, c, tx, ty, fl);
       if (g === fmg && ty + c.height > A.y1 + 6) stampTree(ffg, c, tx, ty, fl); // 아래쪽 숲 나무는 앞 레이어에도
     }
@@ -2011,7 +2041,7 @@ huskUp:[
     paintForestBorder(g);
     paintMeadowProps(g);
     // 길을 마지막에 그려 잔디·꽃·덤불이 덮거나 끊어 보이지 않게 한다.
-    for (const c of meadowCurves()) paintMeadowCurve(g, c);
+    for (const c of meadowCurves()) paintMeadowCurve(g, c.kind === 'brook' && ROOMSTYLE.side ? Object.assign({}, c, { clip: t => brookIn(c, t) }) : c);
   }
   paintMeadowFloor(fmg);
 
@@ -2048,7 +2078,7 @@ huskUp:[
     9: [[['troll', 1], ['ogrip', 1], ['orc', 2], ['shaman', 1]], [['urg', 1], ['othrow', 2]]], // v2.33 엘리트 2
   };
   const STAGES = {
-    1: { n: '황혼 초원', sub: '황혼이 굳어 버린 변경의 들판', diff: 1, hpMul: 1.15, atkMul: 1.45, dark: 0.34, ash: '205,240,120', torches: false,
+    1: { n: '황혼 초원', sub: '재가 서리처럼 내려앉은 변경의 들판', diff: 1, hpMul: 1.15, atkMul: 1.45, dark: 0.34, ash: '205,240,120', torches: false,
       phases: PHASES_MEADOW, survive: [['slime', 0.3], ['goblin', 0.3], ['garcher', 0.15], ['bigslime', 0.1], ['toxslime', 0.15]], surviveMax: 10,
       boss: '점액왕 구루그', bossSub: '첫 번째 파편', bossGold: 160, elite: '고블린 챔피언 · 가시등 멧돼지' },
     2: { n: '무너진 성채', sub: '주인을 잃은 기사단의 옛 의식장', diff: 2, hpMul: 1.15, atkMul: 0.95, dark: 0.66, ash: '160,150,170', torches: true,
@@ -2056,7 +2086,7 @@ huskUp:[
       boss: '타락 기사단장 발도르', bossSub: '두 번째 파편', bossGold: 250, elite: '기사단 처형인 · 역병 어미' },
     3: { n: '핏빛 엄니 부락', sub: '잿불이 식지 않는 협곡 바닥의 전장', diff: 3, hpMul: 1.4, atkMul: 1.32, dark: 0.5, ash: '255,140,60', torches: true, embers: true,
       phases: PHASES_ORC, survive: [['orc', 0.35], ['othrow', 0.15], ['wolf', 0.2], ['slave', 0.2], ['shaman', 0.1]], surviveMax: 14, surviveSemi: 20,
-      boss: '붉은 엄니 대족장 크루가쉬', bossSub: '세 번째 파편', bossGold: 360, elite: '투기장 챔피언 우르그 · 사슬 풀린 트롤 그러크' },
+      boss: '핏빛 엄니 대족장 크루가쉬', bossSub: '세 번째 파편', bossGold: 360, elite: '투기장 챔피언 우르그 · 사슬 풀린 트롤 그러크' },
     // v1.22 STAGE 4 잿빛 왕도 (1단계: 공간만 — 몬스터·보스는 임시로 성채 것을 쓴다)
     4: { n: '잿빛 왕도', sub: '재가 눈처럼 가라앉은 옛 왕국의 수도', diff: 4, hpMul: 1.55, atkMul: 1.4, dark: 0.6, ash: '196,190,180', torches: true, ashCity: true,
       phases: PHASES_ASH, survive: [['husk', 0.35], ['moth', 0.2], ['lancer', 0.15], ['cantor', 0.15], ['aguard', 0.15]], surviveMax: 16,

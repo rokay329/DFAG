@@ -56,7 +56,7 @@
     // 아치 창문 (달빛)
     for (let i = 0; i < PILLARS.length - 1; i++) {
       const mx = (PILLARS[i] + PILLARS[i + 1]) / 2;
-      if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110) continue; // v2.64 인장 벽 자리엔 창문 없음
+      if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && ((CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110) || (CUR_ROOM.doors && CUR_ROOM.doors.n != null && Math.abs(mx - DOOR.n.x) < 40))) continue; // v2.64 · v3.19 북문 위엔 창문 없음 인장 벽 자리엔 창문 없음
       g.fillStyle = '#07060a'; g.fillRect(mx - 9, T0 + 8, 18, 26); g.beginPath(); g.arc(mx, T0 + 8, 9, Math.PI, 0); g.fill();
       const mg = dLinear(g, 0, T0, 0, T0 + 34); mg.addColorStop(0, 'rgba(110,100,160,.35)'); mg.addColorStop(1, 'rgba(40,30,70,.1)');
       g.fillStyle = mg.p(g, mx - 7, T0 + 2, 14, 32); g.fillRect(mx - 7, T0 + 9, 14, 24); g.beginPath(); g.arc(mx, T0 + 9, 7, Math.PI, 0); g.fill();
@@ -179,7 +179,7 @@
   const pressed = {};
   const mouse = { x: CX, y: CY, active: 0, down: false };
   // v2.19 한글 입력 상태에서도 키가 먹게: 글자 대신 물리 키 위치(e.code)로 읽는다 (F가 'ㄹ'로 들어오던 문제)
-  function keyName(e) { const c = e.code || ''; if (/^Key[A-Z]$/.test(c)) return e.shiftKey ? c[3] : c[3].toLowerCase(); if (/^Digit[0-9]$/.test(c) && !e.shiftKey) return c[5]; return e.key; }
+  function keyName(e) { const c = e.code || ''; if (/^Key[A-Z]$/.test(c)) return e.shiftKey ? c[3] : c[3].toLowerCase(); if (/^Digit[0-9]$/.test(c)) return e.shiftKey ? 'sd' + c[5] /* v3.19 Shift+숫자 = 테스트 키 (자판 배열과 무관하게) */ : c[5]; return e.key; }
   addEventListener('keydown', e => {
     initAudio();
     const k = keyName(e).toLowerCase();
@@ -260,7 +260,7 @@
     { k: 'spd', n: '이동 속도 +{v}%', r: [4, 8] },
   ];
   const LEGEND_FX = {
-    bulwark: { n: '태양 서약 대검', d: '돌진 참격을 2번까지 충전할 수 있습니다. 돌진한 길에 빛의 검기가 남았다가 터집니다.' },
+    bulwark: { n: '별의 서약 대검', d: '돌진 참격을 2번까지 충전할 수 있습니다. 돌진한 길에 빛의 검기가 남았다가 터집니다.' },
     execsword: { n: '잿빛 왕의 처형검', d: '3타가 잿불 장판을 남깁니다. 각성 내려찍기의 둘레도 잿불로 탑니다.' },
     fangs: { n: '쌍둥이 송곳니', d: '퍼펙트 회피에 성공하면 그림자 도약이 충전됩니다. 도약한 뒤 2초 동안 은신합니다.' },
     kingrev: { n: '왕의 연발총', d: '6발을 연달아 쏩니다. 마지막 탄은 폭발하고, 재장전할 때 주변 적을 밀쳐냅니다.' },
@@ -268,7 +268,7 @@
     hourglass: { n: '모래시계 지팡이', d: '각성하면 3초 동안 시간이 멈춥니다. 시간이 다시 흐를 때 그동안 넣은 피해의 50%가 추가로 들어갑니다. 보스는 멈추는 대신 감소합니다.' },
     nine: { n: '아홉 목숨', d: '한 판에 한 번, 쓰러져도 되살아납니다. 적을 처치할 때마다 고양이 유령이 나타나 적을 쫓습니다.' },
     ashstar: { n: '잿빛 별의 홀', d: '화염구가 3갈래로 나갑니다. 운석 주위에 작은 운석 5개가 함께 떨어집니다.' },
-    dawn: { n: '새벽 성가', d: '치유의 빛이 2초 동안 모든 피해를 막는 보호막도 함께 줍니다.' },
+    dawn: { n: '별빛 성가', d: '치유의 빛이 2초 동안 모든 피해를 막는 보호막도 함께 줍니다.' },
     undertaker: { n: '장의사의 머스킷', d: '등 맡기기에서 하비가 쏘는 산탄의 피해가 150%로 증가합니다.' },
     vigil: { n: '철야의 ', d: '퍼펙트 회피를 5번 할 때마다 하트 반 칸을 회복합니다.' },
     ember: { n: '불씨의 ', d: '콤보 3타가 사방으로 충격파를 일으킵니다.' },

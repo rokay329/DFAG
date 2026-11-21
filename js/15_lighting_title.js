@@ -1,5 +1,19 @@
 'use strict';
 // 잿빛 왕관 원정대 — 15_lighting_title.js : 조명(GL·캔버스), 타이틀 화면 도트 그림
+  // v3.19 해가 뜨지 않는 세계: 시작 장소는 밤 — 조금 더 어둡고 푸른 어둠, 등불 · 촛불 · 창 달빛이 광원 (window.NIGHT = false면 예전)
+  const HOME_NIGHT = { dark: 0.5, dk: [6, 8, 24] };
+  const homeNight = () => window.NIGHT !== false && !!(G && G.dun && G.dun.home);
+  const darkA = () => homeNight() ? HOME_NIGHT.dark : STG().dark;
+  const MOON = window.__MOON = { x: 0.1, y: -0.45, r: 1.1, a: 0.45, c: '150,170,235', ca: 0.14, shafts: false, per: 150, bw: 34, sc: [70, 86, 130], sa: 0.22 };
+  let MOON_CV = null;
+  function moonShafts() { // 방마다 한 번 그려 둔 달빛 띠(세계 좌표, 2px 칸 디더)를 더해 그림
+    const key = (G.dun && G.dun.cur) || 0;
+    if (!MOON_CV || MOON_CV.key !== key) { const cw = W >> 1, ch = H >> 1, [c, g] = mkCanvas(cw, ch), im = g.createImageData(cw, ch), d = im.data, B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+      for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) { const sv = y - x * 0.55, ph = ((sv % MOON.per) + MOON.per) % MOON.per, w = MOON.bw, e = ph < w ? Math.sin(Math.PI * ph / w) : 0; if (!e) continue;
+        const k = e * (1 - Math.min(1, y / ch) * 0.5); if (k * 0.9 < (B4[y & 3][x & 3] + 0.5) / 16) continue; const i = (y * cw + x) * 4; d[i] = MOON.sc[0]; d[i + 1] = MOON.sc[1]; d[i + 2] = MOON.sc[2]; d[i + 3] = 255; }
+      g.putImageData(im, 0, 0); MOON_CV = { key, c }; }
+    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = MOON.sa; ctx.drawImage(MOON_CV.c, 0, 0, W, H); ctx.restore(); }
+  const moonOn = () => window.MOON !== false && !!G && (G.stage === 1 || G.stage === 3) && !(G.dun && (G.dun.home || G.dun.forge)) && !(typeof DEN !== 'undefined' && DEN.on && DEN.on());
 // index.html이 js/ 파일을 번호 순서대로 불러온다. 모든 파일이 같은 전역 스코프를 함께 쓴다(예전 game.js 한 덩어리를 그대로 나눔).
 
   // ================================================================ v1.78 조명 GL: 빛 지도를 GPU에서 계산하고 4×4 바이어 디더로 단계를 나눔
@@ -57,9 +71,9 @@ void main() {
     let anyC = false;
     for (let i = 0; i < n; i++) { const l = vis[i], j = i * 4; S.Lb[j] = l.x; S.Lb[j + 1] = l.y; S.Lb[j + 2] = l.r; S.Lb[j + 3] = l.a;
       if (l.c) { anyC = true; const p = l.cRGB || (l.cRGB = l.c.split(',').map(v => +v / 255)); S.Cb[j] = p[0]; S.Cb[j + 1] = p[1]; S.Cb[j + 2] = p[2]; S.Cb[j + 3] = l.ca; } else S.Cb[j + 3] = 0; }
-    const dk = LGL_DK[G.stage] || [4, 3, 10];
+    const dk = homeNight() ? HOME_NIGHT.dk : LGL_DK[G.stage] || [4, 3, 10];
     gl.uniform4fv(S.U.L, S.Lb); gl.uniform4fv(S.U.C, S.Cb); gl.uniform1i(S.U.n, n); gl.uniform2f(S.U.cam, CAMX, CAMY);
-    gl.uniform3f(S.U.dk, dk[0] / 255, dk[1] / 255, dk[2] / 255); gl.uniform1f(S.U.A0, STG().dark); gl.uniform1f(S.U.N, 5);
+    gl.uniform3f(S.U.dk, dk[0] / 255, dk[1] / 255, dk[2] / 255); gl.uniform1f(S.U.A0, darkA()); gl.uniform1f(S.U.N, 5);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     ctx.drawImage(S.c, 0, 0, S.W2, S.H2, CAMX, CAMY, VW, VH);
     if (anyC) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(S.c, S.W2, 0, S.W2, S.H2, CAMX, CAMY, VW, VH); ctx.restore(); }
@@ -108,7 +122,7 @@ void main() {
     for (const f of G.fx) if (f.kind === 'muzzle') lights.push({ x: f.x, y: f.y, r: 50 * f.s, a: f.t / f.max, c: '255,200,120', ca: 0.35 * f.t / f.max });
     if (G.player.miracleT > 0 || G.player.shieldT > 0) lights.push({ x: G.player.x, y: G.player.y - 10, r: 60, a: 0.6, c: '255,225,140', ca: 0.18 });
     if (G.cls === 'mage' && !G.player.dead) { const tp = staffTip(); lights.push({ x: tp.x, y: tp.y, r: G.player.state === 'cast' ? 70 : 30, a: 0.5, c: G.player.state === 'cast' ? '255,150,70' : '190,120,255', ca: 0.12 }); }
-    { const t = weaponTier(G.cls); if (t === 3 && !G.player.dead) lights.push({ x: G.player.x, y: G.player.y - 14, r: 70, a: 0.5, c: LEGEND_FX_COL[G.cls].c, ca: 0.12 + 0.04 * Math.sin(time * 6) }); }
+    { const t = 0; /* v3.19 전설 무기 광채(빛) 삭제 */ if (t === 3 && !G.player.dead) lights.push({ x: G.player.x, y: G.player.y - 14, r: 70, a: 0.5, c: LEGEND_FX_COL[G.cls].c, ca: 0.12 + 0.04 * Math.sin(time * 6) }); }
     // v0.92 버프 이펙트가 어둠에 묻히지 않게: 보호막·강화한 적, 망령 기사 영혼 사슬에 빛
     for (const e of G.enemies) { const B = buffState(e); if (!B) continue; const h = enemyH(e);
       if (B.bar) lights.push({ x: e.x, y: e.y, r: Math.max(40, enemyW(e) * 2 + 20), a: 0.55, c: B.bar.c, ca: 0.1 + 0.05 * Math.sin(time * 4) });
@@ -120,13 +134,14 @@ void main() {
     for (const f of G.fx) if (f.kind === 'hitflash') lights.push({ x: f.x, y: f.y, r: 50, a: 0.7 * (f.t / f.max), c: '255,240,200', ca: 0.2 * (f.t / f.max) });
     for (const p of G.parts) if (p.glow) lights.push({ x: p.x, y: p.y, r: 8, a: 0.4 });
     roomLights(lights);
+    if (moonOn()) lights.push({ x: cam.x + VW * MOON.x, y: cam.y + VH * MOON.y, r: VW * MOON.r, a: MOON.a, c: MOON.c, ca: MOON.ca }); // v3.19 야외(1장 · 3장) 달빛: 화면 왼쪽 위 하늘에서 비스듬히 드리우는 넓고 옅은 푸른 빛
     if (flashT > 0) lights.push({ x: cam.x + VW / 2, y: cam.y + VH / 2, r: 900, a: Math.min(1, flashT * 4), flash: OPT && !(LGL && !LGL.off && LIGHT_GL) });
 
     const vis = lights.filter(l => l.x + l.r > cam.x && l.x - l.r < cam.x + VW && l.y + l.r > cam.y && l.y - l.r < cam.y + VH);
     if (LGL && !LGL.off && LIGHT_GL) { renderLightingGL(vis); return; } // v1.78 GPU + 디더
     if (OPT) { // v1.17 빛 지도를 반 해상도로 (화면도 어차피 2px 칸으로 다시 뽑으므로 겉모습 같음) — 칠하는 넓이 1/4
       const fl = vis.find(l => l.flash), flK = fl ? 1 - Math.round(fl.a * 0.8 * DLV) / DLV : 1; // 번쩍일 때는 어둠을 단계로 옅게 (화면만 한 빛 도장을 새로 만들면 순간 멈춤)
-      const H = LIGHTH, dark = `rgba(${G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${STG().dark * flK})`;
+      const H = LIGHTH, dark = `rgba(${homeNight() ? HOME_NIGHT.dk.join(',') : G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${darkA() * flK})`;
       H.g.setTransform(1, 0, 0, 1, 0, 0); H.g.globalCompositeOperation = 'source-over'; H.g.clearRect(0, 0, VW / 2, VH / 2); H.g.fillStyle = dark; H.g.fillRect(0, 0, VW / 2, VH / 2);
       H.g.globalCompositeOperation = 'destination-out'; H.g.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
       for (const l of vis) { if (l.flash) continue; clipL(H.g, l, () => { if (LIGHT_DITH) stampL(H.g, l, false); else { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); } }); }
@@ -140,7 +155,7 @@ void main() {
     lg.setTransform(1, 0, 0, 1, 0, 0);
     lg.globalCompositeOperation = 'source-over';
     lg.clearRect(0, 0, VW, VH);
-    lg.fillStyle = `rgba(${G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${STG().dark})`; lg.fillRect(0, 0, VW, VH);
+    lg.fillStyle = `rgba(${homeNight() ? HOME_NIGHT.dk.join(',') : G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${darkA()})`; lg.fillRect(0, 0, VW, VH);
     lg.globalCompositeOperation = 'destination-out';
     lg.setTransform(1, 0, 0, 1, -CAMX, -CAMY);
     for (const l of vis) {
@@ -307,7 +322,7 @@ void main() {
     drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     drawBuffBatch(); // v2.50 바닥 강화 고리 한 장으로
-    const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.y, d: () => drawEnemyShk(e) }));
+    const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.type === 'crow' && (e.z || 0) > 8 ? e.y + 4000 : e.y, d: () => drawEnemyShk(e) })); // v3.19 날고 있는 까마귀 · 나방은 벽 · 울타리 · 기둥보다 위에 그림 (밑으로 지나가 보이던 문제)
     if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
     ents.push({ y: G.player.y, d: drawPlayer });
     roomEnts(ents); gearEnts(ents); forgeEnts(ents); CA.ents(ents); END.ents(ents); sqzEnts(ents); TRUTH.ents(ents); DEN.ents(ents); BDC.ents(ents); if (typeof HABIULT !== 'undefined') HABIULT.ents(ents); if (typeof CASING !== 'undefined') CASING.ents(ents); // v2.57 크루가쉬 방책 말뚝도 깊이 정렬
@@ -336,6 +351,7 @@ void main() {
     // v1.86 안개 제거 (7%로 옅어 거의 안 보이고, 도트 규칙의 예외였음)
     ctx.globalAlpha = 1;
     { const t0 = PERF.on ? performance.now() : 0; renderLighting(); if (PERF.on) PERF.li += performance.now() - t0; }
+    if (moonOn() && MOON.shafts) moonShafts(); // v3.19 달빛 줄기 (비스듬한 띠, 디더)
     drawEProjs(); // 적 투사체는 어둠 위에 그려 항상 또렷하게
     drawOrcWorld();
     if (G.dun) drawFireflies();
@@ -354,7 +370,7 @@ void main() {
       if (hole) { // 나 모양 − 앞을 가리는 물체 = 컬러로 남길 자리
         for (const g of [mk, oc]) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(bx, by, bw, bh); g.setTransform(WT); }
         const main = ctx, wt0 = WTEXT.length, np = G.parts.length;
-        try { ctx = mk; drawPlayer(); ctx = oc; for (const o of G._occ || []) o.d(); if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) oc.drawImage(frontM, 0, 0); }
+        try { ctx = mk; drawPlayer(); ctx = oc; drawBubble.mute = true; try { for (const o of G._occ || []) o.d(); } finally { drawBubble.mute = false; } if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) oc.drawImage(frontM, 0, 0); }
         finally { ctx = main; WTEXT.length = wt0; G.parts.length = Math.min(G.parts.length, np); }
         mk.setTransform(1, 0, 0, 1, 0, 0); mk.globalCompositeOperation = 'destination-out'; mk.drawImage(CNT_OC, bx, by, bw, bh, bx, by, bw, bh); mk.globalCompositeOperation = 'source-over';
       }

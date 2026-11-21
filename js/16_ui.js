@@ -597,7 +597,7 @@
     if (statusTags !== hudPrev.status) { $('p1status').innerHTML = statusTags; hudPrev.status = statusTags; }
     // 페이즈
     { const R = G.dun && G.dun.cur, rs = G.rs || {};
-      $('phaseText').textContent = R ? (R.type === 'archive' || R.type === 'rest' || R.type === 'den' ? roomName(R.type) : `${G.stage} · ${roomName(R.type)}`) : ''; // v3.10 긴 장소 이름은 번호 없이
+      $('phaseText').textContent = R ? roomName(R.type) : ''; // v3.19 방 이름 앞의 장 번호 삭제 (바로 아래 줄에 몇 장인지 이미 적혀 있음)
       { const n = R && R.type === 'den' ? 14 : $('phaseText').textContent.length; /* v3.17 안전 놀이터 이름도 한 줄로 */ $('phaseText').style.letterSpacing = n >= 14 ? '0' : ''; $('phaseText').style.whiteSpace = n >= 14 ? 'nowrap' : ''; $('phaseText').style.fontSize = n >= 14 ? '10px' : ''; } // v3.10 긴 장소 이름은 한 줄로 (기록 보관소 지하 · 출장 비스트로)
       let sub = ''; // v2.51 방 모양·봉인 글자는 빼고, 전투 중일 때만 남은 적 (보스 문 열쇠는 따로 #bkPanel)
       if (R && R.type === 'survive' && rs.state === 'run') { const left = SURV_PT() - (rs.phT || 0), al = G.enemies.filter(e => !e.dead).length; sub = rs.ph >= SURV_N - 1 && left <= 0 ? `남은 적 ${al}` : `남은 시간 ${Math.max(0, Math.ceil(left))}초`; }
@@ -678,9 +678,9 @@
     return `<div class="arcC${lock ? ' lock' : ''}" ${aTip(lock ? '???' : W0.name, lock ? cond : `<span style="color:${g.c}">${g.n}</span> · ${sk}`, lock ? '#9a8ea5' : g.c)}><img src="${weaponIconURL({ slot: 'weapon', cls: c, wk: i, grade: W0.grade })}"><span><span class="an" style="color:${lock ? '#8a8494' : g.c}">${lock ? '???' : W0.name}</span><span class="ac">${sub}</span>${lock && u ? `<span class="bar"><b style="width:${Math.round(cur / u.n * 100)}%"></b></span>` : ''}</span></div>`;
   }
   const TRUTH_ARC = [ // v2.58 기록 보관소 「진실」 — 내용은 11d_truth.js와 같게
-    { k: 't1', no: '구덩이 실험실', title: '키륵의 연구 일지', c: '#7ad050', hint: '초록 자국은 어디서 왔을까요.', paras: ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.', '조각 입수 이후 일몰이 관측되지 않음. 그림자의 방위와 길이가 고정되어 있음 — 국소적 시간 정체로 추정.', '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.', '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.', '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 요망.', '재검토 불가. 보존해야 함. 이송해야 함. 그 이유는.........'] },
-    { k: 't2', no: '기사단 밀실', title: '바닥에 새겨진 주문', c: '#b070ff', hint: '흩어진 서약을 이어 보세요.', paras: ['기사단장 발도르여,', '해가 지지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'] },
-    { k: 't3', no: '붉은 엄니 부락', title: '크루가쉬의 마지막 말', c: '#ff6a50', hint: '피로 그린 원을 찾아보세요.', paras: ['"왕관은 바치는 게 아니다. 지지 않는 해에 비추어-"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'] },
+    { k: 't1', no: '구덩이 실험실', title: '키륵의 연구 일지', c: '#7ad050', hint: '초록 자국은 어디서 왔을까요.', paras: ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.',  '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.', '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.', '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 요망.', '재검토 불가. 보존해야 함. 이송해야 함. 그 이유는.........'] },
+    { k: 't2', no: '기사단 밀실', title: '바닥에 새겨진 주문', c: '#b070ff', hint: '흩어진 서약을 이어 보세요.', paras: ['기사단장 발도르여,', '해가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'] },
+    { k: 't3', no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', c: '#ff6a50', hint: '피로 그린 원을 찾아보세요.', paras: ['"왕관은 바치는 게 아니다. 해에 비추어-"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'] },
   ];
   function renderArchive() { // v2.29 기록 보관소 · v2.30 탭: 유물 / 직업별 무기
     const fmt = n => n >= 1000 ? n.toLocaleString() : n, CL5 = ['knight', 'ranger', 'mage', 'priest', 'gunner'];
@@ -729,7 +729,7 @@
     }
     else if (act === 'resume') resume();
     else if (act === 'inv') openInv('pause');
-    else if (act === 'quit') { $('ovPause').classList.remove('on'); showResult(false); }
+    else if (act === 'quit') { $('ovPause').classList.remove('on'); showResult(false, true); }
   }
   document.querySelectorAll('.mi').forEach(btn => {
     btn.addEventListener('mouseenter', () => { btn.parentElement.querySelectorAll('.mi').forEach(x => x.classList.toggle('sel', x === btn)); });
@@ -1386,7 +1386,8 @@
     const fitS = Math.min(fitW / VW, fitH / VH), dpr = window.devicePixelRatio || 1;
     // v1.07: 2px 칸 하나가 모니터 픽셀 정수 개가 되게 (윈도 배율 125%·150% 포함). 0.25 단위 CSS 배율이면 칸이 3·4px로 섞여 움직일 때 우글거림
     const dev = Math.max(1, Math.floor(fitS * dpr * 2) / 2);
-    const s = typeof TOUCH !== 'undefined' && TOUCH.on ? fitS : dev / dpr; // 모바일은 화면에 꽉 차게
+    let s = typeof TOUCH !== 'undefined' && TOUCH.on ? fitS : dev / dpr; // 모바일은 화면에 꽉 차게
+    if (window.PX1_ON) s = 0.5 / dpr; // v3.19 1px 도트 보기(F7): 도트 한 칸 = 모니터 픽셀 하나 → 화면이 384×216 그대로
     const wrap = $('wrap');
     wrap.style.width = `${VW * s}px`; wrap.style.height = `${VH * s}px`;
     cv.style.width = `${VW * s}px`; cv.style.height = `${VH * s}px`;

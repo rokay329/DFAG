@@ -9,7 +9,7 @@
 //   · 곡마다 샘플 + 에코 버퍼 + 드라이버가 64KB 음원 메모리 안에 들어가는지 _check()로 검사
 // 외부 음원 파일 없이, 시작할 때 샘플을 직접 합성해 둔다.
 window.AudioSys = (() => {
-  let ctx = null, comp, master, bgmGain, sfxBus, musicBus, sfcLP, echoIn, echoDelay, echoFb, echoOut, timer = null;
+  let ctx = null, comp, master, bgmGain, sfxBus, musicBus, sfcLP, gbaIn, gbaQ, gbaOut, gbaLP, echoIn, echoDelay, echoFb, echoOut, timer = null;
   let SMP = null;
   const st = { bgm: 0.45, sfx: 1.0, muted: false };
   const VER = 2; // 저장된 옛 음량 설정은 한 번 새 기본값으로
@@ -186,6 +186,18 @@ window.AudioSys = (() => {
     ['Am', 'C5:3 E5:5'], ['G', 'D5:6 -:2'], ['F', 'A4:4 C5:4'], ['E', 'B4:6 -:2'],
     ['Dm', 'D5:4 A4:4'], ['Am', 'C5:6 -:2'], ['E7', 'G#4:4 B4:2 -:2'], ['Am', 'A4:8'],
   ], lead: { i: 'piano', vol: 0.11 }, p2: { style: 'trem', i: 'strpad', vol: 0.022 }, bass: { style: 'walk', i: 'bassP' }, drum: { pat: DR.den, kit: 'light', vol: 0.45 }, echo: { t: 0.24, fb: 0.5, mix: 0.5 } });
+  // ================= v3.19 유지 곡: 시작 장소(캐릭터별 프롤로그) · 대장간 · 살구의 비밀상점 · 비스트로 · 보물 방 · 비밀 방 — 곡마다 악기 하나, 깔끔한 결
+  SONGS.forge = mk({"bpm": 102, "M": 16, "rows": [["C", "E5 G4 C5 E5 D5:2 C5:2"], ["F", "F4 A4 C5 F5 E5:2 C5:2"], ["G", "D5 B4 G4 B4 D5:2 G4:2"], ["C", "C5 E5 G5:2 -:4"], ["Am", "A4 C5 E5 C5 A4:2 E4:2"], ["F", "F4 G4 A4 C5 A4:2 F4:2"], ["G7", "G4 B4 D5 F5 E5 D5 C5 B4"], ["C", "C5:2 G4:2 C4:4"]], "lead": {"i": "piano", "vol": 0.11, "gate": 0.5}, "p2": {"style": "pluck8", "i": "piano", "vol": 0.045}, "bass": {"style": "oct8", "i": "piano"}, "echo": {"t": 0.14, "fb": 0.3, "mix": 0.255}, "gba": {"bits": 0, "lp": 7500}}); // 대장간 — 장난감 피아노
+  SONGS.rmShop = mk({"bpm": 109, "M": 16, "rows": [["F", "C5 A4 F4 A4 C5:2 A4:2"], ["Bb", "D5 Bb4 F4 Bb4 D5:2 C5:2"], ["C7", "E5 D5 C5 Bb4 G4:2 E4:2"], ["F", "F4 A4 C5 F5 E5:2 -:2"], ["Dm", "A4 D5 F5 D5 A4:2 F4:2"], ["Gm", "Bb4 D5 G5 D5 Bb4:2 G4:2"], ["C7", "C5 E5 G5 E5 C5 Bb4 G4 E4"], ["F", "F5:2 C5:2 F4:4"]], "lead": {"i": "celesta", "vol": 0.12, "gate": 0.6}, "p2": {"style": "pluck8", "i": "celesta", "vol": 0.045}, "bass": {"style": "oct8", "i": "celesta"}, "echo": {"t": 0.16, "fb": 0.35, "mix": 0.2975}, "gba": {"bits": 0, "lp": 7500}}); // 살구의 비밀상점 — 오르골(첼레스타)
+  SONGS.rmBistro = mk({"bpm": 124, "M": 12, "rows": [["G", "G4 B4 D5 B4 G4 B4"], ["C", "C5 E5 G5:2 E5:2"], ["D7", "D5 F#4 A4 C5 B4 A4"], ["G", "B4:2 G4:2 D4:2"], ["Em", "E5 D5 B4 G4 B4 D5"], ["C", "C5 G4 E4 G4 C5 E5"], ["D7", "D5 C5 A4 F#4 A4 C5"], ["G", "G4:4 -:2"]], "lead": {"i": "pizz", "vol": 0.23, "gate": 0.6}, "p2": {"style": "waltz", "i": "pizz", "vol": 0.13}, "bass": {"style": "waltz", "i": "pizz"}, "echo": {"t": 0.14, "fb": 0.3, "mix": 0.255}, "gba": {"bits": 0, "lp": 7500}}); // 비스트로(모닥불 방) — 피치카토 왈츠
+  SONGS.rmReward = mk({"bpm": 75, "M": 16, "rows": [["C", "E4:2 G4:2 C5:4"], ["Am", "C5:2 B4 A4 E4:4"], ["F", "F4:2 A4:2 C5:3 D5"], ["G", "B4:6 -:2"], ["C", "G4:2 C5:2 E5:4"], ["Em", "D5:2 B4 G4 E4:4"], ["F", "A4:2 G4 F4 A4:2 C5:2"], ["G", "D5:4 B4:4"]], "lead": {"i": "harp", "vol": 0.18}, "p2": {"i": "harp", "style": "pluck8", "vol": 0.08}, "bass": {"style": "long", "i": "harp"}, "echo": {"t": 0.22, "fb": 0.45, "mix": 0.3825}, "gba": {"bits": 0, "lp": 7500}}); // 보물 방 — 하프
+  SONGS.rmSecret = mk({"bpm": 66, "M": 16, "rows": [["Dm", "A4:4 F4:4"], ["G", "B4:2 A4:2 G4:4"], ["Dm", "D5:3 C5 A4:4"], ["C", "G4:6 -:2"], ["Dm", "F4:2 A4:2 D5:4"], ["G", "B4:3 C5 D5:4"], ["Am", "C5:2 B4 A4 E4:4"], ["Dm", "D4:8"]], "lead": {"i": "flute", "vol": 0.11, "gate": 0.95}, "p2": {"style": "none", "i": "flute", "vol": 0}, "pad": {"i": "flute", "vol": 0.03}, "bass": {"style": "long", "i": "flute"}, "echo": {"t": 0.24, "fb": 0.5, "mix": 0.425}, "gba": {"bits": 0, "lp": 7500}}); // 비밀 방 — 플루트
+  SONGS.pro_knight = mk({"bpm": 58, "M": 16, "rows": [["Dm", "D4:4 A4:4"], ["Bb", "Bb4:3 A4 F4:4"], ["Gm", "G4:2 Bb4:2 D5:4"], ["A", "C#5:6 -:2"], ["Dm", "A4:3 G4 F4:4"], ["Gm", "G4:2 F4:2 D4:4"], ["Bb", "F4:2 Bb4:2 A4:2 G4:2"], ["A", "E4:6 -:2"]], "lead": {"i": "horn", "vol": 0.11, "gate": 0.95}, "p2": {"style": "none", "i": "horn", "vol": 0}, "pad": {"i": "horn", "vol": 0.018}, "bass": {"style": "long", "i": "horn"}, "echo": {"t": 0.22, "fb": 0.45, "mix": 0.4}, "gba": {"bits": 0, "lp": 7500}}); // 알드릭 — ??? 기사 · 호른
+  SONGS.pro_ranger = mk({"bpm": 96, "M": 16, "rows": [["Am", "A4 - C5 - B4 - G#4 -"], ["Am", "A4 - E4 - F4 E4 D#4 E4"], ["Dm", "D5 - F5 - E5 - C#5 -"], ["E", "B4 - G#4 - E4:2 -:2"], ["Am", "C5 B4 A4 G#4 A4 - E4 -"], ["F", "F4 - A4 - C5 B4 A4 -"], ["Dm", "D5 C5 B4 A4 G#4 - B4 -"], ["E", "E4:2 -:2 E5 -:3"]], "lead": {"i": "pizz", "vol": 0.3, "gate": 0.6}, "p2": {"style": "none", "i": "pizz", "vol": 0}, "bass": {"style": "walk", "i": "pizz"}, "echo": {"t": 0.22, "fb": 0.45, "mix": 0.4}, "gba": {"bits": 0, "lp": 7500}}); // 네로 — 고양이 · 피치카토
+  SONGS.pro_mage = mk({"bpm": 76, "M": 16, "rows": [["C", "E4 G4 C5 G4 D5 G4 E5 G4"], ["D", "F#4 A4 D5 A4 E5 A4 F#5 A4"], ["Em", "G4 B4 E5 B4 D5 B4 G4 B4"], ["C", "C5:4 B4:2 G4:2"], ["Am", "A4 C5 E5 C5 B4 C5 A4 E4"], ["D", "D4 F#4 A4 D5 C5 A4 F#4 D4"], ["Em", "E4 G4 B4 E5 D5:2 B4:2"], ["D", "F#4:2 A4:2 D5:4"]], "lead": {"i": "harpsi", "vol": 0.22, "gate": 0.8}, "p2": {"style": "none", "i": "harpsi", "vol": 0}, "bass": {"style": "long", "i": "harpsi"}, "echo": {"t": 0.22, "fb": 0.45, "mix": 0.4}, "gba": {"bits": 0, "lp": 7500}}); // 세리안 — 여우 · 하프시코드
+  SONGS.pro_priest = mk({"bpm": 64, "M": 16, "rows": [["F", "C5:4 A4:4"], ["Bb", "D5:2 C5:2 Bb4:4"], ["F", "A4:2 G4:2 F4:4"], ["C", "G4:6 -:2"], ["Dm", "F4:2 A4:2 D5:4"], ["Bb", "D5:3 C5 Bb4:4"], ["C", "A4:2 G4:2 E4:2 G4:2"], ["F", "F4:6 -:2"]], "lead": {"i": "celesta", "vol": 0.12}, "p2": {"i": "celesta", "style": "pluck8", "vol": 0.035}, "bass": {"style": "long", "i": "celesta"}, "echo": {"t": 0.24, "fb": 0.5, "mix": 0.5}, "gba": {"bits": 0, "lp": 7500}}); // 미레아 — 토끼 · 첼레스타
+  SONGS.pro_gunner = mk({"bpm": 58, "M": 16, "rows": [["Am", "E4:6 A4:2"], ["Am", "C5:4 B4:2 A4:2"], ["F", "A4:6 -:2"], ["E", "G#4:4 B4:4"], ["Am", "E5:4 D5:2 C5:2"], ["Dm", "D5:3 C5 A4:4"], ["E", "B4:2 G#4:2 E4:4"], ["Am", "A4:6 -:2"]], "lead": {"i": "violin", "vol": 0.085, "gate": 0.97}, "p2": {"style": "none", "i": "violin", "vol": 0}, "bass": {"style": "long", "i": "violin"}, "echo": {"t": 0.24, "fb": 0.5, "mix": 0.5}, "gba": {"bits": 0, "lp": 7500}}); // 그레이브 — 늑대 · 바이올린
+  SONGS.den = mk({"bpm": 53, "M": 16, "rows": [["Am", "E4:2 -:6"], ["Am", "-:4 C4:2 -:2"], ["Am", "D#4:2 -:6"], ["Am", "-:4 B3:2 -:2"], ["Am", "E4:2 -:2 F4:2 -:2"], ["Am", "-:4 C4:2 -:2"], ["Am", "D#4:2 -:6"], ["Am", "-:2 B3:2 -:4"]], "lead": {"i": "piano", "vol": 0.1}, "p2": {"style": "none", "i": "piano", "vol": 0}, "bass": {"style": "none", "i": "contra"}, "drum": {"pat": ["t...............", "........t......."], "kit": "light", "vol": 0.24499999999999997, "fill": null}, "echo": {"t": 0.24, "fb": 0.6, "mix": 0.51}, "gba": {"bits": 0, "lp": 7500}}); // 영수 · 명수의 안전 놀이터 — 음산하고 거의 무음 (낮은 피아노 한두 음 + 먼 손북)
   // 옛 무드 이름 호환
   const ALIAS = { field: 's1', survive: 's1Survive', boss: 's1Boss', rest: 's1Rest', citadel: 's2', citadelSurvive: 's2Survive', citadelBoss: 's2Boss', citadelRest: 's2Rest', orc: 's3', orcboss: 's3Boss' };
 
@@ -329,7 +341,7 @@ window.AudioSys = (() => {
     keyOff(c, t);
     const noise = nm.startsWith('N:'), key = noise ? nm.slice(2) : nm;
     const S = SMP[noise ? 'noise' : key], src = ctx.createBufferSource(); src.buffer = S.b;
-    const g = ctx.createGain();
+    const g = ctx.createGain(); g.gain.value = 0; /* v3.19 첫 샘플이 튀지 않게 */
     if (noise) { const [dec, v] = NOISE[key]; src.loop = true; src.playbackRate.value = rate * (key === 'hat' ? 1 : 0.6); g.gain.setValueAtTime(vol * v, t); g.gain.setTargetAtTime(0, t, dec / 3); src.start(t, rnd01() * 0.9); src.stop(t + dec * 2 + 0.05); }
     else {
       src.playbackRate.value = Math.min(4, rate);
@@ -354,9 +366,10 @@ window.AudioSys = (() => {
     drone6: (r, s) => s % 6 === 0 ? [s % 12 === 0 ? r - 12 : r - 5, 6, 0.95] : s % 6 === 4 ? [r - 12, 1, 0.5] : null,
     march: (r, s) => ({ 0: [r - 12, 3, 0.9], 3: [r - 12, 1, 0.6], 4: [r - 5, 4, 0.9], 8: [r - 12, 3, 0.9], 11: [r - 12, 1, 0.6], 12: [r - 5, 4, 0.9] })[s] || null,
     waltz: (r, s, b) => s === 0 ? [b % 2 ? r - 17 : r - 12, 4, 0.9] : null,
+    none: () => null,
     long: (r, s, b, M) => s === 0 ? [r - 12, M / 2, 0.98] : s === M / 2 ? [r - 5, M / 2, 0.98] : null,
   };
-  const BASSVOL = { contra: 0.058, bassP: 0.1 };
+  const BASSVOL = { contra: 0.058, bassP: 0.1, celesta: 0.075, pizz: 0.2, piano: 0.07, violin: 0.045, flute: 0.06, harp: 0.1, harpsi: 0.1, horn: 0.06 }; // v3.19 악기 하나로 연주하는 곡의 베이스
   let rendering = false, solo = null;
   function playStep(t) {
     const S = SONGS[mood], dt = 60 / S.bpm / 4, M = S.M;
@@ -412,6 +425,9 @@ window.AudioSys = (() => {
     echoDelay.delayTime.setValueAtTime(EDL(S) * 0.016, now);
     echoFb.gain.setValueAtTime(Math.max(-1, Math.min(127 / 128, E.fb)), now); // EFB
     echoOut.gain.setValueAtTime(Math.min(1, E.mix * 1.4), now);              // EVOL
+    const gb = S.gba;
+    if (gb && gb.bits) { const n = 1 << gb.bits, c = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; c[i] = Math.round(x * n / 2) / (n / 2); } gbaQ.curve = c; gbaIn.gain.setValueAtTime(4, now); gbaOut.gain.setValueAtTime(0.25, now); gbaLP.frequency.setValueAtTime(gb.lp || 6200, now); }
+    else { gbaQ.curve = null; gbaIn.gain.setValueAtTime(1, now); gbaOut.gain.setValueAtTime(1, now); gbaLP.frequency.setValueAtTime(gb ? gb.lp || 16000 : 16000, now); }
   }
   function applyVol() {
     if (!ctx) return;
@@ -432,7 +448,10 @@ window.AudioSys = (() => {
     const lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 9500; lp2.Q.value = 0.5;
     const mu = ctx.createGain(); mu.gain.value = 1.1;
     sfcLP.connect(lp2); lp2.connect(mu); mu.connect(bgmGain);
-    musicBus = ctx.createGain(); musicBus.connect(sfcLP);
+    // v3.19 곡별 부드러운 저역통과 (gba.lp) · gba.bits가 있으면 8비트로 깎음. 없으면 그대로 통과
+    gbaIn = ctx.createGain(); gbaQ = ctx.createWaveShaper(); gbaOut = ctx.createGain(); gbaLP = ctx.createBiquadFilter(); gbaLP.type = 'lowpass'; gbaLP.Q.value = 0.4;
+    gbaIn.connect(gbaQ); gbaQ.connect(gbaOut); gbaOut.connect(gbaLP); gbaLP.connect(sfcLP);
+    musicBus = ctx.createGain(); musicBus.connect(gbaIn);
     // 에코: 입력(EON 채널 합) → 지연(EDL) → 8탭 FIR → 출력(EVOL) / 피드백(EFB)
     echoIn = ctx.createGain(); echoDelay = ctx.createDelay(0.25); echoFb = ctx.createGain(); echoOut = ctx.createGain();
     let fir;
@@ -472,7 +491,7 @@ window.AudioSys = (() => {
       const old = musicBus;
       old.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
       setTimeout(() => { try { old.disconnect(); } catch (e) { /* 무시 */ } }, 2500);
-      musicBus = ctx.createGain(); musicBus.connect(sfcLP); chan.fill(null);
+      musicBus = ctx.createGain(); musicBus.connect(gbaIn); chan.fill(null);
       mood = m; barIdx = 0; step = 0; nextT = ctx.currentTime + 0.08; setEcho();
     },
     setVolume(kind, v) { st[kind] = Math.max(0, Math.min(1, v)); save(); applyVol(); },

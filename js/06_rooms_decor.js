@@ -13,7 +13,7 @@
     return time < s.until ? s : null;
   }
   const BUBBLES = [], BUB_RECTS = [], BUB_LAST = new Map(); // BUB_RECTS: 이번 화면에 그린 말주머니 · 키 안내 자리 (화면 좌표) — 그 위에선 마우스 커서를 숨김
-  function drawBubble(text, x, y, side = 0) { BUBBLES.push([text, x, y, side]); }
+  function drawBubble(text, x, y, side = 0) { if (drawBubble.mute) return; BUBBLES.push([text, x, y, side]); } // mute: 흑백 연출용으로 앞쪽 물체를 한 번 더 그릴 때는 말주머니를 다시 넣지 않음 (v3.19 말주머니가 두 개씩 뜨던 문제)
   // v3.18 대화 말주머니의 F 안내: 방금 그린 말주머니 오른쪽 위 모서리에, 말주머니 오른쪽 끝을 넘지 않게 (화면 좌표)
   function bubbleKey(text, label, fx, fy) { const b = BUB_LAST.get(text); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     const bob = Math.floor(time * 2.5) % 2;
@@ -23,9 +23,9 @@
       else drawKeyTag(ctx, b.x + b.w, b.y - 8 + bob, 'F', label, { right: true }); } // 화면 오른쪽 끝이라 나가면: 말주머니 위로 올려 오른쪽 끝에 맞춤
     ctx.restore(); }
   function flushBubbles() {
-    BUB_LAST.clear();
+    BUB_LAST.clear(); drawBubble.mute = false;
     if (G && G.player && !G.player.dead && P_BUBBLE.until > time && P_BUBBLE.text) {
-      drawBubble(P_BUBBLE.text, G.player.x, G.player.y - 38 - (G.player.lift || 0), 0);
+      drawBubble(P_BUBBLE.text, G.player.x, G.player.y - 38, 0); // v3.19 말주머니는 캐릭터 동작(들림 · 숨쉬기)에 따라 위아래로 흔들리지 않음
     }
     // v3.18 말주머니끼리 겹치면 나중 것을 겹친 말주머니 위로 올려 쌓음 (겹쳐 그려져 깨져 보이지 않게)
     const placed = []; ctx.font = '10px Galmuri9';
@@ -47,7 +47,7 @@
   const LEGEND_LORE = {
     // 1. 기사 (인간 / 대검)
     bulwark: {
-      cls: 'knight', name: '태양 서약 대검', c: '#ffc040',
+      cls: 'knight', name: '별의 서약 대검', c: '#ffc040',
       pickupBubble: '…아직 따뜻하네.',
       pickupMono: [
         '자루에 묶인 붉은 천이 잿가루 속에서도 색을 잃지 않았다.',
@@ -148,8 +148,8 @@
 
     // 4. 사제 (토끼 수인 / 메이스)
     dawn: {
-      cls: 'priest', name: '새벽 성가', c: '#ffe08a',
-      pickupBubble: '예전엔 이 빛을 새벽이라 불렀는데…',
+      cls: 'priest', name: '별빛 성가', c: '#ffe08a',
+      pickupBubble: '…이 빛, 어디서 오는 걸까요.',
       pickupMono: [
         '날개 장식 안쪽의 보석에서 미지근한 온기가 번진다.',
         '깊은 상처를 아물게 하진 못해도, 잠시 통증을 덮어줄 수는 있는 빛.',
@@ -158,7 +158,7 @@
       bossBubble: '이제는 편히 쉬실 때가 됐습니다.',
       bossIntro: [
         '성 밖에서 왕비께서 아직도 당신을 기다리며 울고 계셨습니다.',
-        '새벽은 오지 않았고 기도는 닿지 않았지만,',
+        '응답은 오지 않았고 기도는 닿지 않았지만,',
         '지친 그 어깨에 마지막 축복을 올릴 힘 정도는 아직 남아 있습니다.',
       ],
       coronationBubble: '편히 눈을 감는 것조차 허락받지 못하셨군요.',
@@ -391,18 +391,14 @@
     G.seenLegendLore = G.seenLegendLore || {};
     if (G.seenLegendLore[fxKey]) return;
     G.seenLegendLore[fxKey] = true;
-    startCinematic(L.pickupMono, `${CLASSES[L.cls].n} · ${L.name}`, L.c, 'player', () => {
-      sayPlayer(L.pickupBubble, 3.5);
-    });
+    sayPlayer(L.pickupBubble, 3.5); // v3.19 암전 독백 연출 삭제 (사용자 결정) — 말주머니만 남김
   }
 
   // (B) 4장 잿빛 왕 조우 트리거 -> 시네마틱 (플레이어 + 왕 스포트라이트)
   function triggerAshKingIntro() {
     const fxKey = eqLegendKey(), L = fxKey && LEGEND_LORE[fxKey];
     if (!L) return;
-    startCinematic(L.bossIntro, `대관식장 대면 · ${L.name}`, L.c, 'both', () => {
-      sayPlayer(L.bossBubble, 3.8);
-    });
+    sayPlayer(L.bossBubble, 3.8); // v3.19 암전 독백 연출 삭제 (사용자 결정) — 말주머니만 남김
   }
 
   // (C) 4장 잿빛 왕 2단계 『대관식』 전환 트리거 -> 전투 중이므로 짧은 말풍선만 유지
@@ -455,7 +451,7 @@
     const m = merchantArt(wing, crest, blink);
     ctx.drawImage(m, x - 18, y - m.height + 2 - bob); // 몸통 가운데가 x에 오게 (펼친 날개는 오른쪽으로)
     const P = G.player, sy = npcTalk('merchant', P && Math.hypot(P.x - x, P.y - y) < 120, ['싸게 줄게', '골라 봐', '이건 귀한 물건이야', '외상은 안 돼', '살아남으려면 사 둬'], ['어서 와♪', '살구의 비밀상점이야♪']);
-    if (sy) drawBubble(sy.line, x, y - m.height + 6 - bob);
+    if (sy) drawBubble(sy.line, x, y - m.height + 6); // v3.19 몸이 들썩여도 말주머니는 제자리
   }
   function drawShopItem(s) {
     const x = Math.round(s.x) & ~1, y = Math.round(s.y) & ~1, st = srArt('stand', G.stage, SR.stand); // v1.11 천 덮인 진열대
@@ -687,7 +683,7 @@
         r.obs = r.obs.concat(segs());
         r.bridges = br.map(t => at(t));
       }
-      if (Math.random() < 0.4) { const k = randi(1, W0 > 900 ? 3 : 1); for (let i = 0; i < k; i++) add('ruinPillar', rand(A.x0 + 40, A.x1 - 40), rand(A.y0 + 30, A.y1 - 40)); }
+      if (Math.random() < 0.4) { const k = randi(1, W0 > 900 ? 2 : 1), put = []; for (let i = 0; i < k; i++) for (let t = 0; t < 8; t++) { const x = rand(A.x0 + 40, A.x1 - 40), y = rand(A.y0 + 30, A.y1 - 40); if (put.some(q => Math.hypot(q.x - x, q.y - y) < 320) || r.obs.some(b => b.t === 'rock' && Math.hypot(b.x - x, b.y - y) < 220)) continue; add('ruinPillar', x, y); put.push({ x, y }); break; } } // v3.19 부러진 돌기둥: 서로 320px · 바위(떨어진 돌)와 220px 이상 떨어뜨림, 방에 많아야 둘
       if (Math.random() < 0.3) { const ds = Object.keys(r.doors).filter(d => r.doors[d] != null); if (ds.length) { const q = doorIn(pick(ds), 70); add('signpost', q.x + pick([-40, 40]), q.y); } }
       // 물웅덩이 M·L·XL: 못 건너가는 장애물, 흙길·개울과 겹치지 않게
       if (r.type !== 'boss') {
@@ -710,7 +706,7 @@
       if (st4) {
         if (Math.random() < 0.4) tryAdd('breathHeap', 1);
         if (Math.random() < 0.35) for (let t = 0; t < 8; t++) { const x = rx(), y = ry(), n0 = r.props.length; let k = 0;
-          for (const o of [-30, 0, 30]) if (add('ashCitizen', x + o, y + (o ? 6 : 0))) { const q = r.props[r.props.length - 1]; q.kind = o === 0 && Math.random() < 0.6 ? 'b' : 'h'; q.fl = Math.random() < 0.5; k++; }
+          for (const o of [-30, 0, 30]) if (add('ashCitizen', x + o, y + (o ? 6 : 0))) { const q = r.props[r.props.length - 1]; q.kind = 'h'; /* v3.19 왕의 기수 석상 삭제 (사용자 결정) — 재 시민 석상만 */ q.fl = Math.random() < 0.5; k++; }
           if (k >= 2) break; r.props.length = n0; }
       } else if (stage === 3) { if (Math.random() < 0.4) tryAdd('meatPole', 1); }
       else if (stage === 1) { if (Math.random() < 0.45) tryAdd('smileFlower', randi(1, 2)); }
@@ -748,9 +744,14 @@
     }
   }
   function drawProp(p) {
-    if (PROPS[p.name].anim) { const sp = PROPS[p.name]; ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((p.x - (sp.r || 8)) & ~1, p.y, ((sp.r || 8) * 2) & ~1, 2); drawGroProp(p, sp); return; }
+    const s1 = G.stage >= 1 && G.stage <= 4 && typeof RUIN1 !== 'undefined'; // v3.19 1장: 납작 띠 그림자 → 밑동에 붙은 그림자 (오른쪽 2칸 · 끝줄 디더)
+    if (PROPS[p.name].anim) { const sp = PROPS[p.name]; if (s1) { const bx = (p.x & ~1) - 2; ctx.fillStyle = 'rgba(4,3,8,.55)'; ctx.fillRect(bx, p.y, 8, 2); ctx.fillStyle = 'rgba(4,3,8,.42)'; ctx.fillRect(bx + 2, p.y + 2, 8, 2); ctx.fillStyle = 'rgba(4,3,8,.28)'; ctx.fillRect(bx + 4, p.y + 4, 2, 2); ctx.fillRect(bx + 8, p.y + 4, 2, 2); } else { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((p.x - (sp.r || 8)) & ~1, p.y, ((sp.r || 8) * 2) & ~1, 2); } drawGroProp(p, sp); return; }
+    if (p.name === 'ruinPillar' && G.stage === 1 && typeof RUIN1 !== 'undefined') { const c = drawProp._rs || (drawProp._rs = RUIN1.stub(9)); ctx.drawImage(c, (p.x - c.width / 2) & ~1, (p.y - 50) & ~1); return; } // v3.19 1장: 폐허의 부러진 돌기둥 (붙은 그림자 포함)
+    if (p.name === 'orcFire' && typeof CAMP3 !== 'undefined') { const c = drawProp._of || (drawProp._of = CAMP3.orcFire(10)), x = (p.x - c.width / 2) & ~1, y = (p.y - 36) & ~1, f = Math.floor(time * 10 + p.x) % 3; ctx.drawImage(c, x, y); ctx.fillStyle = '#ffd060'; ctx.fillRect(x + 32 + (f === 1 ? 2 : 0), y + 12 - (f === 2 ? 2 : 0), 2, 2); ctx.fillStyle = '#f08a28'; ctx.fillRect(x + 28 + (f === 0 ? 2 : 0), y + 16 - (f === 1 ? 2 : 0), 2, 2); return; } // v3.19 오크 모닥불: 돌 고리 · 장작 · 꼬치 (불꽃 끝은 3프레임으로 일렁임)
+    if (p.name === 'cage' && G.stage === 2 && typeof KEEP2 !== 'undefined') { const c = drawProp._cg || (drawProp._cg = KEEP2.cage(4)); ctx.drawImage(c, (p.x - c.width / 2) & ~1, (p.y - 50) & ~1); return; } // v3.19 2장 철창: 둥근 지붕 · 쇠살 · 안에 해골
     const sp = PROPS[p.name], c = sp.raw ? propCanvas(p.name) : ash4(propCanvas(p.name), 'prop_' + p.name), x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + (sp.foot || 0) * 2) & ~1;
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; { const xa = x + 2, xb = x + c.width - 2; if (xb > xa) ctx.fillRect(xa, p.y, Math.ceil((xb - xa) / 2) * 2, 2); }
+    if (s1 && !sp.pit) { const m = drawProp._sh || (drawProp._sh = {}); const sk = (G.stage === 4 ? '4_' : '') + p.name; ctx.drawImage(m[sk] || (m[sk] = RUIN1.withShadow(c)), x - 8, y - 8); } else {
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; { const xa = x + 2, xb = x + c.width - 2; if (xb > xa) ctx.fillRect(xa, p.y, Math.ceil((xb - xa) / 2) * 2, 2); } }
     if (p.amb && sp.folk) { // 매복 조각상: 눈에 희미한 불씨, 깨어나기 직전엔 떨린다
       const R = G.dun && G.dun.cur, on = R && !R.cleared, sx = p.warn && on ? (Math.floor(time * 24) % 2 ? 2 : -2) : 0, e = FOLK_EYE[p.name];
       ctx.drawImage(c, x + sx, y);
@@ -895,6 +896,7 @@
     const busy = (x, y, r) => (R && obsHitL(R.obs, x, y, r)) || onPath(x, y, r + 20) || !decFree(x, y, Math.max(r, 6));
     const spot = (pad = 20, r = 10) => { for (let i = 0; i < 30; i++) { const x = rand(A.x0 + pad, A.x1 - pad), y = rand(A.y0 + pad, A.y1 - pad - 10); if (!busy(x, y, r)) return { x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2 }; } return null; };
     const area = (A.x1 - A.x0) * (A.y1 - A.y0) / 540000;
+    const shopR = R && R.type === 'shop'; // v3.19 상점은 집기 없이 (통나무 · 그루터기 · 이야기 소품 뺌)
     // 땅 얼룩: 이끼·맨흙·짙은 풀
     for (let i = 0; i < 6 * area + 2; i++) { const p = spot(30, 0); if (p) scatterPatch(g, p.x, p.y, randi(20, 50), randi(12, 26), pick([['#2e5222', '#36602a'], ['#3a3020', '#46382a'], ['#1a2e14', '#22381a']]), 0.35); }
     // 낙엽 더미 (가을빛)
@@ -912,8 +914,8 @@
       const clumps = Math.max(0, Math.round(randi(1, 3) * Math.min(area, 1.6)) - Math.floor(obsRock / 3));
       for (let i = 0; i < clumps; i++) { const p = spot(24, 10); if (!p) continue; const m = randi(1, 3);
         for (let j = 0; j < m; j++) { const x = p.x + (j ? randi(-9, 9) * 2 : 0), y = p.y + (j ? randi(-5, 5) * 2 : 0); if (j && !decFree(x, y, 6)) continue; stamp(g, DECO_MAPS[pick(j ? ['rockB', 'rockA'] : ['rockA', 'rockC', 'rockD'])], DECO, x, y, 2, Math.random() < 0.5); } } }
-    for (let i = 0; i < randi(0, 3) * area; i++) { const p = spot(30, 12); if (p) { stamp(g, DECO_MAPS.stump, woodPal(), p.x, p.y, 2); if (Math.random() < 0.5) gPaint(g, SHROOMS.brown, SHROOM_PAL, p.x + 14, p.y + 4); } }
-    for (let i = 0; i < randi(0, 2) * area; i++) { const p = spot(40, 16); if (p) { stamp(g, DECO_MAPS.log, woodPal(), p.x, p.y, 2, Math.random() < 0.5); for (let k = 0; k < randi(1, 3); k++) gPaint(g, pick([SHROOMS.brown, SHROOMS.red, SHROOMS.tall]), SHROOM_PAL, p.x + 4 + k * 8, p.y - 8); } }
+    for (let i = 0; i < randi(0, 3) * (shopR ? 0 : area); i++) { const p = spot(30, 12); if (p) { stamp(g, DECO_MAPS.stump, woodPal(), p.x, p.y, 2); if (Math.random() < 0.5) gPaint(g, SHROOMS.brown, SHROOM_PAL, p.x + 14, p.y + 4); } }
+    for (let i = 0; i < randi(0, 2) * (shopR ? 0 : area); i++) { const p = spot(40, 16); if (p) { stamp(g, DECO_MAPS.log, woodPal(), p.x, p.y, 2, Math.random() < 0.5); for (let k = 0; k < randi(1, 3); k++) gPaint(g, pick([SHROOMS.brown, SHROOMS.red, SHROOMS.tall]), SHROOM_PAL, p.x + 4 + k * 8, p.y - 8); } }
     for (let i = 0; i < randi(2, 6) * area; i++) { const p = spot(20, 10); if (p) stamp(g, DECO_MAPS.bush2, Object.assign({}, DECO, pick([{ '6': '#c03040' }, { '6': '#6a40a0' }, { '6': '#e0c040' }])), p.x, p.y, 2, Math.random() < 0.5); }
     // 버섯: 요정의 고리(종류·크기 무작위) 또는 흩어진 무리
     const kinds = ['red', 'brown', 'tall', 'glow'];
@@ -924,6 +926,7 @@
     for (let i = 0; i < randi(1, 5) * area; i++) { const p = spot(20, 10); if (!p) continue; const k = pick(kinds); for (let j = 0; j < randi(2, 5); j++) gPaint(g, SHROOMS[k], SHROOM_PAL, p.x + randi(-10, 10), p.y + randi(-6, 6)); if (k === 'glow') fl.push({ x: p.x, y: p.y, r: 40, a: 0.4, c: '120,230,255', ca: 0.14 }); }
     if (Math.random() < 0.45) { const p = spot(40, 24); if (p && !onPath(p.x, p.y, 52)) { const sp = SPRINGS.springS; gPaint(g, sp, POND_PAL, p.x - sp[0].length, p.y - sp.length); } }
     // 이야기 소품: 꺼진 모닥불, 짐승 뼈, 부서진 수레바퀴, 거미줄, 룬 비석, 허수아비
+    if (shopR) return;
     if (Math.random() < 0.35) { const p = spot(40, 20); if (p) { gPaint(g, fromRows(PROP_MAPS.campfire[0]), PROP_MAPS.campfire[1], p.x - 12, p.y - 6); fl.push({ x: p.x, y: p.y, r: 30, a: 0.3, c: '255,120,50', ca: 0.14, flick: true }); for (let k = 0; k < 2; k++) gPaint(g, STONEPAD, STONEPAD_PAL, p.x + pick([-30, 22]), p.y + randi(-4, 8)); } }
     if (Math.random() < 0.4) { const p = spot(30, 10); if (p) gPaint(g, fromRows(PROP_MAPS.deerSkull[0]), PROP_MAPS.deerSkull[1], p.x, p.y); }
     if (Math.random() < 0.4) { const p = spot(30, 10); if (p) gPaint(g, BONES, PROP_MAPS.deerSkull[1], p.x, p.y); }
@@ -994,7 +997,7 @@
     const T0 = A.y0 - 100;
     for (let i = 0; i < PILLARS.length - 1; i++) {
       const mx = Math.round((PILLARS[i] + PILLARS[i + 1]) / 4) * 2;
-      if (Math.abs(mx - DOOR.n.x) < 8 || (CUR_ROOM && CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110)) continue; // v2.59 인장 벽 둘레엔 장식 없음
+      if (Math.abs(mx - DOOR.n.x) < (CUR_ROOM && CUR_ROOM.doors && CUR_ROOM.doors.n != null ? 40 : 8) || (CUR_ROOM && CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110)) continue; // v2.59 인장 벽 둘레엔 장식 없음
       const k = ROOMSTYLE.wall ? ROOMSTYLE.wall[i % ROOMSTYLE.wall.length] : 'window';
       if (k === 'window') continue;
       { const m0 = PROP_MAPS[k], g0 = fromRows(m0[0]), w0 = g0[0].length * 2, h0 = g0.length * 2, y0 = T0 + 30 - h0 / 2 + (k === 'tapestry' ? 6 : 0); if (typeof OCC !== 'undefined' && !OCC.wall(mx - w0 / 2, y0, w0, h0)) continue; } // v2.85 벽 장식은 앞에 선 소품 · 장애물 그림과 겹치면 걸지 않음
@@ -1039,9 +1042,46 @@
     } else if (st === 4) { S.smoke = []; }
     return S;
   }
+  // v3.19 웅덩이 자리의 잔움직임 — 1장 저수지 · 샘 / 3장 피웅덩이: 가끔 보글거림, 4장 불탄 자리: 잔불이 깜빡이고 일렁임 (캐릭터 · 적이 앞을 가리면 그리지 않음)
+  function pitFx(S) {
+    const R = G.dun.cur, st = S.st; if (st < 1 || st > 4) return;
+    const hid = (x, y) => { const h = o => o && Math.abs(o.x - x) < 16 && o.y > y - 4 && o.y < y + 40; return h(G.player) || (G.enemies || []).some(h) || (G.allies || []).some(h); };
+    if (st === 4) { // 잔불: 뜨거운 자리마다 느리게 숨 쉬는 빛 + 낱알이 자리를 바꿔 깜빡임 + 드물게 불티
+      (R.sprites || []).forEach((sp, si) => { const H = sp.cv && sp.cv.hot; if (!H) return; H.forEach(([hx, hy], i) => { const x = sp.x + hx * 2, y = sp.y + hy * 2; if (hid(x, y)) return;
+        const ph = time * 2.2 + i * 1.7 + si, br = 0.5 + 0.5 * Math.sin(ph) * Math.sin(ph * 0.37 + 1), k = Math.floor(time * 7 + i * 3 + si * 5);
+        ctx.fillStyle = `rgba(255,120,40,${(0.08 + 0.14 * br).toFixed(3)})`; ctx.fillRect(x - 10, y - 4, 20, 10); ctx.fillRect(x - 6, y - 6, 12, 14);
+        for (let n = 0; n < 3; n++) { const a = hsh(k + n * 13, i + si * 7), b = hsh(k + n * 29, i * 3 + si); if (a > 0.35 + 0.5 * br) continue; ctx.fillStyle = b < 0.4 ? '#ffe08a' : '#ffa040'; ctx.fillRect(aS2(x - 8 + a * 40 % 16), aS2(y - 4 + b * 8), 2, 2); }
+        if (Math.random() < 0.012) G.parts.push({ x: x + rand(-6, 6), y: y + rand(-2, 2), vx: rand(-8, 8), vy: -rand(18, 34), t: rand(0.5, 0.9), c: pick(['#ffa040', '#e8601c', '#ffe08a']), g: -10 }); }); });
+      return; }
+    if (st === 2) { // 낭떠러지: 어둠에서 흐린 먼지 · 찬 안개가 천천히 떠오름 + 가끔 가장자리에서 돌 부스러기가 떨어져 어둠 속으로 사라짐
+      if (!S.chasms) { S.chasms = (R.obs || []).filter(b => !b.c && Math.min(b.w, b.h) >= 40 && (b.t === 'pit' || (b.t === 'wall' && Math.min(b.w, b.h) >= 56))); S.peb = []; S.nextPeb = time + rand(2, 5); }
+      S.chasms.forEach((b, bi) => { const n = Math.max(2, Math.min(8, Math.round(b.w * b.h / 2200))), yb = b.y1 - 16, yt = b.y0 + 8; if (yb - yt < 10) return;
+        for (let i = 0; i < n; i++) { const per = 4.5 + hsh(i, bi + 3) * 3.5, tt = time / per + hsh(i * 7, bi), u = tt - Math.floor(tt), cyc = Math.floor(tt), bx = b.x0 + 10 + hsh(i + cyc * 5, bi * 3 + 1) * (b.w - 20), rise = Math.min(yb - yt, 46 + hsh(i, cyc) * 30), y0 = yb - hsh(cyc, i + bi) * Math.max(0, yb - yt - rise);
+          const x = aS2(bx + Math.sin(time * 0.8 + i * 2.1) * 4), y = aS2(y0 - u * rise), al = Math.sin(Math.PI * u) * 0.6; if (al < 0.06 || hid(x, y)) continue;
+          ctx.globalAlpha = al; ctx.fillStyle = i % 3 === 0 ? '#8296b4' : '#566a8a'; ctx.fillRect(x, y, 2, 2);
+          if (i % 4 === 1) { ctx.globalAlpha = al * 0.55; ctx.fillStyle = '#3e4c68'; ctx.fillRect(x - 2, y + 2, 2, 2); ctx.fillRect(x + 2, y + 2, 2, 2); ctx.fillRect(x, y + 4, 2, 2); ctx.fillRect(x + 4, y, 2, 2); } }
+        ctx.globalAlpha = 1; });
+      if (S.chasms.length && time > S.nextPeb) { const b = pick(S.chasms), side = Math.random(), x = aS2(side < 0.6 ? rand(b.x0 + 8, b.x1 - 8) : side < 0.8 ? b.x0 + 4 : b.x1 - 6), y = aS2(side < 0.6 ? b.y0 + 2 : rand(b.y0 + 4, b.y0 + b.h * 0.4));
+        for (let i = 0; i < (Math.random() < 0.4 ? 2 : 1); i++) S.peb.push({ x: x + i * 4, y, t: time + i * 0.12, d: Math.min(b.y1 - 14 - y, rand(34, 60)) }); S.nextPeb = time + rand(4, 9) / Math.min(2, S.chasms.length); }
+      for (let i = S.peb.length - 1; i >= 0; i--) { const q = S.peb[i], el = time - q.t; if (el < 0) continue; const u = el / 0.55; if (u > 1 || q.d < 8) { S.peb.splice(i, 1); continue; } const y = aS2(q.y + u * u * q.d); if (hid(q.x, y)) continue;
+        if (u < 0.2) { ctx.fillStyle = '#6e6860'; ctx.fillRect(q.x - 4, q.y - 2, 2, 2); ctx.fillRect(q.x + 4, q.y, 2, 2); } // 가장자리에서 부스러지는 먼지
+        ctx.globalAlpha = 1 - u * 0.8; ctx.fillStyle = u < 0.35 ? '#a8a296' : u < 0.7 ? '#6e6860' : '#3a3940'; ctx.fillRect(q.x, y, 2, 2); if (u < 0.5) { ctx.fillStyle = '#4e4a44'; ctx.fillRect(q.x + 2, y, 2, 2); } ctx.globalAlpha = 1; }
+      return; }
+    if (!S.bubPits) { S.bubPits = (R.obs || []).filter(b => b.t === 'pit' && !b.c && !b.brook && Math.min(b.w, b.h) >= 30); S.bub = []; S.nextBub = time + rand(0.5, 2); }
+    if (S.bubPits.length && time > S.nextBub) { const b = pick(S.bubPits), ix = Math.min(16, b.w * 0.25), x = aS2(rand(b.x0 + ix, b.x1 - ix)), y = aS2(rand(b.y0 + Math.min(24, b.h * 0.45), b.y1 - Math.min(10, b.h * 0.2))), n = Math.random() < 0.35 ? 2 : 1;
+      for (let i = 0; i < n; i++) S.bub.push({ x: x + i * randi(2, 4) * 2, y: y + i * randi(-2, 2) * 2, t: time + i * 0.18, big: Math.random() < 0.4 }); S.nextBub = time + rand(0.7, 2.6) / Math.min(3, S.bubPits.length); }
+    const C = st === 3 ? ['#c83a34', '#7c1416', '#f08a80', '#2c050a'] : ['#8ab0c8', '#3e5a82', '#d8ecf4', '#1c3048']; // 테 · 그늘 · 반짝임 · 터진 자국
+    for (let i = S.bub.length - 1; i >= 0; i--) { const q = S.bub[i], k = Math.floor((time - q.t) / 0.13); if (k < 0) continue; if (k > (q.big ? 5 : 4)) { S.bub.splice(i, 1); continue; } if (hid(q.x, q.y)) continue;
+      const px = (dx, dy, c) => { ctx.fillStyle = c; ctx.fillRect(q.x + dx * 2, q.y + dy * 2, 2, 2); }, top = q.big ? 3 : 2;
+      if (k === 0) px(0, 0, C[1]);
+      else if (k === 1) { px(0, 0, C[0]); px(1, 0, C[1]); }
+      else if (k < top + 1) { px(0, -1, C[0]); px(1, -1, C[0]); px(-1, 0, C[0]); px(2, 0, C[1]); px(0, 0, C[2]); px(1, 0, C[3]); px(0, 1, C[1]); px(1, 1, C[1]); if (q.big && k === top) { px(-1, -1, C[0]); px(2, -1, C[1]); px(0, -2, C[0]); px(1, -2, C[0]); px(0, -1, C[2]); } }
+      else { const r = k - top; px(-1 - r, 0, C[0]); px(2 + r, 0, C[0]); px(0, -1 - r, C[2]); px(1, 1, C[3]); px(0, 1, C[3]); } }
+  }
   // 어둠보다 아래(세계 좌표): 구름 그림자 · 물고기 · 쥐 · 물방울 · 연기 · 까마귀
   function ambBack() {
     const S = ambState(); if (!S) return; const st = S.st, P = G.player;
+    pitFx(S);
     if (st === 1) {
       ctx.save(); ctx.globalAlpha = 0.3;
       for (const c of S.clouds) { const x = aS2(c.x + (time - S.t0) * c.v); if (x > A.x1 + 40) c.x -= (A.x1 - A.x0) + 760; ctx.drawImage(cloudStamp(), x, aS2(c.y)); }
@@ -1403,6 +1443,8 @@
     const cells = [[0, 2], [1, 3], [2, 2], [3, 1], [4, 0]], put = (c, col, o) => { ctx.fillStyle = col; for (const [cx, cy] of cells) { ctx.fillRect(x + cx * s - o, y + cy * s - o, s + o * 2, s + o * 2); ctx.fillRect(x + cx * s - o, y + (cy + 1) * s - o, s + o * 2, s + o * 2); } };
     put(cells, '#000', 1); put(cells, '#7dff9a', 0);
   }
+  // v3.19 미니맵도 실제 방 크기 비율 (TAB 지도와 같은 규칙: 가장 큰 방 1180×640이 한 칸 + 틈 60% · 가 보지 않은 방은 같은 크기 네모)
+  const mmSize = (r, cw, ch, gap) => { if (!r.visited) return { w: Math.round(cw * 0.5 / 2) * 2, h: Math.round(ch * 0.6 / 2) * 2 }; const sh = SHAPES[r.shape] || SHAPES.field, k = Math.min((cw + gap * 0.6) / 1180, (ch + gap * 0.6) / 640); return { w: Math.max(6, Math.round(sh.w * k / 2) * 2), h: Math.max(6, Math.round(sh.h * k / 2) * 2) }; };
   const MM = { phT: -1, phH: 52, key: '', c: null }; // v1.78 미니맵 방 그림 캐시 (방 상태가 바뀔 때만 다시 그림)
   // v1.90 방 바닥에 남은 아이템 → 지도 아이콘 (장비가 있으면 가장 높은 등급 색)
   function roomLoot(r) {
@@ -1437,7 +1479,7 @@
     const avail = rw - 14, wOf = cnt => cats.reduce((a, c) => a + 16 + (cnt && c[1] > 1 ? 12 : 0), 0) + (cats.length - 1) * 4;
     const cnt = wOf(true) <= avail; let list = cats, more = false;
     if (!cnt && wOf(false) > avail) { const n = Math.max(1, Math.floor((avail - 8 + 4) / 20)); list = cats.slice(0, n); more = n < cats.length; }
-    const ws = list.map(c => 16 + (cnt && c[1] > 1 ? 12 : 0)), W = ws.reduce((a, b) => a + b, 0) + (list.length - 1) * 4 + (more ? 8 : 0), by = y + rh - 5;
+    const ws = list.map(c => 16 + (cnt && c[1] > 1 ? 12 : 0)), W = ws.reduce((a, b) => a + b, 0) + (list.length - 1) * 4 + (more ? 8 : 0), by = y + Math.max(rh - 5, Math.round(rh / 2) + 8); // v3.19 낮은 방에서는 아이콘을 방 가운데에
     let cx = Math.round(x + (rw - 12) / 2 - W / 2 + 2);
     ctx.save(); ctx.font = '8px Galmuri7'; ctx.textAlign = 'left';
     list.forEach(([draw, k], i) => {
@@ -1476,7 +1518,7 @@
       const ctx0 = ctx; ctx = mg; try { drawMinimapRooms(D, 0, 0, W0, H0, cw, ch, gap); } finally { ctx = ctx0; } }
     ctx.save(); ctx.globalAlpha = HF.a; /* v2.38 캐릭터·적이 뒤에 있으면 미니맵도 흐리게 */ ctx.drawImage(MM.c, x0, y0);
     ctx.font = '8px Galmuri7'; ctx.textAlign = 'right'; if (!TOUCH.on) drawKeyRow(ctx, VW - 12, y0 + H0 + 11, [['TAB', '지도']], { align: 'right' }); // v2.63 키캡
-    { const cur = D.cur, sf = shapeFit(cur), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), x = Math.round(x0 + W0 / 2 - rw / 2), y = Math.round(y0 + H0 / 2 - rh / 2);
+    { const cur = D.cur, ms = mmSize(cur, cw, ch, gap), rw = ms.w, rh = ms.h, x = Math.round(x0 + W0 / 2 - rw / 2), y = Math.round(y0 + H0 / 2 - rh / 2);
       ctx.save(); ctx.strokeStyle = blink ? '#ffe39a' : '#fff'; ctx.lineWidth = 1; ctx.strokeRect(x - 0.5, y - 0.5, rw + 1, rh + 1); ctx.restore(); }
     ctx.restore();
   }
@@ -1491,11 +1533,12 @@
     for (const r of D.rooms) { if (!r.visited) continue; for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d)) continue; const o = D.rooms[id]; if (!o.seen) continue; const p = pos(r), q = pos(o); if (DIRS[d][0]) ctx.fillRect(Math.round(Math.min(p.x, q.x)), Math.round(p.y) - 1, Math.round(Math.abs(q.x - p.x)), 2); else ctx.fillRect(Math.round(p.x) - 1, Math.round(Math.min(p.y, q.y)), 2, Math.round(Math.abs(q.y - p.y))); } } // v1.91 통로를 선으로
     for (const r of D.rooms) {
       if (!r.seen) continue;
-      const sf = shapeFit(r), rw = Math.max(4, Math.round(cw * sf.w / 2) * 2), rh = Math.max(4, Math.round(ch * sf.h / 2) * 2), p = pos(r), x = Math.round(p.x - rw / 2), y = Math.round(p.y - rh / 2);
+      const ms = mmSize(r, cw, ch, gap), rw = ms.w, rh = ms.h, p = pos(r), x = Math.round(p.x - rw / 2), y = Math.round(p.y - rh / 2);
       if (r.visited) { ctx.fillStyle = roomColor(r); ctx.fillRect(x, y, rw, rh); }
       else { ctx.fillStyle = r.type === 'boss' ? 'rgba(160,40,52,.35)' : 'rgba(40,36,48,.9)'; ctx.fillRect(x, y, rw, rh); ctx.strokeStyle = r.type === 'boss' ? '#a02a34' : '#5a5466'; ctx.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1); }
       if (r.visited && r.tele && r.cleared) { ctx.fillStyle = '#9fd2ff'; ctx.fillRect(x + rw - 6, y + 2, 4, 4); }
       if (r.exit) { ctx.fillStyle = '#ff7a40'; ctx.fillRect(x + 2, y + 2, 4, 4); }
+      if (r.wellSeen) { ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x + 1, y + rh - 7, 6, 6); ctx.fillStyle = '#e09a30'; ctx.fillRect(x + 2, y + rh - 6, 4, 4); ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x + 3, y + rh - 5, 2, 2); } // v3.19 다녀온 버려진 우물 (왼쪽 아래 · 호박색 고리)
       if (r.chest && !r.chest.opened && r.visited) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(x + 2, y + 2, 4, 4); }
       if (r.cleared && FIGHT_T.has(r.type)) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x, y, rw, rh); drawCheck(Math.round(p.x - 5), Math.round(p.y - 3), 2); }
       if (r.visited) { const q = roomLoot(r); if (q) drawLootMark(x + rw - 4, y + rh - 4, q.c, true); } // v1.90 바닥 아이템 (오른쪽 아래 모서리)
@@ -1544,22 +1587,25 @@
     const D = G.dun, M = mapLayout(), L = teleRooms();
     ctx.fillStyle = 'rgba(6,5,10,.86)'; ctx.fillRect(0, 0, VW, VH);
     ctx.textAlign = 'center'; ctx.font = 'bold 12px Galmuri11'; ctx.fillStyle = '#ffe39a';
-    ctx.fillText(`STAGE ${G.stage} · ${STG().n}`, VW / 2, 40);
+    const solo = D.rooms.length === 1; // v3.19 시작 장소 · 대장간 · 안전 놀이터처럼 방 하나짜리 장소는 장 번호 없이 그 장소만 따로 띄움
+    if (solo) ctx.fillText(roomName(D.cur.type) || '', VW / 2, 40);
+    else { ctx.fillText(`STAGE ${G.stage} · ${STG().n}`, VW / 2, 40);
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#9a92a8';
-    ctx.fillText(`${ER().foe} ${D.eliteDone}/2 · ${sealHud()} · ${D.bossOpen ? '보스 방 열림' : '보스 방 봉인'} · 골드 ${G.gold}G`, VW / 2, 54);
+    ctx.fillText(`${ER().foe} ${D.eliteDone}/2 · ${sealHud()} · ${D.bossOpen ? '보스 방 열림' : '보스 방 봉인'} · 골드 ${G.gold}G`, VW / 2, 54); }
     // 통로
     ctx.fillStyle = '#5a5466';
     for (const r of D.rooms) { if (!r.visited) continue; const p = M.pos(r); for (const d in r.doors) { const id = r.doors[d]; if (id == null || hiddenDoor(r, d) || !D.rooms[id].seen) continue; const q = M.pos(D.rooms[id]), cx0 = p.x + M.cw / 2, cy0 = p.y + M.ch / 2, cx1 = q.x + M.cw / 2, cy1 = q.y + M.ch / 2; if (DIRS[d][0]) ctx.fillRect(Math.round(Math.min(cx0, cx1)), Math.round(cy0) - 2, Math.round(Math.abs(cx1 - cx0)), 4); else ctx.fillRect(Math.round(cx0) - 2, Math.round(Math.min(cy0, cy1)), 4, Math.round(Math.abs(cy1 - cy0))); } } // v1.93 통로 = 방 가운데끼리 잇는 선
     for (const r of D.rooms) {
       if (!r.seen) continue;
       const lootCats = r.visited ? roomLootCats(r) : [];
-      const sf = r.visited ? shapeFit(r) : { w: 0.82, h: 0.82 }, needW = lootCats.length ? lootCats.reduce((a, c) => a + 20 + (c[1] > 1 ? 12 : 0), 0) + 14 : 0;
-      const rw = Math.min(M.cw, Math.max(Math.round(M.cw * sf.w), Math.round(M.cw * 0.55), needW)), rh = Math.min(M.ch, Math.max(Math.round(M.ch * sf.h), Math.round(M.ch * 0.55), lootCats.length ? 40 : 0)), p0 = M.pos(r), x = Math.round(p0.x + (M.cw - rw) / 2), y = Math.round(p0.y + (M.ch - rh) / 2); // v1.92 아이템이 있으면 방을 아이콘이 들어갈 만큼
+      // v3.19 가 본 방은 실제 방 크기 비율 그대로 (가장 큰 방 1180×640이 한 칸에 꽉 참 · 가로세로 같은 배율) — 가 보지 않은 방만 같은 크기의 네모
+      const sh0 = SHAPES[r.shape] || SHAPES.field, kk = Math.min((M.cw + M.gap * 0.6) / 1180, (M.ch + M.gapY * 0.6) / 640) * (solo ? 2.2 : 1); // 칸 사이 틈의 60%까지 써서 조금 더 크게
+      const rw = r.visited ? Math.max(12, Math.round(sh0.w * kk / 2) * 2) : Math.round(M.cw * 0.5 / 2) * 2, rh = r.visited ? Math.max(10, Math.round(sh0.h * kk / 2) * 2) : Math.round(M.ch * 0.6 / 2) * 2, p0 = M.pos(r), x = Math.round(p0.x + (M.cw - rw) / 2), y = Math.round(p0.y + (M.ch - rh) / 2);
       ctx.fillStyle = r.visited ? roomColor(r) : 'rgba(30,27,36,.95)'; ctx.fillRect(x, y, rw, rh);
       if (r.cleared && FIGHT_T.has(r.type)) { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x, y, rw, rh); }
       ctx.strokeStyle = r.visited ? 'rgba(255,255,255,.15)' : r.type === 'boss' ? '#a02a34' : '#5a5466'; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, rw - 1, rh - 1);
       ctx.font = '8px Galmuri7'; ctx.fillStyle = r.visited ? '#f0e8d8' : r.type === 'boss' ? '#ff8080' : '#6a6478';
-      if (!lootCats.length || rh >= 34) ctx.fillText(r.visited || r.type === 'boss' ? roomTag(r.type) : '?', x + rw / 2, lootCats.length ? y + 12 : y + rh / 2 + 3); // 낮은 방은 아이콘만 (방 종류는 색으로)
+      if (!lootCats.length || rh >= 34) ctx.fillText(r.visited || r.type === 'boss' ? (solo ? '현재 위치' : roomTag(r.type) || roomName(r.type) || '') : '?', x + rw / 2, lootCats.length ? y + 12 : y + rh / 2 + 3); // 낮은 방은 아이콘만 (방 종류는 색으로)
       if (r.visited && r.tele) { ctx.fillStyle = r.cleared ? '#9fd2ff' : '#4a4560'; ctx.fillRect(x + rw - 6, y + 2, 4, 4); }
       if (r.cleared && FIGHT_T.has(r.type)) { drawCheck(x + rw - 5, y + rh - 6, 2); ctx.font = "8px Galmuri7"; }
       if (lootCats.length) drawRoomLoot(lootCats, x, y, rw, rh); // v1.92 바닥 아이템을 실제 모양(장비·골드·물약…)으로
@@ -1567,6 +1613,7 @@
       if (r === G.mapSel) { ctx.strokeStyle = Math.floor(time * 5) % 2 ? '#9fd2ff' : '#ffffff'; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, rw + 6, rh + 6); }
     }
     ctx.font = '8px Galmuri7'; ctx.fillStyle = '#8a8496';
+    if (solo) { if (TOUCH.on) ctx.fillText('지도 버튼으로 닫기', VW / 2, VH - 26); else drawKeyRow(ctx, VW / 2, VH - 25, [['TAB', '닫기']]); ctx.textAlign = 'left'; return; } // 방 하나짜리 장소: 범례 · 순간이동 안내 없음
     if (TOUCH.on) ctx.fillText(L.length ? '방을 탭하면 순간이동 · 지도 버튼으로 닫기' : '방을 클리어하면 그 방의 텔레포터가 켜진다 · 지도 버튼으로 닫기', VW / 2, VH - 26);
     else drawKeyRow(ctx, VW / 2, VH - 25, L.length ? [['↑↓←→', '선택'], ['ENTER', '이동'], ['TAB', '닫기']] : ['방을 클리어하면 그 방의 텔레포터가 켜진다', ['TAB', '닫기']]); // v2.63 키캡
     ctx.textAlign = 'left'; const lg = (x, txt) => { ctx.fillStyle = '#8a8496'; ctx.fillText(txt, x, VH - 40); };

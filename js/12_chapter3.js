@@ -1495,9 +1495,11 @@
   // 말뚝 우리 (v0.84): 둘레는 끝을 깎은 말뚝 울타리, 안쪽은 종류별로 채운다 — 뼈 무더기 / 부서진 무기 더미 / 도살장 / 맹수 우리
   const PEN_PAL = Object.assign({}, WOODPAL, { S: '#7a6e5c', u: '#22140c', U: '#2e1c10', v: '#3a0c08', x: '#6a3418', X: '#4a2410', g: '#808088', G: '#4a4a54', n: '#d8d8e0', p: '#f4ecdc', q: '#c03a2a' });
   function genPalisade(wc, hc, kind) {
-    kind = kind || pick(['bones', 'scrap', 'meat']); // v1.20 맹수 우리(짚더미 둥지)는 무작위 배치에서 뺌
+    const NAT = true; // v3.19 우리 안 내용물을 듬성듬성 자연스럽게 · 뒤 울타리를 높임 · 도살장 우리는 피웅덩이로 대체되어 안 나옴 (false로 두면 예전 모습)
+    kind = kind || pick(NAT ? ['bones', 'scrap'] : ['bones', 'scrap', 'meat']); // v1.20 맹수 우리(짚더미 둥지)는 무작위 배치에서 뺌
     const HH = 14, W0 = wc + 2, H0 = hc + HH + 2, g = mkGrid(W0, H0), set = (x, y, c) => { if (x >= 1 && x <= wc && y >= 1 && y < H0 - 1) g[y][x] = c; }, get = (x, y) => (g[y] && g[y][x]) || '.';
-    const ix0 = 3, ix1 = wc - 2, iy0 = 5, iy1 = hc;
+    const BH = NAT ? Math.max(4, Math.min(10, Math.round(hc * 0.28))) : 4; // v3.19 시안: 뒤 울타리 앞면이 보이는 높이 (앞 울타리와 깊이감을 맞춤)
+    const ix0 = 3, ix1 = wc - 2, iy0 = BH + 1, iy1 = hc;
     // 1) 안쪽 바닥: 낮은 주파수 얼룩만 (잔노이즈 없이)
     const base = kind === 'meat' ? ['u', 'v'] : kind === 'scrap' ? ['u', 'X'] : kind === 'beast' ? ['U', 'u'] : ['u', 'U'], ph = rand(0, 6);
     for (let y = 1; y <= hc; y++) for (let x = 1; x <= wc; x++) { const v = 0.5 + 0.25 * Math.sin(x * 0.35 + ph) + 0.25 * Math.cos(y * 0.5 + x * 0.12); g[y][x] = dith(x, y, v * 0.6) ? base[1] : base[0]; if (y <= iy0 + 1 && dith(x, y, (iy0 + 2 - y) / 3)) g[y][x] = 'K'; }
@@ -1516,16 +1518,16 @@
     const scatter = (n, cells) => { for (let i = 0; i < n; i++) { const x = r(ix0, ix1 - 3), y = r(iy0, iy1 - 2); if (!inHeap(x + 1, y + 1, 1.1)) stamp(pick(cells), x, y); } };
     const area = Math.max(1, (ix1 - ix0) * (iy1 - iy0));
     if (kind === 'bones') { // v1.03: 뼈 하나하나가 읽히게 — 뼈마다 어두운 테두리, 큰 해골은 눈구멍·코·이빨, 갈비뼈, 둔덕 오른쪽 아래 그늘
-      for (let y = iy0; y <= iy1; y++) for (let x = ix0; x <= ix1; x++) { const q = Math.hypot((x - cx) / (hx * 1.08), (y - cy) / (hy * 1.08)); if (q < 1 && !(q > 0.85 && dith(x, y, 0.5))) set(x, y, q > 0.7 ? 'U' : 'K'); }
+      for (let y = iy0; y <= iy1; y++) for (let x = ix0; x <= ix1; x++) { const q = Math.hypot((x - cx) / (hx * 1.08), (y - cy) / (hy * 1.08)); if (NAT ? (q < 0.8 && dith(x, y, 0.55 - q * 0.5)) : (q < 1 && !(q > 0.85 && dith(x, y, 0.5)))) set(x, y, NAT ? 'U' : q > 0.7 ? 'U' : 'K'); }
       const BN = { long: ['pp...wp', 'wwwwwwW', 'WW...WW'], short: ['pp.wp', 'wwwwW', 'WW.WW'], d1: ['pp...', 'pww..', '.wwW.', '..wWW', '...WW'], d2: ['...wp', '..wwp', '.wwW.', 'WwW..', 'WW...'],
         rib: ['..pwW..', '.w.w.W.', 'w..w..W', '.w.w.W.', '..wWW..'], skull: ['.ppwww.', 'ppwwwwW', 'pKKwKKW', 'wKKwKKW', '.wwKwW.', '.WwWwW.'], skull2: ['.pww.', 'pwwwW', 'wKwKW', '.wKW.', '.WWW.'] };
       const stampO = (rows, x0, y0) => { // 테두리(K) 먼저, 그 위에 뼈
         rows.forEach((rw, j) => [...rw].forEach((c, i) => { if (c === '.') return; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const x = x0 + i + dx, y = y0 + j + dy; if (x >= ix0 && x <= ix1 && y >= iy0 && y <= iy1 && inHeap(x, y, 1.08)) { const r2 = rows[j + dy], c2 = r2 && r2[i + dx]; if (!c2 || c2 === '.') set(x, y, 'K'); } } }));
         rows.forEach((rw, j) => [...rw].forEach((c, i) => { const x = x0 + i, y = y0 + j; if (c !== '.' && x >= ix0 && x <= ix1 && y >= iy0 && y <= iy1) set(x, y, c); })); };
       const pool = [BN.long, BN.long, BN.short, BN.d1, BN.d2, BN.rib, BN.skull2];
-      for (let y = Math.round(iy0 + 1); y <= iy1 - 2; y += 3) for (let x = ix0 - 1 + ((y >> 1) % 2) * 4; x <= ix1 - 3; x += 7 + randi(-1, 1)) { const pc = pick(pool); if (inHeap(x + pc[0].length / 2, y + pc.length / 2, 0.92)) stampO(pc, x, y); }
+      for (let y = Math.round(iy0 + 1); y <= iy1 - 2; y += 3) for (let x = ix0 - 1 + ((y >> 1) % 2) * 4; x <= ix1 - 3; x += 7 + randi(-1, 1)) { const pc = pick(pool); if (NAT && Math.random() < 0.78) continue; if (inHeap(x + pc[0].length / 2, y + pc.length / 2, 0.92)) stampO(pc, x + (NAT ? randi(-2, 2) : 0), y + (NAT ? randi(-1, 1) : 0)); }
       shade();
-      const nS = Math.max(1, Math.round(area / 140)); for (let i = 0; i < nS; i++) stampO(Math.random() < 0.7 ? BN.skull : BN.skull2, Math.round(cx + rand(-hx * 0.55, hx * 0.35)) - 3, Math.round(cy + rand(-hy * 0.55, hy * 0.05)) - 3);
+      const nS = Math.max(1, Math.round(area / (NAT ? 420 : 140))); for (let i = 0; i < nS; i++) stampO(Math.random() < 0.7 ? BN.skull : BN.skull2, Math.round(cx + rand(-hx * 0.55, hx * 0.35)) - 3, Math.round(cy + rand(-hy * 0.55, hy * 0.05)) - 3);
       for (let i = 0; i < area / 120; i++) { const x = r(ix0, ix1 - 6), y = r(iy0, iy1 - 2); if (!inHeap(x + 2, y + 1, 1.1)) stampO(pick([BN.short, BN.d1, BN.d2]), x, y); }
     } else if (kind === 'scrap' || kind === 'meat') { // v1.64: 뼈 무더기와 같은 방식 — 물건마다 어두운 테두리, 엇갈린 격자로 쌓고 둔덕 오른쪽 아래 그늘, 큰 물건은 맨 위에
       const stampK = (rows, x0, y0) => { // 테두리(K) 먼저, 그 위에 물건
@@ -1537,12 +1539,12 @@
         const SC = { sword: ['.o.nnnnnn', 'ddoggggggn', '.o.GGGGGG.'], sword2: ['nnnnnn.o.', 'ggggggodd', 'GGGGG..o.'], axe: ['.nng.', 'nngGG', 'ngGGd', 'nngGG', '.nGG.'],
           helm: ['w.....W', 'wnnnggW', '.ngggG.', '.gKgKG.', '.GGGGG.'], spear: ['...n', '..ng', 'dngG', '.dG.'], rust: ['xxxX', 'xXXX'], arrow: ['pW.....n', '.ddddddg'] };
         const pool = [SC.sword, SC.sword2, SC.axe, SC.spear, SC.rust, SC.sword, SC.arrow];
-        for (let y = Math.round(iy0 + 1); y <= iy1 - 2; y += 5) for (let x = ix0 + ((y >> 1) % 2) * 6; x <= ix1 - 3; x += 13 + randi(-2, 2)) { const pc = pick(pool); if (Math.random() < 0.8 && inHeap(x + pc[0].length / 2, y + pc.length / 2, 0.85)) stampK(pc, x, y); } // v1.64 듬성듬성
+        for (let y = Math.round(iy0 + 1); y <= iy1 - 2; y += 5) for (let x = ix0 + ((y >> 1) % 2) * 6; x <= ix1 - 3; x += 13 + randi(-2, 2)) { const pc = pick(pool); if (Math.random() < (NAT ? 0.42 : 0.8) && inHeap(x + pc[0].length / 2, y + pc.length / 2, 0.85)) stampK(pc, x + (NAT ? randi(-2, 2) : 0), y + (NAT ? randi(-1, 1) : 0)); } // v1.64 듬성듬성
         shade();
-        const nB = Math.max(1, Math.round(area / 320)); // 방패·투구는 맨 위
+        const nB = Math.max(1, Math.round(area / (NAT ? 800 : 320))); // 방패·투구는 맨 위
         for (let i = 0; i < nB; i++) { const sx = Math.round(cx + rand(-hx * 0.5, hx * 0.4)), sy = Math.round(cy + rand(-hy * 0.4, hy * 0.1)), R0 = area > 600 ? 4 : 3, stripe = Math.random() < 0.5;
           disc(sx, sy, R0, (x, y, d) => d > R0 - 0.8 ? (x + y < 0 ? 'g' : 'G') : d < 1.2 ? (x + y < 0 ? 'n' : 'g') : stripe && Math.abs(x) < 1 ? 'r' : (x + y < -1 ? 'h' : x + y < 2 ? 'l' : 'd')); }
-        for (let i = 0; i < Math.max(1, Math.round(area / 420)); i++) stampK(SC.helm, Math.round(cx + rand(-hx * 0.6, hx * 0.3)) - 3, Math.round(cy + rand(-hy * 0.6, 0)) - 2);
+        for (let i = 0; i < Math.max(1, Math.round(area / (NAT ? 1200 : 420))); i++) stampK(SC.helm, Math.round(cx + rand(-hx * 0.6, hx * 0.3)) - 3, Math.round(cy + rand(-hy * 0.6, 0)) - 2);
         for (let i = 0; i < area / 300; i++) { const x = r(ix0, ix1 - 6), y = r(iy0, iy1 - 2); if (!inHeap(x + 2, y + 1, 1.1)) stampK(pick([SC.spear, SC.arrow, SC.rust]), x, y); }
       } else { // 도살장: 핏물 웅덩이, 고깃덩이·뼈 붙은 넓적다리·갈비짝 더미, 맨 위 도마와 박힌 식칼
         for (let y = iy0; y <= iy1; y++) for (let x = ix0; x <= ix1; x++) { const d = Math.hypot((x - cx) / (hx * 1.3), (y - cy) / (hy * 1.3)); if (d < 1 && dith(x, y, 1.4 - d)) set(x, y, d < 0.6 ? 'R' : 'v'); }
@@ -1568,8 +1570,10 @@
     // 3) 뒤·옆 울타리: 뒤쪽은 작은 말뚝 앞면이 보이고, 옆은 말뚝 머리
     for (let x = 1; x <= wc; x++) { const c = (x - 1) % 3, tall = ((x - 1) / 3 | 0) % 2;
       if (c === 1) set(x, 1 - 0 + (tall ? 0 : 1), 'h');
-      for (let y = 2 + (tall ? 0 : 1); y <= 4; y++) set(x, y, c === 0 ? 'l' : c === 1 ? 'd' : 'K');
+      for (let y = 2 + (tall ? 0 : 1); y <= BH; y++) set(x, y, c === 0 ? (y > BH - 2 ? 'd' : 'l') : c === 1 ? (y > BH - 2 ? 'D' : 'd') : 'K');
+      if (BH > 5) { const ry = 2 + Math.round(BH * 0.45); if (c !== 2) set(x, ry, (x % 9) < 2 ? 's' : 'D'); if (((x - 1) / 3 | 0) % 7 === 3 && c === 0) for (let y = 4; y < BH; y++) if (y % 2) set(x, y, 'r'); } // 밧줄 띠 · 흘러내린 피
       if (c === 0 && !tall) set(x, 2, 'K'); }
+    if (BH > 5) for (let x = ix0 - 1; x <= ix1 + 1; x++) { if ('uUvX'.includes(get(x, BH + 1))) set(x, BH + 1, 'K'); if (((x + BH) & 1) && 'uUvX'.includes(get(x, BH + 2))) set(x, BH + 2, 'K'); } // 뒤 울타리가 바닥에 드리운 그늘
     for (let y = 2; y <= hc; y++) for (const [x, c] of [[1, 'h'], [2, 'd'], [wc - 1, 'l'], [wc, 'D']]) set(x, y, (y % 3 === 0) ? 'K' : c);
     // 4) 앞 울타리: 끝을 깎은 굵은 말뚝 (위로 솟은 뾰족 끝), 밧줄 감기, 꽂힌 해골, 흘러내린 피
     const SW = 4;
@@ -1582,6 +1586,8 @@
     }
     for (let x = 1; x <= wc; x++) { const y = hc + 5 + ((x >> 1) & 1); if (get(x, y) !== 'K') set(x, y, (x % 2) ? 'y' : 'o'); const y2 = hc + 10 + (((x + 1) >> 1) & 1); if (get(x, y2) !== 'K') set(x, y2, (x % 2) ? 'o' : 'O'); }
     for (let x = 1; x <= wc; x++) { set(x, hc + HH, 'D'); if (Math.random() < 0.4) set(x, hc + HH - 1, 'U'); }
+    // v3.19 외곽선 기준: 우리 안 뼈 · 해골 · 부서진 무기는 검은 테두리 대신 제 색을 어둡게 (바닥 흙 · 울타리 그늘 · 앞 울타리는 그대로)
+    if (window.DEOUT !== false && kind === 'bones') deOutlineGrid(g, PEN_PAL, ix0, iy0 + 2, ix1, hc - 4, { bg: 'uUvXx'.split('').map(c => PEN_PAL[c].toLowerCase()), sepOnly: true, f: 0.42 });
     return { g: gOutline(g), HH };
   }
   // 망루: 네 기둥 위 발판과 난간, 가죽 지붕, 앞에 사다리와 깃발
@@ -1628,6 +1634,7 @@
         const g0 = genTotem(), c = gCanvas(g0, WOODPAL);
         out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, ob: b });
       } else if (b.t === 'rock') {
+        if (typeof CAMP3 !== 'undefined') { const c = CAMP3.rock(b.r > 17 ? 52 : 34, b.r > 17 ? 28 : 20, 'red', (Math.random() * 1e6) | 0); out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y, ob: b }); continue; } // v3.19 모난 붉은 흙빛 바위
         const c = rockCanvas(b.r);
         out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, ob: b });
       } else {

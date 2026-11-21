@@ -178,7 +178,7 @@ const WALL4 = (() => {
     // 창 자리: 성채 장식은 4장 장식으로, 빈 창은 잉걸빛 창으로
     for (const [i, mx] of slots) {
       if (R.sealW && Math.abs(mx - DOOR.n.x) < 110) continue;
-      if (Math.abs(mx - DOOR.n.x) < 8) continue;
+      if (Math.abs(mx - DOOR.n.x) < (R.doors && R.doors.n != null ? 40 : 8)) continue; // v3.19 북문 위엔 창 · 장식 없음
       const k0 = ROOMSTYLE.wall ? ROOMSTYLE.wall[i % ROOMSTYLE.wall.length] : 'window', k = SLOT[k0];
       let put = !!k; const art = k && G4[k];
       if (put) { const w0 = art[0].length * 2, h0 = art.length * 2, y0 = T0 + 30 - h0 / 2 + (k === 'edict' ? 4 : 0); if (typeof OCC !== 'undefined' && !OCC.wall(mx - w0 / 2, y0, w0, h0)) put = false; }

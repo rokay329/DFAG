@@ -166,9 +166,9 @@
   .ic .fill { position: absolute; left: 0; right: 0; bottom: 0; height: var(--f, 0%); background: linear-gradient(rgba(255,210,90,.35), rgba(255,180,40,.15)); border-top: 1px solid rgba(255,230,150,.8); }
   .ic .num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Galmuri11'; font-weight: bold; font-size: 12px; color: #fff; }
   .ic .pips { position: absolute; left: 0; right: 0; bottom: 2px; display: flex; justify-content: center; gap: 2px; }
-  .ic .pips b { width: 5px; height: 3px; background: #2a2230; border: 1px solid #000; }
+  .ic .pips b { width: 6px; height: 2px; background: #3a3246; }
   .ic .pips b.on { background: var(--gold-l); }
-  .ic .pips.blue b.on { background: var(--blue); }
+  .ic .pips.blue b.on { background: #d4ecff; }
   .ic .cnt { position: absolute; right: 1px; top: 1px; padding: 0 2px; font: 8px/10px Galmuri9, monospace; color: #fff4c0; background: #1a1220; border: 1px solid #000; box-shadow: inset 0 0 0 1px #6a5420; z-index: 3; }
   .ic .cnt.zero { color: #6a6070; box-shadow: inset 0 0 0 1px #3a3040; }
   .key { display: inline-block; font-family: 'Galmuri7'; font-size: 8px; line-height: 9px; padding: 0 3px; color: #1a1208; background: var(--gold-l); border: 1px solid #000; box-shadow: inset 0 -1px 0 #a8883a, inset 0 1px 0 #fff4c8; text-shadow: none; } /* v2.63 모든 키 안내는 키캡 */
@@ -353,6 +353,9 @@
   .engC b { color: var(--ec); font-size: 13px; text-shadow: 0 2px 0 #000; margin-bottom: 4px; }
   .engC .engD { display: block; word-break: keep-all; font-size: 11px; line-height: 15px; color: #bfb8c8; min-height: 45px; }
   .engC .key { display: inline-block; margin-top: 6px; }
+  .engC { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; } /* v3.19 설명 길이와 상관없이 문양 · 이름 · 설명은 위에 맞추고 숫자 키는 맨 아래로 (버튼이 내용을 세로 가운데로 모으던 문제) */
+  .engC .engD { flex: 0 0 auto; }
+  .engC .key { margin-top: auto; padding-top: 0; }
   .engC.done { box-shadow: inset 0 2px 0 #6a5a30, inset 2px 0 0 #4a4026, inset -2px 0 0 #0c0a0e, inset 0 -2px 0 #0c0a0e, 0 0 0 2px #e8c060; }
   .engC.done::before { inset: -10px; background-image: repeating-conic-gradient(#e8c060 0 25%, transparent 0 50%); }
   .engC.done:hover { box-shadow: inset 0 2px 0 #7a6a3a, inset 2px 0 0 #5a4c2c, inset -2px 0 0 #0c0a0e, inset 0 -2px 0 #0c0a0e, 0 0 0 2px #fff3b0; }
@@ -423,7 +426,7 @@
   .selc.sel::before { content: ''; position: absolute; left: 50%; top: -14px; margin-left: -5px; width: 10px; height: 6px; background: var(--gold-l); clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 1px 0 #000); } /* 위 화살표 */
   .selc .pv { display: flex; justify-content: flex-end; align-items: flex-end; padding: 0 4px 4px 0; height: 86px; background: #0d0a10 center / 100% 100% no-repeat; image-rendering: pixelated; margin-bottom: 6px; } /* v2.21 직업색 디더 배경 + 액자(.pvFrame) — 초상은 액자 안쪽 아래에 붙임 */
   .selc .pv canvas { width: 108px; height: 88px; } .selc .pv .pvArt { width: 60px; height: 78px; } /* 초상: 30×39를 2px 칸으로 */
-  .selDetail { width: 534px; padding: 7px 12px; box-sizing: border-box; height: 89px; overflow: hidden; } /* v1.99 설명 길이와 상관없이 높이 고정 */
+  .selDetail { width: 534px; padding: 7px 12px; box-sizing: border-box; height: 104px; overflow: hidden; } /* v1.99 설명 길이와 상관없이 높이 고정 · v3.19 89 → 104px (그레이브 각성 설명 두 줄) */
   .selDetail .sdh { margin-bottom: 5px; } .selDetail .sdh b { font-family: 'Galmuri11'; font-weight: bold; color: var(--gold-l); font-size: 12px; } .selDetail .sdh span { font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
   .selDetail .sk2 i { color: var(--quiet); font-style: normal; }
   /* v1.96 잿불 단계 */
@@ -657,7 +660,7 @@
   #game.noCur { cursor: none !important; } /* v3.18 말주머니 위에선 커서 숨김 */
   #ovDen { z-index: 30; } /* 선택 창은 HUD보다 늘 위 */
   .exHold b { display: inline-block; width: 30px; } .exSay { height: 15px; overflow: hidden; white-space: nowrap; }
-  .choice.ex .d { height: 45px; min-height: 0; overflow: hidden; } .choice.ex .w { box-sizing: border-box; height: 34px; min-height: 0; overflow: hidden; word-break: keep-all; font: 8px/12px Galmuri7; } /* 사유 문구: 작은 글꼴로 두 줄까지 들어가게 높이 확보 */
+  .choice.ex .d { height: 45px; min-height: 0; overflow: hidden; } .choice.ex .w { box-sizing: border-box; height: 46px; min-height: 0; overflow: hidden; word-break: keep-all; font: 8px/12px Galmuri7; } /* 사유 문구: 작은 글꼴로 세 줄(맡긴 칸 수 1줄 + 사유 2줄)까지 들어가게 높이 확보 (v3.19 잘림 수정) */
   .exMsg { height: 30px; min-height: 0; overflow: hidden; }
   #denGame { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: none; z-index: 60; background: #070509; }
 </style>
@@ -935,5 +938,12 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/26_casings.js"></script>
 <script src="js/27_bounty.js"></script>
 <script src="js/28_den_relics.js"></script>
+<script src="js/29_ruin1.js"></script>
+<script src="js/30_keep2.js"></script>
+<script src="js/31_camp3.js"></script>
+<script src="js/32_town4.js"></script>
+<script src="js/33_well2.js"></script>
+<script src="js/34_px1.js"></script>
+<script src="js/35_rollword.js"></script>
 </body>
 </html>

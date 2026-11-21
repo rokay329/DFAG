@@ -408,7 +408,8 @@ function lshade(gg, lights, amb) {
   }
 }
 const STUMP = [236, 126]; // 그루터기 윗면 가운데
-const CANDLES = [[240, 108, 3], [150, 126, 3], [204, 134, 2]]; // 바닥 양초 [x, 발 y, 높이]
+const CANDLES = window.LAB2 !== false ? [[240, 108, 5], [150, 126, 5], [204, 134, 4]] : [[240, 108, 3], [150, 126, 3], [204, 134, 2]]; // 바닥 양초 [x, 발 y, 높이] (v3.19 조금 더 길게)
+const LAB_POTDY = window.LAB2 !== false ? 2 : 0; // v3.19 솥을 모닥불 속으로 2칸 내림
 const LAB = { ecx: 192, ecy: 112, erx: 71, ery: 38, wallH: 26, ladder: [140, 86], table: [202, 93], cauldron: [188, 116] };
 const DIRT = ['#5a4632', '#4e3c2a', '#463624', '#3e2f20', '#33261a', '#271c12'];
 const BOOKS = ['#7a2a2a', '#2e4a6a', '#6a5a2a', '#3a6a3a', '#5a3a6a', '#8a7a4a', '#6a3a2a', '#2e5a5a'];
@@ -446,7 +447,8 @@ function labDraw(P) {
   // 벽 아래 끝(바닥과 만나는 선)에 얇은 그늘 한 줄
   for (let x = ecx - erx; x < ecx + erx; x++) { const y = Math.round(floorTop(x)); if (eR(x, y) <= 1 && eF(x, y) <= 1.05) P.put(x, y, DIRT[5]); }
   // 디딤돌 (사다리에서 방 안으로)
-  for (const [x, y] of [[148, 92], [158, 99]]) P.spr(['.ssss.', 'sSSSSs', '.dddd.'], { s: '#5e584e', S: '#6e685c', d: '#3e3a34' }, x, y, true);
+  for (const [x, y] of [[148, 92], [158, 99]]) { if (window.LAB2 !== false) { P.spr(['..ssss..', '.sSSSSs.', 'sSSssSSd', '.dddddd.'], { s: '#6a6458', S: '#7e786a', d: '#4a463e' }, x - 1, y, false); P.rect(x, y + 4, 6, 1, DIRT[5]); P.put(x - 1, y + 3, DIRT[4]); P.put(x + 6, y + 3, DIRT[4]); } // v3.19 디딤돌: 바닥에 박힌 납작한 돌 (외곽선 대신 흙 그늘)
+    else P.spr(['.ssss.', 'sSSSSs', '.dddd.'], { s: '#5e584e', S: '#6e685c', d: '#3e3a34' }, x, y, true); }
   // 박힌 돌
   for (let i = 0; i < 9; i++) { const x = ecx - 60 + Math.round(lh2(i, 1, 75) * 120), ft = floorTop(x), rt = rimTop(x); const y = Math.round(rt + 3 + lh2(i, 2, 75) * (ft - rt - 8)); P.spr(['.ss.', 'sSSs', '.dd.'], { s: '#7a7064', S: '#8e8476', d: '#4e463c' }, x - 2, y, true); }
   // 늘어진 뿌리 (윗가장자리에서 벽 면으로)
@@ -460,7 +462,10 @@ function labDraw(P) {
     // 선반 (두 단): 윗면 · 앞면 · 밑 그림자 + 책
     for (const sy of [y0 + 8, yb - 1]) {
       for (let x = x0 + 2; x < x1 - 2; x++) { P.put(x, sy - 1, '#9a7a52'); P.put(x, sy, '#6a4a30'); if (sy < yb - 1) P.put(x, sy + 1, '#0a0604'); }
-      if (empty) { for (let x = x0 + 3; x < x1 - 3; x++) if (lh2(x, sy, 15) < 0.25) P.put(x, sy - 2, '#3a2a1c'); continue; } // 빈 선반: 먼지 · 부스러기만
+      if (empty) { for (let x = x0 + 3; x < x1 - 3; x++) if (lh2(x, sy, 15) < 0.25) P.put(x, sy - 2, '#3a2a1c');
+        if (window.LAB2 !== false) { const jar = (x, c, l, d) => P.spr(['.ll.', 'lccd', 'cccd', '.dd.'], { l, c, d }, x, sy - 5, false), btl = (x, g, G, d) => P.spr(['.w.', '.n.', 'gGd', 'gGd', 'ggd'], { w: '#8e6e50', n: d, g, G, d }, x, sy - 6, false); // v3.19 빈 감실에 병 · 단지 몇 개
+          if (sy < yb - 1) { jar(x0 + 4, '#a86a3a', '#c08a5a', '#6a4024'); btl(x0 + 10, '#5a7ab0', '#9ab8e0', '#34486a'); } else { btl(x0 + 5, '#a84a3a', '#e08a6a', '#6a2a22'); jar(x0 + 12, '#8a7a5a', '#b0a07a', '#5a4e38'); jar(x0 + 16, '#6a5a8a', '#9a8ab8', '#3e3458'); } }
+        continue; } // 빈 선반: 먼지 · 부스러기 (+ v3.19 병 · 단지)
       let x = x0 + 3; while (x < x1 - 4) { const v = lh2(x, sy, 9), w = v > 0.75 ? 2 : 1, bh = 4 + Math.floor(lh2(x, sy, 10) * 3), col = BOOKS[Math.floor(lh2(x, sy, 11) * 8)];
         if (lh2(x, sy, 12) < 0.1) { x += 1; continue; } // 빈 틈 (안쪽 어둠이 보임)
         for (let j = 0; j < w; j++) for (let k = 2; k < 2 + bh; k++) { const y = sy - k; let c = col; if (j === 0 && w > 1) c = shadeC(col, 1.25); if (j === w - 1 && w > 1) c = shadeC(col, 0.8); if (k === 1 + bh) c = shadeC(col, 1.45); if (k === 2) c = shadeC(col, 0.7); P.put(x + j, y, c); }
@@ -554,7 +559,7 @@ function labProps(P, t) {
     '.kMMMMMMMMMMMgmmk.',
     '..kkmmmmmmmmmmkk..',
     '...kk.......kk....',
-  ], { I: '#8a8794', G: '#a8d870', g: '#7aa848', d: '#5a8a38', M: '#4a4756', m: '#33313c', h: '#7a7788', c: OUTK, k: OUTK }, cx - 9, cy - 14, false);
+  ], { I: '#8a8794', G: '#a8d870', g: '#7aa848', d: '#5a8a38', M: '#4a4756', m: '#33313c', h: '#7a7788', c: window.LAB2 !== false ? '#26242e' : OUTK, k: OUTK }, cx - 9, cy - 14, false);
   P.spr(['.ww...ww.', 'wWWwwwWWw', '.kk...kk.'], { w: '#6a4a30', W: '#8e6e50', k: '#2a1e14' }, cx - 4, cy - 1, true);
   P.put(cx - 1, cy + 1, '#ff9a30'); P.put(cx + 1, cy + 1, '#ffd34d');
   // 바닥 양초 (뜨문뜨문) — 녹아 흐른 촛농
@@ -571,10 +576,91 @@ function labProps(P, t) {
   // 바구니 (약초) · 쌓인 책 (표지 보이게)
   P.spr(['.gGg.', 'bbbbb', 'bBbBb', '.bbb.'], { g: '#6a8a40', G: '#8aaa58', b: '#a88a4a', B: '#7a6030' }, 214, 130, true);
   for (let i = 0; i < 3; i++) { const c = ['#7a2a2a', '#2e4a6a', '#3a6a3a'][i]; P.rect(158 + (i % 2) - 1, 132 - i * 3 - 1, 12, 4, OUTK); P.rect(158 + (i % 2), 132 - i * 3, 10, 2, c); P.rect(158 + (i % 2), 132 - i * 3, 10, 1, '#d8c8a4'); P.put(158 + (i % 2) + 3, 132 - i * 3 + 1, '#c09038'); }
+  if (window.LAB2 !== false) labProps2(P);
+}
+// v3.19 집기 다시 그림: 외곽선 기준(구조물 안 물건은 검은 선 대신 제 색을 어둡게) · 실험대 두께 · 바닥 양초 · 약초 시렁 · 바구니 · 쌓인 책
+function labProps2(P) {
+  const F = LGrid(); labDraw(F); const FD = F.g.getImageData(0, 0, LGW, LGH).data;
+  const restore = (x0, y0, x1, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) { const i = (y * LGW + x) * 4; P.put(x, y, `rgb(${FD[i]},${FD[i + 1]},${FD[i + 2]})`); } };
+  const outlineOf = (M) => { for (const k of M.keys()) { const [x, y] = k.split(',').map(Number); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!M.has((x + a) + ',' + (y + b))) P.put(x + a, y + b, OUTK); } for (const [k, c] of M) { const [x, y] = k.split(',').map(Number); P.put(x, y, c); } };
+  const spr = (rows, pal, x0, y0) => rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.' && pal[ch]) P.put(x0 + i, y0 + j, pal[ch]); }));
+  { const [cx, cy] = LAB.cauldron; restore(cx - 13, cy - 16, cx + 13, cy + 9); }
+  restore(129, 101, 155, 121); restore(200, 82, 227, 104); restore(165, 89, 181, 104); restore(155, 123, 171, 136); restore(212, 128, 222, 137);
+  for (const [x, y, h] of CANDLES) restore(x - 3, y - h - 1, x + 3, y + 1);
+  // ---- 가마솥을 모닥불 위에 (v3.19): 솥을 2칸 내려 불 속에 앉힘 · 잉걸 바닥 · 안쪽으로 모인 장작 셋(나무껍질 결 · 옹이 · 잘린 나이테 면 · 안쪽 끝은 타서 숯) · 불빛 받은 솥 밑면
+  { const [cx, cy0] = LAB.cauldron, cy = cy0 + LAB_POTDY;
+    for (let y = -2; y <= 2; y++) for (let x = -9; x <= 9; x++) { if ((x / 9) ** 2 + (y / 2.4) ** 2 > 1) continue; P.put(cx + x, cy + 3 + y, lh2(x, y, 401) < 0.22 ? '#c8501a' : lh2(x, y, 402) < 0.2 ? '#ff8a30' : '#3a1c10'); }
+    const M = new Map(), log = (pts, vert) => { // 굵기 3칸 통나무: 칸 줄 [x, y] (바깥 → 안쪽). 가로 통나무는 위 · 가운데 · 아래 줄, 세로(앞) 통나무는 왼 · 가운데 · 오른 줄
+      const SH = ['#a8865a', '#7a5a3a', '#4e3626'], BU = ['#4a2e1c', '#3a2416', '#24160c'];
+      pts.forEach(([x, y], i) => { const t = i / (pts.length - 1), burnt = t > 0.7, knot = i === Math.floor(pts.length * 0.45);
+        for (let k = 0; k < 3; k++) { const X = vert ? x + k : x, Y = vert ? y : y + k; let c = burnt ? BU[k] : SH[k]; if (knot && k === 1) c = '#4e3626'; if (!burnt && !knot && k === 1 && (i & 3) === 2) c = '#8a6a44'; M.set(X + ',' + Y, c); }
+        if (t > 0.9) M.set((vert ? x + 1 : x) + ',' + (vert ? y : y + 1), '#e06a20'); }); // 안쪽 끝 불씨
+      const [x, y] = pts[0]; for (let k = 0; k < 3; k++) M.set((vert ? x + k : x) + ',' + (vert ? y : y + k), k === 1 ? '#c89a62' : '#e0bc86'); }; // 바깥 끝 잘린 나이테 면
+    const line = (x0, y0, x1, y1) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)), o = []; for (let i = 0; i <= n; i++) o.push([Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n)]); return o; };
+    // 장작은 하나씩 따로 외곽선 (겹친 곳만 선) — 뒤 → 앞 순서. 가운데로 모이는 세 토막 (양옆은 살짝 기울고, 앞 하나는 화면 쪽으로)
+    for (const [pts, v] of [[line(cx - 11, cy + 3, cx - 3, cy + 1), false], [line(cx + 11, cy + 3, cx + 3, cy + 1), false], [line(cx - 1, cy + 8, cx - 1, cy + 3), true]]) { M.clear(); log(pts.slice().reverse().reverse(), v); outlineOf(M); }
+    spr(['.y..y.', 'yOyyOy', 'OFOOFO'], { y: '#ff9a30', O: '#ffb040', F: '#fff2a8' }, cx - 3, cy); // 솥 밑 불 (솥이 위를 덮음)
+    spr(['....kkkkkkkkkk....', '..kkIIIIIIIIIIkk..', '.kIIGGggggggggIIk.', 'kIIGgggggggggggdIk', '.kIIgggggggggddIk.', '..kkIIIIIIIIIIkk..', '.kMMMMMMMMMMMMMmk.', 'kMhhMMMMMMMMMMMmmk', 'kMhMMMMMMMMMcMMmmk', 'kMMMMMMMMMMMMcMmmk', 'kMMMMMMMMMMMMcgmmk', '.kMMMMMMMMMMMgmmk.', '..kkrrrrrrrrrrkk..', '...kk.......kk....'],
+      { I: '#8a8794', G: '#a8d870', g: '#7aa848', d: '#5a8a38', M: '#4a4756', m: '#33313c', h: '#7a7788', c: '#26242e', k: OUTK, r: '#7a3e30' }, cx - 9, cy - 14); // 밑면은 불빛에 붉게
+    P.put(cx - 6, cy - 3, '#6a4446'); P.put(cx + 5, cy - 3, '#6a4446'); }
+  // ---- 약 선반 (2단): 판자 뒷판 · 선반 널 윗면/앞면 · 널 밑 그림자 · 물건은 제 색 테
+  { const x0 = 131, y0 = 103, W = 22, H = 16, x1 = x0 + W - 1, y1 = y0 + H - 1;
+    P.rect(x0 - 1, y0 - 1, W + 2, H + 2, OUTK);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) P.put(x, y, (x - x0) % 5 === 4 ? '#22170f' : x === x0 + 2 ? '#3a2a1e' : '#2e2016');
+    for (let y = y0; y <= y1; y++) { P.put(x0, y, '#8e6e50'); P.put(x0 + 1, y, '#5e4430'); P.put(x1 - 1, y, '#6a4a30'); P.put(x1, y, '#4e3626'); }
+    for (let x = x0; x <= x1; x++) { P.put(x, y0, '#b08c60'); P.put(x, y0 + 1, '#7a5a3a'); }
+    for (const by of [y0 + 7, y1 - 1]) for (let x = x0 + 2; x <= x1 - 2; x++) { P.put(x, by, '#9a7a52'); P.put(x, by + 1, '#6a4a30'); }
+    for (let x = x0 + 2; x <= x1 - 2; x++) { P.put(x, y0 + 2, '#1a120c'); P.put(x, y0 + 9, '#1a120c'); }
+    const jar = (x, fy, c, l, d) => spr(['.ll.', 'lccd', 'cccd', 'cccd', '.dd.'], { l, c, d }, x, fy - 4);
+    jar(x0 + 3, y0 + 6, '#a86a3a', '#c88a5a', '#6a4024');
+    spr(['.w.', '.n.', 'gGd', 'GGd', 'ggd'], { w: '#8e6e50', n: '#4a6a28', g: '#7aa848', G: '#c8f090', d: '#4a6a28' }, x0 + 9, y0 + 2); // 빛나는 점액 병
+    spr(['wwww', 'pRrd', 'prrd', 'pppd'], { w: '#8e6e50', R: '#e8d0b8', r: '#a83a2a', p: '#9ab8c0', d: '#5a7a86' }, x0 + 14, y0 + 3); // 버섯 병
+    jar(x0 + 3, y1 - 2, '#6a5a8a', '#9a8ab8', '#3e3458');
+    spr(['g...g.', 'ggggggd', '.g..gd.'], { g: '#7a9a48', d: '#3e5a26' }, x0 + 9, y1 - 4); // 말린 도마뱀
+    jar(x0 + 16, y1 - 2, '#8a5a3a', '#b07a50', '#5a3a22'); }
+  // ---- 실험대: 상판 두께(윗면 2줄 · 앞판 3줄) · 굵은 다리 · 가로대, 덩어리 바깥에만 외곽선
+  { const [tx, ty] = LAB.table, M = new Map(), set = (x, y, c) => M.set(x + ',' + y, c);
+    for (let x = tx; x < tx + 26; x++) { const seam = (x - tx) % 9 === 8; set(x, ty, seam ? '#8a6a44' : '#b08c60'); set(x, ty + 1, seam ? '#6a4a30' : '#9a7a52'); for (let y = ty + 2; y < ty + 5; y++) set(x, y, y === ty + 4 ? '#4a3422' : (x - tx) % 9 === 8 ? '#5a4028' : '#6a4a30'); }
+    for (const lx of [tx + 1, tx + 23]) for (let y = ty + 5; y < ty + 11; y++) { set(lx, y, '#7a5a3a'); set(lx + 1, y, '#4a3422'); }
+    for (let x = tx + 3; x < tx + 23; x++) set(x, ty + 8, x === tx + 3 ? '#5e4430' : '#5e4430');
+    outlineOf(M);
+    for (let x = tx; x < tx + 27; x++) if (x & 1) P.put(x, ty + 11, DIRT[5]); // 바닥 그림자
+    // 위: 조롱박 증류기 · 대롱 · 받는 잔 · 약병 셋 꽂이 · 돌절구와 공이 — 검은 선 없이 제 색 테
+    spr(['..nn..', '..nN..', '.aAAa.', 'aAAAad', 'aaaaad', '.dddd.'], { n: '#c8a870', N: '#8a7048', a: '#b0904e', A: '#e8d098', d: '#7a6030' }, tx + 2, ty - 6);
+    P.line(tx + 5, ty - 6, tx + 10, ty - 9, '#9aaa60'); P.line(tx + 10, ty - 9, tx + 11, ty - 5, '#9aaa60'); P.put(tx + 10, ty - 8, '#6a7a40');
+    spr(['dccd', 'cPpd', '.dd.'], { c: '#a86a3a', P: '#9ad060', p: '#5a8a38', d: '#6a4024' }, tx + 10, ty - 3);
+    for (const [i, g, G, d] of [[0, '#7ad050', '#c8f090', '#3e6a28'], [1, '#e0a040', '#ffd890', '#8a5a1a'], [2, '#5a8ad0', '#a8c8f0', '#2e4a7a']]) spr(['.w', 'GD', 'gD', 'gD'], { w: '#8e6e50', G, g, D: d }, tx + 15 + i * 3, ty - 5);
+    for (let x = tx + 14; x < tx + 23; x++) P.put(x, ty - 1, '#6a4a30');
+    spr(['SSSSS', 'sGGGs', '.sss.'], { S: '#a8a294', s: '#6e685c', G: '#5a8a38' }, tx + 20, ty - 3); P.line(tx + 23, ty - 3, tx + 25, ty - 7, '#c8c2b4'); }
+  // ---- 약초 시렁: 기둥 둘 · 가로대 · 매달린 다발 셋 (빨랫줄처럼)
+  { const x0 = 166, x1 = 181, y0 = 91, y1 = 103, M = new Map(), set = (x, y, c) => M.set(x + ',' + y, c);
+    for (let y = y0; y <= y1; y++) { set(x0, y, '#8e6e50'); set(x0 + 1, y, '#5e4430'); set(x1 - 1, y, '#7a5a3a'); set(x1, y, '#4e3626'); }
+    for (let x = x0; x <= x1; x++) { set(x, y0, '#b08c60'); set(x, y0 + 1, '#6a4a30'); }
+    outlineOf(M);
+    for (const [x, g, G, d] of [[169, '#5a7a38', '#8aaa58', '#3a5224'], [173, '#7a5a9a', '#a88ac8', '#4a3a62'], [177, '#a8904a', '#d0b86a', '#6a5a2a']]) { P.put(x + 1, y0 + 2, '#5a4a38'); spr(['gGg', 'GgG', 'gGd', '.gd', '.d.'], { g, G, d }, x, y0 + 3); }
+    for (let x = x0 + 2; x <= x1 - 2; x++) if (x & 1) P.put(x, y1 + 1, DIRT[5]); }
+  // ---- 바닥 양초: 굵은 몸 · 심지 · 흘러내린 촛농 · 바닥에 고인 촛농 (불꽃은 움직임에서)
+  for (const [x, y, h] of CANDLES) { const M = new Map(); for (let k = 1; k <= h + 1; k++) { M.set(x + ',' + (y - k), '#ece4cc'); M.set((x + 1) + ',' + (y - k), '#c8c0a8'); } outlineOf(M);
+    P.put(x, y - h - 2, '#2a2228'); P.put(x - 1, y - h + 1, '#e0d8c0'); P.put(x + 2, y - 1, '#d8d0b8'); for (let i = -2; i <= 3; i++) P.put(x + i, y, i === 3 ? '#a8a090' : i === -2 ? '#c8c0a8' : '#d8d0b8'); }
+  // ---- 쌓인 책 셋: 더미 바깥에만 외곽선, 권마다 종이 면 · 표지 · 어두운 아래 면
+  { const M = new Map(), set = (x, y, c) => M.set(x + ',' + y, c);
+    [['#7a2a2a', '#4e1a1a'], ['#2e4a6a', '#1e3048'], ['#3a6a3a', '#244424']].forEach(([c, d], i) => { const bx = 158 + (i % 2), by = 131 - i * 3; for (let x = bx; x < bx + 10; x++) { set(x, by, x === bx || x === bx + 9 ? c : '#d8c8a4'); set(x, by + 1, c); set(x, by + 2, d); } set(bx + 3, by + 1, '#c09038'); set(bx + 4, by + 1, '#c09038'); });
+    outlineOf(M); }
+  // ---- 약초 바구니: 엮은 결 · 테 · 위로 삐져나온 약초
+  { const M = new Map(), set = (x, y, c) => M.set(x + ',' + y, c), x0 = 213, y0 = 129;
+    ['..gGgG..', '.gGgGgg.', 'rrrrrrrr', 'bBbBbBbd', 'BbBbBbBd', '.dddddd.'].forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') set(x0 + i, y0 + j, { g: '#6a8a40', G: '#9aba68', r: '#c8a868', b: '#a88a4a', B: '#8a6e38', d: '#5a4624' }[ch]); }));
+    outlineOf(M); }
+}
+// v3.19 솥 밑 모닥불: 솥 밑에서 일렁이는 불 · 양옆을 핥아 오르는 불 · 튀는 불티
+function cauldronFire(t) {
+  const cx = LAB.cauldron[0], cy = LAB.cauldron[1] + LAB_POTDY, f = n => Math.floor(t * 9 + n * 2.3) % 3;
+  for (const [x, n] of [[cx - 3, 0], [cx, 1], [cx + 2, 2]]) { const k = f(n); px(x, cy - 1, k ? '#ffd34d' : '#fff2a8'); px(x + (k === 2 ? 1 : 0), cy - 2, '#ffb040'); }
+  for (const [x, d, n] of [[cx - 11, -1, 3], [cx + 10, 1, 4]]) { const k = f(n), hgt = 2 + k; for (let i = 0; i < hgt; i++) px(x + (i === hgt - 1 && k === 1 ? d : 0), cy - 3 - i, i === 0 ? '#ff9a30' : i === hgt - 1 ? '#fff2a8' : '#ffd34d'); }
+  for (let i = 0; i < 3; i++) { const per = 1.1 + i * 0.37, k = ((t + i * 0.41) % per) / per; if (k < 0.7) px(cx - 8 + i * 7 + Math.round(Math.sin(t * 3 + i) * 1.5), cy - 4 - Math.floor(k * 9), k < 0.35 ? '#ffd34d' : '#ff8a30'); }
 }
 // 솥 안 초록 액체가 부글부글
 function cauldronBubbles(t) { // 타원으로 고인 초록 액체 위에서 부글부글
-  const [cx, cy] = LAB.cauldron, ex = cx, ey = cy - 11; // 액체 타원 가운데 (가로 6 · 세로 1)
+  const cx = LAB.cauldron[0], cy = LAB.cauldron[1] + LAB_POTDY, ex = cx, ey = cy - 11; // 액체 타원 가운데 (가로 6 · 세로 1)
   const inL = (x, y) => ((x - ex) / 6.5) ** 2 + ((y - ey) / 1.4) ** 2 <= 1;
   for (let i = 0; i < 4; i++) { const x = ex - 5 + ((Math.floor(t * 3) * 3 + i * 4) % 11), y = ey + ((i + Math.floor(t * 2)) % 3) - 1; if (inL(x, y)) px(x, y, '#9ac860'); } // 일렁이는 윤슬
   for (let i = 0; i < 5; i++) { const per = 0.9 + hh(i, 2) * 0.6, k = ((t + hh(i, 3) * per) % per) / per, x = ex - 4 + Math.round(hh(i, 1) * 8), y = ey + (i % 3) - 1;
@@ -589,7 +675,7 @@ const LAB_LIGHTS = [
   { x: 230, y: 89, r: 34, a: 0.75, c: [255, 170, 80] },  // 해골 촛대
   { x: 178, y: 132, r: 18, a: 0.4, c: [90, 220, 200] }, // 빛나는 버섯
   { x: 146, y: 64, r: 26, a: 0.55, c: [255, 220, 150], sy: 0.6 }, // 사다리 위에서 드는 빛
-  { x: 188, y: 110, r: 20, a: 0.45, c: [255, 150, 70] }, // 솥 밑 불
+  window.LAB2 !== false ? { x: 188, y: 112, r: 28, a: 0.6, c: [255, 150, 70] } : { x: 188, y: 110, r: 20, a: 0.45, c: [255, 150, 70] }, // 솥 밑 불 (v3.19 모닥불이라 더 넓고 밝게)
   { x: 188, y: 104, r: 16, a: 0.25, c: [150, 220, 90] }, // 솥 점액
   { x: 192, y: 130, r: 46, a: 0.22 },
 ];
@@ -877,7 +963,7 @@ function ceilingDrips(t) {
   function labGround() {
     const o = loff(), t = time;
     at(o.x, o.y, 0, 0, () => {
-      const [tx, ty] = LAB.table; px(tx + 28, ty - 4 - (Math.floor(t * 6) % 2), '#ffd34d'); cauldronBubbles(t); px(LAB.cauldron[0] + (Math.floor(t * 8) % 3) - 1, LAB.cauldron[1] + 1, '#ffb040');
+      const [tx, ty] = LAB.table; px(tx + 28, ty - 4 - (Math.floor(t * 6) % 2), '#ffd34d'); cauldronBubbles(t); if (window.LAB2 !== false) cauldronFire(t); else px(LAB.cauldron[0] + (Math.floor(t * 8) % 3) - 1, LAB.cauldron[1] + 1, '#ffb040');
       for (const [x, y, h] of CANDLES) { const fl = (Math.floor(t * 7 + x) % 3); px(x, y - h - 2, '#ff9a30'); px(x + (fl === 2 ? 1 : 0), y - h - 3, '#ffd34d'); if (fl) px(x, y - h - 4, '#fff2a8'); }
       const q = Q();
       if (!q.met && !(SEQ && SEQ.k === 'appear')) motes(t);
@@ -965,7 +1051,7 @@ function ceilingDrips(t) {
   const RUMOR = {
     A: { lines: ['초원을 건너오셨군요. 다음은 성채로 가시나요?', '그 성채에 도는 소문이 하나 있어요.', '어느 방 벽에 이상한 그림이 그려져 있다고 합니다.', '무엇을 뜻하는지 아는 사람은 없답니다.'], name: '성채 벽의 그림', again: '벽의 그림이 무엇을 뜻하는지… 궁금하지 않으세요?' },
     C: { lines: ['초원으로 가시는 길이군요.', '요즘 이 초원에 도는 소문이 하나 있어요.', '언제부턴가 숲 어딘가에서 시큼한 점액 냄새가 난다고 합니다.', '냄새가 어디서 오는지 아는 사람은 없답니다.'], name: '시큼한 점액 냄새', again: '시큼한 냄새가… 어디서 오는 걸까요?' }, // v2.73 1장 시작 방
-    B: { lines: ['또 뵙네요. 성채를 무사히 빠져나오셨군요.', '이번엔 붉은 엄니 부락에 도는 소문입니다.', '오크들에겐 선조에게서 전해 오는 곳이 있다고 해요.', '결투로 원하는 것을 쟁취하는 곳이라나요.', '입구는 피로 그린 원이라는데… 본 사람은 없답니다.'], name: '결투의 장소', again: '원하는 바가 있다면 결투로 얻어 가라… 오크들 말이에요.' },
+    B: { lines: ['또 뵙네요. 성채를 무사히 빠져나오셨군요.', '이번엔 핏빛 엄니 부락에 도는 소문입니다.', '오크들에겐 선조에게서 전해 오는 곳이 있다고 해요.', '결투로 원하는 것을 쟁취하는 곳이라나요.', '입구는 피로 그린 원이라는데… 본 사람은 없답니다.'], name: '결투의 장소', again: '원하는 바가 있다면 결투로 얻어 가라… 오크들 말이에요.' },
   };
   function bard(R) { // 이 대장간에 음유시인이 있으면 자리 (처음 부를 때 충돌 칸을 둠)
     if (!R || !G.dun) return null;
@@ -1002,9 +1088,8 @@ function ceilingDrips(t) {
 
   // ---------------------------------------------------------------- 키륵 의뢰
   const KIRK_ASK = ['키륵… 마법, 없어. 아무것도 없어.', '초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.', '가져오면… 좋은 거 알려 줘. 왕관 이야기.'];
-  const KIRK_READ = ['…키륵 글씨. 그런데… 키륵 생각, 아냐.', '왕관이… 시킨 거야. 지켜라, 지켜라.', '해, 안 져. 왕관이 붙잡고 있어.', '제단… 가지 마, 사람.'];
+  const KIRK_READ = ['…키륵 글씨. 그런데… 키륵 생각, 아냐.', '왕관이… 시킨 거야. 지켜라, 지켜라.', '해, 안 떠. 왕관이 붙잡고 있어.', '제단… 가지 마, 사람.'];
   const JOURNAL = ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.',
-    '조각 입수 이후 일몰이 관측되지 않음. 그림자의 방위와 길이가 고정되어 있음 — 국소적 시간 정체로 추정.',
     '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.',
     '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.',
     '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 요망.',
@@ -1108,7 +1193,7 @@ function ceilingDrips(t) {
     bardTop();
     if (DLG && !DLG.box) { const [who, text] = DLG.lines[DLG.i], p = speakerPos(who); drawBubble(text, p.x, p.y, 0); }
     else if (R.type === 'lab' && Q().met && !SEQ) { const q = Q(), P = G.player, k = kirkPos(), near = Math.hypot(P.x - k.x, P.y - k.y) < 90;
-      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '해, 안 져.'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
+      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '해, 안 떠.'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
       const s = lines && npcTalk('kirk', near, lines); if (s) drawBubble(s.line, k.x, k.y - 32, 0); }
     const q = G.tq1; if (q && q.hold > time && G.player) { const P = G.player; at(P.x, P.y - 52, 3, 2, () => { for (let yy = 0; yy < 5; yy++) for (let xx = 0; xx < 7; xx++) px(xx, yy, xx === 0 ? '#5a321c' : yy === 4 ? '#e8dcc0' : yy === 0 ? '#a8683e' : '#8a5232'); px(3, 2, '#e8c870'); px(4, 2, '#e8c870'); for (let xx = -1; xx <= 7; xx++) { px(xx, -1, OUTK); px(xx, 5, OUTK); } for (let yy = 0; yy < 5; yy++) { px(-1, yy, OUTK); px(7, yy, OUTK); } glow(3, 2, 12, '255,230,160', 0.3, 8); }); }
   }
@@ -1871,7 +1956,7 @@ drawTG = function (G, ox, oy, outline = true, pal) {
   function on(gg, fn) { const o = g; g = gg; try { fn(); } finally { g = o; } }
   const SIGS = ['sword', 'crow', 'rose', 'tower'], SNAME = { sword: '검', crow: '까마귀', rose: '장미', tower: '탑' };
   const OATH = ['검 앞에 서약하노니,', '왕관을 쓴 왕 앞에 무릎 꿇은 자는', '그 왕이 떠난 뒤에도', '빈 왕좌를 지키리라.']; // v2.60 여는 말 · 주어 · 「그 왕」 · 끝맺음 — 문법만으로 순서가 하나
-  const SPELL = ['기사단장 발도르여,', '해가 지지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'];
+  const SPELL = ['기사단장 발도르여,', '해가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'];
   const PIL_OFF = { sword: [-108, -10], crow: [108, -10], rose: [-116, 104], tower: [116, 104] }; // 바닥 원 가운데 기준 기둥 발 (px)
   const curR2 = () => G && G.dun && G.dun.cur;
   const chapel = () => G && G.dun && G.dun.rooms && G.dun.rooms.find(r => r.type === 'chapel');

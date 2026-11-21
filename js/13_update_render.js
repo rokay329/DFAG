@@ -38,7 +38,14 @@
     return `${CLASSES[cls || CUR].n} 현재 장비 — 공격력 ${s.atk.toFixed(0)} · 체력 ${s.hp / 2}칸 · 치명타 확률 ${(s.crit * 100).toFixed(0)}% · 치명타 피해 ${(s.critDmg * 100).toFixed(0)}% · 쿨타임 감소 ${(s.cdr * 100).toFixed(0)}%`;
   }
   let resultShowAll = false, resultWin = false;
-  function showResult(win) {
+  function failPlace() { // v3.19 실패 장소: 프롤로그 · 기록 보관소 · 도박장처럼 ROOM_N에 없는 곳은 장소 이름으로, 던전은 STAGE + 방 이름
+    const D = G.dun, R = D && D.cur; if (!R) return `STAGE ${G.stage}`;
+    if (R.type === 'home') return typeof HOME !== 'undefined' ? HOME.name(R.cls || G.cls) || '시작 장소' : '시작 장소';
+    if (R.type === 'archive') return '코코아의 기록 보관소';
+    if (R.type === 'den') return '영수 · 명수의 안전 놀이터';
+    return ROOM_N[R.type] ? `STAGE ${G.stage} ${ROOM_N[R.type]}` : `STAGE ${G.stage}`;
+  }
+  function showResult(win, quit) {
     mode = 'result'; resultWin = win;
     window.AudioSys.setMood(win ? 'victory' : 'title', true);
     G.lostItems = SAVE.inv.length;
@@ -61,10 +68,10 @@
       else if (L > 0) ascMsg = ` · 잿불 ${L} 돌파`; }
     persist();
     resultShowAll = false;
-    $('resTitle').textContent = win ? '원정 완료' : '사망';
+    $('resTitle').textContent = win ? '원정 완료' : '원정 실패';
     $('resTitle').style.color = win ? 'var(--gold-l)' : '#ff7070';
     const chMsg = newChronicle ? ` · [전서 기록: ${newChronicle.label}]` : '';
-    $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 원정은 STAGE 3까지 이어진다' : '다음 원정은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `STAGE ${G.stage} ${G.dun && G.dun.cur ? ROOM_N[G.dun.cur.type] : ''}에서 쓰러졌다 · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
+    $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 원정은 STAGE 3까지 이어진다' : '다음 원정은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `${failPlace()}에서 ${quit ? '원정을 포기했다' : '쓰러졌다'} · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
     if (G.newUnl && G.newUnl.length) $('resSub').textContent += ' · 새로 열림: ' + G.newUnl.map(id => { const u = UNLOCKS.find(x => x.id === id); if (id.startsWith('w:')) { const [, c, i] = id.split(':'), W0 = wcat(c)[+i]; return `${GRADES.find(x => x.k === W0.grade).n} 무기 「${W0.name}」`; } return u && u.kind === 'r' ? RELICS[u.key].n : id; }).join(', ') + ' (코코아의 기록 보관소)'; // v2.29
     renderResultItems(win);
     $('ovResult').classList.add('on');
@@ -176,6 +183,7 @@
     const dbgK = k => { if (pressed[k] !== 'shift') return false; pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T·R·X), 그냥 누르면 아무 일 없음
     if (dbgK('n') && !G.clear) debugClearRoom();
     if (dbgK('v')) { debugStageClear(); return; }
+    for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n)) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
     if (dbgK('t')) { // 테스트: 무기 등급 순환 (커먼 → 레어 → 유니크 → 레전더리)
       const cw0 = eqWeapon(G.cls), nk = ((cw0 && cw0.wk != null ? cw0.wk : 0) + 1) % wcat(G.cls).length, W1 = wcat(G.cls)[nk]; // v2.03 도감 무기를 차례로
       const it = makeItem(G.cls, { grade: W1.grade, slot: 'weapon', wk: nk, noCurse: true }); lootFeed(`테스트 무기 ${nk + 1}/${wcat(G.cls).length} — ${it.name}`, gradeOf(it).c, 2500);
@@ -183,6 +191,7 @@
       lootFeed(`<b style="color:${gradeOf(it).c}">[${gradeOf(it).n}] ${it.name}</b> 장착 (테스트)`, gradeOf(it).c); sfx('drop'); if (it.grade === 'legend') { if (G.seenLegendLore) delete G.seenLegendLore[it.fx]; triggerLegendPickup(it); }
     }
     if (dbgK('p')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2], n = G.pal[c] || 0, nx = HUE_TIER.find(v => v > n); if (nx) hueGain(c, nx - n); } // v2.41 테스트: 색 단계 올리기 (각인 고르기)
+    if (dbgK('k')) { window.ROLL = window.ROLL === false; lootFeed(window.ROLL !== false ? '테스트 — 기사 · 거너 · 사제 구르기 켜짐 (Shift+K)' : '테스트 — 구르기 꺼짐 · 점멸 (Shift+K)', '#e0c080', 2500); sfx('blip'); } // v3.19 테스트: 구르기 ↔ 점멸
     if (dbgK('o')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
     if (dbgK('y')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
     if (dbgK('b') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
@@ -500,16 +509,19 @@
   }
   // v2.50 플레이어 근접 궤적 (도트): 한 가지 색의 초승달 — 칼끝 반경에서 안쪽으로 2px 칸을 채우고, 두께는 가운데가 가장 두껍고 양 끝은 반드시 뾰족하게.
   //   오래된 칸은 투명해지지 않고 두께가 단계적으로 줄다가 사라진다
+  // v3.19 RGB? 무기: 휘두른 궤적을 무지개 띠로 (바깥 빨강 → 안쪽 보라, 결 따라 천천히 흐름). window.RBY_TRAIL = false면 예전 색
+  const rbySlash = (cls, col) => window.RBY_TRAIL !== false && typeof eqWeapon === 'function' && (eqWeapon(cls) || {}).grade === 'rby' ? 'rainbow' : col;
   const SLASH_COL = { knight: '#ece6e2', ranger: '#ffc8a8', priest: '#ffd34d', holy: '#ffd34d', ice: '#9fd2ff', storm: '#7affb0', shadow: '#c08cff' };
   function drawSlashPx(trail, px, py, rout, col, heavy) {
     const n = trail.length; if (n < 2) return;
     const A = [trail[0].a]; for (let i = 1; i < n; i++) A.push(A[i - 1] + angDiff(trail[i].a, trail[i - 1].a));
     const tot = Math.abs(A[n - 1] - A[0]) || 1e-6, thMax = rout * 0.4 * (heavy ? 1.15 : 1), seen = new Set();
-    ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; ctx.fillStyle = col;
+    const rb = col === 'rainbow', sh = rb ? Math.floor(time * 6) : 0;
+    ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1; if (!rb) ctx.fillStyle = col;
     for (let i = 1; i < n; i++) {
       const life = Math.ceil(clamp(trail[i].t / 0.11, 0, 1) * 4) / 4, a0 = A[i - 1], a1 = A[i], m = Math.max(1, Math.ceil(Math.abs(a1 - a0) * rout / 1.6));
       for (let j = 0; j <= m; j++) { const a = a0 + (a1 - a0) * j / m, u = Math.abs(a - A[0]) / tot, th = thMax * Math.pow(Math.sin(Math.PI * clamp(u, 0, 1)), 0.9) * (0.35 + 0.65 * life), ca = Math.cos(a), sa = Math.sin(a);
-        for (let d = 0; d <= th; d += 1.5) { const x = snap2(px + ca * (rout - d)), y = snap2(py + sa * (rout - d)), key = x * 8192 + y; if (seen.has(key)) continue; seen.add(key); ctx.fillRect(x, y, 2, 2); } }
+        for (let d = 0; d <= th; d += 1.5) { const x = snap2(px + ca * (rout - d)), y = snap2(py + sa * (rout - d)), key = x * 8192 + y; if (seen.has(key)) continue; seen.add(key); if (rb) ctx.fillStyle = RBY_RAIN[(Math.min(5, Math.floor(d / Math.max(1.5, th) * 6)) + sh) % 6]; ctx.fillRect(x, y, 2, 2); } }
     }
     ctx.restore();
   }

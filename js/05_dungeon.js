@@ -160,16 +160,16 @@
     pillars4: () => [['p', .28, .3], ['p', .72, .3], ['p', .28, .72], ['p', .72, .72]],
     pillars6: () => [['p', .22, .3], ['p', .5, .3], ['p', .78, .3], ['p', .22, .72], ['p', .5, .72], ['p', .78, .72]],
     ring: () => Array.from({ length: 8 }, (_, i) => ['p', .5 + Math.cos(i / 8 * TAU + 0.39) * 0.2, .52 + Math.sin(i / 8 * TAU + 0.39) * 0.3]),
-    centerPit: () => [['pit', .5, .24, 300, 96], ['pit', .5, .84, 220, 60]],
+    centerPit: () => [['pit', .5, .24, 260, 70], ['pit', .5, .82, 260, 70]], // v3.19 둘 이상이면 같은 크기 · 줄 맞춤
     twinPits: () => [['pit', .3, .5, 150, 220], ['pit', .7, .5, 150, 220]],
-    cross: () => [['w', .5, .2, 26, 110], ['w', .5, .86, 26, 90], ['w', .2, .52, 200, 26], ['w', .8, .52, 200, 26]],
+    cross: () => [['w', .5, .2, 26, 120], ['w', .5, .84, 26, 120], ['w', .2, .52, 120, 26], ['w', .8, .52, 120, 26]], // v3.19 네 팔 길이 통일
     lanes: () => [['w', .5, .33, 560, 26], ['w', .5, .7, 560, 26], ['r', .14, .5, 16], ['r', .86, .5, 16]],
     rubble: () => { const out = [], k = randi(2, 3); // v2.91 고르게 흩뿌린 8개 → 2~3무더기 (무더기마다 1~3개)
       for (let i = 0; i < k; i++) { const u = rand(.18, .82), v = rand(.22, .8), m = randi(1, 3); for (let j = 0; j < m; j++) out.push(['r', u + (j ? rand(-.06, .06) : 0), v + (j ? rand(-.08, .08) : 0), j ? rand(10, 14) : rand(15, 22)]); }
       return out; },
     pitBand: () => [['pit', .25, .52, 290, 64], ['pit', .75, .52, 290, 64], ['p', .5, .25], ['p', .5, .8]],
     blocks: () => [['w', .22, .27, 170, 90], ['w', .78, .27, 170, 90], ['w', .22, .78, 170, 90], ['w', .78, .78, 170, 90]],
-    pitsScatter: () => [['pit', .25, .3, 110, 70], ['pit', .7, .25, 90, 80], ['pit', .5, .84, 130, 60], ['pit', .2, .75, 90, 60], ['pit', .82, .72, 100, 70], ['r', .4, .35, 15], ['r', .62, .82, 15]],
+    pitsScatter: () => [['pit', .25, .28, 110, 70], ['pit', .75, .28, 110, 70], ['pit', .25, .78, 110, 70], ['pit', .75, .78, 110, 70], ['r', .5, .3, 15], ['r', .5, .8, 15]], // v3.19 제각각이던 구덩이 다섯 → 같은 크기 넷을 격자로
     halls: () => [['w', .36, .5, 26, 300], ['w', .64, .5, 26, 300], ['r', .18, .3, 18], ['r', .82, .74, 18]],
     pond: () => [['pit', .5, .2, 220, 80], ['p', .2, .3], ['p', .8, .3], ['p', .2, .78], ['p', .8, .78]],
   };
@@ -195,6 +195,7 @@
     trail: ['trailEdge', 'trailZig', 'trailPond'], trailV: ['vZig', 'vEdge'], glade: ['glade1', 'open', 'pillars4'],
     corridor: ['colonnade', 'corrRubble', 'corrPits'], corridorV: ['vColon', 'vRubble'], chamber: ['open', 'pillars4', 'rubble'],
   };
+  const BIG_RECT = ['centerPit', 'twinPits', 'pond', 'pitBand', 'blocks', 'halls'], LAYOUT_RECT = { centerPit: 1, twinPits: 1, pitBand: 1, pitsScatter: 1, pond: 1, groves: 1, trailPond: 1, corrPits: 1, cross: 2, lanes: 2, blocks: 2, halls: 2, trailZig: 2, vZig: 2, sideHalls: 2 }; // v3.19 1 = 구덩이류, 2 = 벽류
   const LAYOUT_BIG_EXTRA = { plain: ['groves'], greathall: ['nave', 'sideHalls'] };
   const LAYOUT_BY = {
     combat: ['pillars4', 'pillars6', 'ring', 'centerPit', 'twinPits', 'cross', 'lanes', 'rubble', 'pitBand', 'blocks', 'pitsScatter', 'halls', 'pond'],
@@ -212,12 +213,13 @@
   // v2.91 격자처럼 줄 맞춰 보이지 않게: 둥근 장애물(나무 · 기둥 · 바위)은 칸 단위로 살짝 비틀고, 많이 늘어선 배치는 몇 개를 뺀다
   //        벽 · 구덩이도 조금 비튼다 (방 가운데 · 문 앞 · 길 연결 검사는 이 뒤에 그대로 함)
   const NAT_ROW = { colonnade: 1, nave: 1, vColon: 1, trailEdge: 1, vEdge: 1, pillars6: 1, ring: 1, groves: 1 };
-  function naturalize(obs, name) {
+  function naturalize(obs, name, gridPillar) { // v3.19 gridPillar: 성채(2장 · 4장)의 돌기둥은 비틀지 않고 줄을 맞춤 — 1장 나무 · 3장은 그대로
     const W = A.x1 - A.x0, H = A.y1 - A.y0, s2 = v => Math.round(v / 2) * 2;
-    const rnd = obs.filter(b => b.c), jx = Math.min(26, W * 0.035), jy = Math.min(22, H * 0.05);
+    const rnd = obs.filter(b => b.c), jx = Math.min(26, W * 0.035), jy = Math.min(22, H * 0.05), nRect = obs.length - rnd.length; // v3.19 벽 · 구덩이가 둘 이상이면 비틀지 않고 줄을 맞춤
     for (const b of obs) {
-      if (b.c) { b.x = s2(b.x + rand(-jx, jx)); b.y = s2(b.y + rand(-jy, jy)); if (b.t === 'rock') b.r = Math.max(10, Math.round(b.r * rand(0.85, 1.12))); }
-      else { const dx = s2(rand(-10, 10)), dy = s2(rand(-8, 8)); b.x += dx; b.y += dy; b.x0 += dx; b.x1 += dx; b.y0 += dy; b.y1 += dy; }
+      if (b.c && gridPillar && b.t === 'pillar') { b.x = s2(b.x); b.y = s2(b.y); }
+      else if (b.c) { b.x = s2(b.x + rand(-jx, jx)); b.y = s2(b.y + rand(-jy, jy)); if (b.t === 'rock') b.r = Math.max(10, Math.round(b.r * rand(0.85, 1.12))); }
+      else if (nRect < 2) { const dx = s2(rand(-10, 10)), dy = s2(rand(-8, 8)); b.x += dx; b.y += dy; b.x0 += dx; b.x1 += dx; b.y0 += dy; b.y1 += dy; }
     }
     if (NAT_ROW[name] && rnd.length >= 6) { // 줄지어 선 배치: 25%씩 빼되 4개는 남김
       let left = rnd.length; const gone = new Set();
@@ -240,6 +242,7 @@
   // 돌진은 장애물(구덩이 포함)에 닿으면 멈춘다
   const dashBlocked = (e, pits = true) => !!(G && G.obs && G.obs.length && obsHitL(G.obs, e.x, e.y, e.r, !pits));
   // 원(유닛)을 장애물 밖으로 밀어낸다
+  const WALL_SIDE = 7;
   function solveObs(o, r, ignorePit) {
     const L = G && G.obs; if (!L || !L.length) return false;
     let hit = false;
@@ -249,12 +252,13 @@
         let dx = o.x - b.x, dy = o.y - b.y, d = Math.hypot(dx, dy); const m = b.r + r;
         if (d < m) { if (d < 0.01) { dx = 1; dy = 0; d = 1; } o.x = b.x + dx / d * m; o.y = b.y + dy / d * m; hit = true; }
       } else {
-        const cx = clamp(o.x, b.x0, b.x1), cy = clamp(o.y, b.y0, b.y1), dx = o.x - cx, dy = o.y - cy, d = Math.hypot(dx, dy);
+        const sp = b.t === 'wall' ? WALL_SIDE : 0, bx0 = b.x0 - sp, bx1 = b.x1 + sp; // v3.19 벽은 양옆으로 7px 더 막음 — 옆에 붙어 섰을 때 몸이 벽 그림에 반쯤 가려져 벽 안으로 들어간 것처럼 보이던 문제
+        const cx = clamp(o.x, bx0, bx1), cy = clamp(o.y, b.y0, b.y1), dx = o.x - cx, dy = o.y - cy, d = Math.hypot(dx, dy);
         if (d < r) {
           if (d > 0.01) { o.x = cx + dx / d * r; o.y = cy + dy / d * r; }
           else {
-            const l = o.x - b.x0, rr = b.x1 - o.x, t = o.y - b.y0, bt = b.y1 - o.y, m = Math.min(l, rr, t, bt);
-            if (m === l) o.x = b.x0 - r; else if (m === rr) o.x = b.x1 + r; else if (m === t) o.y = b.y0 - r; else o.y = b.y1 + r;
+            const l = o.x - bx0, rr = bx1 - o.x, t = o.y - b.y0, bt = b.y1 - o.y, m = Math.min(l, rr, t, bt);
+            if (m === l) o.x = bx0 - r; else if (m === rr) o.x = bx1 + r; else if (m === t) o.y = b.y0 - r; else o.y = b.y1 + r;
           }
           hit = true;
         }
@@ -288,6 +292,10 @@
     return dist;
   }
   const CLEAR_R = 64; // 방 가운데 비워 둘 반지름
+  const THICK3 = 56; // v3.19 3장: 우리 · 피웅덩이의 최소 두께 (가늘고 긴 벽이 실처럼 보이지 않게, 가운데를 기준으로 양쪽으로 넓힘)
+  const MIN1 = [120, 90]; // v3.19 1장: 속이 빈 폐허 · 저수지(폭 56px 이상 덩어리)의 최소 크기 — 좁으면 안쪽 잔해가 뭉쳐 보임. 가는 돌담은 그대로
+  function min1(b) { if (b.c || b.brook || b.pool || (b.t !== 'wall' && b.t !== 'pit') || Math.min(b.w, b.h) < 56) return b; if (b.w < MIN1[0]) { b.w = MIN1[0]; b.x0 = b.x - b.w / 2; b.x1 = b.x + b.w / 2; } if (b.h < MIN1[1]) { b.h = MIN1[1]; b.y0 = b.y - b.h / 2; b.y1 = b.y + b.h / 2; } return b; }
+  function thick3(b) { if (b.c) return b; if (b.w < THICK3) { b.w = THICK3; b.x0 = b.x - THICK3 / 2; b.x1 = b.x + THICK3 / 2; } if (b.h < THICK3) { b.h = THICK3; b.y0 = b.y - THICK3 / 2; b.y1 = b.y + THICK3 / 2; } return b; }
   function layoutRoom(r, stage) {
     const realStage = stage; if (stage === 4) stage = 2; // v1.22 왕도의 방 배치·장식은 우선 성채 규칙을 빌린다
     withSeed(r.seed, () => {
@@ -295,15 +303,19 @@
       for (const d in r.doors) if (r.doors[d] != null) keyPts.push(doorIn(d, 34));
       if (r.crack) keyPts.push(doorIn(r.crack.dir, 34));
       const fight = !!LAYOUT_BY[r.type], sh = r.shape, own = LAYOUT_SHAPE_POOL[sh];
-      const pool = !fight ? (sh === 'glade' && r.type === 'start' ? ['glade1'] : ['open']) : own ? own.slice() : LAYOUT_BY[r.type].concat(r.type === 'combat' ? LAYOUT_BIG_EXTRA[sh] || [] : []);
+      let pool = !fight ? (sh === 'glade' && r.type === 'start' ? ['glade1'] : ['open']) : own ? own.slice() : LAYOUT_BY[r.type].concat(r.type === 'combat' ? LAYOUT_BIG_EXTRA[sh] || [] : []);
       const sx = (A.x1 - A.x0) / 1000, sy = (A.y1 - A.y0) / 540, scaled = n => !LAYOUTS_SHAPE[n];
+      // v3.19 큰 방(900×450 이상 전투방)에는 벽 · 웅덩이류가 반드시 하나 이상 — 4장은 구덩이가 잔해로 바뀌므로 벽(집 · 성벽)만 셈
+      const big = fight && A.x1 - A.x0 >= 900 && A.y1 - A.y0 >= 450, rectOk = b => !b.c && (b.t === 'wall' || b.t === 'pit'); // v3.19 4장도 불탄 자리가 웅덩이 자리
+      if (big) { const p2 = [...new Set(pool.concat(r.type === 'combat' ? [] : BIG_RECT))].filter(n => LAYOUT_RECT[n] === 2 || LAYOUT_RECT[n] === 1); if (p2.length) pool = p2; }
       let obs = [];
       for (let tries = 0; tries < 12 && pool.length; tries++) {
         const name = pool.splice(randi(0, pool.length - 1), 1)[0];
-        obs = naturalize(LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)), name).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
+        obs = naturalize(LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)), name, stage === 2).map(b => stage === 3 ? thick3(b) : realStage === 1 ? min1(b) : b).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
         // 방 가운데(보상 상자·텔레포터 자리)는 비운다: 큰 벽·구덩이가 걸리면 다른 배치, 바위·기둥은 빼기 (v0.59)
         if (obs.some(b => !b.c && obsHitL([b], CX, CY - 10, CLEAR_R))) { obs = []; continue; }
         obs = obs.filter(b => !obsHitL([b], CX, CY - 10, CLEAR_R));
+        if (big && !obs.some(rectOk)) { obs = []; continue; }
         // 둥근 장애물끼리 겹치지 않게
         obs = obs.filter((b, i) => !b.c || !obs.slice(0, i).some(o => o.c ? Math.hypot(o.x - b.x, o.y - b.y) < o.r + b.r + (stage === 3 ? 30 : 10) : obsHitL([o], b.x, b.y, b.r + 6)));
         if (!obs.length && name !== 'open') continue;
@@ -312,15 +324,20 @@
         if (ok && keyPts.every(p => center[navIdx(p.x, p.y)] >= 0 || !nav[navIdx(CX, CY + 40)])) { r.layout = name; break; }
         obs = [];
       }
+      if (realStage <= 4) { // v3.19 같은 크기의 벽 · 웅덩이는 섞여 나올 수 있음 (3장: 우리 + 피웅덩이) (예: 벽 하나 + 웅덩이 하나, 벽 셋 + 웅덩이 하나) — 가늘고 긴 벽(폭 56px 미만)은 제외
+        const RB = obs.filter(b => !b.c && (b.t === 'wall' || b.t === 'pit') && Math.min(b.w, b.h) >= 56);
+        if (RB.length >= 2 && Math.random() < 0.6) { const sh = RB.slice().sort(() => Math.random() - 0.5), k = randi(1, RB.length - 1); for (let i = 0; i < k; i++) sh[i].t = sh[i].t === 'wall' ? 'pit' : 'wall'; }
+      }
       if (realStage === 4) { // v1.23 왕도엔 구덩이 없음 — 그 자리엔 잔해·깨진 종이 줄지어 놓인다
         const add = [];
-        for (const b of obs) if (b.t === 'pit') { const along = b.w >= b.h, L = along ? b.w : b.h, n = Math.max(1, Math.round(L / 70));
+        const thin4 = b => b.t === 'pit' && (b.c || Math.min(b.w, b.h) < 56); // v3.19 폭 56px 이상 구덩이는 불탄 자리로 남고, 가는 것만 예전처럼 잔해 줄로
+        for (const b of obs) if (thin4(b)) { const along = b.w >= b.h, L = along ? b.w : b.h, n = Math.max(1, Math.round(L / 70));
           for (let i = 0; i < n; i++) { if (n > 2 && Math.random() < 0.3) continue; const t = (i + 0.5) / n - 0.5 + rand(-0.12, 0.12) / n, rr = randi(11, 17), off = rand(-16, 16); add.push({ t: 'rock', c: true, x: Math.round((b.x + (along ? t * L : off)) / 2) * 2, y: Math.round((b.y + (along ? off : t * L)) / 2) * 2, r: rr }); } } // v2.91 한 줄로 반듯하게 늘어서지 않게
-        obs = obs.filter(b => b.t !== 'pit').concat(add.filter(b => !obsHitL([{ t: 'x', c: true, x: CX, y: CY - 10, r: 0 }], b.x, b.y, CLEAR_R + b.r)));
+        obs = obs.filter(b => !thin4(b)).concat(add.filter(b => !obsHitL([{ t: 'x', c: true, x: CX, y: CY - 10, r: 0 }], b.x, b.y, CLEAR_R + b.r)));
       }
       if (stage === 3) for (const b of obs) {
         const sq = b.w <= 150 && b.h <= 150 && b.w / b.h > 0.5 && b.w / b.h < 2;
-        if (b.t === 'pit') { b.t = 'wall'; b.tower = sq; }
+        if (b.t === 'pit') { if (sq) { b.t = 'wall'; b.tower = true; } } // v3.19 네모난 작은 구덩이만 망루로 — 나머지는 피웅덩이로 남음
         else if (b.t === 'wall' && sq && b.w >= 36 && Math.random() < 0.5) b.tower = true;
       }
       // v0.99 망루는 네 기둥만 막힌다 — 발판 아래로 지나갈 수 있음 (그림은 b, 판정은 기둥 4개)
@@ -362,12 +379,15 @@
           r.style.path = 'straight'; r.style.ph = 0; r.style.off = 0;
           ROOMSTYLE = r.style; const safePaths = meadowCurves(); ROOMSTYLE = RS0;
           const blocksRoad = b => safePaths.some(c => { for (let t = c.a; t <= c.b; t += 4) { const m = c.at(t), px = c.vert ? m : t, py = c.vert ? t : m; if (obsHitL([b], px, py, 28)) return true; } return false; });
-          obs = obs.filter(b => !blocksRoad(b)); r.obs = obs; r.nav = buildNav(obs);
+          const kept = obs.filter(b => !blocksRoad(b));
+          if (big && !kept.some(rectOk)) { r.style.path = 'none'; r.style.doors = []; } // v3.19 큰 방의 벽 · 웅덩이가 길 때문에 다 빠지면 길을 없앰
+          else { obs = kept; r.obs = obs; r.nav = buildNav(obs); }
         }
       }
       const pts = keyPts.slice(); pts.push({ x: CX, y: CY - 10, big: true });
       if (r.tele) pts.push(r.tele); if (r.chest) pts.push(r.chest); if (r.shop) pts.push(...r.shop, { x: CX, y: CY - 70 }, { x: CX + 30, y: CY - 70 }); if (r.type === 'rest') pts.push({ x: CX - 4, y: CY - 10 }); // 모닥불 옆 (불 자체는 막힌 자리라 연결 검사에서 빼야 소품이 지워지지 않는다)
       if (r.type === 'boss' && r.style.path === 'brook') r.style.path = 'wind'; // 보스 방에는 개울 없음
+      if (stage === 1 && realStage === 1) r.style.pave = obs.some(b => !b.c && (b.t === 'wall' || (b.t === 'pit' && !b.brook && !b.pool))); // v3.19 폐허(벽)나 저수지가 있는 방만 옛 돌길, 나머지는 흙길
       if (r.type !== 'boss' || stage === 3) decorRoom(r, realStage, pts); else r.props = [];
       r.spritesN = spriteObsN(r); // v2.85 장애물 그림은 배치 때 한 번 만들어 그대로 씀 (점유 지도가 실제 그림으로 잼)
     });
@@ -391,6 +411,7 @@
     if (D.cur && D.cur !== R) D.cur.loot = G.loot.filter(l => l.life > 0);
     setArena(SHAPES[R.shape]);
     if (R.sealW) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 100); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 100); } // v2.64 인장 벽 둘레엔 벽 기둥·깃발·횃불 없음
+    if ((G.stage === 2 || G.stage === 4) && R.doors && R.doors.n != null && !R.sealW) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 78); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 78); } // v3.19 북문 자리의 벽 기둥 · 횃불은 뺌 (문 · 문 옆 화로와 겹침)
     END.prepRoom(R); // v2.54 2회차부터 대관식장 가운데에 잿빛 왕의 흔적
     R.socks = sealSocks(R);
     D.cur = R; R.visited = true; R.seen = true;
@@ -422,13 +443,14 @@
     if (fresh && R.type === 'survive') banner('봉인된 방', `문이 닫혔다 · ${SURV_N}차례의 습격을 견뎌야 한다`);
     if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
     if (R.type === 'shop') shopHeartFix(R);
-    if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner(BISTRO.NAME, '아침, 점심, 저녁 식사 됩니다.', false, CX); /* v3.10 맵 가운데 */ /* v3.10 */ } }
+    if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner(BISTRO.NAME, '언제든 식사 됩니다.', false, CX); /* v3.10 맵 가운데 */ /* v3.10 */ } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('살구의 비밀상점', '네고 없음, 환불 불가'); }
     if (R.type === 'reward' && !R.greeted) { R.greeted = true; banner('보물 방', ''); }
     if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
     if (fresh && R.type === 'boss' && hasRelic('gravedirt')) { addArmor(1); lootFeed('무덤 흙 — 방패 +1', '#c8a880'); }
     if (R.type === 'secret' && !R.greeted) { rec('secret'); R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
-    if (R.type === 'den') setMood('den'); else // v3.18 안전 놀이터 전용 곡
+    const RM = { den: 'den', rest: 'rmBistro', shop: 'rmShop', reward: 'rmReward', secret: 'rmSecret' }; // v3.19 쉬는 방마다 전용 곡 (비스트로 · 상점 · 보물 방 · 비밀 방)
+    if (RM[R.type]) setMood(RM[R.type]); else
     setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
     if (R.type === 'start') {
       spawnDummy(); // v2.04 시작 방 허수아비 (무기 시험용)
@@ -818,7 +840,8 @@
       const ac = G.stage === 4;
       if (G.stage === 1) paintMeadowFloor(fmg); else if (G.stage === 3) { paintOrcFloor(fg, R); paintOrcWall(fg, R); } else { paintCastle.noRite = ac; paintCastle(fg); paintCastle.noRite = false; paintCastleWall(fg); if (R.type !== 'altar') { if (!ac) withDecor(fg, R, () => paintCastleDecor(fg, R)); } /* v2.89 4장은 21_ash4.js 바닥 자국 */ }
       const g = G.stage === 1 ? fmg : fg;
-      for (const b of R.obs) if (b.t === 'pit') (G.stage === 1 ? paintPond : paintChasm)(g, b);
+      for (const b of R.obs) if (b.t === 'pit') (G.stage === 1 ? paintPond : G.stage === 3 && typeof CAMP3 !== 'undefined' ? paintBlood : G.stage === 4 && typeof TOWN4 !== 'undefined' ? () => {} /* v3.19 불탄 자리는 바닥의 재 덧칠에 묻히지 않게 장애물 그림 쪽에서 맨 아래에 그림 */ : paintChasm)(g, b);
+      if (G.stage === 2 && typeof KEEP2 !== 'undefined') for (const b of R.obs) if (b.t === 'wall' && fencedPit(b)) paintChasm(g, b); // v3.19 울타리 낭떠러지: 바닥은 낭떠러지, 울타리는 장애물 그림으로
       if (ac) ashCityFloor(fg, R); // v1.22 왕도: 성채 바닥을 재로 덮고 가운데 왕관 모자이크 — 문보다 먼저 깔아 문이 재에 묻히지 않게
       for (const d in R.doors) if (R.doors[d] != null && !hiddenDoor(R, d) && !(R.sealW && R.sealW.dir === d)) (G.stage === 1 ? paintDoorMeadow : G.stage === 3 ? paintDoorOrc : paintDoorCastle)(g, d);
       if (SR_LAYOUT[R.type]) srFloor(g, R); // v1.11
@@ -1153,6 +1176,7 @@
   const art = (key, fn) => artCache[key] || (artCache[key] = fn());
 
   // --- 바닥에 찍기 -----------------------------------------------------
+  function paintBlood(g, b) { const c = CAMP3.bloodPool(b.w, b.h, (Math.random() * 1e6) | 0); g.drawImage(c, (Math.round(b.x0) & ~1) - c.pad * 2, (Math.round(b.y0) & ~1) - c.pad * 2); } // v3.19 3장 피웅덩이
   function paintChasm(g, b) { gPaint(g, genChasm(Math.round(b.w / 2), Math.round(b.h / 2)), CHASM_PAL, b.x0 - 2, b.y0 - 2); }
   // 샘물 웅덩이 (손으로 그린 3가지 크기): 흙 둑, 가운데 솟는 물결, 돌·수련·갈대
   const SPRINGS = {
@@ -1173,7 +1197,9 @@
   }
   function paintPond(g, b) {
     if (b.brook) return;
-    if (b.pool) return paintPool(g, b); const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), style = pick(wc >= 50 && hc >= 30 ? ['clear', 'clear', 'swamp', 'rocky', 'island', 'island'] : ['clear', 'swamp', 'rocky']), shape = pick(wc > hc * 1.6 ? ['blob', 'kidney', 'lobes'] : ['blob', 'blob', 'kidney']); gPaint(g, genPond(wc, hc, style, shape), Object.assign({}, POND_PAL, POND_PALS[style]), b.x0 - 6, b.y0 - 6); }
+    if (b.pool) return paintPool(g, b);
+    if (typeof RUIN1 !== 'undefined') { const c = RUIN1.reservoir(b.w, b.h, (Math.random() * 1e6) | 0); g.drawImage(c, (Math.round(b.x0) & ~1) - 12, (Math.round(b.y0) & ~1) - 12); return; } // v3.19 큰 연못 → 폐허 저수지 (작은 물웅덩이 M · L · XL은 그대로)
+    const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), style = pick(wc >= 50 && hc >= 30 ? ['clear', 'clear', 'swamp', 'rocky', 'island', 'island'] : ['clear', 'swamp', 'rocky']), shape = pick(wc > hc * 1.6 ? ['blob', 'kidney', 'lobes'] : ['blob', 'blob', 'kidney']); gPaint(g, genPond(wc, hc, style, shape), Object.assign({}, POND_PAL, POND_PALS[style]), b.x0 - 6, b.y0 - 6); }
   // 텔레포터 마법진 (v0.62): 바깥 고리 · 룬 띠 · 안쪽 고리 · 육망성 · 가운데 원. 'a'=고리 'b'=별 'c'=룬 'o'=가운데
   const MC_W = 36, MC_H = 18;
   function genMagicCircle() {
@@ -1314,27 +1340,36 @@
   }
 
   // --- 장애물 스프라이트 ------------------------------------------------
+  const fencedPit = b => Math.min(b.w, b.h) >= 56; // v3.19 2장 벽: 덩어리는 울타리 낭떠러지, 폭 56px 미만은 쇠 창살 벽
   function makeObsSprites(R) {
     const out = [];
     withSeed(R.seed ^ 0x5bd1, () => {
       for (const b of R.obs) {
+        if (b.t === 'pit' && !b.c && G.stage === 4 && typeof TOWN4 !== 'undefined') { const c = TOWN4.scorch(b.w, b.h, (Math.random() * 1e6) | 0); out.push({ cv: c, x: (Math.round(b.x0) & ~1) - c.pad * 2, y: (Math.round(b.y0) & ~1) - c.pad * 2, sy: -1e5, raw: true }); continue; } // v3.19 4장 불탄 자리 (웅덩이 자리 · 바닥 바로 위에 깔림)
         if (b.t === 'pit' || b.t === 'prop' || b.t === 'drum') continue;
         if (G.stage === 3) continue;
         if (G.stage === 1) {
           if (b.t === 'pillar') {
-            const kind = pick(['round', 'round', 'pine', 'birch']), map = genTree(kind), pal = Object.assign({}, TRUNK, TREE_PAL[kind === 'pine' ? 'deep' : kind === 'birch' ? 'birch' : pick(['green', 'green', 'deep', 'autumn', 'dusk'])]);
+            const kind = pick(['round', 'round', 'pine']); // v3.19 흰 줄기 작은 나무(자작나무) 삭제
+            if (kind === 'round' && typeof RUIN1 !== 'undefined') { const c = RUIN1.tree(pick(['green', 'green', 'deep', 'autumn', 'dusk']), (Math.random() * 1e6) | 0); out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 10) & ~1, sy: b.y }); continue; } // v3.19 둥근 나무: 잎 뭉치 · 줄기 결 · 뿌리 (29_ruin1.js)
+            const map = genTree(kind), pal = Object.assign({}, TRUNK, TREE_PAL[kind === 'pine' ? 'deep' : kind === 'birch' ? 'birch' : pick(['green', 'green', 'deep', 'autumn', 'dusk'])]);
             const w = map[0].length * 2, h = map.length * 2, [c, g] = mkCanvas(w + 8, h + 6);
             g.fillStyle = 'rgba(0,0,0,.35)'; for (let x = 6; x < w + 2; x += 2) g.fillRect(x, h, 2, 2); for (let x = 10; x < w - 2; x += 2) g.fillRect(x, h + 2, 2, 2);
             stamp(g, map, pal, 4, 0, 2, Math.random() < 0.5);
+            if (typeof RUIN1 !== 'undefined') { out.push({ cv: RUIN1.withShadow(c), x: (Math.round(b.x - w / 2 - 4) & ~1) - 8, y: (Math.round(b.y - h + 2) & ~1) - 8, sy: b.y }); continue; } // v3.19 전나무 · 자작나무: 납작 띠 → 붙은 그림자
             out.push({ cv: c, x: Math.round(b.x - w / 2 - 4) & ~1, y: Math.round(b.y - h + 2) & ~1, sy: b.y });
           } else if (b.t === 'rock') {
+            if (typeof RUIN1 !== 'undefined') { // v3.19 폐허에서 떨어져 나온 돌 — 연달아 나오지 않게: 260px 안에 이미 있거나 방에 둘이 있으면 이끼 바위로
+              const sd = (Math.random() * 1e6) | 0, ruin = out.filter(o => o.ruin).length < 2 && !out.some(o => o.ruin && Math.hypot(o.rx - b.x, o.ry - b.y) < 260), c = ruin ? (b.r > 17 ? RUIN1.chunkL(sd) : RUIN1.chunkS(sd)) : RUIN1.boulder(b.r, sd);
+              out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y, ruin, rx: b.x, ry: b.y }); continue; }
             const c = rockCanvas(b.r);
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y });
           } else {
+            if (typeof RUIN1 !== 'undefined') { const c = RUIN1.ruinBlock(b.w, b.h, (Math.random() * 1e6) | 0); out.push({ cv: c, x: (Math.round(b.x0) & ~1) - 12, y: (Math.round(b.y0 - c.HH * 2) & ~1) - 12, sy: b.y1 }); continue; } // v3.19 산울타리 → 이끼 낀 폐허 돌담 · 한 면이 열린 폐허
             const { g, HH } = genHedge(Math.round(b.w / 2), Math.round(b.h / 2));
             out.push({ cv: gCanvas(g, LEAF), x: Math.round(b.x0 - 4) & ~1, y: Math.round(b.y0 - HH * 2 - 4) & ~1, sy: b.y1 });
           }
-        } else if (G.stage === 4) { // v1.23 왕도: 녹아내린 왕의 동상 · 부서진 기둥 / 깨진 종 · 잔해 / 마차 · 무너진 성벽, 모두 위에 재
+        } else if (G.stage === 4) { const n0 = out.length; // v1.23 왕도: 녹아내린 왕의 동상 · 부서진 기둥 / 깨진 종 · 잔해 / 마차 · 무너진 성벽, 모두 위에 재
           if (b.t === 'pillar') {
             const king = Math.random() < 0.35 && false /* v2.82 녹아내린 왕 동상 삭제 (사용자 결정) — 부서진 기둥만 */, lp = !king && typeof ASH4 !== 'undefined', c = king ? gCanvas(genMeltKing(), KING4) : lp ? ASH4.lamp() /* v2.89 녹아내린 가로등 */ : gCanvas(ashCap(genPillar(Math.random() < 0.6)), STONE4);
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: king || lp });
@@ -1342,11 +1377,19 @@
             const bell = b.r >= 10 && Math.random() < 0.55, jk = !bell && typeof ASH4 !== 'undefined', c = bell ? gCanvas(genBell(b.r), BELL4) : jk ? ASH4.junk(b) /* v2.87 4장 고유: 짐 더미 · 우물 · 분수 조각 · 무구 더미 */ : gCanvas(ashCap(genRubble(b.r)), STONE4);
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: bell || jk });
           } else {
-            const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), cart = wc <= 60 && hc <= 40 && wc >= 14 && Math.random() < 0.5;
-            const hs = !cart && typeof HOUSE4 !== 'undefined' && wc >= 24 && hc >= 8 /* v2.88 불탄 집 — 폭이 모자라면 성벽 덩어리 */, { g, HH } = cart ? genCart(wc, hc) : hs ? HOUSE4.gen(wc, hc) : genWallBlock(wc, hc);
+            const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), cart = false; // v3.19 재 덮인 수레 삭제 (사용자 결정)
+            const hs = !cart && typeof HOUSE4 !== 'undefined' && wc >= 24 && hc >= 8 /* v2.88 불탄 집 — 폭이 모자라면 성벽 덩어리 */, { g, HH } = cart ? genCart(wc, hc) : hs ? (HOUSE4.genRow || HOUSE4.gen)(wc, hc) /* v3.19 길면 모양이 다른 집 여러 채 + 보도블록 단 + 가로등 */ : genWallBlock(wc, hc);
             out.push({ cv: cart ? gCanvas(g, CART4) : hs ? gCanvas(g, HOUSE4.pal) : gCanvas(ashCap(g, hc), STONE4), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1, raw: cart || hs });
           }
+          if (typeof RUIN1 !== 'undefined') for (let i = n0; i < out.length; i++) { const o = out[i]; o.cv = RUIN1.withShadow(o.cv); o.x -= 8; o.y -= 8; } // v3.19 4장도 밑동에 붙은 그림자
         } else {
+          if (G.stage === 2 && typeof KEEP2 !== 'undefined') { // v3.19 2장: 새 돌기둥 · 돌무더기 · 석벽 덩어리 → 쇠 울타리를 두른 낭떠러지 (가늘고 긴 벽은 쇠 창살 벽)
+            const sd = (Math.random() * 1e6) | 0;
+            if (b.t === 'pillar') { const c = KEEP2.pillar(Math.random() < 0.35, sd); out.push({ cv: c, x: Math.round(b.x - 31) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y }); }
+            else if (b.t === 'rock') { const c = KEEP2.rubble(b.r, sd); out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y }); }
+            else { const c = fencedPit(b) ? KEEP2.fence(b.w, b.h, sd) : KEEP2.fenceWall(b.w, b.h, sd); out.push({ cv: c, x: (Math.round(b.x0) & ~1) - 8, y: (Math.round(b.y0) & ~1) - c.FH * 2 - 8, sy: b.y1 }); }
+            continue;
+          }
           if (b.t === 'pillar') {
             const g = genPillar(Math.random() < 0.35), c = gCanvas(g, STONE);
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y });
@@ -1862,7 +1905,10 @@
     3: { '1': '#a08868', '2': '#7a6448', '3': '#54442e', '4': '#33281c', c: '#d8b48a', C: '#b08a60', v: '#86643e', V: '#5a4028', r: '#a83a24', R: '#70241a', e: '#d06040' },
   };
   const srPal = st => Object.assign({}, SRPAL, SR_ST[st] || {});
-  const srArt = (k, st, fn) => art('sr_' + k + '_' + st, () => gCanvas(fn(st), srPal(st)));
+  // v3.19 상점 소품 다시 그림 (비스트로 수레 수준: 재질마다 3~4단 명암 · 왼쪽 위 빛 · 주름 · 결 · 쇠 장식) — 칸 그림 + 외곽선 포함
+  const SR_NEW = {"stall":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k21212121212121212121212121212121212121212121212121212121212121212121k",".krrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwk.","krrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxk",".kksss6666xxx6666sss6666xxx6666sss6666xxx6666sss6666xxx6666sss6623xxxk","..k2355555555555555555555555555555555555555555555555555555555555235kk.","..k235344453444J344453444534445344453444535445344453J44534J45344235k..","..k2Z5344423442J344453444534445344452444234445354453J44534J453432Z5k..","..k2353444334JJJJJ4453444534445344453444334445344422222222222344235k..","..k2353444R34JlLLJ4XXX44453444534445G444P3444XXX442333yyY3335344235k..","..k235354rRs4JLlLJxxxxx445344453444gGh4pPq44xxxxx4233yyYYY335354235k..","..k235344wRs5JoooJYzzzZ445344453444wGh4wPq43xXXXv4233yYzYY335344235k..","..k235344rRs4JoooJYwzzZ44cccccccc44gGh3pPq44xwXXv4233YYYYZ335344235k..","..k235344rRs4bJJJ4YWWWZ44XCCRsCCX34gGh4pPq44xWWWv42333YYZ3335344235k..","..k235344rRs4bBn34YzzzZ44CCCsCCCC44gGh4pPq44xXXXv425555555555344235k..","..k235344rRs4bBn34YZZZZ34vvvvvvvv44gGh4pPq44xvvvv453444534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235343J53444534445344453444534445344453444535445344453444J344235k..","..k235344j53444534445344453444534445344XXX44453Bn45Pq445G444j344235k..","..k23534445344453444534x4534x4534x4534xxxxx44RsYnGhYq4G5h5G45343235k..","..k2Z5354YYYYYYYYY445rrrrsbbbbnppppq34iIIIj44YsBnYhPq4h5h4h453542Z5k..","..k235344z333y333z445rwRRsbwBBnpwPPq34iwIIj44RsBnGhPq34hhh445344235k..","..k235344z444Y444z445rrrrsbbbbnppppq34iWWWj44RsBnGhPq44hhh445344235k..","..k235344z4444444z445rRRRsbBBBnpPPPq34iIIIj34RsBnGhPq44555445344235k..","..k235344zzzzzzzzz445rrrrsbbbbnppppq34ijjjj44RsBnGhPq445h4445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235344J53444534445343453444534445344453544534445344453444J344235k..","..k235344j53444534345344453444534445344453444535445344453444j344235k..","..k2353444534345344453444534445344453444534445344453544534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2355333333335333333335333333335333333335333333335333333335333235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k235kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk235k..","..k2Z5k........................................................k2Z5k..","..k235k........................................................k235k..","..k235k........................................................k235k..","...kkk..........................................................kkk..."],"counter":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k2222222122222221222222212222222122222221222222212222k","k3333333333433333333334333333333343333333333433333333k",".kzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPYyYQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYzQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqk.","..kYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkk..","...k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk...."],"stand":[".kkkkkkkkkkkkkkkkkk.","krwrrrrrrrrrrrrrrrrk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kszYzYzYzYzYzYzYzYsk",".k3kk5kkkkkkkk5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k5k.k........k.k5k.","..k..............k.."],"crates":["........kkkkkkkkkkkkk.........",".......k1111111111111k........",".......k222222C222222k........",".......k222222C222222k........",".......kj55555C55555jk........",".......k523333C333345k........",".......k534333C333435k........",".......k5CCCCCvCCCCCCk........",".......k533343Cv43335k........",".......k533334C433335k........",".kkkkkkk544444C444445kkkkkkkk.","k1111111533334C43333511111111k","k2222222533343C34333522222222k","k2222222j55555C55555j22222222k","kj555555555555jj555555555555jk","k5233333333334552333333333345k","k53433333333435534333Ss333435k","k5444ZZ44444445544444sS444445k","k5333Z33334333553334333343335k","k5333343343333553333433433335k","k5444444444444554444444444445k","k5333334433333553333344333335k","k5333343343333553333433433335k","k5444444444444554444444444445k","kj555555555555jj555555555555jk"],"rugRack":["............................","....kkkkkkkkkkkkkkkkkkkk....","...k22222222222222222222k...","...k44444444444444444444k...","....krwrRRRbwbBBBgwgGGGk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRYSbbBBYNggGGYHk....","....krRsYsSbBnYnNgGhYhHk....","....krRYssSbBYnnNgGYhhHk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRYSbbBBYNggGGYHk....","....krRsYsSbBnYnNgGhYhHk....","....krRYssSbBYnnNgGYhhHk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","...k3rrRRsSbbBBnNggGGhH4k...","...k3rrRRYSbbBBYNggGGYH4k...","...k3rRsYsSbBnYnNgGhYhH4k...","...k3rRYssSbBYnnNgGYhhH4k...","...k3rYsssSbYnnnNgYhhhH4k...","...k34rRRskkbBBnkkgGGh54k...","..k34kRkRk.kBkBk.kGkGkk54k..","..k34kk.k...k.k...k.k.k54k..","..k34k................k54k..","..k34k................k54k..","...kk..................kk..."],"lampPost":["..............","...kkkkkkkk...","..kIIIIIIIIk..","...kJJJJJJJkk.","..kIjkjkJJJJJk","..kijjkjjjjjjj","..kijk.kJlJlJk","..kijk.kJlJLJk","..kijk.kJLJLJk","..kijk.kJoJoJk","..kijk.kJoJoJk","..kijk.kJJJJJk","..kIJk..kjjjk.","..kijk...kJk..","..kijk....k...","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kIJk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........",".kjjjjk.......","kIIIIIIk......","kjjjJJJk......","kjjjJJJk......",".kkkkkk......."],"banner":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzgGGhhGGhZk","kzYYYYYYYYZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgYGYYGYhZk","kzgyYYYYYhZk","kzgyYRsYYhZk","kzgZZZZZZhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk",".kGGGGhhhhk.","..kGGGhhhk..","...kGGhhk...","....kGhk....",".....kk.....","............","............","............"],"banner_2":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzBnnNNnnNZk","kzYYYYYYYYZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBYnYYnYNZk","kzByYYYYYNZk","kzByYRsYYNZk","kzBZZZZZZNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk",".knnnnNNNNk.","..knnnNNNk..","...knnNNk...","....knNk....",".....kk.....","............","............","............"],"banner_3":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzrRRssRRsZk","kzYYYYYYYYZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRwwWRRsZk","kzrwwWWWRsZk","kzrwkWWkRsZk","kzrWWWxxRsZk","kzrRWxxRRsZk","kzrRxWxWRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk",".kRRRRssssk.","..kRRRsssk..","...kRRssk...","....kRsk....",".....kk.....","............","............","............"]};
+  const SR_NEWPAL = {"k":"#0b0a0e","1":"#e0b07a","2":"#c89260","3":"#a06e40","4":"#7a4e2a","5":"#5a3a20","6":"#3a2416","r":"#f07060","R":"#d84a4a","s":"#a8303a","S":"#7a2028","w":"#fffaf0","W":"#f4ead6","x":"#d4c4a4","X":"#b0a080","p":"#d8a8f0","P":"#a868d8","q":"#7a40a8","Q":"#4e2870","b":"#b8e0f8","B":"#7ab0d8","n":"#4a7aa8","N":"#2a4a70","g":"#b8e890","G":"#6cc048","h":"#4a9a34","H":"#2a6a24","y":"#fff4c0","Y":"#f2c84a","z":"#d8a030","Z":"#9a6a18","i":"#d8dce4","I":"#a8aeb8","j":"#6a6e78","J":"#3e4250","l":"#fff9d8","L":"#ffe08a","o":"#ffb050","O":"#e07a30","c":"#e8d8b8","C":"#c0a880","v":"#8a7458"};
+  const srArt = (k, st, fn) => art('sr_' + k + '_' + st, () => { const nk = SR_NEW[k + '_' + st] || SR_NEW[k]; return nk ? gCanvas(fromRows(nk), SR_NEWPAL) : gCanvas(fn(st), srPal(st)); }); // 벽 깃발은 장마다 색 (2 파랑 · 3 붉은 해골)
   const SR = {};
   // 판자 (세로결): x0~x1 너비, 왼쪽이 밝음
   const plank = (x, w) => x === 0 ? 'o' : x === w - 1 ? 'p' : 'O';
@@ -2148,8 +2194,7 @@
   }
   // [종류, dx, dy, 막힘(반지름 또는 [가로, 세로]), 벽에 붙음]
   const SR_LAYOUT = {
-    shop: st => [['stall', -100, -36, [134, 14]], ['counter', -100, -20, [100, 8]], ['rugRack', 62, -54, 14], ['crates', 124, -50, 18], ['fbarrel', 170, -40, 9], ['lampPost', 30, -40, 5],
-      /* v2.80 금화 자루 뺌 (그 자리로 밀려오던 상자 더미도 뺌) */ ['banner', 212, -78, 0, 1], ['banner', -212, -78, 0, 1], ['fbarrel', -150, 104, 9]],
+    shop: st => [['stall', 0, -36, [134, 14]], ['counter', 0, -20, [100, 8]], ['banner', 212, -78, 0, 1], ['banner', -212, -78, 0, 1]], // v3.19 상인 노점은 가운데 · 진열대와 깃발만 (깔개 걸이 · 상자 · 술통 · 가로등 뺌)
     rest: st => [/* v3.12 비스트로: 텐트 · 장작 대신 출장 식당 소품(수레 · 술통 · 볏짚 포대)은 BISTRO가 그림 · 통나무 의자는 그대로 */ ['log', -78, 46, [52, 8]], ['log', 78, 46, [52, 8]], ...(st === 2 ? [['banner', 0, -112, 0, 1]] : [])],
     reward: st => [['statue', -118, -74, 14], ['statue', 118, -74, 14], ['brazier', -64, -36, 9], ['brazier', 64, -36, 9], ['gold', -96, 34, 20], ['coins', 98, 38, 12], /* v2.80 보물 더미 하나 + 작은 금화 더미 하나 */
       ['banner', -196, -86, 0, 1], ['banner', 196, -86, 0, 1], ['brazier', -190, 90, 9], ['brazier', 190, 90, 9]],
@@ -2164,9 +2209,12 @@
     for (const [k, dx, dy, blk, wall] of SR_LAYOUT[r.type](stage)) {
       if (k === 'banner' && stage === 1) continue; // 숲엔 걸 벽이 없음
       const rad = Array.isArray(blk) ? blk[0] / 2 : blk || 10;
-      let x = CX + dx, y = CY + dy; if (k !== 'altar' && !fits(x, y, rad)) { x = CX - dx; if (!fits(x, y, rad)) continue; }
+      let x = CX + dx, y = CY + dy;
+      if ((k === 'stall' || k === 'counter') && r.type === 'shop') { const sx = r._stallX != null ? r._stallX : [0, 110, -110].find(o => fits(CX + o, CY - 36, 67)); if (sx == null) continue; r._stallX = sx; x = CX + sx; } // v3.19 상인 노점은 가운데 (북문이 있으면 옆으로)
+      else if (k !== 'altar' && !fits(x, y, rad)) { x = CX - dx; if (!fits(x, y, rad)) continue; }
       if (k !== 'counter' && r.srp.some(s => s.k !== 'counter' && s.k !== 'stall' && Math.hypot(s.x - x, s.y - y) < 20)) continue;
       const s = { k, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, flip: x < CX && (k === 'skeleton') };
+      if (k === 'banner') s.y = Math.round((A.y0 - 4) / 2) * 2; // v3.19 깃발은 작게 · 벽 위쪽에 매닮 (바닥에 서 있지 않게)
       r.srp.push(s);
       if (wall || !blk) continue;
       if (Array.isArray(blk)) { const [w, h] = blk; r.obs.push({ t: 'prop', c: false, x: s.x, y: s.y - h / 2, w, h, x0: s.x - w / 2, y0: s.y - h, x1: s.x + w / 2, y1: s.y }); }

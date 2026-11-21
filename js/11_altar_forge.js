@@ -909,7 +909,7 @@
     if (l.type === 'hue') { const c = l.hue || 'r', yy = l.y - hover + 1; drawSprite('hue_' + c, 'hue_' + c, 2, l.x, yy, false); if (Math.floor(time * 4 + l.bob) % 4 === 0) { ctx.fillStyle = '#fffbe6'; ctx.fillRect(snap2(l.x + 4), snap2(yy - 14), 2, 2); } return; }
     if (l.type === 'gear') {
       const it = l.it, g = gradeOf(it), gi = { common: 0, rare: 1, unique: 2, legend: 3, rby: 4 }[it.grade], h = [50, 80, 115, 160, 190][gi] * Math.min(1, l.t * 2);
-      const pulse = 0.75 + Math.sin(time * 5) * 0.25, col = it.curse ? '150,60,200' : gi === 4 ? RBY_RGB[rbyFrame(l.bob) < 0 ? 1 : rbyFrame(l.bob)] : g.c.replace('#', '').match(/../g).map(x => parseInt(x, 16)).join(','), wcells = [1, 2, 2, 3, 3][gi];
+      const pulse = 0.75 + Math.sin(time * 5) * 0.25, col = it.curse ? '150,60,200' : gi === 4 ? rbyRGB(l.bob) : g.c.replace('#', '').match(/../g).map(x => parseInt(x, 16)).join(','), wcells = [1, 2, 2, 3, 3][gi];
       const bx = Math.round(l.x) & ~1, by = Math.round(l.y) & ~1;
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       for (let y = 20; y < h; y += 2) { const k = y / h; // 위로 갈수록 성기게 (v1.00: 아이콘 위에서 시작)
@@ -999,11 +999,12 @@ const FP = (() => {
   function shadow(S, dx = 2, len = 2, band = 3, a = 0.55) { const low = new Map(); for (const k of S.M.keys()) { const [x, y] = k.split(',').map(Number); if (!low.has(x) || y > low.get(x)) low.set(x, y); } const ym = Math.max(...low.values()); for (const [x, y] of [...low]) if (y < ym - band) low.delete(x);
     for (const [x, y] of low) for (let k = 1; k <= len + 1; k++) { const xx = x + dx - (k === 1 ? 1 : 0), yy = y + k; if (k <= len) S.SH.set(xx + ',' + yy, k === len ? a * 0.75 : a); else if ((xx + yy) & 1) S.SH.set(xx + ',' + yy, a * 0.5); }
     const xr = Math.max(...low.keys()), yr = low.get(xr); for (let i = 1; i <= dx; i++) { S.SH.set((xr + i) + ',' + yr, a * 0.6); } }
+  const selC = c => { const n = parseInt(c.slice(1), 16), f = v => Math.round(v * 0.45).toString(16).padStart(2, '0'); return '#' + f(n >> 16) + f((n >> 8) & 255) + f(n & 255); }; // v3.19 셀아웃: 구조물 위에 걸린 물건은 제 색을 어둡게
   function render(S, outline = true) { const W = S.w + 2 * S.pad, H = S.h + 2 * S.pad, c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2; const g = c.getContext('2d'), p = S.pad;
     for (const [k, a] of S.SH) { if (S.M.has(k)) continue; const [x, y] = k.split(',').map(Number); g.fillStyle = `rgba(4,3,8,${a})`; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
     if (outline) for (const k of S.M.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!S.M.has((x + dx) + ',' + (y + dy))) { g.fillStyle = K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
     for (const [k, col] of S.M) { const [x, y] = k.split(',').map(Number); g.fillStyle = col; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
-    for (const O of (S.OV || [])) { for (const k of O.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!O.has((x + dx) + ',' + (y + dy))) { g.fillStyle = K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
+    for (const O of (S.OV || [])) { for (const k of O.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!O.has((x + dx) + ',' + (y + dy))) { g.fillStyle = O.sel && window.DEOUT !== false && S.M.has((x + dx) + ',' + (y + dy)) ? selC(O.get(k)) : K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
       for (const [k, col] of O) { const [x, y] = k.split(',').map(Number); g.fillStyle = col; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); } } // 겹 (따로 외곽선을 두른 작은 물건)
     c.ox = -p; c.oy = -p; return c; }
   const WD = { H: '#c49a6a', L: '#a87e52', m: '#8e6642', d: '#714e32', D: '#573a24', s: '#40291a', S: '#2a1a10' };
@@ -1120,9 +1121,9 @@ const FW = (() => {
     for (const x of [20, 40, 60, 80]) { set(x, 35, '#d8dce4'); set(x, 39, '#a4aab4'); }
     for (let x = 22; x <= 84; x++) for (const y of [36, 39]) if (x % 20 !== 0 && hh(x >> 2, y, 33) < 0.3 && (x % 4) < 2) set(x, y, WD.d); // 판자 결
     // 옆판 나무못에 걸어 둔 밧줄 사리 (따로 외곽선)
-    { const O = new Map(); for (let a2 = 0; a2 < 6.3; a2 += 0.3) { const x = Math.round(57 + Math.cos(a2) * 2.4), y = Math.round(38 + Math.sin(a2) * 2.8); O.set(x + ',' + y, a2 > 2.4 && a2 < 5.2 ? '#e0c890' : '#a88c5c'); } O.set('57,35', '#c8ac78'); (S.OV = S.OV || []).push(O); set(57, 33, '#3a2618'); }
+    { const O = new Map(); for (let a2 = 0; a2 < 6.3; a2 += 0.3) { const x = Math.round(57 + Math.cos(a2) * 2.4), y = Math.round(38 + Math.sin(a2) * 2.8); O.set(x + ',' + y, a2 > 2.4 && a2 < 5.2 ? '#e0c890' : '#a88c5c'); } O.set('57,35', '#c8ac78'); O.sel = true; (S.OV = S.OV || []).push(O); set(57, 33, '#3a2618'); }
     // 옆판에 걸어 둔 집게 · 망치 (나무못에 걸림 · 따로 외곽선을 둘러 옆판과 떨어져 보이게)
-    { const pal = { h: IR.h, l: IR.l, m: IR.m, d: IR.d, r: '#f0f0f6', w: '#b88a5a', W: '#7a5a3a', p: '#3a2618' }, ov = (rows, x0, y0) => { const O = new Map(); rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') O.set((x0 + i) + ',' + (y0 + j), pal[ch]); })); (S.OV = S.OV || []).push(O); };
+    { const pal = { h: IR.h, l: IR.l, m: IR.m, d: IR.d, r: '#f0f0f6', w: '#b88a5a', W: '#7a5a3a', p: '#3a2618' }, ov = (rows, x0, y0) => { const O = new Map(); rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch !== '.') O.set((x0 + i) + ',' + (y0 + j), pal[ch]); })); O.sel = true; (S.OV = S.OV || []).push(O); };
       ov(['h.h', 'l.m', '.r.', 'l.m', 'l.m', 'l.d', 'l.d', 'l.d'], 44, 34); // 집게: 물림 끝 · 리벳 · 긴 손잡이 둘
       ov(['hhhl', 'llmd', '.w..', '.w..', '.w..', '.W..', '.W..'], 50, 34); // 망치: 쇠 머리 (윗면 밝음) · 나무 자루
       for (const x of [45, 51]) set(x, 33, '#3a2618'); }

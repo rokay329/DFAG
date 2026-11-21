@@ -360,7 +360,7 @@ const LINES = {
 };
 const REFUSE = { knight: '싸우러 온 게 아니다.', ranger: '…사양할게.', mage: '싸울 이유가 없어요.', priest: '도끼를 거두세요.', gunner: '총알 아깝다.' };
 const CROWN = { knight: '다만, 왕관에 대해 아는 것이 있다면 듣고 싶다.', ranger: '대신 왕관 얘기나 좀 해 줘.', mage: '그보다… 왕관에 대해 알고 계신 걸 들려주세요.', priest: '저는 왕관의 비밀을 알고 싶어요.', gunner: '왕관에 대해 아는 걸 말해.' };
-const LAST = '왕관은 바치는 게 아니다. 지지 않는 해에 비추어-';
+const LAST = '왕관은 바치는 게 아니다. 해에 비추어-';
 // 이 판에서 원이 열리는가: 진실 1 · 2를 안 기록(저장) + 그 캐릭터의 2회차 + 이번 판에서 아직 저주를 풀지 않음
 const circleOn = () => !!(TS().t1 && TS().t2 && TRUTH.loop2() && !T3().freed);
 
@@ -588,7 +588,7 @@ function kgDying(b, dt) {
   }
 }
 function parchment() {
-  showTruthParchment({ no: '붉은 엄니 부락', title: '크루가쉬의 마지막 말', ac: RED, paras: ['"' + LAST + '"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'], onClose: () => {
+  showTruthParchment({ no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', ac: RED, paras: ['"' + LAST + '"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'], onClose: () => {
     const first = !TS().t3; TS().t3 = true; (G.truthRun || (G.truthRun = {})).t3 = true; persist();
     lootFeed('진실 기록 — 크루가쉬의 마지막 말', RED, 3600); if (first) sfx('legend');
   } });

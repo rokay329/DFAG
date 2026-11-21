@@ -287,7 +287,7 @@
     if (G.cls === 'priest' && P.gauge >= 100 && !(G.miracleRev || {})[G.stage]) { (G.miracleRev = G.miracleRev || {})[G.stage] = true; P.hp = 2; startMiracle(true); return; } // v2.15 부활은 챕터당 1번, 반 칸×2
     P.hp = 0; P.dead = true; P.deadT = 0; P.state = 'dead'; rec('death');
     burst(P.x, P.y - 8, '#a3161c', 24); splat(P.x, P.y, 30);
-    banner('사망', '가져온 모든 것을 잃었다');
+    banner('원정 실패', '가져온 모든 것을 잃었다');
   }
   function afterDeath() {
     const P = G.player;
@@ -419,13 +419,13 @@
     h_m2: { c: 'g', t: 'm', n: '반격의 빛', d: '피격당한 후 1초 안에 공격하면 희망을 모두 소진하여, 소진한 희망 1중첩당 중간 피해를 추가로 줍니다.', x: '반격 공격이 플레이어 주변의 모든 적에게 같은 추가 피해를 줍니다.' },
     h_m3: { c: 'g', t: 'm', n: '마지막 불씨', d: '하트가 1칸 이하로 떨어지면 5초 동안 공격할 때마다 전방으로 빛의 검기를 발사합니다. 이 효과는 원정 1회당 한 번만 발동합니다.', x: '마지막 불씨가 원정 1회당 한 번이 아니라 방마다 한 번씩 발동합니다.' },
     h_m4: { c: 'g', t: 'm', n: '버티는 발', d: '희망 3중첩일 때는 피격당해도 밀려나지 않습니다.', x: '희망 2중첩부터 피격당해도 밀려나지 않습니다.' },
-    h_m5: { c: 'g', t: 'm', n: '등 뒤의 해', d: '하트가 절반 이하일 때 0.5초마다 플레이어 주변으로 빛의 파동이 퍼져, 닿은 적에게 작은 피해를 줍니다.', x: '하트 수와 관계없이 항상 빛의 파동이 퍼집니다.' },
+    h_m5: { c: 'g', t: 'm', n: '등 뒤의 달', d: '하트가 절반 이하일 때 0.5초마다 플레이어 주변으로 빛의 파동이 퍼져, 닿은 적에게 작은 피해를 줍니다.', x: '하트 수와 관계없이 항상 빛의 파동이 퍼집니다.' },
     // ---- v2.47 희망의 빛: 역전 (원딜)
     h_r1: { c: 'g', t: 'r', n: '역광 사격', d: '희망 중첩 수에 비례하여 탄의 크기와 피해가 증가합니다. 희망이 1중첩 이상이면 탄이 적을 관통합니다.', x: '희망 3중첩일 때 탄이 세 갈래로 나뉘어 발사됩니다.' },
     h_r2: { c: 'g', t: 'r', n: '마지막 불씨', d: '하트가 1칸 이하로 떨어지면 5초 동안 탄을 발사할 때마다 초록빛 탄 2발을 추가로 발사합니다. 이 효과는 원정 1회당 한 번만 발동합니다.', x: '마지막 불씨가 원정 1회당 한 번이 아니라 방마다 한 번씩 발동합니다.' },
     h_r3: { c: 'g', t: 'r', n: '위기의 조준', d: '하트가 절반 이하일 때 발사한 탄이 가장 가까운 적을 향해 유도됩니다.', x: '하트 수와 관계없이 항상 탄이 가장 가까운 적을 향해 유도됩니다.' },
     h_r4: { c: 'g', t: 'r', n: '빛의 응답', d: '피격당하면 공격한 적을 향해 초록빛 탄 3발을 자동으로 발사합니다.', x: '초록빛 탄이 5발로 증가하고, 피격당할 때 희망이 1중첩 추가로 쌓입니다.' },
-    h_r5: { c: 'g', t: 'r', n: '새벽', d: '희망이 3중첩되면 희망을 모두 소진하여 화면에 있는 적의 투사체를 모두 제거합니다. 이 효과는 방마다 한 번만 발동합니다.', x: '새벽이 방마다 두 번까지 발동합니다.' },
+    h_r5: { c: 'g', t: 'r', n: '별빛 장막', d: '희망이 3중첩되면 희망을 모두 소진하여 화면에 있는 적의 투사체를 모두 제거합니다. 이 효과는 방마다 한 번만 발동합니다.', x: '별빛 장막이 방마다 두 번까지 발동합니다.' },
   };
   const ENG_BASE = { r: '근거리 직업은 공격 적중 시 30%, 원거리 직업은 탄 적중 시 20% 확률로 적에게 낙인을 1중첩 부여합니다. 낙인은 최대 3중첩까지 쌓이며 5초 동안 유지됩니다.', b: '점멸한 위치에 잔상이 2초 동안 남습니다. 잔상은 최대 2개까지 유지됩니다.', g: '피격당할 때마다 희망이 1중첩 쌓입니다. 희망은 최대 3중첩까지 쌓이며 6초 동안 유지됩니다. 하트가 절반 이하이면 일부 각인의 효과가 강화됩니다.' }; // v2.49 설명 정리
   const ENG_ICON = { r: '◆', b: '◇', g: '✦' };
@@ -641,7 +641,7 @@
     if ((engHas('h_m3') || engHas('h_r2')) && P.hp > 0 && P.hp <= 2) { const per = engDone('h_m3') || engDone('h_r2'), ok = per ? !(R && R.emberUsed) : !G.emberUsed;
       if (ok) { if (per && R) R.emberUsed = true; else G.emberUsed = true; P.emberT = time + 5; banner2(P, '마지막 불씨!'); sfx('grogi', 1.6); flashT = 0.08; flashColor = '#e0ffc8'; } }
     if (engHas('h_r5') && P.hope >= 3 && R && (R.dawnN || 0) < (engDone('h_r5') ? 2 : 1)) { R.dawnN = (R.dawnN || 0) + 1; P.hope = 0;
-      for (const pr of G.eproj) burst(pr.x, pr.y - 10, '#6ad84a', 3); G.eproj.length = 0; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 520, t: 0.5, max: 0.5, c: '#e0ffc8' }); flashT = 0.12; flashColor = '#eaffd8'; sfx('heal', 1.2); banner2(P, '새벽'); }
+      for (const pr of G.eproj) burst(pr.x, pr.y - 10, '#6ad84a', 3); G.eproj.length = 0; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 520, t: 0.5, max: 0.5, c: '#e0ffc8' }); flashT = 0.12; flashColor = '#eaffd8'; sfx('heal', 1.2); banner2(P, '별빛 장막'); }
   }
   function engOnHit(e, o, crit, coef) {
     if (!G.eng) return; const P = G.player, ranged = engT() === 'r';
