@@ -1710,8 +1710,8 @@ huskUp:[
       if (e.hop) stepHop(e, dt);
       if (!e.hop) {
         if (dist(e, P) < e.r + P.r + (big ? 14 : 10)) hurtPlayer(e.atk, e);
-        G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 6, grow: big ? 200 : 140, t: 0.25, max: 0.25, c: big ? '#a0f0e0' : '#b8f080' });
-        splat(e.x, e.y, big ? 14 : 8, '60,120,30'); dust(e.x, e.y, big ? 8 : 4); if (big) addShake(3);
+        G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 6, grow: big ? 200 : 140, t: 0.25, max: 0.25, c: e.rs ? '#ff8a6a' : big ? '#a0f0e0' : '#b8f080' }); // v3.20 용의 유적 혈액 슬라임은 붉게
+        splat(e.x, e.y, big ? 14 : 8, splatOf(e)); dust(e.x, e.y, big ? 8 : 4); if (big) addShake(3);
         e.state = 'recover'; e.t = 0.6; e.cd = rand(0.9, 1.5);
       }
     }

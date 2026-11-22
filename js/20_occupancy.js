@@ -170,29 +170,5 @@ const OCC = (() => {
   function wall(x, y, w, h) { const O = CUR; if (!O) return true; const cells = rectCells(O, x, y, x + w, y + h); if (!fits(O, 'wall', [], cells)) { skip(O, 'wall'); return false; } mark(O.vis, cells, WALL); return true; }
   function stamp(x, y, w, h) { const O = CUR; if (!O) return true; const cells = rectCells(O, x, y, x + w, y + h), k = w * h < TINY_AREA ? 'tiny' : 'small'; if (!fits(O, k, cells, cells)) { skip(O, k); return false; } if (k !== 'tiny') put(O, SMALL, cells); return true; }
 
-  // ---------------------------------------------------------------- 디버그 표시 (Shift+U): 칸마다 층 색 · 발 자리는 진하게, 그림 자리는 테두리만
-  const COL = { 1: '255,220,60', 2: '200,120,255', 3: '255,60,60', 4: '60,160,255', 5: '60,230,140', 6: '170,255,120', 7: '255,255,255' };
-  let DBG = false;
-  function dbgTick() { if (pressed['u'] === 'shift') { pressed['u'] = false; DBG = !DBG; lootFeed(DBG ? '테스트 — 점유 지도 켜짐 (Shift+U)' : '테스트 — 점유 지도 꺼짐', '#9fd2ff', 2500); } }
-  function dbgDraw() {
-    const R = G && G.dun && G.dun.cur, O = R && R.occ; if (!DBG || !O) return;
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, -CAMX, -CAMY);
-    for (let i = 0; i < O.w * O.h; i++) { const f = O.foot[i], v = O.vis[i]; if (!f && !v) continue; const x = O.x0 + (i % O.w) * C, y = O.y0 + Math.floor(i / O.w) * C;
-      if (f) { ctx.fillStyle = `rgba(${COL[f]},.38)`; ctx.fillRect(x, y, C, C); } else { ctx.fillStyle = `rgba(${COL[v]},.55)`; ctx.fillRect(x, y, C, 1); ctx.fillRect(x, y, 1, C); } }
-    ctx.restore();
-  }
-  function dbgHud() {
-    if (!DBG || mode !== 'play') { const el = document.getElementById('occDbg'); if (el) el.style.display = 'none'; return; }
-    const R = G && G.dun && G.dun.cur, O = R && R.occ; let el = document.getElementById('occDbg');
-    if (!el) { el = document.createElement('div'); el.id = 'occDbg'; el.className = 'hud pf glass'; el.style.cssText = 'left:8px;top:120px;padding:6px 8px;font:8px/12px Galmuri7;color:var(--ink);white-space:nowrap'; document.getElementById('ui').appendChild(el); }
-    const sk = O ? Object.entries(O.skip).map(([k, n]) => `${k} ${n}`).join(' · ') : '';
-    const key = (O ? R.id : '') + sk; if (el.dataset.k === key) { el.style.display = 'block'; return; } el.dataset.k = key;
-    el.innerHTML = Object.entries(NAME).map(([v, n]) => `<span style="color:rgb(${COL[v]})">■</span> ${n}`).join('<br>') + `<br>진하게 = 발 자리 · 선 = 그림 자리<br>비켜 간 수: ${sk || '없음'}`;
-    el.style.display = 'block';
-  }
-  { const T = TRUTH, o = { tick: T.tick, top: T.top, hud: T.hud };
-    T.tick = dt => { o.tick(dt); dbgTick(); };
-    T.hud = () => { o.hud(); dbgDraw(); dbgHud(); }; }
-
-  return { on, prop, wall, stamp, RULE, get cur() { return CUR; }, set stat(v) { STAT = v; }, get stat() { return STAT; }, get dbg() { return DBG; }, set dbg(v) { DBG = !!v; } };
+  return { on, prop, wall, stamp, RULE, get cur() { return CUR; }, set stat(v) { STAT = v; }, get stat() { return STAT; } };
 })();

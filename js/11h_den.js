@@ -31,7 +31,7 @@ const DEN = (() => {
     return R;
   }
   function paint(gg) { const o = off(); gg.save(); gg.imageSmoothingEnabled = false; gg.fillStyle = '#0b0a0e'; gg.fillRect(0, 0, W, H); gg.drawImage(BASE, o.x, o.y); gg.restore(); }
-  const inFloor = (wx, wy) => { const o = off(), x = (wx - o.x - FL.cx) / (FL.rx - 8), y = (wy - o.y - FL.cy) / (FL.ry - 6); return x * x + y * y < 1; };
+  const inFloor = (wx, wy) => { const o = off(), x = (wx - o.x - FL.cx) / (FL.rx - 8), y = (wy - o.y - FL.cy) / (FL.ry - 6); if (wy - o.y < 166 && Math.abs(wx - o.x - 190) < 44) return false; /* v3.20 철장 셋 뒤 · 사이 (구르기로 끼던 자리) */ return x * x + y * y < 1; };
   const F = R => Math.floor((time - R.den.t0) / FT);
 
   // ---------------------------------------------------------------- 드나들기 (테스트: Shift+U)
@@ -156,7 +156,7 @@ const DEN = (() => {
       else sfx('blip', 0.9); } }
   function tick() {
     const R = cur(), P = G.player; if (!R || !P) return;
-    if (!inFloor(P.x, P.y)) { if (G.denLast) { P.x = G.denLast.x; P.y = G.denLast.y; } } else G.denLast = { x: P.x, y: P.y };
+    if (!inFloor(P.x, P.y)) { const o = off(), L = G.denLast && inFloor(G.denLast.x, G.denLast.y) ? G.denLast : { x: o.x + 190, y: o.y + 192 }; P.x = L.x; P.y = L.y; G.denLast = { x: P.x, y: P.y }; } else G.denLast = { x: P.x, y: P.y }; // v3.20 이미 낀 자리에서도 빠져나오게 (환전 우리 앞으로)
     const o = off();
     R.den.c.forEach((c, gi) => { const C = CATS[gi];
       if (c.st === 'ready' && Math.hypot(P.x - o.x - C.sx - 30, P.y - o.y - 226) > 96) c.st = 'idle'; }); // 자리를 뜨면 처음으로
@@ -199,8 +199,9 @@ const DEN = (() => {
   addEventListener('message', e => { const d = e.data; if (!d || !d.dfag || GAME == null) return;
     if (d.dfag === 'ready') $('denGame').contentWindow.postMessage({ dfag: 'hub', n: ST().tw }, '*'); else if (d.dfag === 'leave') closeGame(d.n);
     else if (d.dfag === 'sfx') { const k = { card: 'denCard', dice: 'denDice', win: 'denWin', lose: 'denLose' }[d.k]; if (k) sfx(k); } }); // v3.18 미니게임 효과음은 게임 쪽 소리로
+  DEVK.set('ESC', '미니게임 창 강제로 닫기'); // v3.20 테스트 단축키 목록
   addEventListener('keydown', e => { if (typeof mode === 'undefined' || mode !== 'den') return;
-    if (GAME != null) { if (e.key === 'Escape' && e.shiftKey) closeGame(null); return; } // 테스트: Shift+ESC로 미니게임을 강제로 닫음 (가지는 그대로)
+    if (GAME != null) { if (e.key === 'Escape' && e.shiftKey && window.DEV) closeGame(null); return; } // 테스트: Shift+ESC로 미니게임을 강제로 닫음 (가지는 그대로)
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEx(); } else if ('1234'.includes(e.key)) pickEx(+e.key - 1); }, true);
   addEventListener('DOMContentLoaded', () => { const b = $('denClose'); if (b) b.addEventListener('click', closeEx); setInterval(() => chipHud(true), 300); }); // 놀이터를 벗어나거나 화면이 바뀌면 칩 패널도 숨김
 

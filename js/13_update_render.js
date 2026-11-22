@@ -182,25 +182,25 @@
     if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
     if (G.tut && !G.cine) updateTut(rdt);
     if (G.kg && G.kgT < 900) { G.kgT -= rdt; if (G.kgT <= 0) G.kg = false; }
-    const dbgK = k => { if (pressed[k] !== 'shift') return false; pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T·R·X), 그냥 누르면 아무 일 없음
-    if (dbgK('n') && !G.clear) debugClearRoom();
-    if (dbgK('v')) { debugStageClear(); return; }
-    for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n)) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
-    if (dbgK('t')) { // 테스트: 무기 등급 순환 (커먼 → 레어 → 유니크 → 레전더리)
+    const dbgK = (k, d) => { if (d && !DEVK.has(k)) DEVK.set(k, d); /* v3.20 설명을 붙이면 테스트 모드 단축키 목록(오른쪽 UI)에 자동으로 실림 */ if (!DEV || pressed[k] !== 'shift') return false; /* v3.20 테스트 모드(?dev)일 때만 */ pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T·R·X), 그냥 누르면 아무 일 없음
+    if (dbgK('n', '방 클리어 (적 전부 처치)') && !G.clear) debugClearRoom();
+    if (dbgK('v', '스테이지 클리어')) { debugStageClear(); return; }
+    for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n, '해당 스테이지로 이동')) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
+    if (dbgK('t', '무기 순환 (도감 순서)')) { // 테스트: 무기 등급 순환 (커먼 → 레어 → 유니크 → 레전더리)
       const cw0 = eqWeapon(G.cls), nk = ((cw0 && cw0.wk != null ? cw0.wk : 0) + 1) % wcat(G.cls).length, W1 = wcat(G.cls)[nk]; // v2.03 도감 무기를 차례로
       const it = makeItem(G.cls, { grade: W1.grade, slot: 'weapon', wk: nk, noCurse: true }); lootFeed(`테스트 무기 ${nk + 1}/${wcat(G.cls).length} — ${it.name}`, gradeOf(it).c, 2500);
       SAVE.inv.push(it); eqOf(G.cls).weapon = it.id; G.stats = calcStats(G.buffs); persist();
       lootFeed(`<b style="color:${gradeOf(it).c}">[${gradeOf(it).n}] ${it.name}</b> 장착 (테스트)`, gradeOf(it).c); sfx('drop'); if (it.grade === 'legend') { if (G.seenLegendLore) delete G.seenLegendLore[it.fx]; triggerLegendPickup(it); }
     }
-    if (dbgK('p')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2], n = G.pal[c] || 0, nx = HUE_TIER.find(v => v > n); if (nx) hueGain(c, nx - n); } // v2.41 테스트: 색 단계 올리기 (각인 고르기)
-    if (dbgK('o')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
-    if (dbgK('y')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
-    if (dbgK('b') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
-    if (dbgK('r') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
-    if (dbgK('c') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
-    if (dbgK('u') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
-    if (dbgK('x')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
-    if (dbgK('g') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환
+    if (dbgK('p', '색 조각 다음 단계 (빨 → 파 → 초)')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2], n = G.pal[c] || 0, nx = HUE_TIER.find(v => v > n); if (nx) hueGain(c, nx - n); } // v2.41 테스트: 색 단계 올리기 (각인 고르기)
+    if (dbgK('o', '무적 켜기 / 끄기')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
+    if (dbgK('y', 'RGB? 장비 + 빨강 조각 +10')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
+    if (dbgK('b', '보스 방으로') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
+    if (dbgK('r', '휴게방(비스트로)으로') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
+    if (dbgK('c', '용의 유적 드나들기') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
+    if (dbgK('u', '안전 놀이터로') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
+    if (dbgK('x', '각성 게이지 가득')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
+    if (dbgK('g', '난입자 소환') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환
 
     shake = Math.max(0, shake - rdt * 22);
     shakeX *= Math.pow(0.001, rdt); shakeY *= Math.pow(0.001, rdt);

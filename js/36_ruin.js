@@ -45,8 +45,9 @@ const RUIN = (() => {
       if (AS[d.k] && AS[d.k].obs) { const o = off(); for (const [x, y, r] of AS[d.k].obs) R.obs.push({ t: 'prop', c: true, x: o.x + x * 2, y: o.y + y * 2, r: r * 2 }); } // 꼬리 · 앞발 · 집기는 장애물
       R.visited = i === 0; R.nav = buildNav(R.obs); R.ru = { k: d.k, n: d.n, def: d, spawned: false, phase: 'idle', declined: false, open: false, attack: false, lamps: d.k === 'stairs' ? SM.posts.map(([x, y, s]) => ({ x, y, s, t: -1 })) : null }; return R; });
   }
+  const foes = R => G.enemies.some(e => !e.dead) || !!(R && R.ru && R.ru.wave);
   const doorOpen = (R, s) => { const d = R.ru.def.doors[s]; if (!d) return false;
-    if (G.enemies.some(e => !e.dead)) return false; // 적이 남아 있으면 모든 문이 닫힘
+    if (foes(R)) return false; // 적이 남아 있거나 다음 무리가 스며 나오는 중이면 모든 문이 닫힘
     if (R.ru.k === 'head' && s === 'n' && !R.ru.open) return false; // 봉인된 오른쪽 문
     return true; };
   const inZone = (R, s, p, x, y) => { const [x0, y0, x1, y1] = RECT(R); return s === 'n' ? Math.abs(x - p) <= 6 && y >= y0 - 20 && y < y0 : s === 's' ? Math.abs(x - p) <= 7 && y > y1 && y <= y1 + 13
@@ -104,6 +105,40 @@ const RUIN = (() => {
     for (const p of D.slimes || []) { const e = makeEnemy('slime', ...at(p)); e.rs = 'blood'; e.hp = e.maxHp = e.maxHp * 1.2; G.enemies.push(e); }
     for (const p of D.polyps || []) { const e = makeEnemy('toxslime', ...at(p)); e.rs = 'polyp'; e.hp = e.maxHp = e.maxHp * 2; e.kbRes = 0; e.spd = 0; e.r = 10; e.hx = e.x; e.hy = e.y; e.pt = rand(0, 2); G.enemies.push(e); }
   }
+  // ---------- 혈액 슬라임 두 번째 무리: 첫 무리를 다 쓰러뜨리면 바닥 판석 줄눈에서 피가 스며 나와 고였다가 슬라임이 솟음
+  const isSeamF = (x, y) => { if (y <= WB + 6 || y >= 188 || x <= 100 || x >= 284) return false; const fy = y - WB, of = (Math.floor(fy / 12) % 2) * 12; return (x - RX0 + of) % 24 === 0 || fy % 12 === 0; };
+  function seepCells(x0, y0) { const D = new Map([[x0 + ',' + y0, 0]]), Q = [[x0, y0]]; // 줄눈을 따라 퍼지는 칸 (가까운 칸부터)
+    while (Q.length) { const [x, y] = Q.shift(), d = D.get(x + ',' + y); if (d >= 16) continue;
+      for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + a, Y = y + b, k = X + ',' + Y; if (!D.has(k) && isSeamF(X, Y)) { D.set(k, d + 1); Q.push([X, Y]); } } }
+    return [...D].map(([k, d]) => { const [x, y] = k.split(',').map(Number); return [x, y, d]; }); }
+  const SEEP_T = 1.3;
+  // 줄눈이 만나는 자리에 고이는 핏물: 줄눈을 따라 넘쳐 양옆으로 번진 납작한 웅덩이 + 가끔 올라와 터지는 기포
+  function seamPool(o, cx, cy, b, cells) { const R = 1 + b * 3.2, P = ['#4a0a10', '#7a1220', '#a81e28', '#c42a2e'], seen = new Set();
+    const put = (x, y, c) => { const k = x * 1000 + y; if (seen.has(k)) return; seen.add(k); px(o, x, y, c); };
+    for (const [x, y, d] of cells) { if (d > R) continue; const t = 1 - d / R, w = t > 0.55 ? 2 : t > 0.2 ? 1 : 0, hz = isSeamF(x - 1, y) || isSeamF(x + 1, y), vt = isSeamF(x, y - 1) || isSeamF(x, y + 1), c = P[Math.min(3, Math.floor(t * 3.4))];
+      put(x, y, c); for (let k = 1; k <= w; k++) { const ce = P[Math.max(0, Math.min(3, Math.floor(t * 3.4)) - k)]; if (hz) { put(x, y - k, ce); put(x, y + k, ce); } if (vt) { put(x - k, y, ce); put(x + k, y, ce); } } }
+    if (b > 0.3) { const n = Math.floor(b * 3); for (let i = 0; i < n; i++) { const ph = (time * 1.3 + i * 0.37) % 1, a = i * 2.39 + Math.floor(time * 1.3 + i * 0.37) * 1.7, rr = Math.round((0.3 + (i % 3) * 0.3) * R * 0.5);
+        const bx = cx + Math.round(Math.cos(a) * rr * 0.4), by = cy + Math.round(Math.sin(a) * rr * 0.4); if (ph < 0.6) px(o, bx, by, '#e8505a'); else if (ph < 0.75) { px(o, bx - 1, by, '#d84a3a'); px(o, bx + 1, by, '#d84a3a'); } } } } // 기포가 솟았다 톡 터짐
+  function startWave(R) { const o = off(), P = G.player, n = (R.ru.def.slimes || []).length, pts = [], c = cell(o, P);
+    for (let tries = 0; pts.length < n + 2 && tries < 400; tries++) { // 슬라임 수 + 모방자 자리 하나 // 판석 줄눈이 만나는 자리 중에서 · 기사와 서로에게서 떨어진 곳
+      const fy = 12 * randi(2, 9), y = WB + fy, of = (Math.floor(fy / 12) % 2) * 12, x = RX0 + 24 * randi(1, 8) - of;
+      if (!isSeamF(x, y) || Math.hypot(x - c.x, y - c.y) < 40 || pts.some(q => Math.hypot(q.x - x, q.y - y) < 30)) continue;
+      pts.push({ x, y, cells: seepCells(x, y) }); }
+    const mc = Math.random() < 0.5 ? 1 : 2, mq = [...pts].sort((a, b) => Math.hypot(a.x - 192, a.y - 132) - Math.hypot(b.x - 192, b.y - 132)).slice(0, mc); for (const q of pts) q.mim = mq.includes(q); const sl = pts.filter(q => !q.mim); if (sl.length > n) pts.splice(pts.indexOf(sl[sl.length - 1]), 1); // 모방자 1~2 마리 (가운데에 가까운 자리)
+    R.ru.wave = { t: 0, pts }; sfx('growl', 0.6); }
+  function waveTick(R, dt) { const W = R.ru.wave; if (!W) return; W.t += dt; const o = off();
+    if (W.t >= SEEP_T && !W.done) { W.done = true; for (const q of W.pts) { if (q.mim) { spawnMimic(o.x + q.x * 2, o.y + q.y * 2); continue; } const e = makeEnemy('slime', o.x + q.x * 2, o.y + q.y * 2); e.rs = 'blood'; e.hp = e.maxHp = e.maxHp * 1.2; e.rise = 0.35; G.enemies.push(e);
+        splat(e.x, e.y, 10, '110,10,16'); for (let k = 0; k < 8; k++) G.parts.push({ x: e.x + rand(-6, 6), y: e.y - 4, vx: rand(-40, 40), vy: rand(-80, -30), t: 0.4, c: Math.random() < 0.5 ? '#c42a2e' : '#8a1418', g: 240, floor: e.y + rand(-2, 4) }); }
+      sfx('hit'); }
+    if (W.t >= SEEP_T + 2.2) R.ru.wave = null; } // 스민 자국이 다 마르면 끝 (그동안에도 슬라임이 있으면 문은 닫힘)
+  function drawWave(R, o) { const W = R.ru.wave; if (!W) return; const k = Math.min(1, W.t / (SEEP_T * 0.75)), fade = W.t > SEEP_T ? Math.max(0, 1 - (W.t - SEEP_T) / 2.2) : 1, BLS = ['#3a080c', '#6a1016', '#9a1a20', '#c42a2e'];
+    for (const q of W.pts) {
+      const r = k * 16; ctx.globalAlpha = fade;
+      for (const [x, y, d] of q.cells) if (d <= r) px(o, x, y, BLS[Math.max(0, Math.min(3, 3 - Math.floor((d / Math.max(1, r)) * 3 + (r - d < 2 ? 0 : 0.5))))]); // 줄눈을 따라 스며 나옴 (앞쪽이 밝음)
+      const big = q.mim ? 1.8 : 1; // 모방자가 솟을 자리는 더 크게 고임
+      if (W.t > SEEP_T * 0.5 && !W.done) { const b = Math.min(1, (W.t - SEEP_T * 0.5) / (SEEP_T * 0.5)), rx = Math.round((1 + b * 4) * big), ry = Math.max(1, Math.round(b * 2 * big)), bub = Math.floor(time * 8) % 2; // 가운데에 고여 부풀어 오름
+        seamPool(o, q.x, q.y, b * big, q.cells); } }
+    ctx.globalAlpha = 1; }
   const LUMPS = [], SPL = [], PRT = [];
   function polypAI(e, dt) { // 제자리에 뿌리내린 포탑: 부풀었다가 핏덩이를 던짐 (떨어질 자리에 경고)
     e.flash = Math.max(0, e.flash - dt); e.rise = Math.max(0, e.rise - dt); e.x = e.hx; e.y = e.hy; e.vx = e.vy = 0;
@@ -121,13 +156,145 @@ const RUIN = (() => {
   }
   function drawMon(e) {
     const white = e.flash > 0, al = e.rise > 0 ? 1 - e.rise / 0.35 : 1;
+    if (e.rs === 'mimic') { if (!e.hidden) drawMimic(e, white); return; }
     if (e.rs === 'polyp') { drawShadow(e.x, e.y + 1, 14); drawS(spr('polyp', e.pfr || 0, white), e.x, e.y + 6, al); return; }
     const z = e.z || 0, st = e.state === 'sqz' || e.squash > 0 ? 1 : z > 2 ? 2 : (Math.floor(time * 2.5 + e.hx0) % 2 ? 0 : 3);
     if (e.hx0 == null) e.hx0 = (e.x / 7) | 0;
     drawShadow(e.x, e.y + 1, 11 * (1 - Math.min(0.5, z / 60))); drawS(spr('slime', st, white), e.x, e.y + 4 - z, al);
   }
+
+  // ---------------------------------------------------------------- 핏빛 모방자 (두 번째 무리 · 준엘리트): 외곽선만 지금 직업 모양 · 안은 혈액 슬라임 · 기본 무기를 핏빛으로
+  const BLR = ['#3e0810', '#7a1220', '#b82432', '#e8505a', '#ffc8c8'], OUTR = '#1a0406', hexA = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)), lum = c => { const [r, g, b] = hexA(c); return (0.3 * r + 0.59 * g + 0.11 * b) / 255; };
+  const MIM = {}, MIMW = {};
+  function mimicArt() { const cls = G.cls; if (MIM[cls]) return MIM[cls];
+    const P = G.player, keep = {}; for (const k of ['x', 'y', 'state', 'rolling', 'lift', 'face', 'inv', 'iframe', 'flash', 'walk', 'moving', 'hurtT']) keep[k] = P[k];
+    const [c, g] = mkCanvas(160, 140), old = ctx; Object.assign(P, { x: 80, y: 110, state: 'idle', rolling: false, lift: 0, face: 1, inv: 0, iframe: 0, flash: 0, walk: 0, moving: false, hurtT: 0 });
+    ctx = g; try { ROLL_HIDEW = true; drawPlayer(); } finally { ctx = old; ROLL_HIDEW = false; Object.assign(P, keep); }
+    const d = g.getImageData(0, 0, 160, 140).data, W = 80, H = 70, m = Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => d[((y * 2) * 160 + x * 2) * 4 + 3] >= 200));
+    // 가장 큰 덩어리만 (떠다니는 빛 알갱이 · 그림자 빼고)
+    const id = Array.from({ length: H }, () => Array(W).fill(-1)), cs = []; for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { if (!m[y][x] || id[y][x] >= 0) continue; const q = [[x, y]], cc = []; id[y][x] = cs.length; while (q.length) { const [a, b] = q.pop(); cc.push([a, b]); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = a + dx, Y = b + dy; if (X >= 0 && Y >= 0 && X < W && Y < H && m[Y][X] && id[Y][X] < 0) { id[Y][X] = cs.length; q.push([X, Y]); } } } cs.push(cc); }
+    const best = cs.sort((a, b) => b.length - a.length)[0] || []; let x0 = W, x1 = 0, y0 = H, y1 = 0; for (const [x, y] of best) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const w = x1 - x0 + 1, h = y1 - y0 + 1, body = Array.from({ length: h }, () => Array(w).fill(false)), L0 = Array.from({ length: h }, () => Array(w).fill(0.5)); for (const [x, y] of best) { body[y - y0][x - x0] = true; const i = ((y * 2) * 160 + x * 2) * 4; L0[y - y0][x - x0] = (0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]) / 255; } // 원래 도트의 밝기 (눈 · 입 · 옷 무늬를 음영으로 흉내)
+    const D = Array.from({ length: h }, () => Array(w).fill(0)), Q = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (body[y][x] && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => !(body[y + b] && body[y + b][x + a]))) { D[y][x] = 1; Q.push([x, y]); }
+    while (Q.length) { const [x, y] = Q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + a, Y = y + b; if (body[Y] && body[Y][X] && !D[Y][X]) { D[Y][X] = D[y][x] + 1; Q.push([X, Y]); } } }
+    const cells = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (D[y][x] >= 3) cells.push([x, y]);
+    const bub = Array.from({ length: 4 }, (_, i) => { const q = cells[(i * 7919) % Math.max(1, cells.length)] || [w >> 1, h - 3]; return { x: q[0], y: q[1], sp: 2 + i * 0.7, ph: i * 2.3 }; });
+    return (MIM[cls] = { w, h, body, D, L0, bub, fx: 40 - x0, fy: 55 - y0 }); }
+  // 형태가 망가진 모방자: 흉내 내다 만 듯 한쪽이 흘러내리고 · 머리가 옆으로 쏠리고 · 군데군데 뜯기거나 혹이 붙음
+  function brokenArt(A0, seed) { let rs = seed; const Rn = () => { rs = (rs * 16807) % 2147483647; return rs / 2147483647; };
+    const M = 5, w = A0.w + M * 2, h = A0.h, side = Rn() < 0.5 ? -1 : 1, sag = 3 + Math.floor(Rn() * 3), hsh = (Rn() < 0.5 ? -1 : 1) * (2 + Math.floor(Rn() * 2)), headH = Math.round(h * 0.42);
+    const body = Array.from({ length: h }, () => Array(w).fill(false)), L0 = Array.from({ length: h }, () => Array(w).fill(0.5)), cx = A0.w / 2;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { // 역방향 사상: 새 칸이 원래 어디서 왔는지
+      const ox = x - M, sx = Math.round(y < headH ? hsh * Math.pow(1 - y / headH, 0.7) : 0), sd = (ox - cx) * side > 1 ? Math.round(sag * Math.min(1, ((ox - cx) * side) / (A0.w * 0.35)) * Math.max(0, 1 - y / (h * 0.85))) : 0;
+      const X = ox - sx, Y = y - sd; if (Y < 0 || Y >= h || X < 0 || X >= A0.w || !A0.body[Y][X]) continue; body[y][x] = true; L0[y][x] = A0.L0[Y][X]; }
+    const bite = () => { const bx = M + Math.floor(Rn() * A0.w), by = Math.floor(h * (0.2 + Rn() * 0.5)), r = 2 + Rn() * 2; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (Math.hypot(x - bx, y - by) < r && (x === bx || Rn() < 0.9)) body[y][x] = false; };
+    const lump = () => { let tries = 0; while (tries++ < 50) { const x = Math.floor(Rn() * w), y = Math.floor(Rn() * h * 0.7); if (!body[y][x]) continue; const r = 2 + Rn() * 2, a = Rn() * 6.28, bx = x + Math.round(Math.cos(a) * r), by = y + Math.round(Math.sin(a) * r * 0.6);
+        for (let yy = 0; yy < h; yy++) for (let xx = 0; xx < w; xx++) if (Math.hypot(xx - bx, (yy - by) * 1.2) < r) { body[yy][xx] = true; L0[yy][xx] = 0.45; } return; } };
+    const drip = () => { for (let k = 0; k < 40; k++) { const x = Math.floor(Rn() * w); let y0 = -1; for (let y = 0; y < h * 0.6; y++) if (body[y][x] && !(body[y + 1] && body[y + 1][x])) { y0 = y; break; } if (y0 < 0) continue; const L = 2 + Math.floor(Rn() * 4); for (let y = y0 + 1; y <= Math.min(h - 1, y0 + L); y++) { body[y][x] = true; L0[y][x] = 0.4; } return; } };
+    bite(); if (Rn() < 0.6) bite(); lump(); if (Rn() < 0.5) lump(); drip(); drip(); if (Rn() < 0.5) drip();
+    // 가장 큰 덩어리만 남김
+    const id = Array.from({ length: h }, () => Array(w).fill(-1)), cs = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { if (!body[y][x] || id[y][x] >= 0) continue; const q = [[x, y]], cc = []; id[y][x] = cs.length; while (q.length) { const [a, b] = q.pop(); cc.push([a, b]); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = a + dx, Y = b + dy; if (X >= 0 && Y >= 0 && X < w && Y < h && body[Y][X] && id[Y][X] < 0) { id[Y][X] = cs.length; q.push([X, Y]); } } } cs.push(cc); }
+    const best = new Set((cs.sort((a, b) => b.length - a.length)[0] || []).map(([x, y]) => y * 1000 + x)); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (body[y][x] && !best.has(y * 1000 + x)) body[y][x] = false;
+    const D = Array.from({ length: h }, () => Array(w).fill(0)), Q = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (body[y][x] && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => !(body[y + b] && body[y + b][x + a]))) { D[y][x] = 1; Q.push([x, y]); }
+    while (Q.length) { const [x, y] = Q.shift(); for (const [a, b] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const X = x + a, Y = y + b; if (body[Y] && body[Y][X] && !D[Y][X]) { D[Y][X] = D[y][x] + 1; Q.push([X, Y]); } } }
+    const cells = []; for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (D[y][x] >= 3) cells.push([x, y]);
+    const bub = Array.from({ length: 5 }, (_, i) => { const q = cells[(i * 7919 + seed) % Math.max(1, cells.length)] || [w >> 1, h - 3]; return { x: q[0], y: q[1], sp: 2 + i * 0.7, ph: i * 2.3 }; });
+    return { w, h, body, D, L0, bub, fx: A0.fx + M, fy: A0.fy }; }
+  function mimicRows(A, t) { const { w, h, body, D, L0 } = A, rows = [];
+    for (let y = 0; y < h; y++) { const r = []; for (let x = 0; x < w; x++) { let c = null; if (body[y][x]) { if (D[y][x] === 1) c = OUTR; else { const u = (x - w / 2) / (w / 2), v = (y - h / 2) / (h / 2), tt = 0.62 - 0.29 * (u * 0.5 + v * 0.8) + Math.min(3, D[y][x]) * 0.04 - (D[y][x] >= 4 && v > 0.2 && Math.abs(u) < 0.5 ? 0.35 : 0);
+        const L = L0[y][x], mix = tt * 0.55 + L * 0.55; c = BLR[Math.max(0, Math.min(3, Math.floor(mix * 4)))]; if (L < 0.16) c = BLR[0]; /* 원래 어두운 곳(눈 · 입 · 옷 주름)은 진한 핏빛으로 */ if (D[y][x] === 2 && u < 0 && v < -0.2 && (x + y + Math.floor(t * 4)) % 5 === 0) c = BLR[4]; } } r.push(c); } rows.push(r); }
+    for (const b of A.bub) { const yy = Math.round(b.y - ((t * b.sp + b.ph) % Math.max(2, b.y - 2))); if (rows[yy] && D[yy][b.x] >= 2) { rows[yy][b.x] = BLR[3]; if (rows[yy - 1] && D[yy - 1][b.x] >= 2) rows[yy - 1][b.x] = BLR[4]; } }
+    return rows; }
+  function mimicWeapon() { const cls = G.cls; if (MIMW[cls]) return MIMW[cls]; const T = WEAP[cls][0], pal = {}; // 시작 기본 무기를 밝기 그대로 핏빛으로
+    for (const k in T.pal) { const L = lum(T.pal[k]); pal[k] = L < 0.1 ? OUTR : BLR[Math.max(1, Math.min(4, Math.floor(L * 4.6)))]; }
+    return (MIMW[cls] = Object.assign({}, T, { pal, rot: {} })); }
+  const jig = (k, j, h) => { const amp = 3 * (1 - k) * (1 - k) * (1 - j / h * 0.85); return Math.round(Math.sin(k * 22 - j * 0.22) * amp); }; // 솟아오른 직후 젤리처럼 좌우로 크게 출렁이다 잦아듦 (위쪽일수록 크게)
+  const wob = (t, j, mv) => { if (mv) { const ph = Math.floor(t * 10 - j / 4) % 4; return ph === 0 ? 1 : ph === 2 ? -1 : 0; } // 걸을 땐 머리부터 발끝으로 물결이 크게 흐름
+    const ph = Math.floor(t * 6 + j / 3) % 4; return (j % 5 === 2 && ph === 0) ? 1 : (j % 5 === 4 && ph === 2) ? -1 : 0; }; // 서 있을 땐 띠마다 가끔 한 칸씩
+  function drawMimic(e, white) { const A = e.mart, rows = mimicRows(A, time + e.ph0), f = e.face || 1, X0 = snap2(e.x) - (f > 0 ? A.fx * 2 : (A.w - 1 - A.fx) * 2), Y0 = snap2(e.y) - A.fy * 2, vis = e.vis == null ? 1 : e.vis, cut = 0;
+    if (e.melt > 0) { drawFlow(e, rows, X0, Y0, f, white); return; } // 흘러내리는 중 · 고였다 솟는 중
+    drawShadow(e.x, e.y + 1, 9);
+    const hx = e.x + f * 9, hy = e.y - 9, behind = Math.sin(e.wang) < 0.55; if (vis >= 1 && behind) drawBlade(mimicWeapon(), hx, hy, e.wang, 1, white);
+    const mv = !!e.mvT && time - e.mvT < 0.12, bobY = mv && Math.floor(time * 8) % 2 ? 2 : 0; // 걸을 땐 한 칸씩 출렁이며 들썩
+    const jk = e.jigT ? (time - e.jigT) / 0.75 : 9; for (let j = cut; j < A.h; j++) { const sh = jk < 1 ? jig(jk, j, A.h) : wob(time + e.ph0, j, mv); for (let i = 0; i < A.w; i++) { const c = rows[j][i]; if (!c) continue; const ii = f > 0 ? i : A.w - 1 - i; ctx.fillStyle = white ? (c === OUTR ? OUTR : '#fff0f0') : c; ctx.fillRect(X0 + (ii + sh) * 2, Y0 + j * 2 + bobY, 2, 2); } }
+    if (vis >= 1 && !behind) drawBlade(mimicWeapon(), hx, hy, e.wang, 1, white);
+    if (Math.random() < 0.08 && vis >= 1) G.parts.push({ x: e.x + rand(-8, 8), y: e.y - rand(4, 20), vx: 0, vy: 30, t: 0.35, c: BLR[2], g: 200, floor: e.y + 1 }); } // 피가 뚝뚝
+  const restW = e => (e.face > 0 ? -82 : -98) * DEG;
+  function spawnMimic(x, y) { const e = makeEnemy('cultist', x, y), k = e.maxHp / 45, brk = Math.random() < 0.5; Object.assign(e, { rs: 'mimic', hp: 260 * k, maxHp: 260 * k, atk: e.atk / 12 * 14, spd: 74, kbRes: 0.3, r: 8, grogiMax: 0, ms: 'rise', mt: 0, vis: 0, melt: 1, ph0: rand(0, 10), wang: 0, mart: brk ? brokenArt(mimicArt(), randi(1, 9999)) : mimicArt(), broken: brk }); e.wang = restW(e); G.enemies.push(e); return e; }
+  function mimicAI(e, dt) {
+    e.flash = Math.max(0, e.flash - dt); e.x += e.vx * dt; e.y += e.vy * dt; e.vx *= Math.pow(0.0015, dt); e.vy *= Math.pow(0.0015, dt); e.cd -= dt; e.mt += dt;
+    const P = G.player; if (!P) return; const d = dist(e, P), a = angTo(e, P);
+    const goChase = cd => { e.ms = 'chase'; e.mt = 0; e.cd = cd; e.vis = 1; e.melt = 0; e.hidden = false; };
+    if (e.ms === 'rise') { e.melt = Math.max(0, 1 - e.mt / 0.9); e.vis = e.melt > 0 ? 0 : 1; if (e.mt >= 0.9) { goChase(0.8); e.jigT = time; } return; }
+    if (P.dead) return;
+    if (e.ms === 'chase') { e.face = Math.cos(a) > 0 ? 1 : -1; e.wang = lerpAng(e.wang, restW(e), Math.min(1, dt * 10));
+      if (d > 30) { const an = steer(e, a); e.x += Math.cos(an) * e.spd * dt; e.y += Math.sin(an) * e.spd * dt; e.mvT = time; }
+      if (e.cd <= 0) { const r = Math.random(); if (d < 64 && r < 0.6) startSlash(e, a); else if (r < 0.4) startSink(e); else if (d >= 64) startThrow(e); else startSlash(e, a); } return; }
+    if (e.ms === 'slash') { // 무기를 뒤로 들어 올림 → 크게 휘두름
+      if (e.mt < 0.45) e.wang = lerpAng(e.wang, e.atkA - e.face * 100 * DEG, Math.min(1, dt * 12));
+      else if (e.mt < 0.6) { e.wang = e.atkA + e.face * (-100 + 160 * Math.min(1, (e.mt - 0.45) / 0.12)) * DEG; if (!e.swung) { e.swung = true; sfx('swing'); G.fx.push({ kind: 'claw', x: e.x, y: e.y - 8, ang: e.atkA, r: 30, w: 2, glow: true, c: '255,90,90', t: 0.18, max: 0.18 }); } }
+      else if (e.mt > 0.95) goChase(rand(1.0, 1.6)); return; }
+    if (e.ms === 'sink') { e.melt = Math.min(1, e.mt / 0.6); e.vis = 0; if (e.mt >= 0.6) { e.ms = 'under'; e.mt = 0; e.hidden = true; e.melt = 1; seepAt(e.x, e.y, 'out', 1.1);
+        const ang = rand(0, TAU), tx = clamp(P.x + Math.cos(ang) * 30, A.x0 + 16, A.x1 - 16), ty = clamp(P.y + Math.sin(ang) * 18, A.y0 + 16, A.y1 - 16);
+        seepAt(tx, ty, 'in', 0.9); G.tele.push({ shape: 'circle', x: tx, y: ty, r: 26, t: 0, dur: 0.9, owner: e, onFire: tt => { e.x = tt.x; e.y = tt.y; e.ms = 'pop'; e.mt = 0; e.hidden = false; e.melt = 1; e.jigT0 = 0; e.face = G.player.x > e.x ? 1 : -1; e.atkA = angTo(e, G.player);
+          const P2 = G.player; if (P2 && !P2.dead && inShape(tt, P2.x, P2.y, P2.r)) hurtPlayer(e.atk, e); splat(tt.x, tt.y, 12, '110,10,16'); sfx('hit');
+          for (let k = 0; k < 10; k++) G.parts.push({ x: tt.x + rand(-8, 8), y: tt.y - 4, vx: rand(-60, 60), vy: rand(-110, -40), t: 0.45, c: Math.random() < 0.5 ? '#c42a2e' : '#8a1418', g: 240, floor: tt.y + rand(-2, 4) }); } }); } return; }
+    if (e.ms === 'under') return;
+    if (e.ms === 'pop') { e.melt = Math.max(0, 1 - e.mt / 0.35); e.vis = e.melt > 0 ? 0 : 1; e.wang = e.atkA + e.face * (-100 + 160 * Math.min(1, Math.max(0, e.mt - 0.35) / 0.15)) * DEG; if (e.mt > 0.8) goChase(rand(1.2, 1.8)); if (e.mt >= 0.35 && !e.jigT0) { e.jigT0 = 1; e.jigT = time; } return; }
+    if (e.ms === 'throw') { e.wang = lerpAng(e.wang, (e.face > 0 ? -120 : -60) * DEG, Math.min(1, dt * 10));
+      if (e.mt >= 0.45 && !e.thrown) { e.thrown = true; const b = angTo(e, P), D0 = Math.min(150, d);
+        for (const k of [-0.32, 0, 0.32]) { const tx = clamp(e.x + Math.cos(b + k) * D0, A.x0 + 10, A.x1 - 10), ty = clamp(e.y + Math.sin(b + k) * D0, A.y0 + 10, A.y1 - 10), dur = 0.8;
+          LUMPS.push({ x0: e.x, y0: e.y - 28, x1: tx, y1: ty, t: 0, d: dur });
+          G.tele.push({ shape: 'circle', x: tx, y: ty, r: 18, t: 0, dur, owner: e, onFire: tt => { const P2 = G.player; if (P2 && !P2.dead && inShape(tt, P2.x, P2.y, P2.r)) hurtPlayer(e.atk, e); splat(tt.x, tt.y, 10, '120,14,20'); } }); }
+        sfx('whoosh'); }
+      if (e.mt > 0.9) goChase(rand(1.0, 1.5)); return; }
+  }
+  function startSlash(e, a) { e.ms = 'slash'; e.mt = 0; e.swung = false; e.atkA = a; e.face = Math.cos(a) > 0 ? 1 : -1;
+    G.tele.push({ shape: 'cone', x: e.x, y: e.y - 4, ang: a, arc: 120 * DEG, r: 50, t: 0, dur: 0.45, owner: e, onFire: tt => { const P2 = G.player; if (P2 && !P2.dead && inShape(tt, P2.x, P2.y, P2.r)) hurtPlayer(e.atk, e); } }); }
+  function startSink(e) { e.ms = 'sink'; e.mt = 0; sfx('dodge'); }
+  function startThrow(e) { e.ms = 'throw'; e.mt = 0; e.thrown = false; }
+  { const o = damageEnemy; damageEnemy = function (e, ...a) { if (e && e.rs === 'mimic' && (e.hidden || e.melt > 0)) return; return o(e, ...a); }; } // 줄눈 속 · 솟는 중엔 맞지 않음
+  { const o = killEnemy; killEnemy = function (e, silent) { const r = o(e, silent); if (e && e.rs === 'mimic') { if (G.corpses) G.corpses = G.corpses.filter(c => c.e !== e); MELT.push(meltOf(e)); seepAt(e.x, e.y, 'out', 1.6, 1.5); } return r; }; } // 쓰러지면 녹아내려 줄눈으로 스밈
+  const MELT = [];
+  // 흐름: melt 0(온전) ~ 1(발밑에 고인 웅덩이). 칸마다 아래부터 무너져 떨어지고 → 옆으로 번짐. 솟을 땐 같은 길을 거꾸로 되감음
+  const hs = (a, b) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
+  function drawFlow(e, rows, X0, Y0, f, white) { const A = e.mart, p = e.melt, fl = snap2(e.y), cx = snap2(e.x);
+    drawShadow(e.x, e.y + 1, 9 * (1 - p * 0.6));
+    for (let j = 0; j < A.h; j++) for (let i = 0; i < A.w; i++) { const c = rows[j][i]; if (!c) continue; const ii = f > 0 ? i : A.w - 1 - i, tx = X0 + ii * 2, ty = Y0 + j * 2;
+      const hf = Math.max(0, (fl - ty) / (A.h * 2)), s0 = hs(ii, 1) * 0.18 + hf * 0.27 + hs(ii, j) * 0.05, fd = 0.12 + hf * 0.28, u = Math.max(0, Math.min(1, (p - s0) / fd)), v = Math.max(0, Math.min(1, (p - s0 - fd) / 0.2));
+      const py = fl - 2 + (hs(i, j + 7) < 0.5 ? 0 : 2), pxx = tx + ((tx - cx) * 0.7 + (hs(j, i + 3) - 0.5) * 12), y = ty + (py - ty) * u * u, x = tx + (pxx - tx) * v + (u < 1 ? Math.round(Math.sin(time * 16 - j * 0.3) * 2.4 * Math.min(1, p * 3) * (1 - j / A.h * 0.7)) * 2 : 0);
+      ctx.fillStyle = white ? '#fff0f0' : u >= 1 ? (v > 0.6 ? BLR[1] : BLR[2]) : c; ctx.fillRect(snap2(x), snap2(y), 2, 2); } }
+  const SEEPS = [];
+  function seepAt(wx, wy, mode, dur, big = 1) { const o = off(), c = cell(o, { x: wx, y: wy }); let best = null, bd = 1e9;
+    for (let dy = -8; dy <= 8; dy++) for (let dx = -12; dx <= 12; dx++) { const X = Math.round(c.x) + dx, Y = Math.round(c.y) + dy; if (!isSeamF(X, Y)) continue; const jn = isSeamF(X + 1, Y) && isSeamF(X, Y + 1) ? 0 : 3, d = Math.hypot(dx, dy) + jn; if (d < bd) { bd = d; best = [X, Y]; } }
+    if (!best) return; SEEPS.push({ x: best[0], y: best[1], cx: c.x, cy: c.y, cells: seepCells(best[0], best[1]), mode, dur, t: 0, big }); }
+  function drawSeeps(o, dt) { const BLS = ['#3a080c', '#6a1016', '#9a1a20', '#c42a2e'];
+    for (let i = SEEPS.length - 1; i >= 0; i--) { const S = SEEPS[i]; S.t += dt; const k = Math.min(1, S.t / S.dur);
+      if (S.mode === 'out') { // 고인 핏물이 줄눈 틈으로 빨려 들어가 갈래갈래 번지며 마름
+        const r = 2 + Math.min(1, k * 1.6) * 14 * S.big, fade = k < 0.55 ? 1 : Math.max(0, 1 - (k - 0.55) / 0.45);
+        ctx.globalAlpha = fade; for (const [x, y, d] of S.cells) if (d <= r) px(o, x, y, BLS[Math.max(0, Math.min(3, 3 - Math.floor(d / Math.max(1, r) * 3.2)))]);
+        const pr = Math.max(0, Math.round(7 * S.big * (1 - k * 1.8))); if (pr > 0) for (let y = -1; y <= 1; y++) for (let x = -pr; x <= pr; x++) if ((x / pr) ** 2 + (y / 1.5) ** 2 <= 1) px(o, Math.round((S.cx + S.x) / 2) + x, Math.round((S.cy + S.y) / 2) + y, y < 0 ? '#9a1a20' : '#6a1016'); // 웅덩이는 줄눈 쪽으로 오그라듦
+      } else { // 줄눈 곳곳에서 핏물이 한 점으로 모여들어 고임
+        const r = (1 - k) * 16, band = 5; ctx.globalAlpha = 1;
+        for (const [x, y, d] of S.cells) if (d >= r - 0.5 && d <= r + band) px(o, x, y, BLS[Math.max(0, Math.min(3, 3 - Math.floor((d - r) / band * 3)))]);
+        if (k > 0.5) { const b = (k - 0.5) / 0.5, rx = Math.round(1 + b * 5), ry = Math.max(1, Math.round(b * 2)), bub = Math.floor(time * 8) % 2;
+          seamPool(o, S.x, S.y, b * 1.6, S.cells); } }
+      ctx.globalAlpha = 1; if (S.t >= S.dur) SEEPS.splice(i, 1); } }
+  // 쓰러질 때: 몸을 이루던 핏방울 칸들이 제각각 아래로 흘러내려 발밑에 고이고(옆으로 번짐), 웅덩이가 줄눈으로 스며 사라짐
+  function meltOf(e) { const A = e.mart, rows = mimicRows(A, time + e.ph0), f = e.face || 1, X0 = snap2(e.x) - (f > 0 ? A.fx * 2 : (A.w - 1 - A.fx) * 2), Y0 = snap2(e.y) - A.fy * 2, cells = [];
+    for (let j = 0; j < A.h; j++) for (let i = 0; i < A.w; i++) { const c = rows[j][i]; if (!c) continue; const ii = f > 0 ? i : A.w - 1 - i, colN = (ii * 7919) % 13 / 13;
+      cells.push({ x: X0 + ii * 2, y: Y0 + j * 2, c, vy: 0, dl: colN * 0.25 + (A.h - j) / A.h * 0.12 + Math.random() * 0.08, land: null, sx: (Math.random() - 0.5) * 2 }); }
+    return { cells, floor: snap2(e.y), cx: snap2(e.x), t: 0 }; }
+  function drawMelts(o, dt) { for (let i = MELT.length - 1; i >= 0; i--) { const m = MELT[i]; m.t += dt; const fade = m.t > 1.6 ? Math.max(0, 1 - (m.t - 1.6) / 1.2) : 1;
+      ctx.globalAlpha = fade;
+      for (const q of m.cells) {
+        if (q.land == null) { if (m.t > q.dl) { q.vy += 520 * dt; q.y += q.vy * dt; if (q.y >= m.floor - 2) { q.y = m.floor - 2 + Math.round(Math.random() * 2) * 2; q.land = m.t; q.tx = q.x + Math.round((q.x - m.cx) * 0.6 + q.sx * 6) & ~1; } } }
+        else { const k = Math.min(1, (m.t - q.land) / 0.35); q.x += ((q.tx - q.x) * Math.min(1, dt * 10)); } // 고이며 옆으로 번짐
+        const c = q.land != null ? (m.t - q.land > 0.4 ? BLR[1] : BLR[2]) : q.c; ctx.fillStyle = c; ctx.fillRect(snap2(q.x), snap2(q.y), 2, 2); }
+      ctx.globalAlpha = 1;
+      if (m.t > 2.8) MELT.splice(i, 1); } }
   const RC = { on: false };
-  { const o = updateEnemy; updateEnemy = function (e, dt) { if (e.rs === 'polyp') return polypAI(e, dt); return o(e, dt); }; }
+  { const o = updateEnemy; updateEnemy = function (e, dt) { if (e.rs === 'polyp') return polypAI(e, dt); if (e.rs === 'mimic') return mimicAI(e, dt); return o(e, dt); }; }
   { const o = drawEnemyBody; drawEnemyBody = function (e) { if (e.rs) { drawMon(e); return; } if (e.rcult) { RC.on = true; try { o(e); } finally { RC.on = false; } return; } o(e); }; }
   { const o = nrBiped; nrBiped = function (e, map, pal, ...a) { if (RC.on && pal === 'chaplain') pal = 'chaplainR'; return o(e, map, pal, ...a); }; }
   PAL.chaplainR = AS.palR; // 피의 광신도를 붉은 비늘 교단 색으로
@@ -157,7 +324,7 @@ const RUIN = (() => {
   function ground() {
     const R = cur(); if (!R) return; const o = off(), k = R.ru.k, dt = DT();
     ctx.save(); ctx.imageSmoothingEnabled = false;
-    if (k === 'stairs') groundStairs(R, o, dt); else if (k === 'head') groundHead(R, o, dt); else if (k === 'combat') groundCombat(R, o, dt);
+    if (k === 'stairs') groundStairs(R, o, dt); else if (k === 'head') groundHead(R, o, dt); else if (k === 'combat') { groundCombat(R, o, dt); drawWave(R, o); drawSeeps(o, dt); drawMelts(o, dt); }
     else { const s = R.ru.attack ? k + '_nc' : k, S = AS[s], L = S.fr[Math.floor(time / FT) % 40], at = IM[s + 'A'];
       for (let i = 0; i < L.length; i += 3) { const t = L[i + 2]; ctx.drawImage(at, (t % S.C) * 8, ((t / S.C) | 0) * 8, 8, 8, o.x + (RX0 + L[i]) * 2, o.y + (RY0 + L[i + 1]) * 2, 16, 16); }
       glowPulse(o, s + 'G', S.glow, RX0, RY0, 0.15 * (0.5 + 0.5 * Math.sin(time * 1.6)));
@@ -310,7 +477,7 @@ const RUIN = (() => {
   }
   // 갈 수 있는 문 쪽을 가리키는 화살표 (다른 스테이지와 같은 모양 · 안 가 본 방은 금색 · 가 본 방은 회색 · 문에 다가가면 숨김)
   function gateArrows(R) {
-    const P = G.player; if (!P || P.dead || G.trans || mode !== 'play' || DLG.on || G.enemies.some(e => !e.dead)) return;
+    const P = G.player; if (!P || P.dead || G.trans || mode !== 'play' || DLG.on || foes(R)) return;
     const ARW = []; for (let y = -3; y <= 3; y++) for (let x = 0; x <= 3 - Math.abs(y); x++) ARW.push([x, y]);
     const ARWD = []; for (let y = -3; y <= 0; y++) for (let x = 0; x <= 3; x++) if (x - y >= 3) ARWD.push([x - 1, y + 1]);
     const step = Math.floor(time * 4) % 2 * 2, cx = P.x, cy = P.y - 10;
@@ -343,7 +510,7 @@ const RUIN = (() => {
     if (k === 'stairs') { for (const p of R.ru.lamps) { const I = lampI(p); if (I > 0) L(p.x + p.s * 8, p.y + 4, 130, Math.min(1, 0.75 * I), '120,200,255', 0.14); } L(CXc, SM.BOT, 70, 0.6, '230,70,60', 0.08); L(CXc, SM.TOPW + 8, 110, 0.75, '150,175,230', 0.06); } // 아래 문틈 붉은빛 · 위 아치로 드는 희미한 빛
     else if (k === 'head') { const [SX, SY] = HM.seal; L(SX, SY, 150, 0.9, '90,160,240', 0.1); L(192, 70, 70, 0.7, '255,120,60', 0.08); if (!R.ru.open) L(278, 62, 50, 0.8, '238,70,70', 0.12); L(192, 190, 60, 0.6, '120,190,255', 0.06); }
     else if (k === 'combat') { // 적이 남아 있으면 붉은빛 → 다 쓰러지면 1초에 걸쳐 푸른빛으로
-      const live = G.enemies.some(e => !e.dead); if (live) R.ru.clrAt = null; else if (R.ru.clrAt == null) R.ru.clrAt = time;
+      const live = foes(R); if (live) R.ru.clrAt = null; else if (R.ru.clrAt == null) R.ru.clrAt = time;
       const u = R.ru.clrAt == null ? 0 : Math.min(1, (time - R.ru.clrAt) / 1), mix = (a, b) => a.map((v, i) => Math.round(v + (b[i] - v) * u)).join(',');
       L(192, 132, 170, 0.85, mix([255, 80, 60], [90, 160, 240]), 0.08 + 0.03 * u); L(192, 60, 80, 0.6, mix([255, 110, 60], [120, 190, 255]), 0.08); }
     else { L(192, 132, 150, 0.9, '90,160,240', 0.1); const C = { tail: [[153, 102], [205, 98], [231, 156]], front: [[135, 100], [233, 162], [157, 174]], front2: [[249, 100], [151, 162], [227, 174]] }[k];
@@ -440,8 +607,10 @@ const RUIN = (() => {
   { const o = paintRoomFloor; paintRoomFloor = function (R) { if (R && R.type === 'ruin') { CUR_ROOM = R; paint(fg, R); return; } return o(R); }; }
 
   // ---------------------------------------------------------------- 매 장면: 바닥 · 문
-  function tick() {
-    const R = cur(), P = G.player; if (!R || !P || G.trans) return; const o = off(), c = cell(o, P);
+  function tick(dt) {
+    const R = cur(), P = G.player; if (!R || !P || G.trans) return;
+    if (R.ru.k === 'combat' && R.ru.spawned && !R.ru.wave2 && (R.ru.def.slimes || []).length && !G.enemies.some(e => !e.dead && e.rs !== 'polyp')) { R.ru.wave2 = true; startWave(R); } // 혈액 슬라임 두 번째 무리
+    waveTick(R, dt || 1 / 60); const o = off(), c = cell(o, P);
     if (isSt(R)) stairTick(R, c);
     if (!walk(R, c.x, c.y)) { if (G.ruinLast) { P.x = G.ruinLast.x; P.y = G.ruinLast.y; } } else G.ruinLast = { x: P.x, y: P.y };
     const q = cell(o, P);
@@ -451,5 +620,5 @@ const RUIN = (() => {
       if (band && doorOpen(R, s)) { goDoor(R, s); return; } }
   }
 
-  return { _go: i => goIn(G.dun.rooms[i], null), name: () => { const R = cur(); return R && R.ru.def.under ? UNDER : NAME; }, busy, update, ground, screen, tick, debugEnter, leave, on: () => !!cur() };
+  return { _go: i => goIn(G.dun.rooms[i], null), _mim: (x, y, sd) => { const e = spawnMimic(x, y); if (sd) { e.mart = brokenArt(mimicArt(), sd); e.broken = true; } return e; }, name: () => { const R = cur(); return R && R.ru.def.under ? UNDER : NAME; }, busy, update, ground, screen, tick, debugEnter, leave, on: () => !!cur() };
 })();

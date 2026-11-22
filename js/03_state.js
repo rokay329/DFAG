@@ -2,6 +2,23 @@
 // 잿빛 왕관 원정대 — 03_state.js : 성채 배경, 4장 재 색, 입력, 직업, 아이템, 강화 규칙, 스탯, 게임 상태, 페이즈
 // index.html이 js/ 파일을 번호 순서대로 불러온다. 모든 파일이 같은 전역 스코프를 함께 쓴다(예전 game.js 한 덩어리를 그대로 나눔).
 
+  // ---------------------------------------------------------------- v3.20 테스트 모드: 주소 뒤 ?dev 로 한 번 들어오면 이 브라우저에 기억 (?dev=off 로 끔)
+  //  켜져 있을 때만 Shift 조합 테스트 키가 동작하고, 화면 왼쪽 아래에 작게 「TEST」 표시
+  const DEV = (() => { try { const q = new URLSearchParams(location.search); if (q.has('dev')) { if (q.get('dev') === 'off' || q.get('dev') === '0') localStorage.removeItem('dfag_dev'); else localStorage.setItem('dfag_dev', '1'); }
+    return localStorage.getItem('dfag_dev') === '1'; } catch (e) { return false; } })();
+  window.DEV = DEV;
+  const DEVK = new Map(); // v3.20 테스트 단축키 → 설명 (dbgK에 설명을 붙이거나 DEVK.set으로 등록하면 목록에 자동으로 추가)
+  if (DEV) addEventListener('DOMContentLoaded', () => { // 오른쪽 아래: 테스트 단축키 목록
+    const el = document.createElement('div'); el.id = 'devKeys'; el.className = 'hud pf glass';
+    el.style.cssText = 'right:8px;bottom:40px;padding:6px 8px;font:8px/12px Galmuri7,monospace;color:var(--quiet);white-space:nowrap;pointer-events:none;display:none';
+    (document.getElementById('ui') || document.body).appendChild(el); let key = '';
+    setInterval(() => { const on = typeof mode !== 'undefined' && mode === 'play' && !!G; el.style.display = on ? 'block' : 'none'; if (!on) return;
+      const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? '1~4' : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
+      if (k2 === key) return; key = k2;
+      el.innerHTML = '<b style="color:#9fd2ff;font:9px Galmuri9">테스트 단축키</b><br>' + rows.map(([k, d]) => `<span style="color:#ffe9b0">Shift+${k}</span> ${d}${k === 'O' && GOD_MODE ? ' <span style="color:#9fd2ff">(켜짐)</span>' : ''}`).join('<br>'); }, 400); });
+  if (DEV) addEventListener('DOMContentLoaded', () => { const b = document.createElement('div'); b.textContent = 'TEST';
+    b.style.cssText = 'position:fixed;left:6px;bottom:4px;z-index:99999;font:9px Galmuri9,monospace;color:#9fd2ff;opacity:.55;letter-spacing:1px;pointer-events:none'; document.body.appendChild(b); });
+
   // ---------------------------------------------------------------- 배경: 무너진 성채의 의식장
   let PILLARS = [170, 327, 484, 641, 798, 955, 1110];
   const [floor, fg] = mkCanvas(W, H);
