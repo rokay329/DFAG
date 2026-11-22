@@ -424,87 +424,21 @@
     const line = (g, x0, y0, x1, y1, c, w = 0) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 2 || 1; for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; for (let a = -w; a <= w; a++) for (let b = -w; b <= w; b++) put(g, x + a, y + b, c); } };
     return { mk, put, ell, rect, line };
   })();
-  // v1.02 손으로 찍은 대장간 도트 (2px 칸·4단계 명암·왼쪽 위 광원). 곰 대장장이는 캐릭터와 같은 비율
+  // v1.02 손으로 찍은 대장간 도트 (2px 칸·4단계 명암·왼쪽 위 광원)
   const FPAL = {'k': '#0b0a0e', '1': '#8a8494', '2': '#625c72', '3': '#45404f', '4': '#2c2834', 'i': '#d8dce4', 'I': '#a4aab4', 'j': '#6e747e', 'J': '#43474f', 'o': '#b07c44', 'O': '#83592f', 'p': '#5c3c20', 'P': '#3c2614', 'y': '#fff3c0', 'Y': '#ffd060', 'r': '#ff8a2a', 'R': '#d0401a', 'e': '#7a1a10', 'c': '#2e282c', 'C': '#18141a', 'u': '#7ab4da', 'U': '#3e6e94', 'g': '#f0c860', 'G': '#a07828', 'l': '#9a6440', 'L': '#64402a', 'b': '#8c5a32', 'B': '#5e3a1e', 'h': '#b88050', 'f': '#e6c494', 'F': '#b8946a', 'n': '#140e0c', 'w': '#ffffff', 'a': '#5a3e2a', 'A': '#3a281c', 't': '#3c3646', 'T': '#26212e'};
   const FMAP = {
-    BEAR_A: ['..kk...kk.kkkkk', '.khBk.khBkkiIJk', '.khhhhbbbbkIJJk', 'khhhbbbbbbBkOkk', 'khbbbbbnbbBkOk.', 'kbbbbbbfffnkOk.', 'kBbbbbbFnFkkOk.', '.kBBbbbbbbkkOk.', 'kbkAaaaaAbbhhk.', 'kBkaaaaaaBbk...', 'khkAAgAAABk....', '.kkaaaaaaBk....', '..kaaaAaaBk....', '..ktTkktTk.....', '..ktTk.ktTk....', '.kPPPk.kPPPk...'],
-    BEAR_B: ['..kk...kk......', '.khBk.khBk.....', '.khhhhbbbbk....', 'khhhbbbbbbBk...', 'khbbbbbnbbBk...', 'kbbbbbbfffnk...', 'kBbbbbbFnFk....', '.kBBbbbbbbk....', 'kbkAaaaaAbbbk..', 'kBkaaaaaaBkbhhk', 'khkAAgAAABkiIJk', '.kkaaaaaaBkIJJk', '..kaaaAaaBkkkkk', '..ktTkktTk.....', '..ktTk.ktTk....', '.kPPPk.kPPPk...'],
-    ANVIL: ['....kkkkkkkkkkkk..', '.kkkiiiiiiiiiiiIk.', 'kiIIjjjjjjjjjjjJJk', '.kkJjjjjjjjjjJJk..', '....kkJjjjjjJJkk..', '.....kJjjjjjJk....', '....kJjjjjjjJJk...', '...kJJJJJJJJJJJk..', '..koooooooOOOppk..', '..kOOoOOOOpOppPk..', '..kOpOOOpOOpOpPk..', '..kPOpOOpOpOppPk..', '..kkkkkkkkkkkkkk..'],
-    WHEEL: ['...kkkkk...', '.kk11122kk.', '.k1122223k.', 'k112222233k', 'k122222233k', 'k1222J2233k', 'k122222334k', 'k222222334k', '.k2223334k.', '.kk33344kk.', '...kkkkk...'],
-    GFRAME: ['..kk.............kk..', '.kOpk...........kOpk.', '.kOpk...........kOpk.', '.kOpk...........kOpk.', '.kOpk...........kOpkk', '.kjjjjjjjjjjjjjjjjjJk', '.kOpk...........kOpkO', '.kOpk...........kOpkk', '.kOpk...........kOpk.', '.kOpk...........kOpk.', 'kOOpkkkkkkkkkkkkOppk.', '.kOkouuuuuuuuuUpkOk..', '.kOkOUUUUUUUUUUpkOk..', '.kOkpppppppppppPkOk..', '.kkkkkkkkkkkkkkkkkk..'],
     BARREL: ['..kkkkkk..', '.kuuuuuUk.', 'kJUUUUUUJk', 'kjjjjjjjJk', 'kooOOOOOpk', 'koOOOOOOpk', 'kjjjjjjjJk', 'koOOOOOOpk', 'koOOOOOppk', 'kjjjjjjjJk', '.kOOOOOpk.', '..kkkkkk..'],
-    CRATE: ['kkkkkkkkkkk', 'kooooooooOk', 'koOOOOOOoPk', 'koOOOOOopPk', 'koOOOOopOPk', 'koOOOopOOPk', 'koOOopOOOPk', 'koOopOOOOPk', 'kOPPPPPPPPk', 'kkkkkkkkkkk'],
     COAL: ['......kkkk........', '....kkcJcCkk......', '..kkcCccRcCckk....', '.kcCcJCcccrCcckk..', 'kcCcRcccCcJccCcck.', 'kCcccCccccCcRcCcCk', 'kCCcCCCcCCCcCCCcCk', '.kkkkkkkkkkkkkkkk.'],
     ORE: ['.....kkkk.......', '...kk1223kk.kk..', '..k12L223Lkk12k.', '.k122223L33k2L3k', 'k12L2233L2k2L33k', 'k22233L333k23L3k', 'k333344334k3344k', '.kkkkkkkkkkkkkk.'],
-    ARMOR: ['...kkkkk....', '..kiIIIjk...', '.kiIIjjjJk..', '.kIkkkkkJk..', '.kIjjkjjJk..', '..kjjjjJk...', '...kkOkk....', '.kkkiIIjkkk.', 'kiIkIIjjkjJk', 'kIJkIIjjkJJk', '.kkkIjjjkkk.', '...kIjjJk...', '...kjjjJk...', '...kjJjJk...', '...kkkkkk...', '.....kOk....', '.....kOk....', '.....kOk....', '.....kOk....', '...kkkOkkk..', '..kooOOOpPk.', '..kkkkkkkkk.'],
-    BELLOWS: ['......kkkkkkkk..', '....kkooooooopk.', 'kkkkllLlLlLlLlPk', 'kJJklLlLlLlLlLkk', 'kkkklLlLlLlLlLPk', '....kkpppppppPk.', '......kkkkkkkk..'],
   };
   const FORGE_PAL = { b: '#8a3a26', B: '#5a2216', k: '#0b0a0e', s: '#9aa0a8', S: '#5e626a', D: '#3a3e44', w: '#d8dce4', o: '#6b4a2a', O: '#4a3020', q: '#8a6a40', h: '#6a6470', l: '#4a4652', d: '#34303a', x: '#221e26', r: '#ff8a3a', R: '#c03a1a', y: '#ffd060', Y: '#fff0b0', c: '#1a1618', C: '#2e2a2e', W: '#3a6a8a', V: '#6aa0c0', L: '#7a5232', g: '#8d9097', G: '#c0c4ca' };
-  function genWheel(ph) { // 숫돌 바퀴: 밝은 흠집 하나가 돌며 회전을 보여 줌
-    const g = fromRows(FMAP.WHEEL), [x, y] = [[5, 2], [8, 5], [5, 8], [2, 5]][ph & 3]; g[y][x] = 'i'; g[y + (ph & 1 ? 1 : 0)][x + (ph & 1 ? 0 : 1)] = 'I'; return g;
-  }
-  // 용광로: 돌 벽돌 화덕 + 굴뚝 + 불 아가리 (불은 따로)
-  function genFurnace() { // v1.03: 벽돌마다 명암, 불벽돌 아치, 쇠띠, 재 더미, 그을린 굴뚝
-    const W = 46, H = 60, g = FG.mk(W, H), cx = 22.5;
-    const brick = (x, y, x0, w) => { const row = Math.floor(y / 3), off = (row % 2) * 3, col = Math.floor((x - x0 + off) / 6), bx = (x - x0 + off) % 6, by = y % 3, hsh = ((row * 7 + col * 13) % 5); // 줄눈 x, 벽돌 윗줄 밝게, 오른쪽 끝 어둡게
-      if (by === 2 || bx === 5) return 'x'; if (bx === 4) return 'd'; return by === 0 ? (hsh < 2 ? 'h' : 'l') : (hsh < 2 ? 'l' : 'd'); };
-    // 굴뚝
-    FG.rect(g, 17, 3, 28, 18, (x, y) => x === 17 ? 'x' : x === 28 ? 'x' : brick(x, y, 17)); FG.rect(g, 15, 0, 30, 1, (x, y) => y === 0 ? 'h' : 'l'); FG.rect(g, 15, 2, 30, 2, 'D');
-    for (let y = 3; y < 9; y++) for (let x = 18; x < 28; x++) if (dith(x, y, (9 - y) / 9)) g[y][x] = 'x'; // 그을음
-    // 둥근 화덕
-    FG.ell(g, cx, 34, 21, 17, (dx, dy) => { const x = Math.round(cx + dx), y = Math.round(34 + dy), c = brick(x, y, 0); return dx > 12 || dy > 9 ? (c === 'h' ? 'l' : c === 'l' ? 'd' : c) : dx < -12 && c === 'd' ? 'l' : c; });
-    // 쇠띠
-    FG.rect(g, 2, 41, 43, 42, (x, y) => y === 41 ? 'S' : 'D'); for (const x of [6, 16, 29, 39]) FG.put(g, x, 41, 'w');
-    // 받침
-    FG.rect(g, 1, 43, 44, 59, (x, y) => { const c = brick(x, y, 1); return x > 37 ? (c === 'h' ? 'l' : c === 'l' ? 'd' : c) : c; });
-    // 불벽돌 아치 + 아가리
-    FG.ell(g, cx, 47, 12, 10, (dx, dy, q) => dy > 2 ? null : q > 0.62 ? ((Math.round(Math.atan2(dy, dx) * 4) % 2) ? 'b' : 'B') : null);
-    FG.ell(g, cx, 47, 9, 7.5, 'c'); FG.rect(g, 14, 47, 31, 55, 'c'); FG.rect(g, 13, 48, 13, 55, 'B'); FG.rect(g, 32, 48, 32, 55, 'B');
-    FG.rect(g, 12, 56, 33, 56, 'S'); FG.rect(g, 12, 57, 33, 57, 'D');
-    // 재 더미 (아가리 앞)
-    for (const [x, y] of [[16, 58], [17, 58], [18, 58], [19, 59], [20, 58], [24, 59], [25, 58], [26, 58], [28, 59]]) FG.put(g, x, y, (x + y) % 2 ? 'g' : 'G');
-    for (const [x, y] of [[8, 28], [9, 29], [36, 32], [35, 33], [14, 22], [31, 20], [5, 49], [40, 51]]) FG.put(g, x, y, 'R'); // 달아오른 틈
-    return gOutline(g);
-  }
-  // 장식: 무기 걸이 · 담금질 통 · 석탄 더미 · 풀무 · 상자
+  // 장식: 담금질 통 · 석탄 더미 · 광석 (대장간 방은 그림판 + FP 새 소품, 이 셋은 용의 유적 · 갱도 굽기 원본)
   const FORGE_DECO = {
-    rack: () => { // v1.03 벽걸이 무기대: 기둥·가로대(밝은 윗면), 장검·전투 도끼·둥근 방패
-      const g = FG.mk(24, 24), wood = (x, y, w) => (x === 0 ? 'o' : x === w - 1 ? 'p' : 'O');
-      for (const x0 of [1, 20]) FG.rect(g, x0, 0, x0 + 2, 23, (x) => wood(x - x0, 0, 3)); FG.rect(g, 0, 3, 23, 4, (x, y) => y === 3 ? 'q' : 'O'); FG.rect(g, 0, 5, 23, 5, 'O'); FG.rect(g, 0, 17, 23, 18, (x, y) => y === 17 ? 'q' : 'O');
-      for (const x of [7, 13, 18]) FG.put(g, x, 5, 'S'); // 걸이못
-      // 장검 (끝이 아래)
-      FG.rect(g, 6, 6, 7, 6, 'g'); FG.rect(g, 6, 7, 7, 8, 'L'); FG.rect(g, 4, 9, 9, 9, (x) => x === 4 ? 'G' : x === 9 ? 'S' : 'g'); FG.rect(g, 6, 10, 7, 19, (x) => x === 6 ? 'w' : 's'); FG.put(g, 6, 20, 'w'); FG.put(g, 7, 20, 's'); FG.put(g, 6, 21, 's');
-      // 전투 도끼
-      FG.rect(g, 13, 6, 13, 21, (x, y) => y % 4 === 0 ? 'O' : 'L'); FG.ell(g, 15.5, 9, 2.6, 3.4, (dx, dy) => dx < -1.5 ? 'S' : dy < -1 ? 'w' : dx > 1 ? 'S' : 's'); FG.rect(g, 11, 8, 12, 9, 'S');
-      // 둥근 방패 (가죽 + 쇠테 + 가운데 돌기)
-      FG.ell(g, 18.5, 12, 3.6, 4.2, (dx, dy, q) => q > 0.62 ? 'S' : dx + dy < -1 ? 'q' : dx + dy > 1.5 ? 'p' : 'O'); FG.put(g, 18, 12, 'w'); FG.put(g, 19, 12, 'g');
-      return gOutline(g); },
-    tools: () => { // v1.03 공구판: 판자결 · 쇠못 · 집게 · 망치 · 줄 · 정
-      const g = FG.mk(28, 16);
-      FG.rect(g, 0, 0, 27, 15, (x, y) => x === 0 || y === 0 ? 'q' : x === 27 || y === 15 ? 'P' : y % 5 === 0 ? 'p' : ((x * 3 + y) % 11 === 0 ? 'p' : 'O'));
-      for (const x of [4, 11, 17, 22]) FG.put(g, x, 2, 'w');
-      FG.line(g, 4, 3, 3, 9, 'S'); FG.line(g, 5, 3, 6, 9, 'S'); FG.rect(g, 2, 10, 3, 12, 'D'); FG.rect(g, 6, 10, 7, 12, 'D'); FG.put(g, 4, 4, 'g'); // 집게
-      FG.rect(g, 11, 3, 11, 12, (x, y) => y % 3 ? 'L' : 'O'); FG.rect(g, 9, 11, 13, 13, (x, y) => y === 11 ? 'w' : x === 13 ? 'S' : 's'); // 망치
-      FG.rect(g, 17, 3, 17, 13, (x, y) => y > 9 ? 'L' : y % 2 ? 'g' : 'G'); // 줄
-      FG.rect(g, 22, 3, 23, 4, 'L'); FG.rect(g, 22, 5, 23, 11, (x) => x === 22 ? 'g' : 'S'); FG.put(g, 22, 12, 'w'); // 정
-      return gOutline(g); },
     barrel: () => fromRows(FMAP.BARREL),
-    barrelOld: () => { const g = FG.mk(14, 16); FG.ell(g, 7, 9, 6, 7, (dx) => dx < -3 ? 'q' : dx > 3 ? 'O' : 'o'); FG.rect(g, 1, 4, 13, 4, 'D'); FG.rect(g, 1, 12, 13, 12, 'D'); FG.ell(g, 7, 3, 6, 1.6, (dx) => dx < 0 ? 'V' : 'W'); return gOutline(g); },
     coal: () => fromRows(FMAP.COAL),
-    coalOld: () => { const g = FG.mk(22, 10); FG.ell(g, 11, 9, 10.5, 7, (dx, dy) => (Math.abs(dx * 3 + dy * 7) % 5 < 1) ? 'C' : 'c'); FG.put(g, 6, 6, 'R'); FG.put(g, 13, 5, 'r'); FG.put(g, 16, 7, 'R'); FG.put(g, 9, 8, 'R'); return gOutline(g); },
-    bellows: () => fromRows(FMAP.BELLOWS),
-    bellowsOld: () => { const g = FG.mk(18, 10); FG.line(g, 0, 5, 3, 5, 'S'); FG.ell(g, 9, 5, 6, 3.5, (dx, dy) => dy < -1 ? 'q' : (Math.round(dx) % 3 === 0 ? 'O' : 'o')); FG.line(g, 15, 2, 17, 0, 'L'); FG.line(g, 15, 8, 17, 9, 'L'); return gOutline(g); },
-    crates: () => { const c = FMAP.CRATE, g = mkGrid(19, 16); const pt = (ox, oy) => c.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') g[oy + y][ox + x] = ch; })); pt(8, 0); pt(0, 6); return g; },
-    cratesOld: () => { const g = FG.mk(24, 18); FG.rect(g, 0, 6, 11, 17, (x, y) => x === 0 || y === 6 || x === 11 || y === 17 ? 'O' : x === y - 6 ? 'O' : 'o'); FG.rect(g, 12, 9, 23, 17, (x, y) => x === 12 || y === 9 || x === 23 || y === 17 ? 'O' : 'o'); FG.rect(g, 3, 0, 9, 5, (x, y) => y === 0 ? 'G' : x === 9 ? 'S' : 'g'); return gOutline(g); },
-    armor: () => fromRows(FMAP.ARMOR),
-    armorOld: () => { const g = FG.mk(16, 30); FG.line(g, 8, 8, 8, 29, 'O'); FG.line(g, 3, 28, 13, 28, 'O'); FG.line(g, 2, 12, 14, 12, 'O');
-      FG.ell(g, 8, 4, 4, 4, (dx, dy) => dy > 0.5 && Math.abs(dy - 1) < 0.6 ? 'x' : dx < -1 ? 'G' : dx > 1.5 ? 'S' : 'g'); // 투구
-      FG.rect(g, 4, 10, 12, 20, (x, y) => (x === 8 && y > 11) ? 'S' : x < 6 ? 'G' : x > 10 ? 'S' : 'g'); FG.ell(g, 3, 11, 2, 2, 'g'); FG.ell(g, 13, 11, 2, 2, 'S'); FG.rect(g, 5, 20, 11, 21, 'L'); return gOutline(g); },
     ore: () => fromRows(FMAP.ORE),
-    oreOld: () => { const g = FG.mk(22, 11); FG.ell(g, 11, 10, 10.5, 7.5, (dx, dy) => { const h = Math.abs(Math.sin(dx * 3.1 + dy * 5.7)); return h > 0.93 ? 'R' : h > 0.75 ? 'q' : dx < -3 && dy < -2 ? 'h' : dx > 4 ? 'd' : 'l'; }); return gOutline(g); },
-    ingots: () => { const g = FG.mk(14, 6); for (const [x, y] of [[0, 3], [5, 3], [10, 3], [3, 0], [8, 0]]) FG.rect(g, x, y, x + 3, y + 2, (xx, yy) => yy === y ? 'G' : 'g'); return gOutline(g); },
   };
-  const NEWDECO = new Set(['barrel', 'coal', 'bellows', 'crates', 'armor', 'ore']);
+  const NEWDECO = new Set(['barrel', 'coal', 'ore']);
   const forgeArt = (k, fn) => art('forge_' + k, () => gCanvas(fn(), NEWDECO.has(k) ? FPAL : FORGE_PAL));
   // 방 만들기
   // ================================================================ v1.71 출장 대장간 — 곰 대장장이의 마차가 챕터 사이 길목에 섬
@@ -633,21 +567,6 @@
     ents.push({ y: R.smith.y, d: () => drawSmith(R) });
     ents.push({ y: Math.max(R.smith.y, R.stations.anvil.y) + 1, d: () => drawSmithHammer(R) }); // v2.94 망치는 모루 위
     ents.push({ y: 1e9, d: drawForgeLabels }); // v1.71 기능 패찰은 맨 위
-  }
-  function drawFurnace(f) {
-    const c = forgeArt('furnace', genFurnace), x0 = (f.x - c.width / 2) & ~1, y0 = (f.y - c.height + 6) & ~1;
-    ctx.drawImage(c, x0, y0);
-    // 아가리 속 불: 2px 칸 불꽃이 일렁임
-    const mx = x0 + 45, my = y0 + 108, fl = Math.floor(time * 12);
-    for (let yy = -18; yy <= 0; yy += 2) for (let xx = -18; xx <= 18; xx += 2) { const h = GX.hr(xx * 1.7 + yy * 0.9 + fl * 0.37), lv = (1 - Math.abs(xx) / 19) * (1 + yy / 20); if (lv <= 0 || h > lv + 0.2) continue; ctx.fillStyle = yy > -4 ? (h < 0.4 ? '#fff0b0' : '#ffd060') : h < 0.5 ? '#ff8a2a' : '#c03a1a'; ctx.fillRect((mx + xx) & ~1, (my + yy) & ~1, 2, 2); }
-    if (Math.random() < 0.25) G.parts.push({ x: x0 + 45 + rand(-6, 6), y: y0 + 4, vx: rand(-8, 8), vy: -rand(20, 45), t: rand(0.8, 1.6), c: pick(['#3a3438', '#2a2428']), g: -10 }); // 굴뚝 연기
-    if (Math.random() < 0.3) G.parts.push({ x: mx + rand(-8, 8), y: my - 6, vx: rand(-10, 10), vy: -rand(20, 50), t: rand(0.3, 0.7), c: pick(['#ffb060', '#ff6a2a']), g: 0, glow: true });
-  }
-  function drawGrind(s) {
-    const fr = art('forge_gframe', () => gCanvas(fromRows(FMAP.GFRAME), FPAL)), x0 = (s.x - fr.width / 2) & ~1, y0 = (s.y - fr.height + 4) & ~1;
-    const ph = Math.floor((G.grindT > 0 ? time * 16 : time * 0.8)) & 3, wh = art('forge_wheel2_' + ph, () => gCanvas(genWheel(ph), FPAL));
-    ctx.drawImage(wh, x0 + 10, y0); ctx.drawImage(fr, x0, y0);
-    if (G.grindT > 0 && Math.random() < 0.7) G.parts.push({ x: x0 + 32, y: y0 + 8, vx: rand(40, 110), vy: -rand(20, 70), t: rand(0.2, 0.4), c: pick(['#fff0b0', '#ffd060', '#ff9a3a']), g: 260, glow: true });
   }
   // v2.93 대장장이 「쿤」: 흰 스피츠 (플레이어와 같은 정면 2등신 · 세로 눈 · 파란 눈동자 · 까만 코 · 가죽 앞치마) — A 망치를 든 장면 · B 모루로 내려친 장면
   const KOON_A = ["...k......k.kkk...", "..kVk....kVkiIJk..", ".kVpwkkkkwpVIJJk..", ".kwwwwwwwwwwkOk...", ".kwwnwwwwnwwkOk...", ".kWwvwnnwvwwkOk...", "kWWwwwwwwwwWwOk...", "kVWwwwwwwwwwwk....", ".kwWAaaaaAWwwk....", "kwVaaaagaaakwk....", "kwkaaaaaaaakk.....", ".kkaaaAaaaak......", "...ktTkktTk.......", "..kPPPkkPPPk......"];

@@ -1,21 +1,13 @@
 // 잿빛 왕관 토벌대 — 19_scenery34.js : v2.82 3·4장 배경 · 장애물 다시 그림 (토템 · 부락 바위 · 방책 말뚝 · 가죽 천막 · 망루 · 울타리 벽 장식 · 바닥 자국 / 깨진 종 · 부서진 마차 · 재 둔덕)
-window.SCN34 = {"totem": [[".kwk.......kWk.", "..kwkkkkkkkWk..", "...kwwwwWWWk...", "....kwKwKWk....", "...kkwwKWWkk...", "..kddDDDDDDDk..", "..khhllldddDk..", ".klhhKKlKDDDDk.", "kllohrlhdrDDDDk", ".kohhlldddDOkk.", ".kohhwKwKDDOOk.", ".kohhlllddDDOk.", "kokdhDDDDDDDOOk", "kykhlllldDdDkOk", "skkhhKKlKKDDkrk", "k.khhylhdyDDkkR", "..khhllddDDDk.k", "..khhrRrRrDDk..", "..khhlllddDDk..", "..kddDDDDDDDk..", "..khlllldddDk..", ".klhhKKlKKDDDk.", "kllhhrlhdDDDDDk", ".kkhhlldddDDkk.", "..khhwKwKwDDk..", ".kWhhllldDDBk..", ".kmMmMmMmMmMWk.", ".kmmmmMMmMmmmk."], [".kwk.......kWk.", "..kwkkkkkkkWk..", "...kwwwwWWWk...", "....kwKwKWk....", "...kkwwKWWkk...", "..kddDDDDDDDk..", "..khhllldddDk..", ".klhhKKlKDDDDk.", "kllohrlhdrDDDDk", ".kohhlldddDOkk.", ".kohhwKwKDDOOk.", ".kohhlllddDDOk.", "kokdhDDDDDDDOOk", "kykhlllldDdDkOk", "skkhhKKlKKDDkrk", "k.khhylhdyDDkkR", "..khhllddDDDk.k", "..khhrRrRrDDk..", "..khhlllddDDk..", "..kddDDDDDDDk..", "..khlllldddDk..", ".klhhKKlKKDDDk.", "kllhhrlhdDDDDDk", ".kkhhlldddDDkk.", "..khhwKwKwDDk..", ".kWhhllldDDBk..", ".kmMmMmMmMmMWk.", ".kmMmMMmMMMmMk."]], "wall": {"hide": ["oooooooooooooo", "OOWOOOOOOOOWOO", "kksssbbbbBBkkk", ".ksssbbbbBBk..", "kssssrbrrBBBk.", "kssssbrrbBBBk.", "kWsssrrrrBBBWk", "kbbbbbrrbBBBk.", "kbbbbbrrbBsBk.", ".kbBbbbbbBBk..", ".kbbRbbbbRBk..", ".kbbbbRbbBBk..", "..kbbbbbbBk...", "...kkkkkkk....", ".............."], "skull": ["sk....k....ko", "ksk.kkwkk.kok", "kskkwwwWWkkok", ".kswwwwWWWok.", "..kwKKwKKWk..", "..kWWWWWWWk..", "...kWWKWWk...", "...kWWWWWk...", "....kwkwk....", ".....kOk.....", ".....kOk....."], "banner": ["oooooooooooo", "OOOOOOOOOOOO", "krwrrrRRRWRk", "krrwrrRRWRRk", "krrrwwWWRRRk", "krrrwKKWRRRk", "krrrwwWWRRRk", "krrrrWWRRRRk", "krrrrrRRRRRk", "krrrrrRRRRRk", "kyoyoyoyoyok", "krrrrrRRRRRk", "krkkrrRkkRRk", "krkkrkRkkRk.", "krk.k.k.krk.", ".k.krk...k.."], "spikes": [".kk.kwrk.kk..k.", "kwrkkwWkkwrkkrk", "kwWkkhdkkwWkwWk", "khdkkhdkkhdkwWk", "khdkkhdkkhdkhdk", "ooooooooooooooo", "OOOOOOOOOOOOOOO", "khdkkhdkkhdkhdk", ".kk..kk..kk.kk."]}, "dec": {"bone1": ["wkkkkkkw", "kwwwwwwk", "WWWWWWWW", "kkkkkkkk"], "bone2": ["...kwk", "..kkwW", ".kwwWk", "kkwWk.", "wwWk..", "kWk..."], "jaw": ["wwwwww", "WwkwkW", "Wk.kkW", "k....k"], "peb1": ["...kkk", ".kkggg", "kGGGGG", ".kkkkk"], "peb2": [".kkk.", "knggk", "ggggg", "kGGGk"], "straw1": ["ksykyk", "ksykyk", "kssoyk", "kysoyk", "kysoyk"], "straw2": ["yyyykkk", "kkkkooo", "ooookkk"]}, "decPal": {"k": "#0b0806", "w": "#d8cfbc", "W": "#a89f8c", "g": "#6a5a4a", "G": "#4a3c30", "n": "#8a7a68", "y": "#a08040", "s": "#c8a060", "o": "#6a5428"}, "ash": {"m1": [".kkkkkk.", "kaabbcck", "kaabbbck", "cbdbbdbc"], "m2": ["..kkkkkkkk..", ".kaaabbccck.", "kaaaabbbbcck", "kaaaabbbbbck", "cddbbbdbbbcc"], "m3": ["...kkkkkkkkkk...", "..kaaaacccccck..", ".kaaaaabbbbbcck.", "kaaaaaabbbbbbcck", "kaaaaaabbbbbbbck", "ccbddbdbbddbbbcc"], "ember": ["kekdk", "deEdd", "kkkkk"]}, "ashPal": {"k": "#1e1c1a", "a": "#9a948a", "b": "#7e786e", "c": "#625c54", "d": "#3a3632", "e": "#ff7a30", "E": "#ffc070"}};
+window.SCN34 = {"totem": [[".kwk.......kWk.", "..kwkkkkkkkWk..", "...kwwwwWWWk...", "....kwKwKWk....", "...kkwwKWWkk...", "..kddDDDDDDDk..", "..khhllldddDk..", ".klhhKKlKDDDDk.", "kllohrlhdrDDDDk", ".kohhlldddDOkk.", ".kohhwKwKDDOOk.", ".kohhlllddDDOk.", "kokdhDDDDDDDOOk", "kykhlllldDdDkOk", "skkhhKKlKKDDkrk", "k.khhylhdyDDkkR", "..khhllddDDDk.k", "..khhrRrRrDDk..", "..khhlllddDDk..", "..kddDDDDDDDk..", "..khlllldddDk..", ".klhhKKlKKDDDk.", "kllhhrlhdDDDDDk", ".kkhhlldddDDkk.", "..khhwKwKwDDk..", ".kWhhllldDDBk..", ".kmMmMmMmMmMWk.", ".kmmmmMMmMmmmk."]], "wall": {"hide": ["oooooooooooooo", "OOWOOOOOOOOWOO", "kksssbbbbBBkkk", ".ksssbbbbBBk..", "kssssrbrrBBBk.", "kssssbrrbBBBk.", "kWsssrrrrBBBWk", "kbbbbbrrbBBBk.", "kbbbbbrrbBsBk.", ".kbBbbbbbBBk..", ".kbbRbbbbRBk..", ".kbbbbRbbBBk..", "..kbbbbbbBk...", "...kkkkkkk....", ".............."], "skull": ["sk....k....ko", "ksk.kkwkk.kok", "kskkwwwWWkkok", ".kswwwwWWWok.", "..kwKKwKKWk..", "..kWWWWWWWk..", "...kWWKWWk...", "...kWWWWWk...", "....kwkwk....", ".....kOk.....", ".....kOk....."], "banner": ["oooooooooooo", "OOOOOOOOOOOO", "krwrrrRRRWRk", "krrwrrRRWRRk", "krrrwwWWRRRk", "krrrwKKWRRRk", "krrrwwWWRRRk", "krrrrWWRRRRk", "krrrrrRRRRRk", "krrrrrRRRRRk", "kyoyoyoyoyok", "krrrrrRRRRRk", "krkkrrRkkRRk", "krkkrkRkkRk.", "krk.k.k.krk.", ".k.krk...k.."], "spikes": [".kk.kwrk.kk..k.", "kwrkkwWkkwrkkrk", "kwWkkhdkkwWkwWk", "khdkkhdkkhdkwWk", "khdkkhdkkhdkhdk", "ooooooooooooooo", "OOOOOOOOOOOOOOO", "khdkkhdkkhdkhdk", ".kk..kk..kk.kk."]}, "dec": {"bone1": ["wkkkkkkw", "kwwwwwwk", "WWWWWWWW", "kkkkkkkk"], "bone2": ["...kwk", "..kkwW", ".kwwWk", "kkwWk.", "wwWk..", "kWk..."], "jaw": ["wwwwww", "WwkwkW", "Wk.kkW", "k....k"], "peb1": ["...kkk", ".kkggg", "kGGGGG", ".kkkkk"], "peb2": [".kkk.", "knggk", "ggggg", "kGGGk"], "straw1": ["ksykyk", "ksykyk", "kssoyk", "kysoyk", "kysoyk"], "straw2": ["yyyykkk", "kkkkooo", "ooookkk"]}, "decPal": {"k": "#0b0806", "w": "#d8cfbc", "W": "#a89f8c", "g": "#6a5a4a", "G": "#4a3c30", "n": "#8a7a68", "y": "#a08040", "s": "#c8a060", "o": "#6a5428"}, "ash": {"m1": [".kkkkkk.", "kaabbcck", "kaabbbck", "cbdbbdbc"], "m2": ["..kkkkkkkk..", ".kaaabbccck.", "kaaaabbbbcck", "kaaaabbbbbck", "cddbbbdbbbcc"], "m3": ["...kkkkkkkkkk...", "..kaaaacccccck..", ".kaaaaabbbbbcck.", "kaaaaaabbbbbbcck", "kaaaaaabbbbbbbck", "ccbddbdbbddbbbcc"], "ember": ["kekdk", "deEdd", "kkkkk"]}, "ashPal": {"k": "#1e1c1a", "a": "#9a948a", "b": "#7e786e", "c": "#625c54", "d": "#3a3632", "e": "#ff7a30", "E": "#ffc070"}};
 (() => {
   const R2 = (x, y, s = 0) => { const v = Math.sin(x * 12.9898 + y * 78.233 + s * 37.7) * 43758.5453; return v - Math.floor(v); };
   const T = window.SCN34 || {};
 
   // ---------------- 3장 ----------------
-  genTotem = function () { return fromRows(pick(T.totem)); };
+  genTotem = function () { return fromRows(T.totem[0]); }; // v3.20 토템 B 삭제 · A 하나로 (사용자 결정)
   for (const k in T.wall) ORC_WALL_MAPS[k] = T.wall[k];
 
-  // 부락 바위: 이끼 대신 흙먼지 · 붉은 흙 (1장 바위와 같은 모양, 색만)
-  const _rock = rockCanvas, ROCK3 = Object.assign({}, DECO, { G: '#a89e8e', g: '#7c7266', d: '#544a40', D: '#3a322a', m: '#6a5238', M: '#8a6a44' });
-  rockCanvas = function (r) {
-    if (!(G && G.stage === 3)) return _rock(r);
-    const m = DECO_MAPS[r > 17 ? 'rockObsL' : 'rockObsS'], w = m[0].length * 2, h = m.length * 2, [c, cx] = mkCanvas(w + 4, h + 2);
-    cx.fillStyle = 'rgba(0,0,0,.35)'; for (let x = 4; x < w; x += 2) cx.fillRect(x, h - 2, 2, 2);
-    stamp(cx, m, ROCK3, 2, 0, 2, Math.random() < 0.5); return c;
-  };
 
   // 가죽 천막: 덧댄 가죽 조각(색 셋) · 꿰맨 자국 · 꼭대기에 엇갈려 솟은 장대 · 열린 입구와 젖힌 자락 · 칠한 문양 · 입구 위 해골 · 버팀줄과 말뚝
   genTent = function (wc, hc) {
@@ -101,28 +93,5 @@ window.SCN34 = {"totem": [[".kwk.......kWk.", "..kwkkkkkkkWk..", "...kwwwwWWWk..
     ashCap(g, 0); return gOutline(g);
   };
   Object.assign(BELL4, { w: '#6a5a46', W: '#3e3224' });
-  // 부서진 마차: 비스듬히 주저앉은 짐칸(판자 · 틈 · 쇠테) · 앞면 옆판 · 남은 바퀴 하나 + 빠져 누운 바퀴 · 부러진 끌채 · 쏟아진 상자와 자루 · 위에 쌓인 재
-  genCart = function (wc, hc) {
-    const HH = 9, W0 = wc + 2, H0 = hc + HH + 2, g = mkGrid(W0, H0), sd = rand(0, 99);
-    const set = (x, y, c) => { x = Math.round(x); y = Math.round(y); if (x >= 1 && x <= wc && y >= 1 && y < H0 - 1) g[y][x] = c; };
-    const tilt = x => Math.round((x / wc) * 2); // 오른쪽이 주저앉음
-    for (let x = 1; x <= wc; x++) for (let y = 1 + tilt(x); y <= hc + tilt(x); y++) { const plank = Math.floor((x - 1) / 4), seam = (x - 1) % 4 === 3, brk = R2(plank, 2, sd) < 0.15 && y > hc / 2 + tilt(x);
-      set(x, y, brk ? 'c' : seam ? 'D' : y === 1 + tilt(x) ? 'h' : ((x - 1) % 4 === 1 && (y + plank * 3) % 7 < 3) ? 'd' : R2(plank, 5, sd) < 0.5 ? 'l' : 'h'); } // 판자 · 결 · 부서진 틈
-    for (let x = 1; x <= wc; x++) { set(x, hc + tilt(x) + 1, 'D'); for (let y = hc + tilt(x) + 2; y <= hc + HH - 3 + tilt(x); y++) set(x, y, (y - hc - tilt(x)) % 3 === 1 ? 'D' : x === 1 ? 'l' : 'd'); }
-    for (const fx of [3, wc - 2]) for (let y = 1 + tilt(fx); y <= hc + HH - 3 + tilt(fx); y++) set(fx, y, (y % 5) ? 'D' : 'w'); // 쇠테 (못 머리)
-    // 남은 바퀴 (왼쪽)
-    { const wx = Math.round(wc * 0.22), wy = hc + HH - 3, R = 4; for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) { const d = Math.hypot(x, y); if (d > R + 0.3) continue; set(wx + x, wy + y, d > R - 0.8 ? (x + y < 0 ? 'w' : 'W') : d < 1.2 ? 'w' : (x === 0 || y === 0 || x === y) ? 'W' : 'c'); } }
-    // 빠져 누운 바퀴 (오른쪽 아래, 납작한 타원)
-    { const wx = Math.round(wc * 0.8), wy = H0 - 4; for (let y = -2; y <= 2; y++) for (let x = -5; x <= 5; x++) { const d = Math.hypot(x / 5, y / 2); if (d > 1.05) continue; set(wx + x, wy + y, d > 0.75 ? (y < 0 ? 'w' : 'W') : d < 0.25 ? 'w' : (x === 0) ? 'W' : 'c'); } }
-    // 부러진 끌채
-    for (let i = 0; i < 5 && wc > 10; i++) { set(2 + i, hc + 3 + (i >> 1), 'W'); set(2 + i, hc + 4 + (i >> 1), 'D'); }
-    // 쏟아진 상자 · 자루
-    { const bx = Math.round(wc * 0.55), by = Math.round(hc * 0.4); for (let y = 0; y < 4; y++) for (let x = 0; x < 5; x++) set(bx + x, by + y, y === 0 ? 'h' : x === 4 ? 'D' : (x + y) % 3 ? 'l' : 'd'); set(bx + 2, by + 1, 'D'); }
-    { const sx = Math.round(wc * 0.3), sy = Math.round(hc * 0.5); for (let y = -2; y <= 2; y++) for (let x = -3; x <= 3; x++) if (Math.hypot(x / 3, y / 2) < 1) set(sx + x, sy + y, x + y < 0 ? 'w' : 'W'); set(sx, sy - 2, 'D'); }
-    // 재 더미
-    const mx = rand(wc * 0.35, wc * 0.65), mr = rand(wc * 0.3, wc * 0.45);
-    for (let y = 1; y <= hc + 2; y++) for (let x = 1; x <= wc; x++) { if (g[y][x] === '.') continue; const q = Math.hypot((x - mx) / mr, (y - hc * 0.45) / (hc * 0.4)) + Math.sin(x * 0.9 + y * 0.5) * 0.08; if (q < 1) g[y][x] = q < 0.55 ? ((x - mx) + (y - hc * 0.45) < -2 ? 'a' : 'A') : (q < 0.8 ? 'A' : (R2(x, y, sd) < 0.5 ? 'A' : g[y][x])); } // 재 둔덕 (덩어리)
-    if (Math.random() < 0.6) { const x = randi(3, wc - 2); set(x, 3, 'e'); set(x + 1, 3, 'c'); }
-    ashCap(g); return { g: gOutline(g), HH };
-  };
+
 })();

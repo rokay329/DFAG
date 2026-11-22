@@ -3,7 +3,7 @@
   // v3.19 해가 뜨지 않는 세계: 시작 장소는 밤 — 조금 더 어둡고 푸른 어둠, 등불 · 촛불 · 창 달빛이 광원 (window.NIGHT = false면 예전)
   const HOME_NIGHT = { dark: 0.5, dk: [6, 8, 24] };
   const homeNight = () => window.NIGHT !== false && !!(G && G.dun && G.dun.home);
-  const darkA = () => homeNight() ? HOME_NIGHT.dark : STG().dark;
+  const darkA = () => homeNight() ? HOME_NIGHT.dark : (typeof RUIN !== 'undefined' && RUIN.darkA && RUIN.darkA()) || STG().dark; // v3.20 갱도는 더 어둡게
   const MOON = window.__MOON = { x: 0.1, y: -0.45, r: 1.1, a: 0.45, c: '150,170,235', ca: 0.14, shafts: false, per: 150, bw: 34, sc: [70, 86, 130], sa: 0.22 };
   let MOON_CV = null;
   function moonShafts() { // 방마다 한 번 그려 둔 달빛 띠(세계 좌표, 2px 칸 디더)를 더해 그림
@@ -65,13 +65,14 @@ void main() {
     } catch (err) { console.warn('조명 GL 사용 안 함:', err); return null; }
   })();
   const LGL_DK = { 1: [14, 10, 30], 3: [20, 6, 4], 4: [12, 10, 8] };
+  const dkCol = () => homeNight() ? HOME_NIGHT.dk : (typeof RUIN !== 'undefined' && RUIN.dark && RUIN.dark()) || LGL_DK[G.stage] || [4, 3, 10]; // v3.20 갱도는 거의 검은 어둠
   function renderLightingGL(vis) {
     const S = LGL, gl = S.gl, n = Math.min(S.MAXL, vis.length);
     if (vis.length > S.MAXL) vis = vis.slice().sort((a, b) => b.r * b.a - a.r * a.a); // 넘치면 크고 센 빛부터
     let anyC = false;
     for (let i = 0; i < n; i++) { const l = vis[i], j = i * 4; S.Lb[j] = l.x; S.Lb[j + 1] = l.y; S.Lb[j + 2] = l.r; S.Lb[j + 3] = l.a;
       if (l.c) { anyC = true; const p = l.cRGB || (l.cRGB = l.c.split(',').map(v => +v / 255)); S.Cb[j] = p[0]; S.Cb[j + 1] = p[1]; S.Cb[j + 2] = p[2]; S.Cb[j + 3] = l.ca; } else S.Cb[j + 3] = 0; }
-    const dk = homeNight() ? HOME_NIGHT.dk : LGL_DK[G.stage] || [4, 3, 10];
+    const dk = dkCol();
     gl.uniform4fv(S.U.L, S.Lb); gl.uniform4fv(S.U.C, S.Cb); gl.uniform1i(S.U.n, n); gl.uniform2f(S.U.cam, CAMX, CAMY);
     gl.uniform3f(S.U.dk, dk[0] / 255, dk[1] / 255, dk[2] / 255); gl.uniform1f(S.U.A0, darkA()); gl.uniform1f(S.U.N, 5);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -141,7 +142,7 @@ void main() {
     if (LGL && !LGL.off && LIGHT_GL) { renderLightingGL(vis); return; } // v1.78 GPU + 디더
     if (OPT) { // v1.17 빛 지도를 반 해상도로 (화면도 어차피 2px 칸으로 다시 뽑으므로 겉모습 같음) — 칠하는 넓이 1/4
       const fl = vis.find(l => l.flash), flK = fl ? 1 - Math.round(fl.a * 0.8 * DLV) / DLV : 1; // 번쩍일 때는 어둠을 단계로 옅게 (화면만 한 빛 도장을 새로 만들면 순간 멈춤)
-      const H = LIGHTH, dark = `rgba(${homeNight() ? HOME_NIGHT.dk.join(',') : G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${darkA() * flK})`;
+      const H = LIGHTH, dark = `rgba(${dkCol().join(',')},${darkA() * flK})`;
       H.g.setTransform(1, 0, 0, 1, 0, 0); H.g.globalCompositeOperation = 'source-over'; H.g.clearRect(0, 0, VW / 2, VH / 2); H.g.fillStyle = dark; H.g.fillRect(0, 0, VW / 2, VH / 2);
       H.g.globalCompositeOperation = 'destination-out'; H.g.setTransform(0.5, 0, 0, 0.5, -CAMX / 2, -CAMY / 2);
       for (const l of vis) { if (l.flash) continue; clipL(H.g, l, () => { if (LIGHT_DITH) stampL(H.g, l, false); else { const st = lightStamp(l.r, l.a, null, 0); H.g.drawImage(st.c, l.x - st.R, l.y - st.R); } }); }
@@ -155,7 +156,7 @@ void main() {
     lg.setTransform(1, 0, 0, 1, 0, 0);
     lg.globalCompositeOperation = 'source-over';
     lg.clearRect(0, 0, VW, VH);
-    lg.fillStyle = `rgba(${homeNight() ? HOME_NIGHT.dk.join(',') : G.stage === 1 ? '14,10,30' : G.stage === 3 ? '20,6,4' : G.stage === 4 ? '12,10,8' : '4,3,10'},${darkA()})`; lg.fillRect(0, 0, VW, VH);
+    lg.fillStyle = `rgba(${dkCol().join(',')},${darkA()})`; lg.fillRect(0, 0, VW, VH);
     lg.globalCompositeOperation = 'destination-out';
     lg.setTransform(1, 0, 0, 1, -CAMX, -CAMY);
     for (const l of vis) {
@@ -405,6 +406,7 @@ void main() {
       ctx.fillStyle = vg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
     }
     if (slowmo > 0) { ctx.fillStyle = 'rgba(30,50,90,.14)'; ctx.fillRect(0, 0, VW, VH); }
+    { const tf = typeof RUIN !== 'undefined' && RUIN.topFog && RUIN.topFog(); if (tf) { const fg = dLinear(ctx, 0, 0, 0, VH * 0.55); fg.addColorStop(0, `rgba(2,1,4,${tf})`); fg.addColorStop(1, 'rgba(2,1,4,0)'); ctx.fillStyle = fg.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, Math.ceil(VH * 0.55)); } } // v3.20 갱도: 천장 쪽으로 어둠이 낌 (디더 그라데이션)
     if (G.press > 0.6 && !G.player.dead) {
       const k = Math.min(1, (G.press - 0.6) / 3), vg = dRadial(ctx, VW / 2, VH / 2, 200 - k * 50, VW / 2, VH / 2, 480);
       vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(8,2,6,${0.15 + 0.35 * k})`);

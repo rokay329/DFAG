@@ -552,24 +552,6 @@
     ashCap(g, 0); return gOutline(g);
   }
   // 재에 묻힌 마차: 판자 짐칸(윗면) + 앞면 바퀴 둘, 짐칸 위로 재가 수북
-  const CART4 = { k: '#0b0806', h: '#8a7a64', l: '#66584a', d: '#463c32', D: '#2c2620', w: '#a49a8a', W: '#5a5248', c: '#1a1612', a: '#c4beb2', A: '#948e84', e: '#ff7a30' };
-  function genCart(wc, hc) {
-    const HH = 9, W0 = wc + 2, H0 = hc + HH + 2, g = mkGrid(W0, H0);
-    for (let y = 1; y <= hc; y++) for (let x = 1; x <= wc; x++) g[y][x] = (x - 1) % 5 === 4 ? 'D' : x === 1 ? 'h' : y === 1 ? 'h' : (x + y) % 7 ? 'l' : 'd';
-    for (let x = 1; x <= wc; x++) { g[1][x] = 'h'; g[hc][x] = 'd'; g[hc + 1][x] = 'D'; }
-    for (let y = hc + 2; y <= hc + HH - 2; y++) for (let x = 1; x <= wc; x++) g[y][x] = (y - hc) % 3 === 0 ? 'D' : x === 1 ? 'l' : 'd';
-    // 바퀴 둘
-    for (const wx of [Math.round(wc * 0.22), Math.round(wc * 0.78)]) { const wy = hc + HH - 3, R = Math.min(4, Math.max(3, Math.round(HH / 2.4)));
-      for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) { const d = Math.hypot(x, y); if (d > R + 0.3) continue; const X = wx + x, Y = wy + y; if (!g[Y] || X < 1 || X > wc) continue;
-        g[Y][X] = d > R - 0.8 ? (x + y < 0 ? 'w' : 'W') : d < 1 ? 'W' : (x === 0 || y === 0) ? 'W' : 'c'; } }
-    // 부러진 끌채
-    for (let i = 0; i < 4 && wc > 8; i++) if (g[hc + 3]) g[hc + 3][Math.min(wc, 2 + i)] = 'W';
-    // 재 더미: 짐칸 위로 둔덕
-    const mx = rand(wc * 0.3, wc * 0.7), mr = rand(wc * 0.3, wc * 0.5);
-    for (let y = 1; y <= hc; y++) for (let x = 1; x <= wc; x++) { const q = Math.hypot((x - mx) / mr, (y - hc / 2) / (hc * 0.6)); if (q < 1 && dith(x, y, (1 - q) * 0.9)) g[y][x] = q < 0.35 && (x + y) % 2 ? 'a' : 'A'; }
-    if (Math.random() < 0.5) { const x = randi(2, wc - 1); if (g[2]) g[2][x] = 'e'; }
-    ashCap(g); return { g: gOutline(g), HH };
-  }
   // 재가 된 사람들 (서 있는 소품, 2px 칸) — 막은 팔, 무릎 꿇고 비는 이, 아이를 안은 어머니. 'e'는 눈 자리
   const FOLK_PAL = { k: '#0b0a09', h: '#b2ac9e', l: '#8a847a', d: '#625e56', D: '#423f3a', a: '#cdc7ba', A: '#9a948a', e: '#2a2622', c: '#26231f', w: '#c8c2b4' };
   const FOLK_RAW = {
@@ -1216,6 +1198,7 @@
       const gx = Math.round(pr.x) & ~1, gy = Math.round(pr.y) & ~1, hy = pr.y - 10;
       // 바닥 그림자 (날아가는 높이를 보여 준다)
       ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(gx - 4, gy, 8, 2); ctx.fillRect(gx - 2, gy - 2, 4, 2);
+      if (pr.kind === 'fireball') { drawMProj({ kind: 'fireball', x: pr.x, y: pr.y - 10, r: pr.r, hist: pr.hist.map(q => ({ x: q.x, y: q.y - 10 })) }); continue; } // v3.20 갱도 교단 마법사: 여우 마법사 불덩이와 같은 모습
       if (pr.kind === 'arrow' || pr.kind === 'spear') {
         drawBlade(pr.kind === 'arrow' ? (blink ? PROJ_W.arrowB : PROJ_W.arrow) : (blink ? PROJ_W.spearB : PROJ_W.spear), gx, hy, pr.ang); // v1.05 칸 단위 회전 도트 (투척꾼은 다시 투창)
         continue;

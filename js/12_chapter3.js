@@ -1635,8 +1635,6 @@
         out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, ob: b });
       } else if (b.t === 'rock') {
         if (typeof CAMP3 !== 'undefined') { const c = CAMP3.rock(b.r > 17 ? 52 : 34, b.r > 17 ? 28 : 20, 'red', (Math.random() * 1e6) | 0); out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y, ob: b }); continue; } // v3.19 모난 붉은 흙빛 바위
-        const c = rockCanvas(b.r);
-        out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, ob: b });
       } else {
         const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), tent = !b.tower && b.w <= 100 && b.h <= 80 && Math.random() < 0.55;
         const { g, HH } = b.tower ? genWatchtower(wc, hc) : tent ? genTent(wc, hc) : genPalisade(wc, hc);

@@ -964,13 +964,8 @@
   }
 
   // 성채 잔해: 작은 돌 여러 개 + 뼈
-  const RUB2 = {"10": [".................", ".................", ".................", ".................", ".................", ".................", ".................", ".................", "......kkkk.......", ".....kMmHhk......", ".....klldKk......", ".....kDDDKk......", "......kkkkkk.....", ".......kHHHhk....", "..kkkkkkDDKKkk...", ".kHHHMmHHHHhHhk..", ".klldKlldddKlKk..", "kkDDDKDDDDDKDKk..", "hdhddkkkkkkkkk..."], "12": ["...................", "...................", "...................", "...................", "...................", "...................", "...................", "...................", "...................", ".......kkkkkkk.....", "......kHHhMmHhk....", "......kllKlldKk....", "......kDDKDDDKk....", ".......kkkkHHHhk...", "..........kllKKk...", "...kkkkkkkkDDDKk...", "..kHMmhHHHHHhHHhk..", "..kllKKllddKKllKk..", "..klldKlldddKllKk..", "..kDDDKDDDDDKDDKk..", "..khdkkkkkkkkhddk.."], "14": ["......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "......................", "...........kkk........", "..........kHHMk.......", "....kkkkk.kDDKk.......", "...kHMmHhk.kkk........", "...kllKdKk....kkkk....", "...kDDDDKkkkkkHHhdk...", "...kHHHHhHHHHhHHlddk..", "...kllddKllddKhhhddk..", "...kDDDDKDDDDKhhhdKkk.", "..khdkkkkkkkkkhdkkkhdk"], "16": ["........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", "........................", ".......kkkkkkk..........", "......kHHHHhHhk.........", "......kllddKlKk.........", "......kDDDDKDKk.........", ".....kkkkkkkkkk.........", "....kHHHHhHHHHhk........", "....kDDDDKDDDDKk........", ".....kHHHHhHHHHhkkk.....", ".....kllddKllddKMmhk....", "...kkkDDDDKDDDDKDDKk....", "..kHHHhHHHHHhHHHHHddk...", "..klldKlldddKlKHHlddk...", "..klldKlldddKllhhhddk...", "..kDDDKDDDDDKDDDhhddk...", "...kkkkkkhdkkkkkkkkk...."], "18": ["...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", "...........................", ".........kkkkkk............", "........kHHHHHhk...........", "........klldKdKk...........", "........klldddKk...........", "........kDDDDDKk...........", ".........kkkkkkk...........", "........kHHhHHHhk..........", "........kllKlldKk..........", "........kDDKDDDKk..........", ".........kkkkkkkkkkkkk.....", ".........kHHHhHHHMmMmhk....", ".........kllKKllKKlldKk....", "....kkkkkkDDDKDDDKDDDKk....", "...kHHHhHHHHHhHHHHHHddhk...", "...kllKKlldKdKlldHHldddk...", "...klldKlldddKlldhhhdddk...", "...kDDDKDDDDDKDDDDhhddKk...", "....kkkkkkhdkkkkkhdkkhdk..."], "20": ["..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..............................", "..................kk..........", ".................kHhk.........", ".................klKk.........", ".................klKk.........", ".................kDKk.........", ".........kkkkkkkkkkkk.........", "........kHHMmHHHhHHHhk........", "........klldKlldKlldKk........", ".....kkkkDDDKDDDKDDDKk........", "....kMmhkkkkkkkkkkkkk.........", "....kllKHHHHhHHhk.............", "....kDDKDKDDKDDKk.............", ".....kkkkkkkkkkkkkk...........", ".............kHHHHhk..........", ".............kllddKkkkkk......", "...kkkkkkkkkkkDDDDKkHHhdkkkk..", "..kHHHHhHHhHHHHhHHHHHHlddhHhk.", "..kllddKllKllddKllKhhhhddKlKk.", "..kDDDDKDDKDDDDKDDDKhhhdDKDKk.", ".khdkhdkkkkkkkkkkkkkkkkkkkhdk."], "22": ["................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "................................", "..............kkk...............", ".............kHMmk..............", ".............kllKk..............", ".............kllKk..............", "........kkk..kDDKk..............", ".......kHHhk..kkk...............", ".......kllKk....................", ".......kllKk....................", ".......kDDKk....................", ".....kkkkkkkkkkkkkk.............", "....kMmHHhHHHhHHHHhk............", "....kllddKlKdKllddKk............", "....kDDDDKDDDKDDDDKkkk..........", ".....kkkkkHHHhkkkHHHHhkkkk......", "......kHHhlldKHHhlldKKHHHhk.....", "kkkkkkkDDKDDDKDDKDDDDHHHddk.....", "HHHHHhHHHHhHHhHHHhHHHHHlddhk....", "lKdddKllddKllKlKdKlldhhhddKk....", "DDDDDKDDDDKDDKDDDKDDDDhhdDKk....", "khdhdkhdkkkkkkkkkkkkkkkkkkk....."], "24": ["...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "...................................", "..............kkkkkk...............", ".............kHHHHHhk..............", ".............kllKddKk..............", ".............klldddKk..............", ".............kDDDDDKk..............", "...........kkkkkkkkkkk.............", "..........kHHHHHhk.kHhk............", ".........kkDDDDDKk.kDKk............", "........kHMmHHhkkkkkkkk............", "........klldddKHHHHHhHhk...........", "........kDDDDDKDDKDDKDKk...........", "........kkkkkkkkkkkkkkkk...........", ".......kHHHHhHHhHHHhHHHhk..........", ".......klKddKllKlldKlldKk..........", ".......kDDDDKDDKDDDKDDDKk..........", ".....kkkkkkHHHHhkkkHHhkk...........", "....kHHHHHhllddKHHhllKk............", "....klldddKllddKllKllKk.kkkk.......", "....kDDDDDKDDDDKDDKDDKkkHHddkkkkk..", "...kHHHhHHHhHHHhHHHHhHHHHlddHhHMmk.", "...klldKlKdKlldKllddKllhhhdddKllKk.", ".kkkDDDKDDDKDDDKDDDDKDDKhhddDKDDKk.", "khdkhdkkkkkkkkkkkkkkkhdkkkkkkkkkk.."], "26": [".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", ".....................................", "....................kkk..............", "...................kHHhk.............", "...................kllKk.............", "..............kkkkkkDDKkkk...........", ".............kHHhHHMmHhHHhk..........", ".............kllKlldddKllKk..........", "............kkDDKDDDDDKDDKk..........", "...........kHHhHHHhkkkkkkkkkk........", "...........kllKlldKHHHHhHHHHhk.......", "...........kllKlldKllddKllddKk.......", "...........kDDKDDDKDDDDKDDDDKk.......", "............kkkkkkkHHhHHhHHHHhk......", "............kHHHHHhllKllKllKdKk......", "............kDKDDDKDDKDDKDDDDKk......", "...........kkkkkkHHhHHHHhkkkkkk......", "..........kHHHHHhllKllddKHHHHHhk.....", ".kkkkkkkkkkDDDDDKDDKDDDDKHHhdDKk.....", "kHHMmHhHHhHHHhHHHHHhHHHHHHHlddHhk....", "klldddKllKlldKllKddKlldddhhhdddKk....", "kDDDDDKDDKDDDKDDDDDKDDDDDhhhdDDKk....", "khddkkkkkkkkkkkkkkkkkkkkkkkhdkkk....."]}; // v2.81
-  function genRubble(r) { const k = Math.max(10, Math.min(26, Math.round(r / 2) * 2)); return fromRows(RUB2[k]); }
+  // v2.81
   // 초원 바위 더미 (기존 rockBig/rockA를 2px로 조합)
-  function rockCanvas(r) { // v2.81 깎인 면 · 금 · 이끼 바위
-    const m = DECO_MAPS[r > 17 ? 'rockObsL' : 'rockObsS'], w = m[0].length * 2, h = m.length * 2, [c, cx] = mkCanvas(w + 4, h + 2);
-    cx.fillStyle = 'rgba(0,0,0,.35)'; for (let x = 4; x < w; x += 2) cx.fillRect(x, h - 2, 2, 2);
-    stamp(cx, m, DECO, 2, 0, 2, Math.random() < 0.5); return c; }
 
   // --- 바닥: 구덩이 · 연못 · 길 · 텔레포터 -------------------------
   function genChasm(wc, hc) {
@@ -1160,11 +1155,6 @@
   }
   const merchantArt = (wing, crest, blink) => art('merch' + (+wing) + (+crest) + (+blink), () => gCanvas(merchantGrid(wing, crest, blink), MERCHANT_PAL));
   const MERCHANT = merchantGrid(false, false, false); // 예전 그림 자리 (노점 · 수레 장면)
-  const CART = fromRows([
-    '..kkkk.kkk..kkkk...', '.kbrrbkkggkkyyyyk..', '.kbrrbkgGGgkyooyk..', 'kkkkkkkkkkkkkkkkkk.', 'kwwwwwwwwwwwwwwwwk.', 'kbbbbbbbbbbbbbbbbkk', 'kBBBBBBBBBBBBBBBBk.', '.kkkkkkkkkkkkkkkk..', '..kkk.........kkk..', '.kgGgk.......kgGgk.', '..kkk.........kkk..']);
-  const CART_PAL = { k: '#0b0a0e', w: '#8a6a48', b: '#6a4a30', B: '#4a3220', r: '#8a2030', g: '#3a5a7a', G: '#6a8aaa', y: '#c9a24a', o: '#e8d080' };
-  const LANTERN = fromRows(['.kkk.', 'kyYyk', 'kYWYk', 'kyYyk', '.kkk.', '..k..', '..b..', '..b..', '..b..', '..b..', '..b..', '..b..', '..b..', '..b..', '.kbk.', 'kbbbk']);
-  const LANTERN_PAL = { k: '#0b0a0e', y: '#c08030', Y: '#ffc060', W: '#fff0c0', b: '#3a3036' };
   const STAND = fromRows(['kkkkkkkkkkk', 'kwwwwwwwwwk', 'kbbbbbbbbbk', 'kbBkkkkkBbk', 'kbBk...kBbk', 'kkkk...kkkk']);
   const STAND_PAL = { k: '#0b0a0e', w: '#8a6a48', b: '#6a4a30', B: '#4a3220' };
   const GEARBOX = fromRows(["....kk....kk....", "...kRRk..kRRk...", "..kRrRRkkRRrRk..", "..kRrrRkkRrrRk..", "...kRRRooRRRk...", ".kkkkkkRRkkkkkk.", "kWLLLLkRrkLLLLdk", "kLlLLLkRrkLLLldk", "kkkkkkkRrkkkkkkk", ".kBBpBkRrkBpBbk.", ".kBBBBkRrkBBbbk.", ".kBpBBkRrkBBpbk.", ".kBBBBkRrkBBbbk.", ".kBBBpkRrkpBbbk.", ".kbbbbkrrkbbbbk.", ".kkkkkkkkkkkkkk."]); // v2.38 장비 꾸러미(선물상자) 16칸 · 리본 매듭 · 물방울 무늬
@@ -1362,8 +1352,6 @@
             if (typeof RUIN1 !== 'undefined') { // v3.19 폐허에서 떨어져 나온 돌 — 연달아 나오지 않게: 260px 안에 이미 있거나 방에 둘이 있으면 이끼 바위로
               const sd = (Math.random() * 1e6) | 0, ruin = out.filter(o => o.ruin).length < 2 && !out.some(o => o.ruin && Math.hypot(o.rx - b.x, o.ry - b.y) < 260), c = ruin ? (b.r > 17 ? RUIN1.chunkL(sd) : RUIN1.chunkS(sd)) : RUIN1.boulder(b.r, sd);
               out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 14) & ~1, sy: b.y, ruin, rx: b.x, ry: b.y }); continue; }
-            const c = rockCanvas(b.r);
-            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y });
           } else {
             if (typeof RUIN1 !== 'undefined') { const c = RUIN1.ruinBlock(b.w, b.h, (Math.random() * 1e6) | 0); out.push({ cv: c, x: (Math.round(b.x0) & ~1) - 12, y: (Math.round(b.y0 - c.HH * 2) & ~1) - 12, sy: b.y1 }); continue; } // v3.19 산울타리 → 이끼 낀 폐허 돌담 · 한 면이 열린 폐허
             const { g, HH } = genHedge(Math.round(b.w / 2), Math.round(b.h / 2));
@@ -1374,12 +1362,12 @@
             const king = Math.random() < 0.35 && false /* v2.82 녹아내린 왕 동상 삭제 (사용자 결정) — 부서진 기둥만 */, lp = !king && typeof ASH4 !== 'undefined', c = king ? gCanvas(genMeltKing(), KING4) : lp ? ASH4.lamp() /* v2.89 녹아내린 가로등 */ : gCanvas(ashCap(genPillar(Math.random() < 0.6)), STONE4);
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: king || lp });
           } else if (b.t === 'rock') {
-            const bell = b.r >= 10 && Math.random() < 0.55, jk = !bell && typeof ASH4 !== 'undefined', c = bell ? gCanvas(genBell(b.r), BELL4) : jk ? ASH4.junk(b) /* v2.87 4장 고유: 짐 더미 · 우물 · 분수 조각 · 무구 더미 */ : gCanvas(ashCap(genRubble(b.r)), STONE4);
+            const bell = b.r >= 10 && Math.random() < 0.55, jk = !bell, c = bell ? gCanvas(genBell(b.r), BELL4) : ASH4.junk(b); // v2.87 4장 고유: 짐 더미 · 우물 · 무구 더미
             out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y, raw: bell || jk });
           } else {
-            const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2), cart = false; // v3.19 재 덮인 수레 삭제 (사용자 결정)
-            const hs = !cart && typeof HOUSE4 !== 'undefined' && wc >= 24 && hc >= 8 /* v2.88 불탄 집 — 폭이 모자라면 성벽 덩어리 */, { g, HH } = cart ? genCart(wc, hc) : hs ? (HOUSE4.genRow || HOUSE4.gen)(wc, hc) /* v3.19 길면 모양이 다른 집 여러 채 + 보도블록 단 + 가로등 */ : genWallBlock(wc, hc);
-            out.push({ cv: cart ? gCanvas(g, CART4) : hs ? gCanvas(g, HOUSE4.pal) : gCanvas(ashCap(g, hc), STONE4), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1, raw: cart || hs });
+            const wc = Math.round(b.w / 2), hc = Math.round(b.h / 2);
+            const hs = typeof HOUSE4 !== 'undefined' && wc >= 24 && hc >= 8 /* v2.88 불탄 집 — 폭이 모자라면 성벽 덩어리 */, { g, HH } = hs ? (HOUSE4.genRow || HOUSE4.gen)(wc, hc) /* v3.19 길면 모양이 다른 집 여러 채 + 보도블록 단 + 가로등 */ : genWallBlock(wc, hc);
+            out.push({ cv: hs ? gCanvas(g, HOUSE4.pal) : gCanvas(ashCap(g, hc), STONE4), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1, raw: hs });
           }
           if (typeof RUIN1 !== 'undefined') for (let i = n0; i < out.length; i++) { const o = out[i]; o.cv = RUIN1.withShadow(o.cv); o.x -= 8; o.y -= 8; } // v3.19 4장도 밑동에 붙은 그림자
         } else {
@@ -1390,13 +1378,7 @@
             else { const c = fencedPit(b) ? KEEP2.fence(b.w, b.h, sd) : KEEP2.fenceWall(b.w, b.h, sd); out.push({ cv: c, x: (Math.round(b.x0) & ~1) - 8, y: (Math.round(b.y0) & ~1) - c.FH * 2 - 8, sy: b.y1 }); }
             continue;
           }
-          if (b.t === 'pillar') {
-            const g = genPillar(Math.random() < 0.35), c = gCanvas(g, STONE);
-            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y });
-          } else if (b.t === 'rock') {
-            const g = genRubble(b.r), c = gCanvas(g, STONE);
-            out.push({ cv: c, x: Math.round(b.x - c.width / 2) & ~1, y: Math.round(b.y - c.height + 6) & ~1, sy: b.y });
-          } else {
+          if (b.t !== 'pillar' && b.t !== 'rock') {
             const { g, HH } = genWallBlock(Math.round(b.w / 2), Math.round(b.h / 2));
             out.push({ cv: gCanvas(g, STONE), x: Math.round(b.x0 - 2) & ~1, y: Math.round(b.y0 - HH * 2 - 2) & ~1, sy: b.y1 });
           }
@@ -1668,14 +1650,6 @@
     ctx.drawImage(spr, x, y - bob);
     if (!c.opened && Math.floor(time * 6) % 7 === 0) { ctx.fillStyle = sec ? '#f0e0ff' : '#fff0b0'; ctx.fillRect((x + 6 + Math.floor(time * 6) % 14 * 1) & ~1, y + 4 - bob, 2, 2); }
   }
-  function drawMerchant(R) {
-    const x = CX & ~1, y = (CY - 70) & ~1, bob = Math.floor(time * 2) % 2 ? 2 : 0;
-    const m = art('merch', () => gCanvas(MERCHANT, MERCHANT_PAL)), cart = art('cart', () => gCanvas(CART, CART_PAL)), lan = art('lantern', () => gCanvas(LANTERN, LANTERN_PAL));
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; { const xa = x - 10, xb = x + 50; if (xb > xa) ctx.fillRect(xa, y, Math.ceil((xb - xa) / 2) * 2, 2); }
-    ctx.drawImage(cart, x + 12, y - cart.height + 2);
-    ctx.drawImage(lan, x - 30, y - lan.height + 2);
-    ctx.drawImage(m, x - m.width / 2, y - m.height + 2 - bob);
-  }
   // ================================================================ 특별한 방 (v0.76): 상인의 노점 · 보물 제단 · 야영지
   // 공통: 2px 칸 · 검은 외곽선 · 왼쪽 위 빛. 그리드에 칠한 뒤 gOutline → gCanvas
   const SP_PAL = { k: '#140c08', R: '#b8342c', r: '#7e2220', C: '#efe2c4', c: '#bba886', S: '#1c130d', w: '#7a5232', W: '#a0703f', b: '#4a3020', B: '#2e1d12',
@@ -1683,51 +1657,10 @@
     '1': '#e0303a', '2': '#4f8dff', '3': '#7ac843', '4': '#e8e0d0', '5': '#c07a3a', '6': '#b05cff', f: '#ff8a2a', F: '#ffe28a', e: '#e2501c', n: '#6a2a1a', N: '#9a3a22' };
   const spGrid = (w, h, fn) => { const g = mkGrid(w, h); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = fn(x, y); if (c) g[y][x] = c; } return g; };
   const spCv = (key, w, h, fn) => art('sp_' + key, () => gCanvas(gOutline(spGrid(w, h, fn)), SP_PAL));
+  // 소품 등록 도우미 (3장 부락 소품이 씀)
+  function spProp(name, w, h, fn, opt, pal) { if (PROP_MAPS[name]) return; const g = gOutline(spGrid(w, h, fn)); PROP_MAPS[name] = [g.map(r => r.join('')), pal || SP_PAL]; PROPS[name] = Object.assign({ foot: 1 }, opt || {}); }
   // --- 상인의 노점: 줄무늬 차양 · 기둥 · 물건이 놓인 뒷선반 · 동전 간판 / 앞 계산대(보라 천)
   const STALL_W = 84;
-  function stallBack() {
-    return spCv('stallB', STALL_W, 46, (x, y) => {
-      const W0 = STALL_W, mid = W0 / 2, st = Math.floor((x - 1) / 6);
-      if (y <= 11) { if (x < 1 || x > W0 - 2) return null; const sc = y >= 9 && Math.hypot(((x - 1) % 6) - 2.5, y - 8.5) > 3.2; if (sc) return null; const red = st % 2 === 0; return y === 0 ? (red ? 'r' : 'c') : red ? (x < mid ? 'R' : 'r') : (x < mid ? 'C' : 'c'); }
-      if ((x >= 3 && x <= 5) || (x >= W0 - 6 && x <= W0 - 4)) return (x === 3 || x === W0 - 6) ? 'W' : 'w';
-      if (y >= 12 && y <= 13 && x > 5 && x < W0 - 6) return 'S';
-      if (y >= 13 && y <= 18 && Math.abs(x - mid) <= 7) { if (y === 13) return x === mid - 5 || x === mid + 5 ? 'b' : null; if (Math.hypot(x - mid, y - 16) <= 2.2) return y < 16 ? 'Z' : 'y'; return y === 14 || y === 18 ? 'B' : 'W'; }
-      if (y >= 16 && y <= 33 && x > 5 && x < W0 - 6) {
-        if (y === 24 || y === 33) return 'W';
-        const slot = Math.floor((x - 7) / 4), sx = (x - 7) % 4, row = y < 24 ? 0 : 1, top = row ? 28 : 19, it = '1234561356245'[(slot * 3 + row * 5) % 13];
-        if (sx < 3 && y >= top && y < (row ? 33 : 24) && !(Math.abs(x - mid) <= 7 && y < 19)) return y === top && sx === 1 ? 'k' : (sx === 0 ? 'Z' : it);
-        return y % 4 === 0 ? 'B' : 'b';
-      }
-      return null;
-    });
-  }
-  function stallFront() {
-    return spCv('stallF', STALL_W, 13, (x, y) => {
-      if (x < 2 || x > STALL_W - 3) return null;
-      if (y <= 1) return y === 0 ? 'W' : 'w';
-      const cl = x > 14 && x < STALL_W - 15 && y >= 2 && y <= 8 + ((x % 5) === 0 ? 1 : 0);
-      if (cl) return y === 2 || (y === 7 && x % 3 === 0) ? 'y' : x % 6 < 3 ? 'P' : 'p';
-      return x % 9 === 0 ? 'B' : y > 10 ? 'b' : 'w';
-    });
-  }
-  const CRATE = () => spCv('crate', 14, 12, (x, y) => (x === 0 || x === 13 || y === 0 || y === 11 || x === y || x === 13 - y + 1) ? 'b' : y < 2 ? 'W' : 'w');
-  const BARREL = () => spCv('barrel', 11, 14, (x, y) => { const e = Math.abs(x - 5) / 5.5; if (e > 1 - (y === 0 || y === 13 ? 0.25 : 0)) return null; return y === 3 || y === 10 ? 'D' : x < 4 ? 'W' : x > 7 ? 'b' : 'w'; });
-  const SACK = () => spCv('sack', 12, 11, (x, y) => { if (Math.hypot((x - 5.5) / 6, (y - 6) / 5.5) > 1) return null; if (y < 2 && Math.abs(x - 5.5) > 1.5) return null; return y === 2 ? 'b' : x < 5 ? 'C' : 'c'; });
-  function drawStall(R) {
-    const x = CX & ~1, base = (CY - 30) & ~1, bk = stallBack(), fr = stallFront(), bob = Math.floor(time * 2) % 2 ? 2 : 0;
-    const m = art('merch', () => gCanvas(MERCHANT, MERCHANT_PAL)), cart = art('cart', () => gCanvas(CART, CART_PAL));
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; { const xa = x - 84, xb = x + 84; if (xb > xa) ctx.fillRect(xa, base, Math.ceil((xb - xa) / 2) * 2, 2); }
-    ctx.drawImage(cart, x + 92, base - cart.height + 4);
-    ctx.drawImage(bk, x - bk.width / 2, base - bk.height + 2);
-    ctx.drawImage(m, x - m.width / 2 + 10, base - 22 - m.height + 2 - bob);
-    ctx.drawImage(fr, x - fr.width / 2, base - fr.height + 2);
-    const cr = CRATE(), br = BARREL(), sk = SACK();
-    ctx.drawImage(cr, x - 110, base - cr.height + 2); ctx.drawImage(cr, x - 104, base - cr.height * 2 + 4); ctx.drawImage(br, x - 126, base - br.height + 4); ctx.drawImage(sk, x - 94, base - sk.height + 6);
-    // 차양 모서리에 매단 등불 두 개 (흔들림)
-    const lan = art('lantern', () => gCanvas(LANTERN, LANTERN_PAL));
-    for (const s of [-1, 1]) { const sw = Math.round(Math.sin(time * 2 + s) * 1.5) * 2, lx = (x + s * (bk.width / 2 - 4) + sw) & ~1, ly = base - bk.height + 26; ctx.fillStyle = '#2e1d12'; ctx.fillRect(lx, ly - 4, 2, 4); ctx.drawImage(lan, lx - lan.width / 2 + 1, ly); }
-    if (Math.floor(time * 5) % 9 === 0) { ctx.fillStyle = '#fff4b8'; ctx.fillRect((x - 3 + (Math.floor(time * 5) % 7)) & ~1, (base - bk.height + 30) & ~1, 2, 2); }
-  }
   // --- 보물 제단: 금 상감 원형 단 · 금화 더미 · 금 화로 4개 · 위에서 내리는 금빛 기둥
   const GOLDPILE = (v) => spCv('gold' + v, 24, 12, (x, y) => { const e = Math.hypot((x - 11.5) / 12, (y - 11) / (10 + v)); if (e > 1) return null; const h = (x * 7 + y * 13 + v * 5) % 11; return h === 0 ? 'Z' : h === 3 && y > 6 ? (v ? '1' : '2') : h < 4 ? 'y' : (x + y) % 3 ? 'Y' : 'y'; });
   const GOLDBRAZIER = () => spCv('gbraz', 10, 16, (x, y) => { if (y < 4) return Math.abs(x - 4.5) < 4 - y * 0.3 ? (y < 2 ? 'F' : 'f') : null; if (y < 7) return x >= 1 && x <= 8 ? (y === 4 ? 'Z' : 'y') : null; if (y < 14) return x >= 3 && x <= 6 ? (x === 3 ? 'y' : 'Y') : null; return x >= 1 && x <= 8 ? 'Y' : null; });
@@ -1831,57 +1764,7 @@
 
   // ---- v0.77: 특별한 방을 챕터별 장면으로 — 생성한 도트 소품을 일반 소품(PROPS)으로 등록해 y정렬·조명·막힘을 그대로 쓴다
   Object.assign(SP_PAL, { m: '#4a7a34', M: '#6e9a4a', h: '#9a7450', H: '#6a4a30', v: '#5a6638', V: '#3c4628', s: '#a8aeb6', q: '#5a6068', o: '#d8d0b8', O: '#a89880' });
-  function spProp(name, w, h, fn, opt, pal) { if (PROP_MAPS[name]) return; const g = gOutline(spGrid(w, h, fn)); PROP_MAPS[name] = [g.map(r => r.join('')), pal || SP_PAL]; PROPS[name] = Object.assign({ foot: 1 }, opt || {}); }
-  function spPropGrid(name, g, pal, opt) { if (PROP_MAPS[name]) return; PROP_MAPS[name] = [g.map(r => r.join('')), pal]; PROPS[name] = Object.assign({ foot: 1 }, opt || {}); }
   let SP_READY = false;
-  function ensureSpecialProps() {
-    if (SP_READY) return; SP_READY = true;
-    const hs = (n) => { const v = Math.sin(n * 91.3) * 43758.5; return v - Math.floor(v); };
-    // 기울어진 장대 두 개 사이에 처진 천막 지붕 (덧댄 천, 너덜너덜한 밑단, 매단 냄비, 버팀줄) — 초원: 풀빛 천 / 성채: 찢긴 붉은 태피스트리 / 부락: 꿰맨 가죽
-    for (const [nm, A1, A2, P1] of [['tarpM', 'v', 'V', 'c'], ['tarpC', 'R', 'r', 'y'], ['tarpO', 'h', 'H', 'k']]) spProp(nm, 62, 42, (x, y) => {
-      const sag = 5 + Math.sin(x / 61 * Math.PI) * 4, bot = 17 + Math.round(hs(x * 0.7 + 3) * 3) + (x % 7 === 0 ? 2 : 0);
-      if ((x === 5 || x === 6) && y >= 3) return x === 5 ? 'W' : 'w'; if ((x === 55 || x === 56) && y >= 6) return x === 55 ? 'W' : 'w';
-      if (y >= 39 && (x <= 2 || x >= 59)) return 'b';
-      if (Math.abs(y - (3 + (36 / 4) * (5 - x) / 1.25)) < 0.6 && x < 5) return 'b'; if (Math.abs(y - (6 + (33 / 5) * (x - 56) / 1.2)) < 0.6 && x > 56) return 'b';
-      if (x >= 4 && x <= 57 && y >= sag && y <= bot) {
-        const pt = ((Math.floor(x / 9) + Math.floor(y / 6)) % 3 === 0) && x > 8 && x < 52, edge = y === Math.round(sag);
-        if (P1 === 'k' && (x + y) % 6 === 0 && y > sag + 1) return 'k';
-        if (P1 === 'y' && y >= bot - 1) return 'y';
-        return edge ? (A1 === 'h' ? 'o' : 'C') : pt ? (P1 === 'c' ? 'c' : A2) : (x < 30 ? A1 : A2);
-      }
-      for (const px of [16, 28, 40]) if (Math.abs(x - px) <= 2 && y > bot && y <= bot + 4 && nm !== 'tarpO') return y === bot + 1 ? 'q' : 'D';
-      if (nm === 'tarpO') for (const px of [14, 30, 46]) if (Math.abs(x - px) <= 1 && y > bot && y <= bot + 3) return y === bot + 3 ? 'k' : 'o';
-      return null; });
-    // 상품을 늘어놓은 낡은 상자
-    spProp('goodsBox', 16, 9, (x, y) => (y === 0 ? (x % 4 === 1 ? 'c' : 'C') : x === 0 || x === 15 || y === 8 ? 'b' : x % 5 === 0 ? 'B' : 'w'), {});
-    // 바구니 (초원: 버섯 / 성채: 양초 / 부락: 뼈)
-    for (const [nm, a, b] of [['basketM', '1', '4'], ['basketC', '4', 'F'], ['basketO', 'o', 'O']]) spProp(nm, 12, 10, (x, y) => { if (y < 4) return (x > 1 && x < 10 && (x + y) % 3 !== 0) ? (y < 2 ? a : b) : null; return Math.abs(x - 5.5) <= 5.5 - (y > 8 ? 1 : 0) ? ((x + y) % 2 ? 'W' : 'w') : null; }, { r: 5 });
-    // 등불 장대
-    spProp('lampPole', 9, 30, (x, y) => { if (x === 2 && y >= 2) return 'w'; if (y === 2 && x >= 2 && x <= 7) return 'b'; if (x >= 5 && x <= 8 && y >= 4 && y <= 9) return y === 4 || y === 9 ? 'k' : y < 6 ? 'Z' : 'y'; if (x === 6 && y === 3) return 'b'; return null; }, { r: 3, light: { r: 60, c: '255,190,100', ca: 0.16, dy: -22 } });
-    // 이끼 낀 선돌 2종
-    for (const v of [0, 1]) spProp('menhir' + v, 10, 20 - v * 3, (x, y) => { const H0 = 20 - v * 3, hw = 4.5 - (y < 3 ? (3 - y) * 0.8 : 0) - (v ? 0.5 : 0); if (Math.abs(x - 4.5) > hw) return null; const moss = (y > H0 - 6 && (x + y) % 3 === 0) || (y < 5 && x < 4 && (x + y) % 2 === 0); return moss ? (y % 2 ? 'm' : 'M') : x < 4 ? 'G' : x > 6 ? 'd' : 'g'; }, { r: 6 });
-    // 깃대에 매단 찢긴 깃발 (성채)
-    spProp('banner', 13, 34, (x, y) => { if (x === 1 && y >= 1) return 'W'; if (y === 2 && x <= 11) return 'b'; if (x >= 3 && x <= 11 && y >= 3 && y <= 22 - (x % 3 === 0 ? 3 : 0)) return (y === 3 ? 'y' : x === 3 || x === 11 ? 'r' : (y > 8 && y < 13 && Math.abs(x - 7) < 2) ? 'y' : 'R'); return null; }, { r: 3 });
-    // 땅에 꽂힌 무기 더미 (부락)
-    spProp('weaponPile', 28, 20, (x, y) => { for (const [bx, a, len, c] of [[6, -0.3, 16, 's'], [12, 0.15, 18, 'q'], [18, -0.1, 14, 's'], [23, 0.35, 15, 'q']]) { const t = (19 - y) / len; if (t >= 0 && t <= 1 && Math.abs(x - (bx + Math.sin(a) * len * t)) < 1) return t > 0.85 ? 'k' : t < 0.25 ? 'b' : c; } if (y >= 16 && Math.abs(x - 14) < 13 - (19 - y) * 2) return (x + y) % 3 ? 'H' : 'h'; return null; }, { r: 10 });
-    // 부서진 신도석 (성채)
-    spProp('pew', 30, 12, (x, y) => { if (y < 6) return x >= 1 && x <= 28 - (x > 20 && y < 3 ? 6 : 0) ? (y === 0 ? 'W' : 'w') : null; if (y === 6) return x <= 28 ? 'b' : null; return (x <= 2 || (x >= 25 && x <= 27)) ? 'B' : null; }, { w: 56, h: 10 });
-    // 빨랫줄 (초원 야영지)
-    spProp('clothesline', 52, 28, (x, y) => { if ((x === 1 || x === 50) && y >= 2) return 'w'; const ly = 3 + Math.sin((x - 1) / 49 * Math.PI) * 3; if (x > 1 && x < 50 && Math.abs(y - ly) < 0.6) return 'b'; for (const [cx, w, c] of [[10, 7, 'C'], [22, 6, 'R'], [33, 8, 'c'], [43, 5, 'v']]) if (Math.abs(x - cx) < w / 2 && y > ly + 0.5 && y < ly + 10 - (x % 3 === 0 ? 2 : 0)) return c; return null; }, { r: 3 });
-    // 생성해 둔 야영 소품도 소품으로
-    const fromCv = (nm, key, w, h, fn, opt) => spProp(nm, w, h, fn, opt);
-    spProp('campTent', 36, 26, (x, y) => { const h = 24 - Math.abs(x - 17.5) * 1.35; if (y < 25 - h - 1 || y > 24) return x === 17 && y < 25 - h - 1 && y > 25 - h - 4 ? 'b' : null; const door = Math.abs(x - 17.5) < (y - 6) * 0.38 && y > 8; if (door) return y > 20 ? 'S' : 'B'; return x < 17 ? (x % 6 === 0 ? 'c' : 'C') : (x % 6 === 0 ? 'Y' : 'c'); }, { w: 64, h: 18 });
-    spProp('logSeat', 28, 8, (x, y) => (x <= 2 || x >= 25) ? (Math.hypot(x <= 2 ? x - 2 : x - 25, y - 3.5) < 3.4 ? (Math.hypot(x <= 2 ? x - 2 : x - 25, y - 3.5) < 1.6 ? 'W' : 'w') : null) : y === 0 ? 'W' : y > 5 ? 'b' : x % 7 === 0 ? 'B' : 'w', { w: 52, h: 6 });
-    spProp('bedRoll', 26, 9, (x, y) => x > 21 ? (Math.hypot(x - 22, y - 4) < 4.4 ? (y < 4 ? 'R' : 'r') : null) : (y >= 1 && y <= 7 ? (x % 5 === 0 ? 'C' : y < 3 ? 'R' : 'r') : null), { w: 48, h: 8 });
-    spProp('firewood', 20, 13, (x, y) => { const row = Math.floor((12 - y) / 4), off = row % 2 ? 2 : 0, cx = (x - off) % 4; if (y > 12 || x - off < 0 || x - off > 19 - row * 4) return null; return cx === 0 ? 'B' : (12 - y) % 4 === 3 ? 'b' : cx === 1 ? 'W' : 'w'; }, { r: 10 });
-    spProp('crateP', 14, 12, (x, y) => (x === 0 || x === 13 || y === 0 || y === 11 || x === y || x === 13 - y + 1) ? 'b' : y < 2 ? 'W' : 'w', { r: 7 });
-    spProp('barrelP', 11, 14, (x, y) => { const e = Math.abs(x - 5) / 5.5; if (e > 1 - (y === 0 || y === 13 ? 0.25 : 0)) return null; return y === 3 || y === 10 ? 'D' : x < 4 ? 'W' : x > 7 ? 'b' : 'w'; }, { r: 6 });
-    spProp('sackP', 12, 11, (x, y) => { if (Math.hypot((x - 5.5) / 6, (y - 6) / 5.5) > 1) return null; if (y < 2 && Math.abs(x - 5.5) > 1.5) return null; return y === 2 ? 'b' : x < 5 ? 'C' : 'c'; }, { r: 6 });
-    for (const v of [0, 1]) spProp('goldPile' + v, 24, 12, (x, y) => { const e = Math.hypot((x - 11.5) / 12, (y - 11) / (10 + v)); if (e > 1) return null; const h = (x * 7 + y * 13 + v * 5) % 11; return h === 0 ? 'Z' : h === 3 && y > 6 ? (v ? '1' : '2') : h < 4 ? 'y' : (x + y) % 3 ? 'Y' : 'y'; }, { w: 44, h: 10 });
-    spProp('goldBrazier', 10, 16, (x, y) => { if (y < 4) return Math.abs(x - 4.5) < 4 - y * 0.3 ? (y < 2 ? 'F' : 'f') : null; if (y < 7) return x >= 1 && x <= 8 ? (y === 4 ? 'Z' : 'y') : null; if (y < 14) return x >= 3 && x <= 6 ? (x === 3 ? 'y' : 'Y') : null; return x >= 1 && x <= 8 ? 'Y' : null; }, { r: 6, light: { r: 40, c: '255,170,70', ca: 0.14, dy: -14 }, flame: [[3, 0], [5, 0]] });
-    spPropGrid('cartP', CART.map(r => r.slice()), CART_PAL, { w: 56, h: 14 });
-    spPropGrid('hideTent', genTent(30, 16).g, WOODPAL, { w: 58, h: 16 });
-  }
   // ================================================================ v1.11 특별한 방 다시 그리기 (대장간 수준): 상인 · 모닥불 · 보물 방 · 비밀 방
   // 2px 칸 · 검은 외곽선 · 왼쪽 위 빛 · 4단계 명암. 챕터별로 팔레트만 바꿔 같은 물건을 다른 재질로
   const SRPAL = { k: '#0b0a0e',
@@ -1906,7 +1789,7 @@
   };
   const srPal = st => Object.assign({}, SRPAL, SR_ST[st] || {});
   // v3.19 상점 소품 다시 그림 (비스트로 수레 수준: 재질마다 3~4단 명암 · 왼쪽 위 빛 · 주름 · 결 · 쇠 장식) — 칸 그림 + 외곽선 포함
-  const SR_NEW = {"stall":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k21212121212121212121212121212121212121212121212121212121212121212121k",".krrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwk.","krrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxk",".kksss6666xxx6666sss6666xxx6666sss6666xxx6666sss6666xxx6666sss6623xxxk","..k2355555555555555555555555555555555555555555555555555555555555235kk.","..k235344453444J344453444534445344453444535445344453J44534J45344235k..","..k2Z5344423442J344453444534445344452444234445354453J44534J453432Z5k..","..k2353444334JJJJJ4453444534445344453444334445344422222222222344235k..","..k2353444R34JlLLJ4XXX44453444534445G444P3444XXX442333yyY3335344235k..","..k235354rRs4JLlLJxxxxx445344453444gGh4pPq44xxxxx4233yyYYY335354235k..","..k235344wRs5JoooJYzzzZ445344453444wGh4wPq43xXXXv4233yYzYY335344235k..","..k235344rRs4JoooJYwzzZ44cccccccc44gGh3pPq44xwXXv4233YYYYZ335344235k..","..k235344rRs4bJJJ4YWWWZ44XCCRsCCX34gGh4pPq44xWWWv42333YYZ3335344235k..","..k235344rRs4bBn34YzzzZ44CCCsCCCC44gGh4pPq44xXXXv425555555555344235k..","..k235344rRs4bBn34YZZZZ34vvvvvvvv44gGh4pPq44xvvvv453444534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235343J53444534445344453444534445344453444535445344453444J344235k..","..k235344j53444534445344453444534445344XXX44453Bn45Pq445G444j344235k..","..k23534445344453444534x4534x4534x4534xxxxx44RsYnGhYq4G5h5G45343235k..","..k2Z5354YYYYYYYYY445rrrrsbbbbnppppq34iIIIj44YsBnYhPq4h5h4h453542Z5k..","..k235344z333y333z445rwRRsbwBBnpwPPq34iwIIj44RsBnGhPq34hhh445344235k..","..k235344z444Y444z445rrrrsbbbbnppppq34iWWWj44RsBnGhPq44hhh445344235k..","..k235344z4444444z445rRRRsbBBBnpPPPq34iIIIj34RsBnGhPq44555445344235k..","..k235344zzzzzzzzz445rrrrsbbbbnppppq34ijjjj44RsBnGhPq445h4445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235344J53444534445343453444534445344453544534445344453444J344235k..","..k235344j53444534345344453444534445344453444535445344453444j344235k..","..k2353444534345344453444534445344453444534445344453544534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2355333333335333333335333333335333333335333333335333333335333235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k235kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk235k..","..k2Z5k........................................................k2Z5k..","..k235k........................................................k235k..","..k235k........................................................k235k..","...kkk..........................................................kkk..."],"counter":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k2222222122222221222222212222222122222221222222212222k","k3333333333433333333334333333333343333333333433333333k",".kzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPYyYQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYzQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqk.","..kYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkk..","...k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk...."],"stand":[".kkkkkkkkkkkkkkkkkk.","krwrrrrrrrrrrrrrrrrk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kszYzYzYzYzYzYzYzYsk",".k3kk5kkkkkkkk5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k5k.k........k.k5k.","..k..............k.."],"crates":["........kkkkkkkkkkkkk.........",".......k1111111111111k........",".......k222222C222222k........",".......k222222C222222k........",".......kj55555C55555jk........",".......k523333C333345k........",".......k534333C333435k........",".......k5CCCCCvCCCCCCk........",".......k533343Cv43335k........",".......k533334C433335k........",".kkkkkkk544444C444445kkkkkkkk.","k1111111533334C43333511111111k","k2222222533343C34333522222222k","k2222222j55555C55555j22222222k","kj555555555555jj555555555555jk","k5233333333334552333333333345k","k53433333333435534333Ss333435k","k5444ZZ44444445544444sS444445k","k5333Z33334333553334333343335k","k5333343343333553333433433335k","k5444444444444554444444444445k","k5333334433333553333344333335k","k5333343343333553333433433335k","k5444444444444554444444444445k","kj555555555555jj555555555555jk"],"rugRack":["............................","....kkkkkkkkkkkkkkkkkkkk....","...k22222222222222222222k...","...k44444444444444444444k...","....krwrRRRbwbBBBgwgGGGk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRYSbbBBYNggGGYHk....","....krRsYsSbBnYnNgGhYhHk....","....krRYssSbBYnnNgGYhhHk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRsSbbBBnNggGGhHk....","....krrRRYSbbBBYNggGGYHk....","....krRsYsSbBnYnNgGhYhHk....","....krRYssSbBYnnNgGYhhHk....","....krYsssSbYnnnNgYhhhHk....","....krrRRsSbbBBnNggGGhHk....","...k3rrRRsSbbBBnNggGGhH4k...","...k3rrRRYSbbBBYNggGGYH4k...","...k3rRsYsSbBnYnNgGhYhH4k...","...k3rRYssSbBYnnNgGYhhH4k...","...k3rYsssSbYnnnNgYhhhH4k...","...k34rRRskkbBBnkkgGGh54k...","..k34kRkRk.kBkBk.kGkGkk54k..","..k34kk.k...k.k...k.k.k54k..","..k34k................k54k..","..k34k................k54k..","...kk..................kk..."],"lampPost":["..............","...kkkkkkkk...","..kIIIIIIIIk..","...kJJJJJJJkk.","..kIjkjkJJJJJk","..kijjkjjjjjjj","..kijk.kJlJlJk","..kijk.kJlJLJk","..kijk.kJLJLJk","..kijk.kJoJoJk","..kijk.kJoJoJk","..kijk.kJJJJJk","..kIJk..kjjjk.","..kijk...kJk..","..kijk....k...","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kIJk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........","..kijk........",".kjjjjk.......","kIIIIIIk......","kjjjJJJk......","kjjjJJJk......",".kkkkkk......."],"banner":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzgGGhhGGhZk","kzYYYYYYYYZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgYGYYGYhZk","kzgyYYYYYhZk","kzgyYRsYYhZk","kzgZZZZZZhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk",".kGGGGhhhhk.","..kGGGhhhk..","...kGGhhk...","....kGhk....",".....kk.....","............","............","............"],"banner_2":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzBnnNNnnNZk","kzYYYYYYYYZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBYnYYnYNZk","kzByYYYYYNZk","kzByYRsYYNZk","kzBZZZZZZNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk",".knnnnNNNNk.","..knnnNNNk..","...knnNNk...","....knNk....",".....kk.....","............","............","............"],"banner_3":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzrRRssRRsZk","kzYYYYYYYYZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRwwWRRsZk","kzrwwWWWRsZk","kzrwkWWkRsZk","kzrWWWxxRsZk","kzrRWxxRRsZk","kzrRxWxWRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk",".kRRRRssssk.","..kRRRsssk..","...kRRssk...","....kRsk....",".....kk.....","............","............","............"]};
+  const SR_NEW = {"stall":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k21212121212121212121212121212121212121212121212121212121212121212121k",".krrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwk.","krrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwwWrrrrrrRwwwwwk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","krRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWWxrRRRRRswWWWWk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxxXssssssSxxxxxk","kSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxXXSSsssSSXXxxxk",".kksss6666xxx6666sss6666xxx6666sss6666xxx6666sss6666xxx6666sss6623xxxk","..k2355555555555555555555555555555555555555555555555555555555555235kk.","..k235344453444J344453444534445344453444535445344453J44534J45344235k..","..k2Z5344423442J344453444534445344452444234445354453J44534J453432Z5k..","..k2353444334JJJJJ4453444534445344453444334445344422222222222344235k..","..k2353444R34JlLLJ4XXX44453444534445G444P3444XXX442333yyY3335344235k..","..k235354rRs4JLlLJxxxxx445344453444gGh4pPq44xxxxx4233yyYYY335354235k..","..k235344wRs5JoooJYzzzZ445344453444wGh4wPq43xXXXv4233yYzYY335344235k..","..k235344rRs4JoooJYwzzZ44cccccccc44gGh3pPq44xwXXv4233YYYYZ335344235k..","..k235344rRs4bJJJ4YWWWZ44XCCRsCCX34gGh4pPq44xWWWv42333YYZ3335344235k..","..k235344rRs4bBn34YzzzZ44CCCsCCCC44gGh4pPq44xXXXv425555555555344235k..","..k235344rRs4bBn34YZZZZ34vvvvvvvv44gGh4pPq44xvvvv453444534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235343J53444534445344453444534445344453444535445344453444J344235k..","..k235344j53444534445344453444534445344XXX44453Bn45Pq445G444j344235k..","..k23534445344453444534x4534x4534x4534xxxxx44RsYnGhYq4G5h5G45343235k..","..k2Z5354YYYYYYYYY445rrrrsbbbbnppppq34iIIIj44YsBnYhPq4h5h4h453542Z5k..","..k235344z333y333z445rwRRsbwBBnpwPPq34iwIIj44RsBnGhPq34hhh445344235k..","..k235344z444Y444z445rrrrsbbbbnppppq34iWWWj44RsBnGhPq44hhh445344235k..","..k235344z4444444z445rRRRsbBBBnpPPPq34iIIIj34RsBnGhPq44555445344235k..","..k235344zzzzzzzzz445rrrrsbbbbnppppq34ijjjj44RsBnGhPq445h4445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2354445444444445444444445444444445444444445444444445444444445235k..","..k235344J53444534445343453444534445344453544534445344453444J344235k..","..k235344j53444534345344453444534445344453444535445344453444j344235k..","..k2353444534345344453444534445344453444534445344453544534445344235k..","..k2352222222222222222222222222222222222222222222222222222222222235k..","..k2355333333335333333335333333335333333335333333335333333335333235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k2355444444445444444445444444445444444445444444445444444445444235k..","..k235kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk235k..","..k2Z5k........................................................k2Z5k..","..k235k........................................................k235k..","..k235k........................................................k235k..","...kkk..........................................................kkk..."],"counter":[".kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk.","k2222222122222221222222212222222122222221222222212222k","k3333333333433333333334333333333343333333333433333333k",".kzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYzYk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYqQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPYyYQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPYzQPppPPPqqQPppPPPqqQPppPPk.",".kPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPPqqQPppPPk.",".kqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqqQQQqqqqqk.","..kYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkYkkk..","...k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk.k.kzk...."],"stand":[".kkkkkkkkkkkkkkkkkk.","krwrrrrrrrrrrrrrrrrk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kRRssRRssRRssRRssRRk","kszYzYzYzYzYzYzYzYsk",".k3kk5kkkkkkkk5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k3kk5k......k5kk3k.",".k5k.k........k.k5k.","..k..............k.."],"crates":["........kkkkkkkkkkkkk.........",".......k1111111111111k........",".......k222222C222222k........",".......k222222C222222k........",".......kj55555C55555jk........",".......k523333C333345k........",".......k534333C333435k........",".......k5CCCCCvCCCCCCk........",".......k533343Cv43335k........",".......k533334C433335k........",".kkkkkkk544444C444445kkkkkkkk.","k1111111533334C43333511111111k","k2222222533343C34333522222222k","k2222222j55555C55555j22222222k","kj555555555555jj555555555555jk","k5233333333334552333333333345k","k53433333333435534333Ss333435k","k5444ZZ44444445544444sS444445k","k5333Z33334333553334333343335k","k5333343343333553333433433335k","k5444444444444554444444444445k","k5333334433333553333344333335k","k5333343343333553333433433335k","k5444444444444554444444444445k","kj555555555555jj555555555555jk"],"banner":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzgGGhhGGhZk","kzYYYYYYYYZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgYGYYGYhZk","kzgyYYYYYhZk","kzgyYRsYYhZk","kzgZZZZZZhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk","kzgGGhhGGhZk",".kGGGGhhhhk.","..kGGGhhhk..","...kGGhhk...","....kGhk....",".....kk.....","............","............","............"],"banner_2":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzBnnNNnnNZk","kzYYYYYYYYZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBYnYYnYNZk","kzByYYYYYNZk","kzByYRsYYNZk","kzBZZZZZZNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk","kzBnnNNnnNZk",".knnnnNNNNk.","..knnnNNNk..","...knnNNk...","....knNk....",".....kk.....","............","............","............"],"banner_3":["kkkCkkkkCkkk","Y2222222222Y","z4444444444z","kzrRRssRRsZk","kzYYYYYYYYZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRwwWRRsZk","kzrwwWWWRsZk","kzrwkWWkRsZk","kzrWWWxxRsZk","kzrRWxxRRsZk","kzrRxWxWRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk","kzrRRssRRsZk",".kRRRRssssk.","..kRRRsssk..","...kRRssk...","....kRsk....",".....kk.....","............","............","............"]};
   const SR_NEWPAL = {"k":"#0b0a0e","1":"#e0b07a","2":"#c89260","3":"#a06e40","4":"#7a4e2a","5":"#5a3a20","6":"#3a2416","r":"#f07060","R":"#d84a4a","s":"#a8303a","S":"#7a2028","w":"#fffaf0","W":"#f4ead6","x":"#d4c4a4","X":"#b0a080","p":"#d8a8f0","P":"#a868d8","q":"#7a40a8","Q":"#4e2870","b":"#b8e0f8","B":"#7ab0d8","n":"#4a7aa8","N":"#2a4a70","g":"#b8e890","G":"#6cc048","h":"#4a9a34","H":"#2a6a24","y":"#fff4c0","Y":"#f2c84a","z":"#d8a030","Z":"#9a6a18","i":"#d8dce4","I":"#a8aeb8","j":"#6a6e78","J":"#3e4250","l":"#fff9d8","L":"#ffe08a","o":"#ffb050","O":"#e07a30","c":"#e8d8b8","C":"#c0a880","v":"#8a7458"};
   const srArt = (k, st, fn) => art('sr_' + k + '_' + st, () => { const nk = SR_NEW[k + '_' + st] || SR_NEW[k]; return nk ? gCanvas(fromRows(nk), SR_NEWPAL) : gCanvas(fn(st), srPal(st)); }); // 벽 깃발은 장마다 색 (2 파랑 · 3 붉은 해골)
   const SR = {};
@@ -1972,25 +1855,6 @@
     FG.rect(g, 21, 15, 23, 17, (x, y) => (x + y) % 2 ? 'R' : 'k'); // 낙인
     FG.line(g, 13, 1, 13, 12, 'v'); FG.line(g, 9, 6, 20, 6, 'C'); FG.put(g, 13, 6, 'V');
     return gOutline(g); };
-  // 곡식 자루 3개 (하나는 열려 낟알이 쏟아짐)
-  SR.sacks = st => { const W = 30, H = 17, g = FG.mk(W, H);
-    const sack = (cx, cy, rx, ry, open) => { FG.ell(g, cx, cy, rx, ry, (dx, dy) => { const v = dx * 0.7 + dy; return v < -ry * 0.5 ? 'c' : v < 0.5 ? 'C' : v < ry * 0.6 ? 'v' : 'V'; });
-      if (open) { FG.ell(g, cx, cy - ry + 1, rx * 0.6, 1.2, (dx) => dx < 0 ? 'Y' : 'g'); } else { FG.rect(g, cx - 1, cy - ry - 2, cx + 1, cy - ry, (x, y) => y === cy - ry - 2 ? 'C' : 'v'); FG.rect(g, cx - 2, cy - ry, cx + 2, cy - ry, 'R'); } };
-    sack(7, 10, 6, 5.5, false); sack(22, 11, 6.5, 5, true); sack(14, 8, 5, 5.5, false);
-    for (const [x, y] of [[26, 15], [28, 14], [27, 16], [29, 16], [24, 16]]) FG.put(g, x, y, (x + y) % 2 ? 'Y' : 'g');
-    return gOutline(g); };
-  // 양탄자 거치대: A자 나무틀 + 말린 양탄자 셋(무늬)
-  SR.rugRack = st => { const W = 28, H = 30, g = FG.mk(W, H);
-    FG.line(g, 3, 29, 7, 2, 'O'); FG.line(g, 24, 29, 20, 2, 'p'); FG.rect(g, 4, 2, 23, 3, (x, y) => y === 2 ? 'o' : 'p');
-    const roll = (x0, c1, c2, c3) => { FG.rect(g, x0, 4, x0 + 5, 25, (x, y) => { const lx = x - x0; if (y > 23 && (lx === 0 || lx === 5)) return null; if (y === 25) return lx % 2 ? c3 : null; return lx === 0 ? c1 : lx === 5 ? c3 : ((y + lx) % 6 === 0 ? 'Y' : (y % 6 < 3 ? c2 : c1)); }); };
-    roll(5, 'r', 'R', 'E'); roll(11, 'u', 'U', 'z'); roll(17, 'm', 'M', 'n');
-    return gOutline(g); };
-  // 등 기둥: 나무 기둥 + 쇠 갈고리 + 매단 등
-  SR.lampPost = st => { const W = 12, H = 36, g = FG.mk(W, H);
-    FG.rect(g, 2, 2, 3, H - 2, (x) => x === 2 ? 'o' : 'p'); FG.rect(g, 0, H - 2, 5, H - 1, (x, y) => y === H - 2 ? 'O' : 'P');
-    FG.rect(g, 2, 2, 9, 2, 'J'); FG.rect(g, 8, 3, 8, 4, 'J');
-    FG.rect(g, 6, 5, 10, 5, 'J'); FG.rect(g, 6, 6, 10, 10, (x, y) => x === 6 || x === 10 ? 'J' : y === 6 ? 'y' : 'Y'); FG.rect(g, 7, 11, 9, 11, 'J');
-    return gOutline(g); };
 
   // ---- 모닥불 --------------------------------------------------------------
   // 돌 둘레(앞뒤 반쪽으로 나눠 불꽃이 사이에): 크기 제각각 돌 + 그을음
@@ -2006,48 +1870,6 @@
     for (const cx of [3, W - 4]) FG.ell(g, cx, 4.5, 2.6, 3.8, (dx, dy, q) => q > 0.7 ? 'O' : q > 0.35 ? 'h' : 'c');
     if (st === 1) for (const x of [10, 11, 12, 20, 21]) FG.put(g, x, 1, x % 2 ? 'm' : 'M');
     if (st === 3) { FG.ell(g, 16, 1.2, 4, 1.5, (dx) => dx < 0 ? 'h' : 'H'); } // 털가죽 깔개
-    return gOutline(g); };
-  // 털가죽 위 침낭 + 베개
-  SR.bedroll = st => { const W = 34, H = 16, g = FG.mk(W, H);
-    FG.ell(g, 17, 8, 16.5, 7.5, (dx, dy, q) => { if (q > 0.86 && ((Math.atan2(dy, dx) * 8 | 0) & 1)) return null; return q > 0.7 ? 'H' : (dx + dy * 2) < -6 ? 'h' : (dx * 3 + dy * 5) % 7 === 0 ? 'a' : 'h'; });
-    FG.rect(g, 6, 4, 25, 11, (x, y) => y === 4 ? (st === 2 ? 'u' : 'e') : y === 11 ? (st === 2 ? 'z' : 'E') : x % 6 === 0 ? (st === 2 ? 'U' : 'R') : y < 7 ? (st === 2 ? 'u' : 'r') : (st === 2 ? 'U' : 'R'));
-    FG.rect(g, 6, 4, 9, 11, (x, y) => y === 4 ? 'c' : x === 9 ? 'v' : 'C'); // 접힌 이불깃
-    FG.ell(g, 28, 7.5, 3.5, 2.6, (dx, dy) => dx + dy < -0.5 ? 'c' : dx + dy > 1 ? 'v' : 'C'); // 베개
-    return gOutline(g); };
-  // 장작더미: 쪼갠 장작 단면 + 받침대
-  SR.wood = st => { const W = 26, H = 18, g = FG.mk(W, H);
-    FG.rect(g, 0, 15, W - 1, 17, (x, y) => y === 15 ? 'O' : 'P'); FG.rect(g, 1, 6, 1, 15, 'p'); FG.rect(g, W - 2, 6, W - 2, 15, 'p');
-    for (let row = 0; row < 3; row++) for (let i = 0; i < 6 - row; i++) { const cx = 4 + i * 3.6 + row * 1.8, cy = 13 - row * 3.2; FG.ell(g, cx, cy, 1.9, 1.7, (dx, dy, q) => q > 0.55 ? (dx + dy < 0 ? 'O' : 'P') : q > 0.2 ? 'h' : 'c'); }
-    FG.line(g, 12, 2, 22, 5, 'J'); FG.ell(g, 11, 2, 2, 1.4, (dx) => dx < 0 ? 'i' : 'I'); // 꽂힌 도끼
-    return gOutline(g); };
-  // 냄비 삼발이: 나무 막대 셋 + 사슬 + 검은 냄비(국)
-  SR.tripod = st => { const W = 22, H = 26, g = FG.mk(W, H);
-    FG.line(g, 11, 1, 2, 25, 'p'); FG.line(g, 11, 1, 20, 25, 'P'); FG.line(g, 11, 1, 12, 23, 'O');
-    FG.rect(g, 11, 2, 11, 12, (x, y) => y % 2 ? 'j' : 'J');
-    FG.ell(g, 11, 17, 5.5, 4, (dx, dy) => dy < -2.5 ? (dx < 0 ? 'f' : 'F') : dx + dy < -2 ? 's' : 'S'); FG.rect(g, 6, 13, 16, 13, 'j'); FG.put(g, 9, 13, 'h'); FG.put(g, 12, 13, 'm');
-    return gOutline(g); };
-  // 천막: 앞자락이 젖혀진 A자 천막 · 말뚝 · 끈. 1 생천 / 2 기사단 붉은 천 / 3 가죽(뼈 말뚝)
-  SR.tent = st => { const W = 48, H = 36, g = FG.mk(W, H), L = st === 2 ? ['e', 'r', 'R', 'E'] : ['c', 'C', 'v', 'V'], cx = 24;
-    for (let y = 2; y < H - 2; y++) { const hw = (y - 2) * 0.66; for (let x = Math.ceil(cx - hw); x <= Math.floor(cx + hw); x++) { const dx = x - cx, side = dx < 0;
-      let c = side ? (dx > -hw * 0.5 ? L[0] : L[1]) : (dx < hw * 0.5 ? L[2] : L[3]);
-      if (((x + (st === 3 ? y >> 2 : 0)) % 6 === 0)) c = side ? L[1] : L[3]; // 솔기
-      if (st === 3 && (x * 7 + y * 3) % 17 === 0) c = side ? 'a' : 'A'; // 가죽 얼룩
-      FG.put(g, x, y, c); } }
-    // 입구: 안쪽은 어둡고 젖힌 자락
-    for (let y = 14; y < H - 2; y++) { const hw = (y - 14) * 0.45; for (let x = Math.ceil(cx - hw); x <= Math.floor(cx + hw); x++) FG.put(g, x, y, y > H - 6 ? 'A' : 'D'); FG.put(g, Math.round(cx - hw) - 1, y, L[0]); FG.put(g, Math.round(cx + hw) + 1, y, L[2]); }
-    if (st === 2) for (let y = 4; y < 12; y++) FG.put(g, cx, y, y % 2 ? 'Y' : 'g'); // 금실 솔기
-    FG.rect(g, cx, 0, cx, 2, 'p'); FG.put(g, cx, 0, st === 3 ? 'b' : 'o'); // 꼭대기 장대
-    if (st === 2) { FG.rect(g, cx + 1, 0, cx + 4, 1, (x, y) => y ? 'R' : 'e'); }
-    // 끈 · 말뚝
-    for (const s of [-1, 1]) { FG.line(g, cx + s * 10, 9, cx + s * 22, H - 3, 'V'); FG.rect(g, cx + s * 22, H - 4, cx + s * 22, H - 2, st === 3 ? 'B' : 'p'); }
-    FG.rect(g, 0, H - 2, W - 1, H - 2, null);
-    return gOutline(g); };
-  // 배낭
-  SR.pack = st => { const W = 14, H = 15, g = FG.mk(W, H);
-    FG.rect(g, 2, 2, 11, 14, (x, y) => x === 2 ? 'h' : x === 11 || y === 14 ? 'a' : 'H');
-    FG.rect(g, 2, 2, 11, 6, (x, y) => y === 2 ? 'h' : y === 6 ? 'a' : x === 2 ? 'h' : 'H'); FG.rect(g, 6, 6, 7, 8, 'G'); FG.put(g, 6, 7, 'Y');
-    FG.rect(g, 3, 0, 10, 1, (x, y) => y === 0 ? 'C' : 'v'); FG.rect(g, 4, 9, 9, 12, (x, y) => y === 9 ? 'h' : 'H');
-    FG.rect(g, 0, 8, 1, 13, (x) => x ? 'r' : 'R'); // 매단 담요
     return gOutline(g); };
 
   // ---- 보물 방 --------------------------------------------------------------
@@ -2105,28 +1927,6 @@
 
   // ---- 비밀 방 --------------------------------------------------------------
   // 대리석 제단: 윗판(상자가 놓이는 면) · 금테 두른 몸체 · 보랏빛 룬 판 · 계단 받침, 대리석 결
-  // 부서진 책장: 기운 선반 · 낡은 책 · 쏟아진 종이 · 거미줄
-  SR.shelf = st => { const W = 28, H = 34, g = FG.mk(W, H);
-    FG.rect(g, 0, 0, W - 1, H - 1, (x, y) => x <= 1 ? (x ? 'O' : 'o') : x >= W - 2 ? (x === W - 1 ? 'P' : 'p') : y <= 1 ? (y ? 'O' : 'o') : y >= H - 2 ? 'P' : 'A');
-    for (const sy of [11, 22]) FG.rect(g, 2, sy, W - 3, sy + 1, (x, y) => y === sy ? 'o' : 'P');
-    const books = (y0, list) => { let x = 2; for (const [w, h, c1, c2, tilt] of list) { for (let i = 0; i < w; i++) for (let j = 0; j < h; j++) FG.put(g, x + i + (tilt && j < 2 ? 1 : 0), y0 - j, i === 0 ? c1 : i === w - 1 ? c2 : (j === h - 2 ? 'Y' : c1)); x += w; } };
-    books(10, [[2, 7, 'r', 'R'], [2, 6, 'U', 'z'], [3, 8, 'M', 'n'], [2, 5, 'h', 'a'], [2, 7, 'q', 'Q'], [0, 0], [2, 4, 'C', 'v', 1]]);
-    books(21, [[2, 8, 'R', 'E'], [2, 6, 'm', 'M'], [3, 7, 'u', 'U'], [2, 8, 'r', 'R']]);
-    FG.ell(g, 20, 19, 2.6, 2.4, (dx, dy) => dx + dy < -1 ? 'b' : 'B'); FG.put(g, 19, 19, 'k'); FG.put(g, 21, 19, 'k'); // 해골
-    FG.rect(g, 4, 28, 11, 31, (x, y) => y === 28 ? 'c' : 'C'); FG.rect(g, 14, 30, 22, 31, (x) => x % 2 ? 'v' : 'C'); // 바닥 칸 종이 뭉치
-    // 거미줄 (오른쪽 위)
-    for (let i = 0; i < 7; i++) { FG.put(g, W - 3 - i, 2, i % 2 ? 'B' : null); FG.put(g, W - 3, 2 + i, i % 2 ? 'B' : null); FG.put(g, W - 3 - Math.round(i * 0.7), 2 + Math.round(i * 0.7), 'b'); }
-    FG.put(g, 6, 0, '.'); FG.put(g, 7, 0, '.'); FG.put(g, 8, 1, 'P'); // 깨진 윗판
-    return gOutline(g); };
-  // 벽에 기대 앉은 해골: 투구 · 녹슨 칼 · 늑골
-  SR.skeleton = st => { const W = 26, H = 20, g = FG.mk(W, H);
-    FG.ell(g, 6, 5, 3.6, 3.4, (dx, dy) => dx + dy < -1 ? 'b' : dx + dy > 1.5 ? 'x' : 'B'); FG.put(g, 5, 5, 'k'); FG.put(g, 7, 5, 'k'); FG.rect(g, 5, 8, 7, 8, (x) => x % 2 ? 'b' : 'k');
-    FG.ell(g, 6, 2.5, 4, 2, (dx, dy) => dy < 0 ? 'j' : 'J'); // 녹슨 투구
-    FG.rect(g, 6, 9, 6, 16, 'B'); for (let y = 10; y <= 15; y += 2) FG.rect(g, 3, y, 9, y, (x) => x === 6 ? 'B' : x < 6 ? 'b' : 'x');
-    FG.line(g, 8, 10, 13, 15, 'B'); FG.line(g, 4, 10, 2, 16, 'x'); // 팔
-    FG.line(g, 6, 16, 16, 18, 'B'); FG.line(g, 6, 17, 13, 19, 'x'); FG.rect(g, 16, 17, 18, 18, 'b'); // 다리
-    FG.line(g, 12, 13, 24, 10, 'j'); FG.line(g, 12, 14, 24, 11, 'J'); FG.rect(g, 11, 12, 11, 15, 'G'); FG.put(g, 20, 11, 'p'); FG.put(g, 22, 10, 'p'); // 녹슨 칼
-    return gOutline(g); };
   // 촛대 무더기 (불꽃은 따로)
   SR.candles = st => { const W = 14, H = 12, g = FG.mk(W, H);
     for (const [x, h] of [[2, 7], [6, 10], [10, 5]]) { FG.rect(g, x, H - 1 - h, x + 1, H - 2, (xx, y) => xx === x ? 'c' : 'C'); FG.put(g, x, H - 1 - h - 1, 'D'); }
@@ -2135,7 +1935,6 @@
   // ---- 배치: 큰 물건은 뒷벽을 따라 (가운데 북문 자리는 비움), 가운데는 그 방의 쓰임새, 아래 모서리엔 잡동사니
   // ================================================================ v2.78 시설물 정비 B: 모닥불 방 · 비밀 방 · 상인 등불 (진엔딩 시설과 같은 품질 · 외곽선 1칸 · 왼쪽 위 빛)
   { const hh = (x, y, s = 0) => { const v = Math.sin(x * 12.9898 + y * 78.233 + s * 37.7) * 43758.5453; return v - Math.floor(v); };
-    // 천막은 원래 그림 유지 (사용자 판단: 수정 전이 더 나음)
     // 통나무 의자: 위가 밝은 껍질 · 세로 껍질 골 · 양끝도 껍질로 둥글게(단면 안 보임) · 이끼(1) / 붉은 깔개(2) / 털가죽(3)
     SR.log = st => { const W = 34, H = 12, g = FG.mk(W, H);
       FG.rect(g, 3, 1, W - 5, 10, (x, y) => { const seg = Math.floor((x + y * 3) / 4), dash = y >= 3 && y <= 8 && hh(seg, y, 3) < 0.28; return y <= 2 ? 'O' : y >= 9 ? 'P' : dash ? (y <= 4 ? 'p' : 'P') : y <= 4 ? 'o' : 'p'; }); // 결을 따라 짧게 끊긴 껍질 골
@@ -2143,23 +1942,6 @@
       if (st === 1) for (const [x, y] of [[9, 1], [10, 1], [11, 1], [10, 2], [19, 1], [20, 1], [24, 2], [25, 1]]) FG.put(g, x, y, (x + y) % 2 ? 'm' : 'M');
       if (st === 2) FG.rect(g, 12, 1, 20, 3, (x, y) => y === 3 ? (x % 2 ? 'g' : 'R') : y === 1 ? 'e' : 'r');
       if (st === 3) FG.ell(g, 16, 2, 6, 1.8, (dx, dy) => (dx < 0 ? 'h' : 'H'));
-      return gOutline(g); };
-    // 장작더미: 쪼갠 장작 단면(나이테 · 껍질) 3단 + 받침 · 꽂힌 손도끼
-    SR.wood = st => { const W = 28, H = 20, g = FG.mk(W, H);
-      FG.rect(g, 0, 17, W - 1, 19, (x, y) => y === 17 ? 'O' : y === 19 ? 'P' : 'p'); FG.rect(g, 1, 7, 2, 17, (x) => x === 1 ? 'O' : 'p'); FG.rect(g, W - 3, 7, W - 2, 17, (x) => x === W - 3 ? 'p' : 'P');
-      for (let row = 0; row < 3; row++) for (let i = 0; i < 6 - row; i++) { const cx = 5 + i * 3.6 + row * 1.8, cy = 14.5 - row * 3.3;
-        FG.ell(g, cx, cy, 2, 1.8, (dx, dy, q) => q > 0.6 ? (dx + dy < 0 ? 'O' : 'P') : q > 0.25 ? 'h' : (hh(cx, cy) < 0.5 ? 'c' : 'C')); FG.put(g, Math.round(cx + 1), Math.round(cy + 1), 'P'); }
-      FG.line(g, 14, 3, 23, 6, 'p'); FG.ell(g, 12.5, 3, 2.2, 1.5, (dx, dy) => dy < 0 ? 'i' : dx < 0 ? 'I' : 'j'); // 꽂힌 손도끼
-      return gOutline(g); };
-    // 냄비 삼발이: 나무 장대 셋(묶은 끈) · 사슬 · 그을린 냄비 · 끓는 국 거품
-    SR.tripod = st => { const W = 24, H = 28, g = FG.mk(W, H);
-      FG.line(g, 12, 2, 2, 27, 'O'); FG.line(g, 12, 2, 22, 27, 'P'); FG.line(g, 12, 2, 13, 25, 'p');
-      FG.rect(g, 10, 2, 14, 3, (x, y) => (x + y) % 2 ? 'v' : 'V'); // 묶은 끈
-      FG.rect(g, 12, 4, 12, 12, (x, y) => y % 2 ? 'j' : 'I');
-      FG.ell(g, 12, 18, 6.2, 4.6, (dx, dy) => dy < -2.4 ? null : dx + dy < -2.5 ? 'j' : dx + dy > 2.5 ? 'S' : 's');
-      FG.ell(g, 12, 14.6, 5.2, 1.4, (dx, dy) => (Math.abs(dx) > 4.4 ? 'J' : st === 3 ? (dx < 0 ? 'r' : 'R') : (dx < 0 ? 'F' : 'f')));
-      FG.put(g, 9, 14, 'h'); FG.put(g, 14, 15, st === 1 ? 'm' : 'c'); FG.put(g, 11, 14, 'y'); // 건더기 · 거품
-      FG.rect(g, 6, 13, 18, 13, (x) => x === 6 || x === 18 ? 'J' : 'I'); // 냄비 테
       return gOutline(g); };
     // 불 둘레 돌: 둥근 돌마다 위 빛 · 아래 그늘 · 반짝이는 결 · 그을음
     const stone = (g, cx, cy, r, front) => FG.ell(g, cx, cy, r, r * 0.78, (dx, dy, q) => q > 0.7 && dy > 0 ? '4' : dx + dy * 1.3 < -r * 0.55 ? '1' : dx + dy > r * 0.6 ? (front ? '3' : '4') : (front ? '2' : '3')); // 위 빛 · 아래 그늘 · 그을린 밑동
@@ -2183,13 +1965,6 @@
       FG.rect(g, 8, 4, 8, 6, 'R'); FG.rect(g, 41, 4, 41, 6, 'E'); // 모서리에서 부푼 자락
       for (const [dx, dy] of [[0, -2], [-1, -1], [1, -1], [-2, 0], [2, 0], [-1, 1], [1, 1], [0, 2]]) FG.put(g, 24 + dx, 5 + dy, dy <= 0 ? 'Y' : 'g'); FG.put(g, 24, 5, 'r'); // 금실 마름모
       for (const cx of [5, W - 6]) FG.rect(g, cx - 1, 0, cx + 1, 0, (x) => x === cx - 1 ? 'g' : 'G'); // 촛대 받침
-      return gOutline(g); };
-    // 상인 등불: 받침이 퍼진 쇠 기둥 · 말린 장식 팔 · 유리 네 칸 등롱(불빛) · 지붕 고리
-    SR.lampPost = st => { const W = 14, H = 38, g = FG.mk(W, H);
-      FG.rect(g, 3, 4, 3, 35, (x, y) => 'J'); FG.rect(g, 4, 4, 4, 35, 'j'); FG.rect(g, 1, 35, 6, 37, (x, y) => y === 35 ? 'j' : x < 3 ? 'J' : 'S'); FG.rect(g, 2, 33, 5, 34, 'J'); // 기둥 · 받침
-      FG.rect(g, 3, 2, 10, 3, (x, y) => y === 2 ? 'I' : 'J'); FG.put(g, 6, 4, 'J'); FG.put(g, 5, 5, 'J'); // 말린 장식 팔
-      FG.rect(g, 8, 4, 12, 4, 'J'); FG.rect(g, 7, 5, 13, 5, 'j'); // 등롱 지붕
-      FG.rect(g, 8, 6, 12, 11, (x, y) => x === 8 || x === 12 || y === 11 ? 'J' : x === 10 ? 'J' : y < 8 ? 'y' : 'Y'); FG.rect(g, 9, 12, 11, 12, 'j'); // 유리 칸 (불빛)
       return gOutline(g); };
   }
   // [종류, dx, dy, 막힘(반지름 또는 [가로, 세로]), 벽에 붙음]
@@ -2226,7 +2001,7 @@
     const al = r.srp.find(s => s.k === 'altar'); if (al && r.chest) { al.foot = r.chest.y + 8 - al.y; r.chest.lift = 30; /* v2.80 상자가 윗판 위에 온전히 */ } // 제단은 상자보다 먼저 그림
     r.nav = buildNav(r.obs);
   }
-  const SR_FOOT = { stall: 2, counter: 2, tent: 2, statue: 2 };
+  const SR_FOOT = { stall: 2, counter: 2, statue: 2 };
   // v2.80 시설이 차지하는 그림 칸 (바닥 자국이 겹치지 않게) — 벽에 거는 깃발은 뺌
   function srRect(s) { if (s.k === 'banner') return null; try { const st = G.stage === 4 ? 2 : G.stage, c = s.k === 'fbarrel' ? forgeArt('barrel', FORGE_DECO.barrel) : srArt(s.k, st, SR[s.k]); const x = s.x - c.width / 2, yb = s.y + (s.foot || 0) + 2; return { x0: x, y0: yb - c.height - (s.k === 'brazier' ? 22 : 0), x1: x + c.width, y1: yb }; } catch (e) { return null; } }
   function drawSR(s) {
@@ -2245,7 +2020,7 @@
     if (k === 'candles') for (const [cx, h] of [[2, 7], [6, 10], [10, 5]]) { const f = (fl + cx) % 3; ctx.fillStyle = '#ff8a2a'; ctx.fillRect(x + 2 + cx * 2, y + (12 - 1 - h - 2) * 2 + 2, 2, 2); ctx.fillStyle = '#fff3c0'; ctx.fillRect(x + 2 + cx * 2 + (f === 1 ? 2 : 0), y + (12 - 1 - h - 2) * 2 - (f === 2 ? 2 : 0), 2, 2); }
   }
   const SR_FLAME = [], FLAME2 = [[".y....f.....", "............", "............", "......FF....", "......FF....", "......ff....", ".....Fff....", ".....FffF...", "...FFfyyF.FF", "...fFfyyF.fF", "..FfffyyFFff", "..fffyyyffff", ".Ffffyyyffff", ".FFffffffFFf"], ["............", "............", "....y....f..", "............", ".....r......", ".....FF.....", ".....FF.F...", ".F...ffFFF..", ".FF.FffFff..", ".ffFFyyfffF.", ".fffFyyffff.", ".fffFyyyfffF", ".ffffyyyfffF", ".FFffffffFFf"], ["............", "..f....y....", ".......r....", ".......F....", "......FF....", "......ffF...", "......ffF...", ".....FffF.F.", ".....FyyF.F.", "...F.fyyfffF", "..FfFfyyfffF", "..ffFyyyfffF", ".Ffffyyyffff", ".FFffffffFFf"], [".....f....y.", "............", "............", ".....r......", ".....F......", "....FFF.....", "....Fff..F..", "..F.FffF.F..", "..F.FyyF.fF.", ".FffFyyfFff.", ".FfffyyfFff.", ".FfffyyyFffF", ".ffffyyyfffF", ".FFffffffFFf"]];
-  const SR_LIGHT = { brazier: [-30, 84, '255,150,60', 0.2], candles: [-12, 64, '255,190,110', 0.14], lampPost: [-58, 70, '255,200,120', 0.14], stall: [-70, 90, '255,200,120', 0.12] };
+  const SR_LIGHT = { brazier: [-30, 84, '255,150,60', 0.2], candles: [-12, 64, '255,190,110', 0.14], stall: [-70, 90, '255,200,120', 0.12] };
   function srLights(lights, R) { if (R.srp) for (const s of R.srp) { const L = SR_LIGHT[s.k]; if (L) lights.push({ x: s.x + (s.k === 'lampPost' ? 14 : s.k === 'stall' ? -56 : 0), y: s.y + L[0], r: L[1] + Math.sin(time * 9 + s.x) * 3, a: 0.75, c: L[2], ca: L[3] }); } }
   // ---- 바닥 그림 (2px 칸, 디더)
   function srFloor(g, R) {
@@ -2281,36 +2056,3 @@
     if (R.type === 'secret') blot(CX, CY - 4, 70, 18, 0.6, 'rgba(0,0,0,.35)'); // v1.11 제단 그늘만
   }
   // 방 종류·챕터별 배치표: [소품, x, y] — 큰 장면 하나가 아니라 이야기가 있는 자리 배치
-  function specialLayout(r, stage) {
-    const L = [], P = (n, x, y) => L.push([n, x, y]);
-    if (r.type === 'shop') { // 떠돌이 상인이 대충 펼친 노점
-      const t = stage === 1 ? 'M' : stage === 2 ? 'C' : 'O';
-      P('tarp' + t, CX - 4, CY - 30); P('crateP', CX - 44, CY - 30); P('crateP', CX - 40, CY - 46); P('barrelP', CX + 46, CY - 32); P('sackP', CX + 60, CY - 26); P('basket' + t, CX + 30, CY - 24);
-      P('cartP', CX + 120, CY - 34); P('lampPole', CX - 82, CY - 24);
-      if (stage === 1) { P('signpost', CX - 140, CY - 40); P('sackP', CX + 150, CY + 4); }
-      if (stage === 2) { P('ruinPillar', CX - 150, CY - 46); P('banner', CX + 160, CY + 6); P('candelabra', CX - 118, CY + 2); }
-      if (stage === 3) { P('skullPike', CX - 150, CY - 40); P('hideRack', CX + 160, CY + 4); P('boneHeap', CX - 120, CY + 6); }
-    }
-    if (r.type === 'reward') { const cx = CX, cy = CY - 20;
-      if (stage === 1) { for (const [i, a] of [-160, -122, -90, -58, -20, 160].entries()) { const q = a * DEG; P('menhir' + (i % 2), cx + Math.cos(q) * 118, cy + Math.sin(q) * 66); } P('ruinPillar', cx - 150, cy + 50); P('basketM', cx + 140, cy + 44); }
-      if (stage === 2) { for (const [dx, dy] of [[-56, -26], [56, -26], [-72, 30], [72, 30]]) P('goldBrazier', cx + dx, cy + dy); P('armor', cx - 112, cy - 34); P('armor', cx + 112, cy - 34); P('banner', cx - 150, cy - 2); P('banner', cx + 156, cy - 2); P('ruinPillar', cx - 168, cy + 56); P('candelabra', cx + 160, cy + 58); }
-      if (stage === 3) { P('weaponPile', cx - 104, cy - 22); P('weaponPile', cx + 104, cy - 22); for (const [dx, dy] of [[-150, -40], [150, -40], [-40, -70], [40, -70]]) P('skullPike', cx + dx, cy + dy); P('boneHeap', cx - 66, cy + 44); P('boneHeap', cx + 70, cy + 46); P('orcFire', cx - 140, cy + 30); P('orcFire', cx + 140, cy + 30); }
-    }
-    if (r.type === 'rest') { const bx = CX + 40, by = CY - 10;
-      P('logSeat', bx, by - 22); P('logSeat', bx, by + 30);
-      if (stage === 1) { P('campTent', bx - 94, by - 44); P('bedRoll', bx + 70, by + 8); P('firewood', bx + 70, by - 30); P('clothesline', bx + 150, by - 48); P('lampPole', bx - 44, by - 56); P('basketM', bx - 36, by + 44); }
-      if (stage === 2) { P('pew', bx - 116, by - 46); P('pew', bx - 116, by - 14); P('candelabra', bx - 160, by - 70); P('candelabra', bx + 112, by - 64); P('candelabra', bx + 132, by + 44); P('ruinPillar', bx + 160, by - 30); P('bedRoll', bx + 70, by + 8); P('firewood', bx + 66, by - 32); P('bookshelf', bx - 30, by - 74); }
-      if (stage === 3) { P('hideTent', bx - 96, by - 42); P('meatRack', bx + 82, by - 30); P('skullPike', bx - 40, by - 70); P('skullPike', bx + 134, by - 58); P('boneHeap', bx + 88, by + 34); P('woodPile', bx - 70, by + 40); P('hideRack', bx + 150, by + 10); }
-    }
-    return L;
-  }
-  function placeSpecial(r, stage) { // 배치표를 문·텔레포터와 겹치지 않는 것만 강제로 놓는다
-    ensureSpecialProps();
-    const keep = [...Object.keys(r.doors).filter(d => r.doors[d] != null).map(d => doorIn(d, 40)), ...(r.tele ? [r.tele] : []), ...(r.shop || []).map(s => ({ x: s.x, y: s.y }))];
-    for (const [name, x, y] of specialLayout(r, stage)) {
-      const sp = PROPS[name]; if (!sp) continue; const rad = sp.r || (sp.w ? sp.w / 2 : 8);
-      if (x < A.x0 + 12 || x > A.x1 - 12 || y < A.y0 + 10 || y > A.y1 - 6) continue;
-      if (keep.some(q => Math.hypot(q.x - x, q.y - y) < rad + 30)) continue;
-      r.props.push({ name, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, rad, special: true });
-    }
-  }

@@ -82,39 +82,26 @@ const WALL4 = (() => {
       '.............',
     ],
     // 유골 단지 (벽감 안에 넣음, 외곽선은 gOutline)
-    urnPot: [
-      '..........',
-      '....ah....',
-      '...haah...',
-      '....dd....',
-      '...hlld...',
-      '..hllldD..',
-      '..hlllDD..',
-      '..lllldD..',
-      '...ldDD...',
-      '..........',
-    ],
-    urnNiche: [
+    urnNiche: [ // v3.20 유골함을 앉힌 벽감 (항아리 · 넘친 재까지 한 장으로 구움)
       '...kkkkkkkk...',
       '..kllllllllk..',
-      '.klJJJJJJJJlk.',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klJJJJJJJJJJlk',
-      'klllllllllllk.',
+      '.klJJJkkJJJlk.',
+      'klJJJkahkJJJlk',
+      'klJJkhaahkJJlk',
+      'klJJJkddkJJJlk',
+      'klJJkhlldkJJlk',
+      'klJkhllldDkJlk',
+      'klJkhlllDDkJlk',
+      'klJklllldDkJlk',
+      'klJhaldDDhahlk',
+      'kllllkkkklllk.',
       'kkkkkkkkkkkkk.',
     ],
   };
   const SLOT = { tapestry: 'edict', shieldSwords: 'crest', portrait: 'portrait', chains: 'bell', skullNiche: 'urn' };
   const G4 = {}; for (const k in ART) G4[k] = fromRows(ART[k]);
   G4.bell = gOutline(G4.bell); G4.crest = gOutline(G4.crest);
-  { const n = G4.urnNiche, p = gOutline(G4.urnPot); for (let y = 0; y < p.length; y++) for (let x = 0; x < p[0].length; x++) if (p[y][x] !== '.') n[y + 2][x + 2] = p[y][x];
-    for (const [x, c] of [[3, 'h'], [4, 'a'], [9, 'h'], [10, 'a'], [11, 'h']]) n[10][x] = c; G4.urn = n; } // 넘친 재
+  G4.urn = G4.urnNiche;
   const hex = s => { const v = parseInt(s.slice(1), 16); return [v >> 16, (v >> 8) & 255, v & 255]; };
   const toHex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
   const ashHex = s => toHex(ashPx(...hex(s)));
