@@ -25,9 +25,9 @@
   #msg { left: 0; right: 0; top: 163px; text-align: center; } #msg .m { font-family: 'Galmuri11'; font-size: 12px; } #msg .s { color: var(--quiet); margin-top: 3px; }
   #msg .m.w { color: var(--gold-l); } #msg .m.l { color: #ff9090; }
   /* 게임의 스테이지 진입 배너와 같은 글꼴 · 그림자 */
-  #title { left: 0; right: 0; top: 150px; text-align: center; opacity: 0; transition: opacity .2s steps(3); pointer-events: none; } #title.on { opacity: 1; }
-  #title .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l); text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
-  #title .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
+  #title, #ctitle { left: 0; right: 0; top: 150px; text-align: center; opacity: 0; transition: opacity .2s steps(3); pointer-events: none; } #title.on, #ctitle.on { opacity: 1; }
+  #title .b1, #ctitle .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l); text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
+  #title .b2, #ctitle .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
   .lab { color: #cfe0c8; white-space: nowrap; } .tot { padding: 2px 6px 3px; font-family: 'Galmuri11'; font-size: 12px; white-space: nowrap; } .tot.bust { color: #ff9090; } .tot.bj { color: var(--gold-l); } .tot .r { font-family: 'Galmuri9'; font-size: 10px; color: var(--quiet); margin-left: 5px; }
   #bar { left: 0; right: 0; top: 384px; display: flex; justify-content: center; gap: 14px; } #bar > * { position: relative; }
   .bt { padding: 5px 4px 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Galmuri11'; font-size: 12px; color: var(--ink); text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; } .bt .key { text-shadow: none; }
@@ -41,7 +41,7 @@
 <div id="wrap"><canvas id="cv" width="1152" height="648"></canvas>
   <div id="ui">
     <div id="info" class="pf"></div><div id="stat" class="pf"></div>
-    <div id="title"><div class="b1">블랙잭 딜러 명수의 테이블</div><div class="b2">판돈을 걸고 카드를 받습니다.</div></div>
+    <div id="ctitle"><div class="b1">바꿔치기를 지목합니까?</div><div class="b2">불이 꺼지기 전에 본 것과 비교합니다.</div></div><div id="title"><div class="b1">블랙잭 딜러 명수의 테이블</div><div class="b2">판돈을 걸고 카드를 받습니다.</div></div>
     <div id="msg" class="out"><div class="m"></div><div class="s"></div></div>
     <div id="labs"></div>
     <div id="bar"></div>
@@ -193,8 +193,8 @@ const snd = k => { if (parent !== window) parent.postMessage({ dfag: 'sfx', k },
 const FRUIT_MAP = ['.....kk', '....kTk', '.kk.kBk', 'kgGkBbk', '.kkBBk.', '.kBbk..', 'kBbk...', 'kTk....', '.k.....'], FRUIT_PAL = { k: '#0e0a0c', g: '#6cc040', G: '#2e6a1a', B: '#8a5a34', b: '#5e3a20', T: '#d8b47a' };
 const FRUIT_URL = (() => { const c = document.createElement('canvas'); c.width = 14; c.height = 18; const g = c.getContext('2d'); FRUIT_MAP.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; g.fillStyle = FRUIT_PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })();
 const fr = n => `<img class="fr" src="${FRUIT_URL}">${n}개`, BETS = [1, 2, 5];
-let HUBMODE = false;                                                                                          /* 교환 화면에서 열렸으면 가지를 그쪽과 함께 씀 */
-addEventListener('message', e => { const d = e.data; if (d && d.dfag === 'hub') { HUBMODE = true; S.gold = d.n; fixBet(); ui(); } });
+let HUBMODE = false, PDEV = false;                                                                            /* PDEV: 게임이 테스트 모드인지 (교환 화면이 알려 줌) */                                                                                          /* 교환 화면에서 열렸으면 가지를 그쪽과 함께 씀 */
+addEventListener('message', e => { const d = e.data; if (d && d.dfag === 'hub') { HUBMODE = true; PDEV = !!d.dev; S.gold = d.n; fixBet(); ui(); } });
 if (parent !== window) parent.postMessage({ dfag: 'ready' }, '*');
 const idle = () => S.ph === 'bet' || S.ph === 'end';
 function leave() { if (HUBMODE && idle()) parent.postMessage({ dfag: 'leave', n: S.gold }, '*'); }
@@ -208,7 +208,7 @@ function start() {
   S.sub = ''; if (shoe.length < DECKS * 52 / 4) { shuffle(); S.sub = '카드를 다시 섞었습니다.'; }
   S.H = [{ c: [], bet: S.bet }]; S.hi = 0; S.D = []; S.hole = true; S.ins = 0; S.res = null; S.gold -= S.bet; S.ph = 'deal'; S.msg = '';
   later(0, () => deal(S.H[0].c)); later(0.22, () => deal(S.D)); later(0.44, () => deal(S.H[0].c)); later(0.66, () => deal(S.D, false));
-  later(1.0, () => { if (S.D[0].r === 'A' && !two21(S.H[0].c) && insCost() >= 1 && S.gold >= insCost()) { S.ph = 'ins'; S.msg = '딜러의 앞 카드가 에이스입니다. 보험을 들지 고릅니다.'; } else peek(); });
+  later(1.0, () => candle(() => { if (S.D[0].r === 'A' && !two21(S.H[0].c) && insCost() >= 1 && S.gold >= insCost()) { S.ph = 'ins'; S.msg = '딜러의 앞 카드가 에이스입니다. 보험을 들지 고릅니다.'; } else peek(); }));
 }
 const insCost = () => Math.floor(S.bet / 2);                                                                  // 보험은 판돈의 절반 (반 개는 버림)
 function insure(yes) { if (S.ph !== 'ins') return; if (yes) { S.ins = insCost(); S.gold -= S.ins; } peek(); }
@@ -239,8 +239,42 @@ function end() {
   const tail = net > 0 ? `개다래나무 가지 칩 ${net}개를 받습니다.` : net < 0 ? `개다래나무 가지 칩 ${-net}개를 잃습니다.` : (S.ins ? '보험으로 손해를 메웠습니다.' : '판돈을 돌려받습니다.');
   S.msg = !one ? `두 패를 정산했습니다. ${tail}` : bjWin ? `블랙잭입니다. ${tail}` : (db && isBJ(h0)) ? `둘 다 블랙잭입니다. ${tail}` : db ? `딜러가 블랙잭입니다. ${tail}` : p0 > 21 ? `21을 넘었습니다. ${tail}` : d > 21 ? `딜러가 21을 넘었습니다. ${tail}` : r1 === 'w' ? `이겼습니다. ${tail}` : r1 === 'l' ? `졌습니다. ${tail}` : `비겼습니다. ${tail}`;
   if (S.ins && db) S.sub = `보험으로 개다래나무 가지 칩 ${S.ins * 2}개를 받았습니다.`;
+  { const h = hidTxt(); if (h) S.sub = S.sub ? S.sub + ' ' + h : h; }
   S.ph = 'end'; fixBet();
 }
+
+// ------------------------------------------------------------ 촛불 변칙 (v3.20): 판마다 확률로 촛불이 꺼지고, 어둠 속에서 명수가 바꿔치기를 할 수도 · 안 할 수도 있음
+// 불이 켜지면 꺼지기 전에 외워 둔 것과 비교해 「바꿔치기다!」 지목 — 맞히면 판돈 2배를 받고 되돌림 · 틀리면 판돈 2배를 잃음 · 넘어가면 바꾼 그대로 진행
+// 비뚤어진 카드는 단서가 아님: 바꿨든 안 바꿨든 무작위로 하나가 비뚤어짐 (명수의 속임수)
+const CANDLE = { p: 0.25, swap: 0.6, fake: 0.5 }, CN = { st: null, t0: 0, swap: null, next: null, hid: false, force: false };
+function candle(then) { if (!CN.force && Math.random() >= CANDLE.p) { then(); return; } CN.force = false;
+  CN.next = then; CN.swap = null; CN.st = 'out'; CN.t0 = S.t; S.ph = 'cnd'; S.msg = '촛불이 흔들립니다.'; S.sub = ''; ui();
+  later(0.45, () => { CN.st = 'dark'; S.msg = ''; ui(); });
+  later(1.0, () => { snd('card'); if (Math.random() < CANDLE.swap) doSwap(); if (Math.random() < CANDLE.fake) doFake(); }); // 어둠 속 소리는 바꾸든 안 바꾸든 똑같이 남
+  later(1.9, () => { CN.st = 'on'; CN.t0 = S.t; });
+  later(2.25, () => { CN.st = 'lit'; S.msg = ''; S.sub = ''; ui(); }); }
+const josa = (x, a, b) => ['1', '3', '6', '7', '8', '10'].includes(String(x)) ? a : b, swapTxt = () => { const w = CN.swap; return `${w.on} ${w.from}${josa(w.from, '을', '를')} ${w.to}${['3', '6', '10'].includes(String(w.to)) ? '으로' : '로'}`; }; // 「내 카드 7을 K로」
+function accuse(yes) { if (S.ph !== 'cnd' || CN.st !== 'lit') return; CN.st = null;
+  if (!yes) { CN.hid = ''; S.msg = ''; S.sub = ''; const f = CN.next; CN.next = null; f(); ui(); return; } // 넘어가면 바꿨는지 알려주지 않고 그대로 이어서 진행
+  // 지목하면 맞히든 틀리든 그 자리에서 판을 끝냄: 맞히면 판돈의 두 배를 따고 · 틀리면 판돈의 두 배를 잃음
+  const b2 = S.bet * 2, paid = S.bet; CN.next = null; S.q.length = 0;
+  if (CN.swap) { const tx = swapTxt(); undoSwap(); S.gold += paid + b2; S.res = 'w'; S.msg = `명수의 바꿔치기를 잡아냈습니다. 개다래나무 가지 칩 ${b2}개를 받습니다.`; S.sub = `명수가 ${tx} 바꿔치기했습니다. 이번 판은 여기서 끝납니다.`; snd('win'); }
+  else { const l = Math.min(b2 - paid, S.gold); S.gold -= l; S.res = 'l'; S.msg = `명수는 아무것도 바꾸지 않았습니다. 개다래나무 가지 칩 ${l + paid}개를 잃습니다.`; S.sub = '이번 판은 여기서 끝납니다.'; snd('lose'); }
+  S.stat.n++; S.stat[S.res]++; S.hole = false; S.ph = 'end'; fixBet(); ui(); }
+function drawCandle() { if (!CN.st || CN.st === 'lit') return; const k = S.t - CN.t0;   // 꺼질 땐 두어 번 깜빡이다 꺼지고, 켜질 땐 단계를 밟아 밝아짐
+  const a = CN.st === 'out' ? [0.35, 0, 0.6, 0.15, 0.8][Math.min(4, Math.floor(k / 0.09))] : CN.st === 'dark' ? 1 : [0.85, 0.55, 0.7, 0.25][Math.min(3, Math.floor(k / 0.09))];
+  ctx.fillStyle = `rgba(3,2,5,${a})`; ctx.fillRect(0, 0, VW, VH); }
+const cndBar = bar => { bar.appendChild(bt('Q', `바꿔치기다! <span style="color:var(--quiet)">(맞히면 판돈의 두 배를 따고, 틀리면 두 배를 잃습니다)</span>`, () => accuse(true), CN.st === 'lit' ? '' : 'off')); bar.appendChild(bt('SPACE', '그냥 넘어가기', () => accuse(false), CN.st === 'lit' ? '' : 'off')); };
+const hidTxt = () => { const s = CN.hid ? `이번 판, 어둠 속에서 명수가 ${CN.hid} 바꿔치기했습니다.` : ''; CN.hid = ''; return s; };
+addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'c' && e.shiftKey && (parent === window || PDEV)) { CN.force = true; S.sub = '(테스트) 다음 판은 촛불이 꼭 꺼집니다.'; ui(); } }); // 테스트 모드에서만: Shift+C
+function doSwap() { const P = S.H[0].c, D0 = S.D[0], pt = total(P).t, suit = () => SUITK[Math.floor(Math.random() * SUITK.length)], opt = [];
+  if (val(D0) < 10) opt.push({ c: D0, r: ['10', 'J', 'Q', 'K'][Math.floor(Math.random() * 4)] });                     // 명수 앞 카드를 그림 카드로
+  for (const i of [0, 1]) for (const r of RANKS) { const t = total([P[1 - i], { r }]).t; if (t >= 12 && t <= 16 && r !== P[i].r) opt.push({ c: P[i], r, mine: true }); } // 내 카드 하나를 어정쩡한 수(12~16)로
+  const mine = opt.filter(o => o.mine), dl = opt.filter(o => !o.mine), pool = (pt >= 17 || !dl.length) && mine.length ? mine : dl.length ? dl : mine; if (!pool.length) return;
+  const o = pool[Math.floor(Math.random() * pool.length)], r = typeof o.r === 'string' && /^\d+$/.test(o.r) ? +o.r : o.r;
+  CN.swap = { c: o.c, r: o.c.r, s: o.c.s, on: o.mine ? '내 카드' : '자기 앞 카드', from: o.c.r, to: r }; o.c.r = r; o.c.s = suit(); }
+function undoSwap() { const w = CN.swap; w.c.r = w.r; w.c.s = w.s; CN.swap = null; }
+function doFake() { const L = [S.D[0], ...S.H[0].c]; const c = L[Math.floor(Math.random() * L.length)]; c.ox = (Math.random() < 0.5 ? -1 : 1) * 18; c.oy = (Math.random() < 0.5 ? -1 : 1) * 10; } // 아무 카드 하나를 비뚤게 (칸 단위 이동)
 // ------------------------------------------------------------ UI (게임과 같은 픽셀 프레임 · 키캡)
 function bt(key, label, fn, cls = '') { const b = document.createElement('div'); b.className = 'bt ' + cls; b.innerHTML = `<span class="key">${key}</span><span>${label}</span>`; if (!cls.includes('off')) b.onclick = () => { fn(); ui(); }; return b; }
 function ui() {
@@ -248,17 +282,18 @@ function ui() {
   if (idle()) {
     BETS.forEach((v, i) => bar.appendChild(bt(i + 1, fr(v), () => { S.bet = v; }, S.gold < v ? 'off' : S.bet === v ? 'sel' : '')));
     bar.appendChild(bt('SPACE', S.ph === 'end' ? '한 판 더' : '카드 받기', start, S.gold < S.bet ? 'off' : '')); tail(bar);
-  } else if (S.ph === 'ins') { bar.appendChild(bt('A', `보험 들기 ${fr(insCost())}`, () => insure(true))); bar.appendChild(bt('S', '넘어가기', () => insure(false))); }
+  } else if (S.ph === 'cnd') cndBar(bar);
+  else if (S.ph === 'ins') { bar.appendChild(bt('A', `보험 들기 ${fr(insCost())}`, () => insure(true))); bar.appendChild(bt('S', '넘어가기', () => insure(false))); }
   else { const on = S.ph === 'play';
     bar.appendChild(bt('A', '카드 받기', hit, on ? '' : 'off')); bar.appendChild(bt('S', '멈추기', stand, on ? '' : 'off'));
     bar.appendChild(bt('D', '판돈 두 배', dbl, canDbl() ? '' : 'off')); bar.appendChild(bt('F', '둘로 나누기', split, canSplit() ? '' : 'off')); }
   const stake = S.H.reduce((a, h) => a + h.bet, 0), playing = S.ph !== 'bet' && S.ph !== 'end';
   $('info').innerHTML = `<span title="개다래나무 가지 칩"><b>${fr(S.gold)}</b></span>`;
   $('stat').innerHTML = `<i>승</i> ${S.stat.w} <i>무</i> ${S.stat.p} <i>패</i> ${S.stat.l}`;
-  $('title').classList.toggle('on', S.ph === 'bet');                                          // 판돈을 고르고 카드를 받을 때까지 떠 있음
+  $('title').classList.toggle('on', S.ph === 'bet'); $('ctitle').classList.toggle('on', S.ph === 'cnd' && CN.st === 'lit'); /* 바꿔치기를 고를 땐 타이틀 글씨로 화면 가운데 */                                          // 판돈을 고르고 카드를 받을 때까지 떠 있음
   const m = $('msg'); m.children[0].textContent = S.msg; m.children[0].className = 'm ' + (S.ph === 'end' ? S.res : ''); m.children[1].textContent = S.sub;
 }
-const KEYS = { ' ': start, a: () => S.ph === 'ins' ? insure(true) : hit(), s: () => S.ph === 'ins' ? insure(false) : stand(), d: dbl, f: split, r: refill, escape: leave };
+const KEYS = { ' ': () => S.ph === 'cnd' ? accuse(false) : start(), q: () => accuse(true), a: () => S.ph === 'ins' ? insure(true) : hit(), s: () => S.ph === 'ins' ? insure(false) : stand(), d: dbl, f: split, r: refill, escape: leave };
 addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === ' ') e.preventDefault(); if (KEYS[k]) KEYS[k](); else if ('123'.includes(k) && idle() && S.gold >= BETS[+k - 1]) S.bet = BETS[+k - 1]; ui(); });
 // ------------------------------------------------------------ 탁자: 나무 탁자 위에 초록 양탄자 (2px 칸)
 const hsh = (x, y, s = 0) => { const v = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return v - Math.floor(v); };
@@ -369,7 +404,7 @@ function arrow(x, y) { ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 8, y - 2, 16,
   ctx.fillStyle = '#f2d78c'; ctx.fillRect(x - 6, y, 12, 2); ctx.fillRect(x - 4, y + 2, 8, 2); ctx.fillRect(x - 2, y + 4, 4, 2); }
 function drawHand(h, y, hideHole, dt, cx) {
   h.forEach((c, i) => { const s = slot(i, h.length, y, cx); c.a = Math.min(1, c.a + dt / 0.18); const k = 1 - (1 - c.a) ** 2; if (c.a >= 1) { c.x += (s.x - c.x) * Math.min(1, dt * 18); c.y = s.y; } else { c.x = PILE.x + (s.x - PILE.x) * k; c.y = PILE.y + (s.y - PILE.y) * k; }
-    const x = snap(c.x), yy = snap(c.y), up = c.up || !hideHole, ft = c.flip != null ? (S.t - c.flip) / 0.16 : 1;
+    const x = snap(c.x) + (c.ox || 0), yy = snap(c.y) + (c.oy || 0), up = c.up || !hideHole, ft = c.flip != null ? (S.t - c.flip) / 0.16 : 1;
     ctx.fillStyle = '#10281f'; ctx.fillRect(x + 6, yy + CHP, CWP - 6, 4); ctx.fillRect(x + CWP, yy + 8, 4, CHP - 4);                  // 양탄자에 지는 그림자 (칸 단위 · 한 가지 색)
     if (ft < 0.5 && c.flip != null) ctx.drawImage(backArt(), x, yy);
     else if (ft < 1 && c.flip != null) { ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x + CWP / 2 - 4, yy, 8, CHP); ctx.fillStyle = '#efe6cf'; ctx.fillRect(x + CWP / 2 - 2, yy + 2, 4, CHP - 4); }
@@ -404,6 +439,7 @@ function frame(now) {
     if (S.H.length > 1 && i === S.hi && (S.ph === 'play' || S.ph === 'wait')) arrow(cx, PY - 16);
     if (h.c.length && h.c.every(c => c.a >= 1)) { const s = slot(h.c.length - 1, h.c.length, PY, cx), t = total(h.c).t, R = { w: '승', p: '무', l: '패' };
       lab('tp' + i, sum(h.c, isBJ(h)) + (S.H.length > 1 ? `<span class="r">${h.bet}개${h.res ? ' · ' + R[h.res] : ''}</span>` : ''), s.x + CWP + 12, PY + 50, 'pf tot' + (t > 21 ? ' bust' : isBJ(h) ? ' bj' : '')); } });
+  drawCandle(); if (CN.st) for (const k in LABS) LABS[k]._on = false;                       // 촛불이 꺼져 있는 동안 · 지목을 고르는 동안엔 합계를 숨김 (외운 것으로만 맞힘)
   for (const k in LABS) if (!LABS[k]._on) LABS[k].style.display = 'none';
   requestAnimationFrame(frame);
 }

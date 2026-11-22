@@ -25,9 +25,9 @@
   #msg { left: 0; right: 0; top: 163px; text-align: center; } #msg .m { font-family: 'Galmuri11'; font-size: 12px; } #msg .s { color: var(--quiet); margin-top: 3px; }
   #msg .m.w { color: var(--gold-l); } #msg .m.l { color: #ff9090; }
   /* 게임의 스테이지 진입 배너와 같은 글꼴 · 그림자 */
-  #title { left: 0; right: 0; top: 150px; text-align: center; opacity: 0; transition: opacity .2s steps(3); pointer-events: none; } #title.on { opacity: 1; }
-  #title .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l); text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
-  #title .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
+  #title, #ctitle { left: 0; right: 0; top: 150px; text-align: center; opacity: 0; transition: opacity .2s steps(3); pointer-events: none; } #title.on, #ctitle.on { opacity: 1; }
+  #title .b1, #ctitle .b1 { font-family: 'Galmuri11'; font-weight: bold; font-size: 24px; letter-spacing: 3px; color: var(--gold-l); text-shadow: 2px 0 0 #000, -2px 0 0 #000, 0 2px 0 #000, 0 -2px 0 #000, 2px 2px 0 #000, 0 4px 0 #5e0f16, 2px 4px 0 #000; }
+  #title .b2, #ctitle .b2 { font-family: 'Galmuri9'; font-size: 10px; color: var(--ink); margin-top: 6px; text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; }
   .lab { color: #cfe0c8; white-space: nowrap; } .tot { padding: 2px 6px 3px; font-family: 'Galmuri11'; font-size: 12px; white-space: nowrap; } .tot.bust { color: #ff9090; } .tot.bj { color: var(--gold-l); } .tot .r { font-family: 'Galmuri9'; font-size: 10px; color: var(--quiet); margin-left: 5px; }
   #bar { left: 0; right: 0; top: 384px; display: flex; justify-content: center; gap: 14px; } #bar > * { position: relative; }
   .bt { padding: 5px 4px 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-family: 'Galmuri11'; font-size: 12px; color: var(--ink); text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000; } .bt .key { text-shadow: none; }
@@ -38,7 +38,7 @@
   #pay { left: 10px; top: 8px; width: 150px; padding: 6px 8px 7px; } #pay .h { font-family: 'Galmuri11'; font-size: 12px; color: var(--gold-l); margin-bottom: 4px; }
   #pay .r { display: flex; align-items: center; gap: 3px; margin-top: 3px; white-space: nowrap; } #pay .r img { width: 14px; height: 14px; image-rendering: pixelated; } #pay .r span { margin-left: 3px; } #pay .r b { margin-left: auto; font-weight: normal; color: #ffd34d; } #pay .r b.l { color: #ff9090; }
   #pay .n { color: var(--quiet); margin-top: 6px; line-height: 1.5; }
-  #msg { top: 92px; } #title { top: 76px; }
+  #msg { top: 92px; } #title { top: 76px; } #ctitle { top: 128px; }
   .fr { width: 14px; height: 18px; image-rendering: pixelated; vertical-align: -5px; margin-right: 3px; } .bt .fr { margin-right: 2px; } #info { align-items: center; padding-top: 2px; padding-bottom: 3px; }
   /* v3.18 글자 수에 따라 상자 크기가 바뀌지 않게 고정 */
   #info { width: 84px; justify-content: center; overflow: hidden; } #stat { display: none !important; } /* v3.18 승무패 전적은 표시하지 않음 */ .tot { width: 112px; text-align: center; overflow: hidden; }
@@ -46,7 +46,7 @@
 <div id="wrap"><canvas id="cv" width="1152" height="648"></canvas>
   <div id="ui">
     <div id="pay" class="pf"></div><div id="info" class="pf"></div><div id="stat" class="pf"></div>
-    <div id="title"><div class="b1">주사위 도박사 영수의 테이블</div><div class="b2">판돈을 걸고 주사위를 던집니다.</div></div>
+    <div id="ctitle"><div class="b1">바꿔치기를 지목합니까?</div><div class="b2">불이 꺼지기 전에 본 것과 비교합니다.</div></div><div id="title"><div class="b1">주사위 도박사 영수의 테이블</div><div class="b2">판돈을 걸고 주사위를 던집니다.</div></div>
     <div id="msg" class="out"><div class="m"></div><div class="s"></div></div>
     <div id="labs"></div><div id="bar"></div>
   </div></div>
@@ -191,8 +191,8 @@ const S = { ph: 'bet', gold: 10, bet: 1, t: 0, q: [], msg: '', sub: '', res: nul
 const FRUIT_MAP = ['.....kk', '....kTk', '.kk.kBk', 'kgGkBbk', '.kkBBk.', '.kBbk..', 'kBbk...', 'kTk....', '.k.....'], FRUIT_PAL = { k: '#0e0a0c', g: '#6cc040', G: '#2e6a1a', B: '#8a5a34', b: '#5e3a20', T: '#d8b47a' };
 const FRUIT_URL = (() => { const c = document.createElement('canvas'); c.width = 14; c.height = 18; const g = c.getContext('2d'); FRUIT_MAP.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; g.fillStyle = FRUIT_PAL[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return c.toDataURL(); })();
 const fr = n => `<img class="fr" src="${FRUIT_URL}">${n}개`, BETS = [1, 2, 5];
-let HUBMODE = false;                                                                                          /* 교환 화면에서 열렸으면 가지를 그쪽과 함께 씀 */
-addEventListener('message', e => { const d = e.data; if (d && d.dfag === 'hub') { HUBMODE = true; S.gold = d.n; fixBet(); ui(); } });
+let HUBMODE = false, PDEV = false;                                                                            /* PDEV: 게임이 테스트 모드인지 (교환 화면이 알려 줌) */                                                                                          /* 교환 화면에서 열렸으면 가지를 그쪽과 함께 씀 */
+addEventListener('message', e => { const d = e.data; if (d && d.dfag === 'hub') { HUBMODE = true; PDEV = !!d.dev; S.gold = d.n; fixBet(); ui(); } });
 if (parent !== window) parent.postMessage({ dfag: 'ready' }, '*');
 const idle = () => S.ph === 'bet' || S.ph === 'end';
 function leave() { if (HUBMODE && idle()) parent.postMessage({ dfag: 'leave', n: S.gold }, '*'); }
@@ -210,27 +210,62 @@ function throwDice(done) { snd('dice'); const v = [0, 0, 0].map(() => 1 + Math.f
 function turn(who) { S.who = who; S.tries = 0; if (who === 'D') { S.msg = '영수가 던집니다.'; S.sub = ''; ui(); later(0.5, () => roll()); } else { S.ph = 'play'; S.msg = '주사위를 던집니다.'; S.sub = '끗이 나올 때까지 세 번 던질 수 있습니다.'; ui(); } }
 function roll() { if (S.who === 'P') { if (S.ph !== 'play') return; S.ph = 'wait'; } S.tries++; throwDice(v => { const h = read(v), who = S.who, name = who === 'D' ? '영수' : '나';
     if (!h && S.tries < 3) { S.msg = `${name}: 끗이 없습니다.`; S.sub = `다시 던집니다. (남은 기회 ${3 - S.tries}번)`; if (who === 'D') later(0.9, roll); else S.ph = 'play'; ui(); return; }
-    const res = h || NONE; S[who] = res; S.kept.push({ who, v, res, R: S.dice.map(d => d.Rf), seeds: S.dice.map(d => d.seed) });
-    if (who === 'D') { S.msg = `영수: ${res.n}`; S.sub = ''; ui(); later(1.0, () => { S.dice = []; turn('P'); }); } else end(); ui(); }); ui(); }
+    const res = h || NONE; S[who] = res; S.kept.push({ who, v: v.slice(), res, R: S.dice.map(d => d.Rf), seeds: S.dice.map(d => d.seed) });
+    if (who === 'D') { S.msg = `영수: ${res.n}`; S.sub = ''; ui(); later(1.0, () => { S.dice = []; turn('P'); }); } else candle(() => { end(); ui(); }); ui(); }); ui(); }
 function start() { if (S.ph !== 'bet' && S.ph !== 'end') return; if (S.gold < S.bet) return; S.first = false; S.ph = 'deal'; S.res = null; S.D = S.P = null; S.kept = []; S.dice = []; turn('D'); }
 function end() { const D = S.D, P = S.P, b = S.bet; let r, m = 1;
   if (P.r > D.r) { r = 'w'; m = Math.max(P.m, D.bad ? 2 : 1); } else if (P.r < D.r || (P.none && D.none)) { r = 'l'; m = Math.max(D.m, P.bad ? 2 : 1); } else r = 'p';   // 둘 다 끗이 없으면 딜러 승
   const g = b * m, lose = Math.min(g, S.gold);                                                                // 개다래나무 가지 칩이 모자라면 가진 만큼만 잃음
   if (r === 'w') { S.gold += g; S.msg = `${P.n}${P.n.endsWith('1') ? '로' : '으로'} 이겼습니다. 개다래나무 가지 칩 ${g}개를 받습니다.`; } else if (r === 'l') { S.gold -= lose; S.msg = P.none && D.none ? `둘 다 끗이 없습니다. 개다래나무 가지 칩 ${lose}개를 잃습니다.` : `영수의 ${D.n}에 졌습니다. 개다래나무 가지 칩 ${lose}개를 잃습니다.`; } else S.msg = '비겼습니다. 판돈을 돌려받습니다.';
-  S.sub = m > 1 ? (r === 'l' && lose < g ? `${m}배로 세지만 가진 개다래나무 가지 칩만 잃습니다.` : `${m}배로 셉니다.`) : ''; S.res = r; if (r !== 'p') snd(r === 'w' ? 'win' : 'lose'); S.ph = 'end'; fixBet(); S.stat.n++; S.stat[r]++; }
+  S.sub = m > 1 ? (r === 'l' && lose < g ? `${m}배로 세지만 가진 개다래나무 가지 칩만 잃습니다.` : `${m}배로 셉니다.`) : ''; { const h = hidTxt(); if (h) S.sub = S.sub ? S.sub + ' ' + h : h; } S.res = r; if (r !== 'p') snd(r === 'w' ? 'win' : 'lose'); S.ph = 'end'; fixBet(); S.stat.n++; S.stat[r]++; }
+
+// ------------------------------------------------------------ 촛불 변칙 (v3.20): 판마다 확률로 촛불이 꺼지고, 어둠 속에서 영수가 바꿔치기를 할 수도 · 안 할 수도 있음
+// 불이 켜지면 꺼지기 전에 외워 둔 것과 비교해 「바꿔치기다!」 지목 — 맞히면 판돈 2배를 받고 되돌림 · 틀리면 판돈 2배를 잃음 · 넘어가면 바꾼 그대로 진행
+// 비뚤어진 주사위는 단서가 아님: 바꿨든 안 바꿨든 무작위로 하나가 비뚤어짐 (영수의 속임수)
+const CANDLE = { p: 0.25, swap: 0.6, fake: 0.5 }, CN = { st: null, t0: 0, swap: null, next: null, hid: false, force: false };
+function candle(then) { if (!CN.force && Math.random() >= CANDLE.p) { then(); return; } CN.force = false;
+  CN.next = then; CN.swap = null; CN.st = 'out'; CN.t0 = S.t; S.ph = 'cnd'; S.msg = '촛불이 흔들립니다.'; S.sub = ''; ui();
+  later(0.45, () => { CN.st = 'dark'; S.msg = ''; ui(); });
+  later(1.0, () => { snd('dice'); if (Math.random() < CANDLE.swap) doSwap(); if (Math.random() < CANDLE.fake) doFake(); }); // 어둠 속 소리는 바꾸든 안 바꾸든 똑같이 남
+  later(1.9, () => { CN.st = 'on'; CN.t0 = S.t; });
+  later(2.25, () => { CN.st = 'lit'; S.msg = ''; S.sub = ''; ui(); }); }
+const josa = (x, a, b) => ['1', '3', '6', '7', '8', '10'].includes(String(x)) ? a : b, swapTxt = () => { const w = CN.swap; return `${w.on} ${w.from}${josa(w.from, '을', '를')} ${w.to}${['3', '6', '10'].includes(String(w.to)) ? '으로' : '로'}`; }; // 「내 카드 7을 K로」
+function accuse(yes) { if (S.ph !== 'cnd' || CN.st !== 'lit') return; CN.st = null;
+  if (!yes) { CN.hid = ''; S.msg = ''; S.sub = ''; const f = CN.next; CN.next = null; f(); ui(); return; } // 넘어가면 바꿨는지 알려주지 않고 그대로 이어서 진행
+  // 지목하면 맞히든 틀리든 그 자리에서 판을 끝냄: 맞히면 판돈의 두 배를 따고 · 틀리면 판돈의 두 배를 잃음
+  const b2 = S.bet * 2, paid = 0; CN.next = null; S.q.length = 0;
+  if (CN.swap) { const tx = swapTxt(); undoSwap(); S.gold += paid + b2; S.res = 'w'; S.msg = `영수의 바꿔치기를 잡아냈습니다. 개다래나무 가지 칩 ${b2}개를 받습니다.`; S.sub = `영수가 ${tx} 바꿔치기했습니다. 이번 판은 여기서 끝납니다.`; snd('win'); }
+  else { const l = Math.min(b2 - paid, S.gold); S.gold -= l; S.res = 'l'; S.msg = `영수는 아무것도 바꾸지 않았습니다. 개다래나무 가지 칩 ${l + paid}개를 잃습니다.`; S.sub = '이번 판은 여기서 끝납니다.'; snd('lose'); }
+  S.stat.n++; S.stat[S.res]++; S.ph = 'end'; fixBet(); ui(); }
+function drawCandle() { if (!CN.st || CN.st === 'lit') return; const k = S.t - CN.t0;   // 꺼질 땐 두어 번 깜빡이다 꺼지고, 켜질 땐 단계를 밟아 밝아짐
+  const a = CN.st === 'out' ? [0.35, 0, 0.6, 0.15, 0.8][Math.min(4, Math.floor(k / 0.09))] : CN.st === 'dark' ? 1 : [0.85, 0.55, 0.7, 0.25][Math.min(3, Math.floor(k / 0.09))];
+  ctx.fillStyle = `rgba(3,2,5,${a})`; ctx.fillRect(0, 0, VW, VH); }
+const cndBar = bar => { bar.appendChild(bt('Q', `바꿔치기다! <span style="color:var(--quiet)">(맞히면 판돈의 두 배를 따고, 틀리면 두 배를 잃습니다)</span>`, () => accuse(true), CN.st === 'lit' ? '' : 'off')); bar.appendChild(bt('SPACE', '그냥 넘어가기', () => accuse(false), CN.st === 'lit' ? '' : 'off')); };
+const hidTxt = () => { const s = CN.hid ? `이번 판, 어둠 속에서 영수가 ${CN.hid} 바꿔치기했습니다.` : ''; CN.hid = ''; return s; };
+addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === 'c' && e.shiftKey && (parent === window || PDEV)) { CN.force = true; S.sub = '(테스트) 다음 판은 촛불이 꼭 꺼집니다.'; ui(); } }); // 테스트 모드에서만: Shift+C
+function doSwap() { const kp = S.kept.find(k => k.who === 'D'), vD = kp.v.slice(), vP = S.dice.map(d => d.n), sc = (a, b) => { const D = read(a) || NONE, P = read(b) || NONE; return D.r - P.r; }, opt = [];
+  for (let i = 0; i < 3; i++) for (let n = 1; n <= 6; n++) { if (n !== vD[i]) { const a = vD.slice(); a[i] = n; opt.push({ s: sc(a, vP), D: true, i, n }); } } // 영수는 자기 주사위만 바꿔치기함
+  const win = opt.filter(o => o.s > 0), pool = win.length ? win : opt.filter(o => o.s === Math.max(...opt.map(q => q.s))), o = pool[Math.floor(Math.random() * pool.length)];  // 영수가 이기게 되는 바꿔치기 중 하나 (없으면 가장 유리한 쪽)
+  if (o.D) { CN.swap = { D: true, i: o.i, n: kp.v[o.i], R: kp.R[o.i], on: '자기 주사위', from: kp.v[o.i], to: o.n }; kp.v[o.i] = o.n; kp.R[o.i] = restR(o.n); } else { const d = S.dice[o.i]; CN.swap = { D: false, i: o.i, n: d.n, R: d.Rf, on: '내 주사위', from: d.n, to: o.n }; d.n = o.n; d.Rf = restR(o.n); }
+  reread(); }
+function undoSwap() { const w = CN.swap, kp = S.kept.find(k => k.who === 'D'); if (w.D) { kp.v[w.i] = w.n; kp.R[w.i] = w.R; } else { S.dice[w.i].n = w.n; S.dice[w.i].Rf = w.R; } CN.swap = null; reread(); }
+function reread() { const kp = S.kept.find(k => k.who === 'D'); kp.res = read(kp.v) || NONE; S.D = kp.res; S.P = read(S.dice.map(d => d.n)) || NONE; const kq = S.kept.find(k => k.who === 'P'); if (kq) { kq.v = S.dice.map(d => d.n); kq.res = S.P; } }
+function doFake() { const kp = S.kept.find(k => k.who === 'D'), i = Math.floor(Math.random() * 6), dx = (Math.random() < 0.5 ? -1 : 1) * 20, dy = (Math.random() < 0.5 ? -1 : 1) * 14; // 아무 주사위 하나를 슬쩍 옮겨 둠 (칸 단위)
+  if (i < 3) { kp.off = kp.off || [[0, 0], [0, 0], [0, 0]]; kp.off[i] = [dx, dy]; } else { S.dice[i - 3].fx += dx; S.dice[i - 3].fy += dy; } }
 // ------------------------------------------------------------ UI
 function bt(key, label, fn, cls = '') { const b = document.createElement('div'); b.className = 'bt ' + cls; b.innerHTML = `<span class="key">${key}</span><span>${label}</span>`; if (!cls.includes('off')) b.onclick = () => { fn(); ui(); }; return b; }
 function ui() { const bar = $('bar'); bar.innerHTML = '';
   if (idle()) { BETS.forEach((v, i) => bar.appendChild(bt(i + 1, fr(v), () => { S.bet = v; }, S.gold < v ? 'off' : S.bet === v ? 'sel' : '')));
     bar.appendChild(bt('SPACE', S.ph === 'end' ? '한 판 더' : '시작하기', start, S.gold < S.bet ? 'off' : '')); tail(bar); }
+  else if (S.ph === 'cnd') cndBar(bar);
   else bar.appendChild(bt('SPACE', `주사위 던지기 (${Math.min(3, S.tries + 1)} / 3)`, roll, S.ph === 'play' ? '' : 'off'));
   $('info').innerHTML = `<span title="개다래나무 가지 칩"><b>${fr(S.gold)}</b></span>`;
   $('stat').innerHTML = `<i>승</i> ${S.stat.w} <i>무</i> ${S.stat.p} <i>패</i> ${S.stat.l}`;
-  $('title').classList.toggle('on', S.ph === 'bet'); const m = $('msg'); m.children[0].textContent = S.msg; m.children[0].className = 'm ' + (S.ph === 'end' ? S.res : ''); m.children[1].textContent = S.sub; }
+  $('title').classList.toggle('on', S.ph === 'bet'); $('ctitle').classList.toggle('on', S.ph === 'cnd' && CN.st === 'lit'); /* 바꿔치기를 고를 땐 타이틀 글씨로 화면 가운데 */ const m = $('msg'); m.children[0].textContent = S.msg; m.children[0].className = 'm ' + (S.ph === 'end' ? S.res : ''); m.children[1].textContent = S.sub; }
 function payTable() { const d = n => `<img src="${dieArt(n).toDataURL()}">`, row = (ds, label, mul, cls = '') => `<div class="r">${ds.map(d).join('')}<span>${label}</span><b class="${cls}">${mul}</b></div>`;
   $('pay').innerHTML = `<div class="h">끗 순서</div>` + row([1, 1, 1], '', '5배') + row([6, 6, 6], '같은 눈 셋', '3배') + row([4, 5, 6], '', '2배') + row([3, 3, 5], '5끗', '1배') + row([2, 4, 6], '끗 없음', '1배') + row([1, 2, 3], '', '2배 잃음', 'l')
     + `<div class="n f7">같은 눈 둘이 나오면 남은 하나가 끗입니다.</div>`; }
-addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === ' ') { e.preventDefault(); if (S.ph === 'play') roll(); else start(); } else if ('123'.includes(k) && idle() && S.gold >= BETS[+k - 1]) S.bet = BETS[+k - 1]; else if (k === 'r') refill(); else if (k === 'escape') leave(); ui(); });
+addEventListener('keydown', e => { const k = e.key.toLowerCase(); if (k === ' ') { e.preventDefault(); if (S.ph === 'cnd') accuse(false); else if (S.ph === 'play') roll(); else start(); } else if (k === 'q') accuse(true); else if ('123'.includes(k) && idle() && S.gold >= BETS[+k - 1]) S.bet = BETS[+k - 1]; else if (k === 'r') refill(); else if (k === 'escape') leave(); ui(); });
 // ------------------------------------------------------------ 그리기
 const LABS = {};
 function lab(id, html, x, y, cls) { let e = LABS[id]; if (!e) { e = LABS[id] = document.createElement('div'); $('labs').appendChild(e); } e.className = cls; if (e._h !== html) { e.innerHTML = html; e._h = html; } e.style.left = Math.round(x / 1.5) + 'px'; e.style.top = Math.round(y / 1.5) + 'px'; e.style.display = ''; e._on = true; }
@@ -242,12 +277,13 @@ function frame(now) { const dt = Math.min(0.05, (now - last) / 1000); last = now
   FLK.next -= dt; if (FLK.next <= 0) { FLK.next = 0.18 + Math.random() * 0.32; const r = Math.random(); FLK.i = Math.max(0, Math.min(TABLES.length - 1, FLK.i + (r < 0.42 ? -1 : r < 0.7 ? 1 : 0))); }
   ctx.drawImage(TABLES[FLK.i], 0, 0);
   for (const k in LABS) LABS[k]._on = false;
-  for (const kp of S.kept) { if (kp.who !== 'D') continue; kp.v.forEach((n, i) => { const x = BCX - 70 + i * 70, y = 84; shadow(x, y, 0); drawCube(ctx, x, y, kp.R[i], kp.seeds[i]); }); lab('kd', `영수 <span class="r">${kp.res.n}</span>`, BCX + 124, 70, 'pf tot' + (kp.res.bad ? ' bust' : kp.res.m > 1 ? ' bj' : '')); } // 영수의 주사위는 위쪽에 놓아 둠
+  for (const kp of S.kept) { if (kp.who !== 'D') continue; kp.v.forEach((n, i) => { const o = kp.off ? kp.off[i] : [0, 0], x = BCX - 70 + i * 70 + o[0], y = 84 + o[1]; shadow(x, y, 0); drawCube(ctx, x, y, kp.R[i], kp.seeds[i]); }); lab('kd', `영수 <span class="r">${kp.res.n}</span>`, BCX + 124, 70, 'pf tot' + (kp.res.bad ? ' bust' : kp.res.m > 1 ? ' bj' : '')); } // 영수의 주사위는 위쪽에 놓아 둠
   const live = S.dice.map(d => { const k = Math.max(0, Math.min(1, (S.t - d.t0) / d.dur)), e = 1 - (1 - k) ** 2.2, x = d.sx + (d.fx - d.sx) * e, y = d.sy + (d.fy - d.sy) * e;
     const z = k >= 1 ? 0 : 90 * (1 - k) ** 1.6 * Math.abs(Math.cos(k * Math.PI * 3.5)), th = d.amp * (1 - k) ** 2, R = k >= 1 ? d.Rf : mm(rotAxis(d.ax, th), d.Rf); return { d, x, y, z, R, k }; }).sort((a, b) => a.y - b.y);
   for (const o of live) if (S.t >= o.d.t0) shadow(o.x, o.y, o.z);
   for (const o of live) if (S.t >= o.d.t0) drawCube(ctx, o.x, o.y - o.z, o.R, o.d.seed);
   if (S.P && S.ph === 'end') lab('kp', `나 <span class="r">${S.P.n}</span>`, BCX + 176, BCY - 14, 'pf tot' + (S.P.bad ? ' bust' : S.P.m > 1 ? ' bj' : ''));
+  drawCandle(); if (CN.st) for (const k in LABS) LABS[k]._on = false;                       // 꺼져 있는 동안 · 지목을 고르는 동안엔 끗 표시를 숨김 (외운 것으로만 맞힘)
   for (const k in LABS) if (!LABS[k]._on) LABS[k].style.display = 'none';
   requestAnimationFrame(frame); }
 const fit = () => { const k = Math.min(1, innerWidth / VW, innerHeight / VH); $('wrap').style.transform = k < 1 ? `scale(${k})` : ''; }; addEventListener('resize', fit); fit();

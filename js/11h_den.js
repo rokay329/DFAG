@@ -197,9 +197,9 @@ const DEN = (() => {
   function closeGame(n) { const f = $('denGame'), R = cur(); if (GAME == null) return; if (n != null) ST().tw = Math.max(0, Math.floor(n)); f.style.display = 'none'; f.src = 'about:blank';
     if (R) R.den.c[GAME].st = 'idle'; GAME = null; clearKeys(); mode = 'play'; window.focus(); }
   addEventListener('message', e => { const d = e.data; if (!d || !d.dfag || GAME == null) return;
-    if (d.dfag === 'ready') $('denGame').contentWindow.postMessage({ dfag: 'hub', n: ST().tw }, '*'); else if (d.dfag === 'leave') closeGame(d.n);
+    if (d.dfag === 'ready') $('denGame').contentWindow.postMessage({ dfag: 'hub', n: ST().tw, dev: !!window.DEV }, '*'); else if (d.dfag === 'leave') closeGame(d.n);
     else if (d.dfag === 'sfx') { const k = { card: 'denCard', dice: 'denDice', win: 'denWin', lose: 'denLose' }[d.k]; if (k) sfx(k); } }); // v3.18 미니게임 효과음은 게임 쪽 소리로
-  DEVK.set('ESC', '미니게임 창 강제로 닫기'); // v3.20 테스트 단축키 목록
+  DEVK.set('ESC', '미니게임 창 강제로 닫기'); DEVK.set('C (미니게임)', '블랙잭 · 주사위: 다음 판 촛불이 꼭 꺼짐'); // v3.20 테스트 단축키 목록
   addEventListener('keydown', e => { if (typeof mode === 'undefined' || mode !== 'den') return;
     if (GAME != null) { if (e.key === 'Escape' && e.shiftKey && window.DEV) closeGame(null); return; } // 테스트: Shift+ESC로 미니게임을 강제로 닫음 (가지는 그대로)
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEx(); } else if ('1234'.includes(e.key)) pickEx(+e.key - 1); }, true);
