@@ -1,9 +1,10 @@
 'use strict';
 // 잿빛 왕관 원정대 — 25_habi_ult.js : 그레이브 각성 「등 맡기기」 (v3.15) — 하비가 내려와 6초 동안 그레이브 등 뒤를 맡는다
 // 각성을 쓰면 하비가 왼쪽 위에서 비스듬히 내리꽂혀 그레이브 등 뒤에 착지 → 등을 맞댄 채 따라다니며 뒤쪽 적을 쌍열 샷건으로 쏨(2발 · 재장전). 뒤쪽에 적이 없으면 그레이브 옆으로 나와 앞쪽 적을 쏨 → 한마디 → 왼쪽 위로 튀어 오름
-// 그레이브는 그동안 평소처럼 움직이고 쏜다 (조준하며 멈춰 서는 시간 없음) · 그레이브가 점멸하면 같이 점멸 · 난입자는 하비 산탄도 읽고 피함 · 장의사의 머스킷: 하비 산탄 150%
+// 그레이브는 그동안 평소처럼 움직이고 쏜다 (조준하며 멈춰 서는 시간 없음) · v3.20 그레이브가 구르면 하비도 같이 구름 (꾹 눌림 → 다이브 → 말림 → 착지) · 난입자는 하비 산탄도 읽고 피함 · 장의사의 머스킷: 하비 산탄 150%
 const HABIULT = (() => {
   const HD = {"f":{"base":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...","......kaaauwwwuwAAkkHk...",".......kaawwNwwAAk.kHk...","........kk11SSSkkk.kHk...",".......k23CCBCCCck.kHk...",".......kAk23xCckakkWWk...","........kCCCkCCCkkWWk....",".........kFFk.kFFkkk.....",".........kkkk.kkkk......."],"baseB":["..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...","......kaaanwwwnwAAkkHk...",".......kaawwNwwAAk.kHk...","........kk11SSSkkk.kHk...",".......k23CCBCCCck.kHk...",".......kAk23xCckakkWWk...","........kCCCkCCCkkWWk....",".........kFFk.kFFkkk.....",".........kkkk.kkkk......."],"idle":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaanwwwnwwAkkHk...","......kaaauwwwuwAAkkHk...",".......kaawwNwwAAk.kHk...","........kk11SSSkkk.kHk...",".......k23CCBCCCck.kHk...",".......kAk23xCckakkWWk...",".........kFFk.kFFkkk.....",".........kkkk.kkkk......."],"idleB":[".........................","..........k...k..........",".........kak.kak...k.....","........kpak.kapk.kHk....",".......kaaaaaaaaak.kHk...","......kaaaaawaaaaakkHk...","......kaaaawwwawwAkkHk...","......kaaanwwwnwAAkkHk...",".......kaawwNwwAAk.kHk...","........kk11SSSkkk.kHk...",".......k23CCBCCCck.kHk...",".......kAk23xCckakkWWk...",".........kFFk.kFFkkk.....",".........kkkk.kkkk......."]},"p":{"1":"#b9b9c3","2":"#a9a9b4","3":"#8f8f9b","A":"#d8d4cc","B":"#5a5a62","C":"#c9c9d1","F":"#8a8a96","H":"#fbf9f5","K":"#0b0a0e","N":"#e8909a","S":"#4a3020","W":"#dcd8d0","a":"#fbf9f5","b":"#8d9097","c":"#dcdce2","k":"#0b0a0e","n":"#16120e","p":"#eaa4a8","s":"#6b4a2a","u":"#cfa628","w":"#fbf9f5","x":"#5e5e6a"}};
+  const HR = {"pre": [".........................", ".........................", "..........k...k..........", ".........kak.kak...k.....", "........kpak.kapk.kHk....", ".......kaaaaaaaaak.kHk...", "......kaaaaawaaaaakkHk...", "......kaaanwwwnwwAkkHk...", "......kaaauwwwuwAAkkHk...", ".......kaawwNwwAAk.kHk...", "........kk11SSSkkk.kHk...", ".......kAk23xCckakkWWk...", ".........kFFk.kFFkkk.....", ".........kkkk.kkkk......."], "dive": [".........................", ".........................", ".........................", "..............k...k......", ".............kak.kak.....", "............kpak.kapk.k..", ".kkkkkkk...kaaaaaaaaak...", "kWWHHkk11Skaaaaawaaaaak..", ".kkkk23CCBkaaanwwwnwwAk..", "....kAk23xkaaauwwwuwAAk..", ".....kCCCkCkaawwNwwAAk...", "......kFFk.kFF...........", "......kkkk.kkkk..........", "........................."], "curl": ["........kakkkkkkak.......", "........kapaaaapak.......", ".......kaaaaaaaaak.......", ".......kaaaaaaaaaak......", "......kWkaaaaaaaaak......", ".....kHHaannaannaaak.....", ".....kHHaaaaaaaaaaAk.....", ".....kHkaaaaNNaaaAAk.....", ".....kHHaaaaaaaaAAAk.....", ".....kHHSSSSSSSSS33k.....", "......kHkCCCCCC333k......", "......kHkCCCCCC333k......", ".......kCCCCCCC33k.......", "........kk33333kk........", "..........kkkkk..........", "........................."], "land": [".........................", ".........................", "..........k...k..........", ".........kak.kak...k.....", "........kpak.kapk.kHk....", ".......kaaaaaaaaak.kHk...", "......kaaaaawaaaaakkHk...", "......kaaanwwwnwwAkkHk...", "......kaaauwwwuwAAkkHk...", ".......kaawwNwwAAk.kHk...", "........kk11SSSkkk.kHk...", ".......kAk23xCckakkWWk...", ".........kFFk.kFFkkk.....", ".........kkkk.kkkk......."], "up": ["..........k...k..........", ".........kak.kak...k.....", "........kpak.kapk.kHk....", ".......kaaaaaaaaak.kHk...", "......kaaaaawaaaaakkHk...", "......kaaanwwwnwwAkkHk...", "......kaaauwwwuwAAkkHk...", ".......kaawwNwwAAk.kHk...", "........kk11SSSkkk.kHk...", ".......k23CCBCCCck.kHk...", ".......kAk23xCckakkWWk...", "........kCCCkCCCkkWWk....", ".........kFFk.kFFkkk.....", ".........kkkk.kkkk......."], "settle": [".........................", "..........k...k..........", ".........kak.kak...k.....", "........kpak.kapk.kHk....", ".......kaaaaaaaaak.kHk...", "......kaaaaawaaaaakkHk...", "......kaaanwwwnwwAkkHk...", "......kaaauwwwuwAAkkHk...", ".......kaawwNwwAAk.kHk...", "........kk11SSSkkk.kHk...", ".......k23CCBCCCck.kHk...", ".......kAk23xCckakkWWk...", ".........kFFk.kFFkkk.....", ".........kkkk.kkkk......."]}; // v3.20 하비 구르기 도트: pre 꾹 눌림 · dive 다이브 · curl 말림(90°씩 돎) · land 착지 · up 튕김 · settle 살짝 눌림
   const SR = ["......ymmmmmmmmmmh", "tt...ndddddddddddd", "tsssssyMMMMMMMMMMh", "tSSSs.n.ssssssss..", "SS....g..........."]; // 외곽선은 rotW가 바깥에 1칸 붙임 (칸 안에는 넣지 않음)
   const SG = { cells: SR.map(r => [...r]), w: SR[0].length, h: SR.length, px: 5, py: 3, pal: {'k': '#0b0a0e', 's': '#8a5a32', 'S': '#5a3820', 't': '#b07848', 'm': '#d8dce4', 'M': '#9da2ac', 'd': '#3e3e48', 'n': '#6a6a74', 'g': '#2a2a32', 'y': '#c9a24a', 'h': '#1a1a20'}, reach: 0, rot: {} };
   { let m = 0; SR.forEach((r, y) => [...r].forEach((c, x) => { if (c !== '.') m = Math.max(m, Math.hypot(x - SG.px, y - SG.py)); })); SG.reach = Math.round(m * 2); }
@@ -72,19 +73,17 @@ const HABIULT = (() => {
     if (H.trail) { for (const q of H.trail) q.t -= dt; H.trail = H.trail.filter(q => q.t > 0); }
     if (P.dead && H.ph !== 'out' && H.ph !== 'crouch') { H.ph = 'crouch'; H.t = 0; }
     const b = slot();
-    // 같이 점멸: 그레이브가 점멸하면 하비도 같은 효과로 사라졌다가 그레이브 등 뒤에 바로 나타남
-    const blinking = P.state === 'dodge' && P.t < BLINK;
-    if (H.ph === 'on' || H.ph === 'bye') {
-      if (blinking && !H.hide) { H.hide = true; blinkBurst(H.x, H.y - 10); }
-      else if (!blinking && H.hide) { H.hide = false; const q = slot(); H.x = q.x; H.y = q.y; H.ox = q.x - P.x; H.oy = q.y - P.y; blinkBurst(H.x, H.y - 10); }
-    }
+    // v3.20 같이 구르기: 그레이브가 구르는 동안 하비도 등에 붙은 자리 그대로 같은 방향 · 같은 박자로 구름 (그동안 쏘지 않음)
+    const rolling = P.state === 'dodge' && P.rolling;
+    if (rolling && !H.rolling) { H.rollF = (P.dvx || 0) < 0 ? -1 : 1; for (let i = 0; i < 5; i++) G.parts.push({ x: H.x + rand(-4, 4), y: H.y - rand(0, 2), vx: -(P.dvx || 0) * 30 + rand(-10, 10), vy: rand(-16, -4), t: 0.3, c: pick(['#8a8078', '#a89c90']), g: 0 }); }
+    H.rolling = rolling;
     if (H.ph === 'in') { const k = Math.min(1, H.t / IN_T); H.z = 240 * (1 - k) ** 2; H.x = b.x; H.y = b.y; (H.trail = H.trail || []).push({ x: H.x, y: H.y, z: H.z, t: 0.12 }); // 하늘에서 내리꽂힘
       if (k >= 1) { H.ph = 'on'; H.t = 0; H.z = 0; H.flashT = 0.08; landFx(H.x, H.y, true); sfx('step'); sfx('dodge'); } }
     if (H.ph === 'on' && !H.hide) {
       { const k = Math.min(1, dt * 10); if (H.ox == null) { H.ox = H.x - P.x; H.oy = H.y - P.y; } const tx = b.x - P.x, ty = b.y - P.y, ox0 = H.ox, oy0 = H.oy; H.ox += (tx - H.ox) * k; H.oy += (ty - H.oy) * k; H.oSpd = Math.hypot(H.ox - ox0, H.oy - oy0) / Math.max(dt, 1e-3); H.x = P.x + H.ox; H.y = P.y + H.oy; } // v3.16 등에 붙어 따라다님: 그레이브와의 간격만 부드럽게 바꾸고 몸은 그레이브와 같이 움직임 (따로 끌려오며 후들거리지 않게)
       const e = target(dt), want = e ? Math.atan2(e.y - 8 - (H.y - 5), e.x - H.x) : P.ang + Math.PI;
       H.ang = lerpAng(H.ang, want, Math.min(1, dt * 12)); H.cd -= dt;
-      if (e && H.cd <= 0 && Math.abs(angDiff(H.ang, want)) < 0.25 && Math.hypot(e.x - H.x, e.y - H.y) < REACH + e.r) { shoot(); H.shot++; H.cd = H.shot % 2 ? 0.16 : 0.85; } // 두 발 → 재장전
+      if (e && H.cd <= 0 && !rolling && Math.abs(angDiff(H.ang, want)) < 0.25 && Math.hypot(e.x - H.x, e.y - H.y) < REACH + e.r) { shoot(); H.shot++; H.cd = H.shot % 2 ? 0.16 : 0.85; } // 두 발 → 재장전
     }
     if (H.ph === 'on' && H.t >= DUR) { H.ph = 'bye'; H.t = 0; H.say = pick(OUT); H.sayT = 1.0; }
     if (H.ph === 'bye' && !H.hide) { { const k = Math.min(1, dt * 10); if (H.ox == null) { H.ox = H.x - P.x; H.oy = H.y - P.y; } const tx = b.x - P.x, ty = b.y - P.y, ox0 = H.ox, oy0 = H.oy; H.ox += (tx - H.ox) * k; H.oy += (ty - H.oy) * k; H.oSpd = Math.hypot(H.ox - ox0, H.oy - oy0) / Math.max(dt, 1e-3); H.x = P.x + H.ox; H.y = P.y + H.oy; } if (H.t > 1.0) { H.ph = 'crouch'; H.t = 0; } }
@@ -97,6 +96,8 @@ const HABIULT = (() => {
   function draw() {
     if (!H || H.hide) return;
     const P = G.player, air = H.ph === 'in' || H.ph === 'out', crouch = H.ph === 'crouch', glued = (H.ph === 'on' || H.ph === 'bye') && H.ox != null, moving = !air && !crouch && (glued ? (P.moving && !P.dead) || (H.oSpd || 0) > 30 : (H.spd || 0) > 12); // v3.16 걷기 그림은 그레이브가 걸을 때 (속도가 문턱을 오가며 걷기·서기가 번갈아 깜빡이지 않게)
+    { const rp = (H.ph === 'on' || H.ph === 'bye') && P.state === 'dodge' && P.rolling ? rollPose(P) : null, post = !rp && (H.ph === 'on' || H.ph === 'bye') && P.rollEndAt != null && P.state === 'idle' && time - P.rollEndAt < ROLL_POST ? (time - P.rollEndAt < ROLL_POST / 2 ? 'up' : 'settle') : null;
+      if (rp || post) { drawRoll(P, rp, post); return; } } // v3.20 같이 구르기
     const walk = moving ? Math.floor(time / 0.08) % 4 : -1, idle = crouch || (!air && !moving && Math.floor(time / 0.6) % 2 === 1), blink = !air && blinkAt();
     const flip = P.x < H.x;                                   // 꼬리는 늘 그레이브 쪽 (원래 도트는 꼬리가 오른쪽)
     const look = Math.abs(Math.cos(H.ang)) > 0.38 ? (Math.cos(H.ang) > 0 ? 1 : -1) : 0, gaze = look * (flip ? -1 : 1); // 겨누는 쪽으로 눈
@@ -115,6 +116,17 @@ const HABIULT = (() => {
       ctx.fillStyle = '#0b0a0e'; ctx.fillRect(px - 2, py, 8, 4); ctx.fillRect(px, py - 2, 4, 8);
       ctx.fillStyle = '#fbf9f5'; ctx.fillRect(px, py, 4, 4); ctx.fillStyle = '#d8d4cc'; ctx.fillRect(px, py + 2, 4, 2); }
     if (H.sayT > 0 && !air && !crouch && H.bub) drawBubble(H.say, H.bub.x, H.bub.y - 34); // v3.16 말풍선은 칸에 맞춘 몸 위치가 아니라 부드럽게 따라가는 위치에 (2칸씩 툭툭 튀며 떨리지 않게)
+  }
+  function drawRoll(P, rp, post) { // 하비 구르기: 그레이브와 같은 단계 · 같은 높이 · 말림은 몸 한가운데를 축으로 90°씩
+    const key = rp ? rp.key : post, rows = HR[key].map(r => [...r]), c = art('roll_' + key, rows), f = H.rollF || 1;
+    const gx = snap2(P.x) + snap2(H.ox || 0), gy = snap2(P.y) + snap2(H.oy || 0), lift = rp ? rp.lift : post === 'up' ? 2 : 0, top = gy - c.height + 2 - lift;
+    drawShadow(gx, gy + 1, lift > 6 ? 6 : 8);
+    ctx.save(); ctx.imageSmoothingEnabled = false;
+    if (rp && rp.rot) { const rot = Math.round(Math.abs(rp.rot) / (Math.PI / 2)) * Math.PI / 2 * f, cy = top + c.height / 2; ctx.translate(gx, cy); ctx.rotate(rot); if (f < 0) ctx.scale(-1, 1); ctx.drawImage(c, -footX, -c.height / 2); }
+    else { ctx.translate(gx, 0); if (f < 0) ctx.scale(-1, 1); ctx.drawImage(c, -footX, top); }
+    ctx.restore();
+    if (!rp || !rp.air) { const h0 = hand(), hx = h0.x - H.x + gx, hy = h0.y - H.y + gy - lift; drawBlade(SG, hx, hy, H.ang); } // 공중에선 총을 그리지 않음 (그레이브와 같음)
+    if (H.sayT > 0 && H.bub) drawBubble(H.say, H.bub.x, H.bub.y - 34);
   }
   function ents(list) { if (H) list.push({ y: H.y, d: draw }); }
   return { start, update, ents, threat, get on() { return !!H; }, _H: () => H };

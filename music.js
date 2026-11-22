@@ -198,6 +198,13 @@ window.AudioSys = (() => {
   SONGS.pro_priest = mk({"bpm": 64, "M": 16, "rows": [["F", "C5:4 A4:4"], ["Bb", "D5:2 C5:2 Bb4:4"], ["F", "A4:2 G4:2 F4:4"], ["C", "G4:6 -:2"], ["Dm", "F4:2 A4:2 D5:4"], ["Bb", "D5:3 C5 Bb4:4"], ["C", "A4:2 G4:2 E4:2 G4:2"], ["F", "F4:6 -:2"]], "lead": {"i": "celesta", "vol": 0.12}, "p2": {"i": "celesta", "style": "pluck8", "vol": 0.035}, "bass": {"style": "long", "i": "celesta"}, "echo": {"t": 0.24, "fb": 0.5, "mix": 0.5}, "gba": {"bits": 0, "lp": 7500}}); // 미레아 — 토끼 · 첼레스타
   SONGS.pro_gunner = mk({"bpm": 58, "M": 16, "rows": [["Am", "E4:6 A4:2"], ["Am", "C5:4 B4:2 A4:2"], ["F", "A4:6 -:2"], ["E", "G#4:4 B4:4"], ["Am", "E5:4 D5:2 C5:2"], ["Dm", "D5:3 C5 A4:4"], ["E", "B4:2 G#4:2 E4:4"], ["Am", "A4:6 -:2"]], "lead": {"i": "violin", "vol": 0.085, "gate": 0.97}, "p2": {"style": "none", "i": "violin", "vol": 0}, "bass": {"style": "long", "i": "violin"}, "echo": {"t": 0.24, "fb": 0.5, "mix": 0.5}, "gba": {"bits": 0, "lp": 7500}}); // 그레이브 — 늑대 · 바이올린
   SONGS.den = mk({"bpm": 53, "M": 16, "rows": [["Am", "E4:2 -:6"], ["Am", "-:4 C4:2 -:2"], ["Am", "D#4:2 -:6"], ["Am", "-:4 B3:2 -:2"], ["Am", "E4:2 -:2 F4:2 -:2"], ["Am", "-:4 C4:2 -:2"], ["Am", "D#4:2 -:6"], ["Am", "-:2 B3:2 -:4"]], "lead": {"i": "piano", "vol": 0.1}, "p2": {"style": "none", "i": "piano", "vol": 0}, "bass": {"style": "none", "i": "contra"}, "drum": {"pat": ["t...............", "........t......."], "kit": "light", "vol": 0.24499999999999997, "fill": null}, "echo": {"t": 0.24, "fb": 0.6, "mix": 0.51}, "gba": {"bits": 0, "lp": 7500}}); // 영수 · 명수의 안전 놀이터 — 음산하고 거의 무음 (낮은 피아노 한두 음 + 먼 손북)
+  // v3.20 용의 유적 · 유폐된 지하 유적: 고요한 지하 — 멀리서 떨어지는 물방울처럼 드문드문 맺히는 낮은 피아노 + 아주 옅은 낮은 현 패드 · 긴 메아리 (북 · 베이스 없음)
+  SONGS.ruin = mk({ bpm: 60, M: 16, rows: [
+    ['Am', 'E6 -:3 -:2 A5 -'], ['Am', '-:4 C6 -:3'], ['F', 'A5 -:2 C6 -:4'], ['F', '-:2 F5 -:5'],
+    ['Dm', 'D6 -:3 A5 -:3'], ['Dm', '-:2 F5 -:2 E5 -:2'], ['E', 'G#5 -:3 B5 -:3'], ['E', '-:8'],
+    ['Am', 'C6 -:2 B5 -:2 A5 -'], ['Am', '-:4 E5 -:3'], ['F', 'A5 -:3 G5 -:3'], ['C', '-:2 E5 -:5'],
+    ['Dm', 'F5 -:2 A5 -:2 D6 -'], ['Dm', '-:8'], ['E', 'B5 -:3 G#5 -:3'], ['Am', 'A5:4 -:4'],
+  ], lead: { i: 'piano', vol: 0.13, oct: -24 }, p2: { style: 'trem', i: 'strpad', vol: 0.02, oct: -12 }, bass: { style: 'none', i: 'piano' }, /* v3.20 같은 곡조를 두 옥타브 낮은 피아노로 */ echo: { t: 0.24, fb: 0.58, mix: 0.5, on: [0, 1] }, gba: { lp: 6500 } }); // v3.20 콘트라베이스 뺌
   // 옛 무드 이름 호환
   const ALIAS = { field: 's1', survive: 's1Survive', boss: 's1Boss', rest: 's1Rest', citadel: 's2', citadelSurvive: 's2Survive', citadelBoss: 's2Boss', citadelRest: 's2Rest', orc: 's3', orcboss: 's3Boss' };
 
@@ -238,7 +245,7 @@ window.AudioSys = (() => {
     tribal: { k: ['taiko', 1, 1], s: ['snare', 0.8, 0.7], h: ['N:hat', 1, 0.45], o: ['N:tamb', 1, 0.5], t: ['taiko', 1.5, 0.85], T: ['hand', 1, 0.8], c: ['N:crash', 0.85, 0.55], m: ['anvil', 1, 0.6] },
   };
   const NOISE = { hat: [0.03, 1], tamb: [0.16, 0.8], crash: [1.2, 0.7] }; // 노이즈 [감쇠 시간, 음량]
-  const KCH = { k: 6, t: 6, T: 6 }; // 그 밖의 글자는 채널 7
+  const KCH = { k: 6, t: 6, T: 6 }; // 그 밖의 글자는 채널 7 // 그 밖의 글자는 채널 7
 
   // ------------------------------------------------------------ 샘플 합성 (32kHz, 시작할 때 한 번)
   function makeSamples() {

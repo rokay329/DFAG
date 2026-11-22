@@ -1653,8 +1653,8 @@ huskUp:[
 
   // ================================================================ 1스테이지: 황혼 초원 — 슬라임 · 고블린 · 점액왕
   const isSlime = e => e.type === 'slime' || e.type === 'bigslime' || e.kind === 'slimeking';
-  const bloodOf = e => e.type === 'flag' ? '#8a6a40' : e.type === 'ghost' ? '#9cc1ea' : e.type === 'crow' ? '#3a3446' : e.type === 'mother' ? '#6a8a2a' : isSlime(e) ? '#7ac843' : '#8f1418';
-  const splatOf = e => isSlime(e) ? '60,120,30' : '110,10,16';
+  const bloodOf = e => e.rs ? '#8f1418' /* v3.20 용의 유적 혈액 슬라임 · 용종 */ : e.type === 'flag' ? '#8a6a40' : e.type === 'ghost' ? '#9cc1ea' : e.type === 'crow' ? '#3a3446' : e.type === 'mother' ? '#6a8a2a' : isSlime(e) ? '#7ac843' : '#8f1418';
+  const splatOf = e => isSlime(e) && !e.rs ? '60,120,30' : '110,10,16';
   const SLIME_COL = {
     slime: { k: '#0c160a', d: '#3a7a26', m: '#62b03a', l: '#b8f080' },
     bigslime: { k: '#081414', d: '#1f6a6a', m: '#3aa8a0', l: '#a0f0e0' },

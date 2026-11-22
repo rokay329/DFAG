@@ -40,7 +40,7 @@
       sub: { 4: '근위대장 모르드레드가 주인 없는 문을 여전히 지킨다', 9: '상복의 왕비가 빈 왕좌 앞에서 재를 매만진다' } },
   };
   const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
-  const roomName = t => t === 'den' ? DEN.name() : t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
+  const roomName = t => t === 'ruin' ? RUIN.name() : t === 'den' ? DEN.name() : t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
   const roomTag = t => t === 'elite' ? ER().tag : ROOM_TAG[t];
   const ROOM_TAG = { altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '비스트로', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
 
@@ -449,7 +449,7 @@
     if (hasRelic('oldmap')) for (const r of G.dun.rooms) if (r.type === 'secret') r.seen = true; // v2.29 낡은 지도
     if (fresh && R.type === 'boss' && hasRelic('gravedirt')) { addArmor(1); lootFeed('무덤 흙 — 방패 +1', '#c8a880'); }
     if (R.type === 'secret' && !R.greeted) { rec('secret'); R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
-    const RM = { den: 'den', rest: 'rmBistro', shop: 'rmShop', reward: 'rmReward', secret: 'rmSecret' }; // v3.19 쉬는 방마다 전용 곡 (비스트로 · 상점 · 보물 방 · 비밀 방)
+    const RM = { den: 'den', ruin: 'ruin', rest: 'rmBistro', shop: 'rmShop', reward: 'rmReward', secret: 'rmSecret' }; // v3.19 쉬는 방마다 전용 곡 (비스트로 · 상점 · 보물 방 · 비밀 방)
     if (RM[R.type]) setMood(RM[R.type]); else
     setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
     if (R.type === 'start') {
@@ -818,13 +818,13 @@
   // ---------- 그리기: 바닥(문·구덩이), 구조물 스프라이트
   const FL_CACHE = []; // v2.35 최근 방 바닥 4개 (방 들어갈 때 바닥을 새로 그리던 60~90ms 멈춤 제거)
   function floorCached(R) {
-    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
-    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
+    const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && R.type !== 'ruin', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
+    if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && R.type !== 'ruin' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
       ROOMSTYLE = R.style || { path: 'wind' }; CUR_ROOM = R;
       if (m) { fmg.clearRect(0, 0, W, H); fmg.drawImage(c.a, 0, 0); ffg.clearRect(0, 0, W, H); ffg.drawImage(c.b, 0, 0); FRONT_ON = true; } else { fg.clearRect(0, 0, W, H); fg.drawImage(c.a, 0, 0); }
       return; }
     paintRoomFloor(R);
-    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive' || R.type === 'den') return;
+    if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive' || R.type === 'den' || R.type === 'ruin') return;
     let c = FL_CACHE.length >= 4 ? FL_CACHE.pop() : null; if (!c) c = { a: mkCanvas(W, H)[0], b: mkCanvas(W, H)[0] };
     c.key = key; c.dun = G.dun; const ga = c.a.getContext('2d'), gb = c.b.getContext('2d'); ga.clearRect(0, 0, W, H); gb.clearRect(0, 0, W, H);
     ga.drawImage(m ? floorM : floor, 0, 0); if (m) gb.drawImage(frontM, 0, 0); FL_CACHE.unshift(c);

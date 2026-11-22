@@ -18,7 +18,7 @@
     let last = null;
     const mo = new MutationObserver(ms => { const roll = on(); for (const m of ms) { if (m.type === 'characterData') fix(m.target, roll); else for (const n of m.addedNodes) walk(n, roll); } });
     mo.observe(document.body, { subtree: true, childList: true, characterData: true });
-    setInterval(() => { const roll = on(); if (roll !== last) { last = roll; walk(document.body, roll); } }, 300); // 직업이 바뀌거나 Shift+K로 켜고 끌 때 전체를 다시 맞춤
+    setInterval(() => { const roll = on(); if (roll !== last) { last = roll; walk(document.body, roll); } }, 300); // 직업이 바뀔 때 전체를 다시 맞춤
     return { conv };
   })();
   // v3.19 네로 · 세리안 회피 칸 아이콘: 점멸했을 때 남는 자기 잔상 (푸른 잔상 팔레트) — 뒤에 흐린 잔상 한 겹 + 앞에 또렷한 잔상, 머리 · 어깨만

@@ -43,6 +43,7 @@
     if (R.type === 'home') return typeof HOME !== 'undefined' ? HOME.name(R.cls || G.cls) || '시작 장소' : '시작 장소';
     if (R.type === 'archive') return '코코아의 기록 보관소';
     if (R.type === 'den') return '영수 · 명수의 안전 놀이터';
+    if (R.type === 'ruin') return RUIN.name(); // v3.20 유폐된 지하 유적 · 용의 유적
     return ROOM_N[R.type] ? `STAGE ${G.stage} ${ROOM_N[R.type]}` : `STAGE ${G.stage}`;
   }
   function showResult(win, quit) {
@@ -170,6 +171,7 @@
     if (G && CA.busy()) { CA.update(rdt); return; } // v2.52 재의 제단 연출 중엔 조작 없음
     if (G && END.busy()) { END.update(rdt); return; } // v2.54 엔딩 연출 중엔 조작 없음
     if (G && TRUTH.busy()) { TRUTH.update(rdt); return; } // v2.58 진엔딩 단서 대화 · 연출 중엔 조작 없음
+    if (G && RUIN.busy()) { RUIN.update(rdt); return; } // v3.20 용의 유적: 엠브라즈 대화 중엔 조작 없음
     if (G && DEN.busy()) { DEN.update(rdt); return; } // v3.18 안전 놀이터 도박사 대화 중엔 조작 없음 (F로 넘김)
     if (G && G.dun && G.dun.arch && ARCH.update(rdt)) return; // v3.00 코코아의 기록 보관소: 인사 · ESC로 나가기
     if (G && G.dun && G.dun.home && HOME.update(rdt)) return; // v2.55 시작 장소: 대사 · 장소 이름 · 아래 문으로 나가면 출발
@@ -191,11 +193,11 @@
       lootFeed(`<b style="color:${gradeOf(it).c}">[${gradeOf(it).n}] ${it.name}</b> 장착 (테스트)`, gradeOf(it).c); sfx('drop'); if (it.grade === 'legend') { if (G.seenLegendLore) delete G.seenLegendLore[it.fx]; triggerLegendPickup(it); }
     }
     if (dbgK('p')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2], n = G.pal[c] || 0, nx = HUE_TIER.find(v => v > n); if (nx) hueGain(c, nx - n); } // v2.41 테스트: 색 단계 올리기 (각인 고르기)
-    if (dbgK('k')) { window.ROLL = window.ROLL === false; lootFeed(window.ROLL !== false ? '테스트 — 기사 · 거너 · 사제 구르기 켜짐 (Shift+K)' : '테스트 — 구르기 꺼짐 · 점멸 (Shift+K)', '#e0c080', 2500); sfx('blip'); } // v3.19 테스트: 구르기 ↔ 점멸
     if (dbgK('o')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
     if (dbgK('y')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
     if (dbgK('b') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
     if (dbgK('r') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
+    if (dbgK('c') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
     if (dbgK('u') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
     if (dbgK('x')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
     if (dbgK('g') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환
@@ -216,7 +218,7 @@
     ascTick(dt); // v1.96 잿빛 왕관
     updatePressure(dt);
     updateRoom(dt);
-    TRUTH.tick(dt); DEN.tick(dt); BDC.tick(dt); // v2.58 · v3.17 안전 놀이터
+    TRUTH.tick(dt); DEN.tick(dt); RUIN.tick(dt); BDC.tick(dt); // v2.58 · v3.17 안전 놀이터
     updateCamera(dt);
     updateProj(dt);
     const fxE0 = G.fx.length, ptE0 = G.parts.length; // v2.28 적이 만든 이펙트 표시 (반격 시간 흑백용)

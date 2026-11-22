@@ -13,7 +13,7 @@
         const k = e * (1 - Math.min(1, y / ch) * 0.5); if (k * 0.9 < (B4[y & 3][x & 3] + 0.5) / 16) continue; const i = (y * cw + x) * 4; d[i] = MOON.sc[0]; d[i + 1] = MOON.sc[1]; d[i + 2] = MOON.sc[2]; d[i + 3] = 255; }
       g.putImageData(im, 0, 0); MOON_CV = { key, c }; }
     ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = MOON.sa; ctx.drawImage(MOON_CV.c, 0, 0, W, H); ctx.restore(); }
-  const moonOn = () => window.MOON !== false && !!G && (G.stage === 1 || G.stage === 3) && !(G.dun && (G.dun.home || G.dun.forge)) && !(typeof DEN !== 'undefined' && DEN.on && DEN.on());
+  const moonOn = () => window.MOON !== false && !!G && (G.stage === 1 || G.stage === 3) && !(G.dun && (G.dun.home || G.dun.forge)) && !(typeof DEN !== 'undefined' && DEN.on && DEN.on()) && !(typeof RUIN !== 'undefined' && RUIN.on());
 // index.html이 js/ 파일을 번호 순서대로 불러온다. 모든 파일이 같은 전역 스코프를 함께 쓴다(예전 game.js 한 덩어리를 그대로 나눔).
 
   // ================================================================ v1.78 조명 GL: 빛 지도를 GPU에서 계산하고 4×4 바이어 디더로 단계를 나눔
@@ -318,7 +318,7 @@ void main() {
     drawMeteorMark(); drawMeteorAim();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) if (!t.mark) drawTele(t); DITHER_ON = dz; } // v1.79 공격 예고는 잘 보이게 디더 제외
     // 보스 전조(경고)는 보스·캐릭터 그래픽 아래에 (v0.74)
-    drawSqueeze(); drawRiteGround(); TRUTH.ground(); DEN.ground(); // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
+    drawSqueeze(); drawRiteGround(); TRUTH.ground(); DEN.ground(); RUIN.ground(); // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
     drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     drawBuffBatch(); // v2.50 바닥 강화 고리 한 장으로
@@ -418,7 +418,7 @@ void main() {
     hudFade(); // v2.38 캐릭터·적이 좌우 패널 뒤로 가면 패널을 흐리게
     if (mode !== 'map' && !(G && G.cine) && !(G && END.busy()) && !(G && G.dun && G.dun.home)) drawMinimap(); // v1.92 TAB 지도를 열면 미니맵은 숨김
     drawCombo();
-    CA.screen(); END.screen(); HOME.screen(); ARCH.screen(); DEN.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
+    CA.screen(); END.screen(); HOME.screen(); ARCH.screen(); DEN.screen(); RUIN.screen(); TRUTH.hud(); // v2.52 · v2.54 · v2.55
     if (flashT > 0) { ctx.globalAlpha = Math.min(0.6, flashT * 2.5); ctx.fillStyle = flashColor; ctx.fillRect(0, 0, VW, VH); ctx.globalAlpha = 1; }
     if (mode === 'map') drawMapOverlay();
     if (G && G.cine) drawCinematic();

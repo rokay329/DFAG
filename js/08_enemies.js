@@ -1459,6 +1459,7 @@
         const d = (ws === 'hourglass' && EQUIP_FX.hourglass) ? EQUIP_FX.hourglass.d : C.awakenD;
         return [`${nm} <span class="key">E</span> <span style="color:var(--quiet)">각성 게이지 100%</span>`, d, '#ffd34d'];
       }
+      if (typeof isRoll === 'function' && isRoll()) return ['구르기 <span class="key">SPACE</span>', '짧은 거리를 굴러서 회피 · 공격 직전 사용 시 퍼펙트 회피', '#9ee88a']; // v3.20 기사 · 거너 · 사제
       return ['점멸 <span class="key">SPACE</span>', '짧은 거리를 순간 이동해 회피 · 공격 직전 사용 시 퍼펙트 회피', '#9ee88a'];
     }
     addEventListener('mouseover', e => {
