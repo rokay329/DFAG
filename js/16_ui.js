@@ -431,7 +431,7 @@
     if (!b) { b = document.createElement('div'); b.className = 'cnt'; ic.appendChild(b); }
     const t = '×' + n; if (b.textContent !== t) b.textContent = t; b.classList.toggle('zero', n <= 0);
   }
-  const SK_META = { hourglass: { L: '시간 정지', Li: 'hourglass' }, ladle: { K: '끓는 수프', Ki: 'soup' } }; // 무기가 기술 자체를 바꾸면 이름·아이콘도 바꾼다
+  const SK_META = { ladle: { K: '끓는 수프', Ki: 'soup' } }; // 무기가 기술 자체를 바꾸면 이름·아이콘도 바꾼다
   function skMeta() {
     const key = G.cls + ':' + (wSkill() || ''); if (hudPrev.meta === key) return; hudPrev.meta = key;
     const C = CLASSES[G.cls], m = SK_META[wSkill()] || {}, ic = C.icons || (G.cls === 'ranger' ? ['dual', 'shadow', 'storm'] : ['atk', 'skill', 'awaken']);
@@ -547,11 +547,11 @@
   function keyGuideHTML() {
     const C0 = CL(), M0 = (G && SK_META[wSkill()]) || {}, C = { skill: M0.K || C0.skill, awaken: M0.L || C0.awaken }, k = (key, t) => `<span class="ki"><span class="key">${key}</span>${t}</span>`;
     if (typeof TOUCH !== 'undefined' && TOUCH.on) return `<div class="kt">터치 조작</div>
-      <div class="kr">${k('왼쪽 끌기', '이동')}${k('공격', '가까운 적 자동 조준')}${k('스킬', C.skill)}${k('각성', C.awaken)}${k('점멸', '회피')}</div>
+      <div class="kr">${k('왼쪽 끌기', '이동')}${k('공격', '가까운 적 자동 조준')}${k('스킬', C.skill)}${G && G.cls === 'priest' ? '' : k('각성', C.awaken)}${k('점멸', '회피')}</div>
       <div class="kr">${k('F', '상호작용')}${k('지도', '방 지도·순간이동')}${k('가방', '장비')}${k('❚❚', '일시정지')}</div>
       <div class="kh">적의 공격 직전에 점멸하면 퍼펙트 회피가 됩니다. 화면을 탭하면 그쪽으로 공격합니다.</div>`;
     return `<div class="kt">조작 안내</div>
-      <div class="kr">${k('WASD', '이동')}${k('좌클릭', '공격')}${k('우클릭', C.skill)}${k('E', C.awaken)}${k('SPACE', '점멸')}</div>
+      <div class="kr">${k('WASD', '이동')}${k('좌클릭', '공격')}${k('우클릭', C.skill)}${G && G.cls === 'priest' ? '' : k('E', C.awaken)}${k('SPACE', '점멸')}</div>
       <div class="kr">${k('F', '상호작용')}${k('TAB', '지도')}${k('I', '장비')}${k('1~3', '무기')}${k('ESC', '일시정지')}${k('M', '음악')}</div>
       <div class="kh">적의 공격 직전에 점멸하면 퍼펙트 회피가 됩니다. H 키로 이 안내를 열고 닫습니다.</div>`;
   }
@@ -613,11 +613,12 @@
     $('comboPips').style.display = G.cls === 'gunner' ? 'none' : ''; // 거너 사격 칸에는 연타 단계 칸이 필요 없음
     $('comboPips').querySelectorAll('b').forEach((b, i) => b.classList.toggle('on', i < step));
     // 돌진 참격
-    const charges = skMax('K'), total = Math.max(1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0));
+    const charges = skMax('K'), total = Math.max(1, skCdBase() * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0));
     const readyN = P.chargeCd.slice(0, charges).filter(c => c <= 0).length;
     const minCd = Math.min(...P.chargeCd.slice(0, charges));
     const kReady = readyN > 0 && !P.dead;
-    setSkill('skK', kReady, (minCd / total) * 100, kReady ? '' : Math.ceil(minCd));
+    if (kReady && P.gcd > 0) setSkill('skK', false, P.gcd / SWAP_GCD * 100, ''); // v3.22 무기 바꾼 직후 0.4초 공용 쿨타임이 한 바퀴 돎
+    else setSkill('skK', kReady, (minCd / total) * 100, kReady ? '' : Math.ceil(minCd));
     setCnt('skK', charges > 1 ? readyN : null);
     if (kReady && !hudPrev.K) { popSkill('skK'); sfx('ready'); }
     hudPrev.K = kReady;
@@ -679,8 +680,8 @@
   }
   const TRUTH_ARC = [ // v2.58 기록 보관소 「진실」 — 내용은 11d_truth.js와 같게
     { k: 't1', no: '구덩이 실험실', title: '키륵의 연구 일지', c: '#7ad050', hint: '초록 자국은 어디서 왔을까요.', paras: ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.',  '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.', '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.', '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 요망.', '재검토 불가. 보존해야 함. 이송해야 함. 그 이유는.........'] },
-    { k: 't2', no: '기사단 밀실', title: '바닥에 새겨진 주문', c: '#b070ff', hint: '흩어진 서약을 이어 보세요.', paras: ['기사단장 발도르여,', '해가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'] },
-    { k: 't3', no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', c: '#ff6a50', hint: '피로 그린 원을 찾아보세요.', paras: ['"왕관은 바치는 게 아니다. 해에 비추어-"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'] },
+    { k: 't2', no: '기사단 밀실', title: '바닥에 새겨진 주문', c: '#b070ff', hint: '흩어진 서약을 이어 보세요.', paras: ['기사단장 발도르여,', '{해}가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'] },
+    { k: 't3', no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', c: '#ff6a50', hint: '피로 그린 원을 찾아보세요.', paras: ['"왕관의 주인은 {해}가 비치는 곳에…"', '말을 끝맺지 못한 채 크루가쉬는 무릎을 꿇었고, 다시는 일어나지 않았다.'] },
   ];
   function renderArchive() { // v2.29 기록 보관소 · v2.30 탭: 유물 / 직업별 무기
     const fmt = n => n >= 1000 ? n.toLocaleString() : n, CL5 = ['knight', 'ranger', 'mage', 'priest', 'gunner'];
@@ -696,7 +697,7 @@
     } else if (arcTab === 'truth') { // v2.58 진엔딩 단서: 진실 기록 3칸 (얻기 전엔 잠긴 칸 + 짧은 힌트)
       const T = SAVE.truth || {}, got = ['t1', 't2', 't3'].filter(k => T[k]).length;
       body = `<div class="arcH">진실<i>${got} / 3</i></div><div class="arcTruth">` + TRUTH_ARC.map(t => T[t.k]
-        ? `<div class="arcTr"><div class="arcTrH" style="color:${t.c}">${t.no} · ${t.title}</div>${t.paras.map(p => `<p>${p}</p>`).join('')}</div>`
+        ? `<div class="arcTr"><div class="arcTrH" style="color:${t.c}">${t.no} · ${t.title}</div>${t.paras.map(p => `<p>${String(p).replace(/\{([^}]*)\}/g, '<span class="parchHL">$1</span>')}</p>`).join('')}</div>`
         : `<div class="arcTr lock"><div class="arcTrH">잠긴 기록</div><p>${t.hint}</p></div>`).join('') + '</div>';
     } else {
       const c = arcTab, W = wcat(c), sec = (t, ids) => ids.length ? `<div class="arcH">${t}<i>${ids.filter(i => !(i === 10 && !leg2Open(c)) && !weaponLocked(c, i)).length} / ${ids.length}</i></div><div class="arcGrid">${ids.map(i => arcWeaponCell(c, i)).join('')}</div>` : '';
@@ -872,6 +873,13 @@
     persist(); sfx(on ? 'select' : 'blip'); renderInv();
   }
   const myWeapons = cls => invList().filter(i => i.slot === 'weapon' && i.cls === cls); // 장비창 오른쪽 세로 칸과 같은 순서
+  const SWAP_GCD = 0.4; // v3.22 무기를 바꾼 뒤 우클릭 공용 쿨타임
+  // v3.22 마우스 휠로 무기 바꾸기: 아래로 굴리면 다음 칸, 위로 굴리면 이전 칸 (빈 칸은 건너뜀) · 0.15초에 한 칸 · 트랙패드의 작은 움직임은 모아서 한 칸
+  { let acc = 0, last = 0;
+    addEventListener('wheel', e => { if (!G || mode !== 'play' || !G.player || G.player.dead) return; e.preventDefault();
+      acc += e.deltaMode === 1 ? e.deltaY * 40 : e.deltaY; const now = performance.now(); if (Math.abs(acc) < 40 || now - last < 150) return;
+      const dir = acc > 0 ? 1 : -1; acc = 0; last = now; const L = myWeapons(G.cls); if (L.length < 2) return;
+      const cur = L.indexOf(eqWeapon(G.cls)); for (let k = 1; k < L.length; k++) { const i = ((cur < 0 ? 0 : cur) + dir * k + L.length * 4) % L.length; if (L[i] && !L[i].hold) { swapWeapon(i); break; } } }, { passive: false }); }
   function swapWeapon(i) {
     const P = G.player, it = myWeapons(G.cls)[i];
     if (!P || P.dead || G.trans) return;
@@ -879,7 +887,7 @@
     if (isEq(G.cls, it)) return;
     if (it.hold) { lootFeed('장착할 수 없는 무기입니다.', '#ff9a9a', 1400); sfx('blip', 0.6); return; } // v3.18 칼날카드
     if (!['idle', 'rattack'].includes(P.state)) { pressed[String(i + 1)] = true; return; } // 공격·기술 중이면 끝나고 바꾼다
-    equipIt(G.cls, it); const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
+    equipIt(G.cls, it); P.gcd = SWAP_GCD; const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
     P.state = 'idle'; P.combo = 0; P.chainL = null; P.whipL = null;
     if (G.cls === 'gunner') { P.ammo = 0; startReload(); } // 총을 바꾸면 새로 장전
     persist(); sfx('select'); lootFeed(`<b style="color:${gradeOf(it).c}">[${i + 1}] ${it.name}</b>`, gradeOf(it).c, 1400);
@@ -934,9 +942,9 @@
     bone: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 뼈다귀가 다음 적에게 날아갑니다.`, deflectAtk: q => `공격하는 동안 ${PN(q.p * 100)}% 확률로 투사체를 되받아칩니다.`, deflect: q => `${PN(q.p * 100)}% 확률로 투사체를 되받아칩니다.`, bind: q => `치명타가 터지면 ${PN(q.p * 100)}% 확률로 적을 ${q.d}초 동안 묶습니다.`,
     focus4: q => `같은 적을 4번 맞히면 다음 한 방의 피해가 ${PN(q.v * 100)}% 증가합니다.`, pdInvis: q => `퍼펙트 회피에 성공하면 ${q.v}초 동안 은신합니다.`, cat: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 고양이 혼이 다음 적에게 날아갑니다.`,
     burnPool: q => `마법탄이 ${PN(q.p * 100)}% 확률로 작은 불길을 남깁니다.`, fish: q => `방을 비우면 ${PN(q.p * 100)}% 확률로 물고기가 떨어집니다. 물고기를 주우면 하트 반 칸을 회복하며, 챕터당 1마리까지 떨어집니다.`, bounce: q => `마법탄이 ${PN(q.p * 100)}% 확률로 벽에 한 번 튕깁니다.`, blink: q => `점멸 거리가 ${PN(q.v * 100)}% 증가합니다.`,
-    wisp: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 도깨비불이 3초 동안 나타납니다.`, zap: q => `공격이 맞으면 ${PN(q.p * 100)}% 확률로 옆의 적에게 번개가 튑니다.`, soup: () => '하트가 반 칸 이하일 때 방을 비우면 반 칸을 회복합니다. 챕터마다 1번 발동합니다.', mirror: q => `화염구가 ${PN(q.p * 100)}% 확률로 하나 더 나갑니다.`, meteor: q => `운석의 피해가 ${PN(q.v * 100)}% 증가합니다.`,
+    wisp: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 도깨비불이 3초 동안 나타납니다.`, zap: q => `공격이 맞으면 ${PN(q.p * 100)}% 확률로 옆의 적에게 번개가 튑니다.`, soup: () => '하트가 반 칸 이하일 때 방을 비우면 반 칸을 회복합니다. 챕터마다 1번 발동합니다.', mirror: q => `화염구가 ${PN(q.p * 100)}% 확률로 하나 더 나갑니다.`, meteor: q => `영혼박리 분신의 피해가 ${PN(q.v * 100)}% 증가합니다.`,
     parry: q => `패링 판정 시간이 ${q.v}초 증가합니다.`, undead: q => `2장과 4장에서 주는 피해가 ${PN(q.v * 100)}% 증가합니다.`, carrot: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 당근이 떨어집니다. 당근을 주우면 하트 반 칸을 회복하며, 챕터당 1개까지 떨어집니다.`, wave3: q => `3타 충격파의 범위가 ${PN(q.v * 100)}% 넓어집니다.`, reliq: () => '치유할 때 성스러운 갑옷을 1칸 더 쌓을 수 있습니다. 챕터마다 1번 발동합니다.',
-    lowAtk: q => `하트가 1칸 이하일 때 주는 피해가 ${PN(q.v * 100)}% 증가합니다.`, healShield: q => `치유할 때 ${q.v}초 동안 보호막이 생깁니다.`, miracle: q => `기적의 지속 시간이 ${q.v}초 증가합니다.`,
+    lowAtk: q => `하트가 1칸 이하일 때 주는 피해가 ${PN(q.v * 100)}% 증가합니다.`, healShield: q => `치유할 때 ${q.v}초 동안 보호막이 생깁니다.`, miracle: q => `기적으로 되살아난 뒤 무적 시간이 ${q.v}초 증가합니다.`,
     reload: q => `재장전 시간이 ${PN(q.v * 100)}% 감소합니다.`, close: q => `가까운 적(60px 안)에게 주는 피해가 ${PN(q.v * 100)}% 증가합니다.`, gbounce: q => `빗나간 탄이 ${PN(q.p * 100)}% 확률로 한 번 튕깁니다.`, still: q => `멈춰서 쏘면 피해가 ${PN(q.v * 100)}% 증가합니다.`, ammo: q => `장탄이 ${q.v}발 증가합니다.`,
     boom: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 작은 폭발이 일어납니다.`, spikes: q => `적을 처치하면 ${PN(q.p * 100)}% 확률로 가시가 터집니다.`, burn: q => `공격이 맞으면 ${PN(q.p * 100)}% 확률로 화상을 입힙니다.`, grogiDmg: q => `그로기 상태인 적에게 주는 피해가 ${PN(q.v * 100)}% 증가합니다.`, lastShot: q => `마지막 탄의 피해가 ${PN(q.v * 100)}% 증가합니다.`,
   };
@@ -1013,7 +1021,7 @@
     const PVX = 40, [c, g] = mkCanvas(c0.width + PVX * 2, c0.height); g.imageSmoothingEnabled = false;
     const C = CLASSES[cls], ash = SAVE.skin === 'ash' && skinOpen(), spr = sprite(C.map, ash ? ashPalKey(C.pal) : C.pal, 4); // v1.99 잿불 외형 미리보기
     const bx = c.width / 2, by = c.height - 6;
-    g.fillStyle = 'rgba(0,0,0,.45)'; g.beginPath(); g.ellipse(bx, by, 22, 6, 0, 0, TAU); g.fill();
+    dshEll(g, bx, by, 22, 8, 0.5, 4);
     const drawW = (b, x, y, a, sc) => { if (ash) b = ashBlade(b); if (b.cells) { const r = rotW(b, a); g.save(); g.translate(Math.round(x), Math.round(y)); g.scale(2, 2); g.drawImage(r.c, -r.o, -r.o); g.restore(); return; } g.save(); g.translate(x, y); g.rotate(a); g.scale(sc, Math.cos(a) < 0 ? -sc : sc); g.drawImage(b.c, -b.pivotX, -b.pivotY); g.restore(); };
     const WT = base ? WEAP[cls][0] : weaponTex(cls); // v2.19 장비창은 실제 들고 있는 무기 · 선택창은 시작 기본 무기
     if (cls === 'knight') drawW(WT, bx + 8, by - 22, -0.9, 1.4);
@@ -1128,7 +1136,7 @@
     $('selDetail').innerHTML = `<div class="sdh"><b>${C.n}</b> <span>${C.role} · ${C.weapon}</span></div><div class="sk2">
       <span class="key">${TOUCH.on ? '공격' : '좌클릭'}</span><span>${C.atkD}</span>
       <span class="key">${TOUCH.on ? '스킬' : '우클릭'}</span><span><b>${C.skill}</b> — ${C.skillD} <i>(쿨타임 ${C.skillCd}초)</i></span>
-      <span class="key">${TOUCH.on ? '각성' : 'E'}</span><span><b>${C.awaken}</b> — ${C.awakenD}</span></div>`;
+      <span class="key">${selCls === 'priest' ? '패시브' : TOUCH.on ? '각성' : 'E'}</span><span><b>${C.awaken}</b> — ${C.awakenD}</span></div>`;
   }
   function openSelect() { mode = 'select'; selCls = CUR; $('ovTitle').classList.remove('on'); buildSelect(); renderSelect(); $('ovSelect').classList.add('on'); }
   function closeSelect() { selMiniStop(); pxTip.hide(); $('ovSelect').classList.remove('on'); mode = 'title'; $('ovTitle').classList.add('on'); }
@@ -1335,8 +1343,8 @@
     const P = G.player, s = G.stats, set = (el, k, v) => { if (el._v === undefined) el._v = {}; if (el._v[k] !== v) { el._v[k] = v; if (k === 'txt') el.textContent = v; else el.style.setProperty(k, v); } };
     const pips = (el, n, on) => { const key = n + '/' + on; if (el._pk === key) return; el._pk = key; el.innerHTML = n > 1 ? Array.from({ length: n }, (_, i) => `<i class="${i < on ? '' : 'off'}"></i>`).join('') : ''; };
     const flash = el => { el.classList.remove('rdy'); void el.offsetWidth; el.classList.add('rdy'); };
-    { const b = $('tSkill'), n = skMax('K'), total = Math.max(0.1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd'))), cds = P.chargeCd.slice(0, n), rd = cds.filter(c => c <= 0).length, mn = Math.min(...cds);
-      set(b.querySelector('.cdo'), '--p', rd ? '0' : Math.min(1, mn / total).toFixed(3)); set(b.querySelector('.cdn'), 'txt', rd ? '' : String(Math.ceil(mn))); b.classList.toggle('cding', !rd); pips(b.querySelector('.pips'), n, rd);
+    { const b = $('tSkill'), n = skMax('K'), total = Math.max(0.1, skCdBase() * (1 - s.cdr) * (1 - pasV('kcd'))), cds = P.chargeCd.slice(0, n), rd = cds.filter(c => c <= 0).length, mn = Math.min(...cds);
+      set(b.querySelector('.cdo'), '--p', rd ? (P.gcd > 0 ? (P.gcd / SWAP_GCD).toFixed(3) : '0') : Math.min(1, mn / total).toFixed(3)); set(b.querySelector('.cdn'), 'txt', rd ? '' : String(Math.ceil(mn))); b.classList.toggle('cding', !rd); pips(b.querySelector('.pips'), n, rd);
       if (TOUCH.skRd !== undefined && rd > TOUCH.skRd) flash(b); TOUCH.skRd = rd; }
     { const b = $('tAwk'), g = Math.min(100, P.gauge || 0); set(b.querySelector('.gfill'), '--g', (g / 100).toFixed(3)); b.classList.toggle('full', g >= 100); set(b.querySelector('.cdn'), 'txt', g >= 100 ? '' : Math.floor(g) + '%');
       if (TOUCH.awFull === false && g >= 100) flash(b); TOUCH.awFull = g >= 100; }

@@ -56,33 +56,57 @@
       return (CROWN = { w, h, full, pieces, glow, cracks, white, pc });
     }
 
-    // ---- 재의 제단 (46×36): 3단 돌계단 · 기둥 · 진홍 방석 · 기둥 앞 역삼각형 파편 홈
+    // ---- v3.20 공통: 제단 방 배경(바닥 · 벽돌)과 같은 따뜻한 잿빛 돌 · 바랜 참나무 · 무쇠 · 빛바랜 진홍
+    const WG = ['#b4aea2', '#9a9488', '#7e786e', '#625d55', '#4c4841', '#3a3732', '#2c2a26', '#201e1b', '#151310']; // 0 빛 → 8 줄눈
+    const OAK = ['#7a5e44', '#634b36', '#4c3a2a', '#38291e', '#251b13'], IRW = ['#a29e96', '#77736c', '#4e4b46', '#2e2c29'], VEL = ['#b0383a', '#8a2428', '#661820', '#44101a'], GLD = ['#f0d690', '#cfa752', '#9a7432', '#62461e'];
+    const hsh = (x, y, s = 0) => hash(x * 37 + y * 71 + s * 13);
+    // 다듬은 돌 한 덩이 (x0,y0)~(x1,y1): 덩이마다 톤이 조금씩 다름 · 윗줄/왼줄 빛 · 아랫줄/오른줄 그늘 · 줄눈은 따로 · 모서리 이 빠짐 · 잔금
+    function ashlar(put, x0, y0, x1, y1, base, sd, o = {}) {
+      const tone = base + (hsh(x0, y0, sd) < 0.3 ? 1 : hsh(x0, y0, sd + 1) < 0.15 ? -1 : 0);
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        let k = tone; if (y === y0 && !o.noTop) k -= 1; else if (x === x0 && !o.noLeft) k -= 1; if (y === y1 || x === x1) k += 1;
+        if ((x === x0 || x === x1) && (y === y0 || y === y1) && hsh(x, y, sd + 2) < 0.5) k += 2; // 이 빠진 모서리
+        else if (hsh(x, y, sd + 3) < 0.06) k += 1; else if (hsh(x, y, sd + 4) < 0.03) k -= 1; // 얼룩
+        put(x, y, WG[Math.max(0, Math.min(8, k))]);
+      }
+      if (o.crack && x1 - x0 > 4) { let cx = x0 + 2 + Math.floor(hsh(x0, y1, sd) * (x1 - x0 - 3)); for (let y = y0 + 1; y < y1; y++) { put(cx, y, WG[7]); if (hsh(cx, y, sd) < 0.4) cx += hsh(y, cx, sd) < 0.5 ? -1 : 1; } }
+    }
+    // ---- 재의 제단 (46×36): 3단 돌계단(윗면 · 앞면 · 마름돌) · 받침 몰딩 · 홈 판 기둥 · 기둥머리 · 진홍 방석(금술) · 기둥 앞 역삼각형 파편 홈
     const ALT = {};
     function altarArt(lit) {
       const key = lit.map(Number).join(''); if (ALT[key]) return ALT[key];
       const w = 46, h = 36;
-      return (ALT[key] = cellCanvas(w, h, put => {
-        const block = (x0, y0, bw, bh, top) => {
-          for (let y = y0; y < y0 + bh; y++) for (let x = x0; x < x0 + bw; x++) {
-            const ex = x === x0 || x === x0 + bw - 1, ey = y === y0 || y === y0 + bh - 1;
-            if (ex || ey) { put(x, y, K); continue; }
-            let c = STONE.m;
-            if (y === y0 + 1 && top) c = STONE.H; else if (x === x0 + 1) c = STONE.h; else if (x >= x0 + bw - 3 || y === y0 + bh - 2) c = STONE.d;
-            if (top && y === y0 + 1 && hash(x * 7 + y * 13) < 0.28) c = STONE.a;
-            if (y > y0 + 1 && ((x - x0 + (y > y0 + 3 ? 5 : 0)) % 10 === 0)) c = STONE.D;
-            put(x, y, c);
-          }
-        };
-        block(14, 6, 18, 4, true); block(17, 9, 12, 13, false); block(9, 21, 28, 5, true); block(5, 25, 36, 6, true); block(1, 30, 44, 6, true);
-        [[19, 12, 0], [25, 12, 2], [22, 16, 1]].forEach(([x, y, i]) => { // 초록 왼쪽 위 · 붉은 오른쪽 위 · 파랑 아래 (바닥 낙인과 같은 역삼각형)
+      return (ALT[key] = cellCanvas(w, h, put0 => {
+        const M = new Map(), put = (x, y, c) => M.set(x + ',' + y, c);
+        // 계단: 윗면 2줄(밝음 · 재가 앉음) + 앞면(마름돌 · 줄눈) — 아래 단부터
+        const step = (x0, x1, ty, fh, sd) => { for (let x = x0; x <= x1; x++) { put(x, ty, WG[hsh(x, ty, sd) < 0.15 ? 0 : 1]); put(x, ty + 1, WG[x === x0 ? 1 : 2]); }
+          let bx = x0, i = 0; while (bx <= x1) { const bw = 6 + Math.floor(hsh(bx, ty, sd) * 4), ex = Math.min(x1, bx + bw - 1); ashlar(put, bx, ty + 2, ex, ty + 1 + fh, 4, sd + i, { noTop: true, crack: hsh(bx, sd, 9) < 0.3 }); for (let y = ty + 2; y <= ty + 1 + fh; y++) put(ex, y, WG[8]); bx = ex + 1; i++; }
+          for (let y = ty; y <= ty + 1 + fh; y++) { put(x0, y, y < ty + 2 ? WG[1] : WG[3]); put(x1, y, WG[6]); } };
+        step(1, 44, 29, 4, 11); step(5, 40, 25, 2, 23); step(9, 36, 21, 2, 37);
+        // 받침 몰딩 (기둥 밑) · 기둥 몸 (세로 홈 · 빛은 왼쪽) · 기둥머리 (두 단 몰딩)
+        for (let x = 14; x <= 31; x++) { put(x, 18, WG[x < 16 ? 1 : 2]); put(x, 19, WG[x === 31 ? 6 : 4]); put(x, 20, WG[x === 31 ? 7 : 5]); }
+        for (let y = 9; y <= 17; y++) for (let x = 16; x <= 29; x++) { const f = (x - 16) % 3, u = (x - 16) / 13; let k = f === 2 ? 5 : f === 0 ? (u < 0.4 ? 2 : u < 0.75 ? 3 : 4) : (u < 0.4 ? 3 : u < 0.75 ? 4 : 5); if (x === 16) k = 2; if (x === 29) k = 6; if (hsh(x, y, 5) < 0.05) k += 1; put(x, y, WG[Math.min(8, k)]); }
+        for (let x = 13; x <= 32; x++) { put(x, 6, WG[x < 15 ? 0 : 1]); put(x, 7, WG[x === 32 ? 6 : 3]); }
+        for (let x = 14; x <= 31; x++) put(x, 8, WG[x === 31 ? 7 : 5]);
+        // 파편 홈 테두리: 역삼각형으로 이은 새김선
+        for (let y = 10; y <= 18; y++) for (let x = 18; x <= 28; x++) { let k = 3; if (y === 10 || x === 18) k = 6; else if (y === 18 || x === 28) k = 2; else if (y === 11 || x === 19) k = 5; else if (hsh(x, y, 12) < 0.06) k = 4; put(x, y, WG[k]); } // 파편을 끼우는 오목한 판 (위 · 왼쪽 그늘 / 아래 · 오른쪽 빛)
+        [[20, 12, 0], [25, 12, 2], [22, 15, 1]].forEach(([x, y, i]) => { // 초록 왼쪽 위 · 붉은 오른쪽 위 · 파랑 아래 (바닥 낙인과 같은 역삼각형)
           const on = lit[i], g0 = GEM[i];
-          put(x, y, on ? g0.l : STONE.S); put(x + 1, y, on ? g0.m : STONE.S); put(x, y + 1, on ? g0.m : STONE.S); put(x + 1, y + 1, on ? g0.d : STONE.S);
-          put(x, y - 1, STONE.D); put(x + 1, y - 1, STONE.D);
+          for (const [dx, dy] of [[2, 0], [2, 1], [0, 2], [1, 2], [2, 2]]) put(x + dx, y + dy, WG[2]); // 홈 아래 · 오른쪽 턱 (빛)
+          put(x, y, on ? g0.l : WG[7]); put(x + 1, y, on ? g0.m : WG[6]); put(x, y + 1, on ? g0.m : WG[6]); put(x + 1, y + 1, on ? g0.d : WG[5]);
         });
-        for (let x = 15; x <= 30; x++) { put(x, 2, K); put(x, 6, K); }
-        for (let y = 3; y <= 5; y++) { put(14, y, K); put(31, y, K); for (let x = 15; x <= 30; x++) put(x, y, y === 3 ? '#d04050' : y === 4 ? '#a01828' : '#6a0c18'); }
-        put(16, 3, '#e86070'); put(17, 3, '#e86070');
-        [[14, 6], [31, 6]].forEach(([x, y]) => { put(x, y, GOLD.y); put(x, y + 1, GOLD.o); });
+        // 진홍 방석: 둥근 모서리 · 위 왼쪽 빛 · 가운데 눌림 · 네 귀 금술
+        for (let y = 2; y <= 5; y++) for (let x = 14; x <= 31; x++) { if ((y === 2 || y === 5) && (x === 14 || x === 31)) continue;
+          const u = (x - 14) / 17; let c = y === 2 ? (u < 0.5 ? VEL[0] : VEL[1]) : y === 3 ? (x === 14 ? VEL[0] : u > 0.85 ? VEL[2] : VEL[1]) : y === 4 ? (u > 0.8 ? VEL[3] : VEL[2]) : VEL[3];
+          if (y === 3 && x >= 20 && x <= 25) c = VEL[2]; put(x, y, c); }
+        put(16, 2, '#d86060'); put(17, 2, '#d86060');
+        for (const [x, y] of [[14, 5], [31, 5]]) { put(x, y, GLD[1]); put(x, y + 1, GLD[2]); put(x, y + 2, GLD[3]); }
+        for (const [x, y] of [[13, 4], [32, 4]]) put(x, y, GLD[2]);
+        // 계단 윗면에 앉은 재 · 떨어진 부스러기
+        for (const [x, y] of [[4, 29], [11, 29], [27, 29], [38, 29], [8, 25], [33, 25], [12, 21], [30, 21]]) put(x, y, '#c8c2b6');
+        // 외곽선
+        for (const k of M.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const q = (x + dx) + ',' + (y + dy); if (!M.has(q) && x + dx >= 0 && y + dy >= 0 && x + dx < w && y + dy < h) put0(x + dx, y + dy, K); } }
+        for (const [k, c] of M) { const [x, y] = k.split(',').map(Number); put0(x, y, c); }
       }));
     }
 
@@ -93,100 +117,122 @@
     function statueArt(lit, flip) {
       const key = (lit ? 1 : 0) + (flip ? 2 : 0); if (STAT[key]) return STAT[key];
       const w = 16, py = KN.length - 1, h = py + PED.length;
-      const P = { k: K, H: '#a8a29a', h: '#7e7884', m: '#5e5866', d: '#433e4a', D: '#2a2630', c: '#34303c', r: '#504a58', R: '#3c3844', B: '#9a9aa4', b: '#5e5e6a' };
-      const PP = { k: K, H: '#7e7884', h: '#5e5866', m: '#4a4554', d: '#34303c', D: '#24202b' };
+      const P = { k: K, H: WG[1], h: WG[2], m: WG[3], d: WG[4], D: WG[6], c: WG[5], r: '#5a554c', R: '#423e38', B: IRW[0], b: IRW[2] }; // v3.20 배경과 같은 따뜻한 잿빛
+      const PP = { k: K, H: WG[2], h: WG[3], m: WG[4], d: WG[5], D: WG[7] };
       const trim = (rows, x, y) => lit ? (y === 0 || rows[y - 1][x] !== rows[y][x] ? BR.hot : BR.mid) : (y > 0 && rows[y - 1][x] !== rows[y][x] ? '#6a604e' : '#4e4638');
       const c = cellCanvas(w, h, put => {
         PED.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') put(x, py + y, ch === 'C' ? trim(PED, x, y) : PP[ch]); }));
         KN.forEach((r, y) => [...r].forEach((ch, x) => {
           if (ch === '.') return;
           let c0 = ch === 'e' ? (lit ? '#ff4a2a' : '#141218') : ch === 'g' ? trim(KN, x, y) : P[ch];
-          if ((ch === 'H' || ch === 'h') && hash(x * 13 + y * 5) < 0.35) c0 = '#c4beb4';
+          if ((ch === 'H' || ch === 'h') && hash(x * 13 + y * 5) < 0.35) c0 = WG[0];
           put(x, y, c0);
         }));
       });
       return (STAT[key] = flip ? mirror(c) : c);
     }
 
-    // ---- 왕도 성문 (150×70): 양옆 망루 + 왕의 깃발(왕관 문양은 깃발에만) + 두꺼운 아치 + 쇠띠 두른 두 짝 문. 배경 성벽과 같은 어두운 돌
+    // ---- 왕도 성문 (150×70) v3.20: 배경 벽과 같은 따뜻한 잿빛 마름돌 — 양옆 망루(모서리 귓돌 · 화살창 · 굽돌) · 가운데 벽돌 · 홍예석 아치(쐐기돌)
+    //      · 깊이가 보이는 문 안쪽 면 · 참나무 두 짝 문(널 · 결 · 쇠띠 · 징 · 고리) · 주름진 왕의 깃발(찢긴 끝 · 금테 · 왕관) · 앞 돌계단
     let GATE = null;
     function gateArt() {
       if (GATE) return GATE;
-      const GS = { H: '#4e4a56', h: '#3c3844', m: '#2e2b34', d: '#25222a', D: '#18161c', S: '#0e0c12', a: '#5e5a62' };
-      const w = 150, h = 70, cx = 75, RO = 31, RI = 24, ay = 31, bot = h - 4, TW = 32;
+      const w = 150, h = 70, cx = 75, RO = 31, RI = 24, ay = 31, bot = h - 4, TW = 32, RV = 3; // RV: 문 안쪽 면(두께)
       const inOpen = (x, y) => y < bot && Math.abs(x + 0.5 - cx) <= RI && (y >= ay || Math.hypot(x + 0.5 - cx, y + 0.5 - ay) <= RI + 0.3);
       const inArch = (x, y) => Math.abs(x + 0.5 - cx) <= RO && (y >= ay || Math.hypot(x + 0.5 - cx, y + 0.5 - ay) <= RO + 0.3);
-      const brick = (x, y, x0) => { const row = Math.floor(y / 4), off = row % 2 ? 4 : 0; return y % 4 === 3 || (x - x0 + off) % 8 === 7; };
       const frame = cellCanvas(w, h, put => {
-        for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-          if (inOpen(x, y)) continue;
-          const tower = x < TW || x >= w - TW, leftT = x < TW;
-          let c;
-          if (tower) {
-            const x0 = leftT ? 0 : w - TW, lx = x - x0;
-            if (lx === 0 || lx === TW - 1 || y === h - 1) { put(x, y, K); continue; }
-            c = brick(x, y, x0) ? GS.D : (lx <= 2 ? GS.h : lx >= TW - 4 ? GS.d : GS.m);
-            if (leftT && lx >= TW - 4) c = brick(x, y, x0) ? GS.S : GS.D;
-            if (!leftT && lx <= 3) c = brick(x, y, x0) ? GS.S : GS.S;
-            if (y >= h - 6) c = y === h - 6 ? GS.H : (lx <= 2 ? GS.h : GS.d);
-            const sx = x0 + 15; if (y >= 8 && y <= 20 && (x === sx || x === sx + 1)) c = y === 8 || y === 20 ? K : '#050407';
-            if (y >= 7 && y <= 21 && (x === sx - 1 || x === sx + 2)) c = K;
-          } else {
-            c = brick(x, y, TW) ? GS.S : (x < cx ? GS.D : '#141218');
-            if (x === TW || x === w - TW - 1) c = K;
-            if (inArch(x, y)) {
-              const a = Math.atan2(y + 0.5 - ay, x + 0.5 - cx), seg = Math.floor((a + Math.PI) / (Math.PI / 11)), a2 = Math.atan2(y + 0.5 - ay, x - 0.5 - cx), seg2 = Math.floor((a2 + Math.PI) / (Math.PI / 11));
-              if (y < ay) c = seg !== seg2 ? GS.D : seg % 2 ? GS.m : GS.h; else c = (y - ay) % 5 === 4 ? GS.D : x < cx ? GS.m : GS.d;
-              const oE = !inArch(x - 1, y) || !inArch(x + 1, y) || !inArch(x, y - 1), iE = inOpen(x - 1, y) || inOpen(x + 1, y) || inOpen(x, y + 1) || inOpen(x, y - 1);
-              if (oE || iE) c = K; else if (!inArch(x - 1, y - 1) || !inArch(x, y - 2)) c = GS.H;
-            }
-            if (y >= h - 6 && !inArch(x, y)) c = y === h - 6 ? GS.h : GS.D;
-          }
-          if (y > 0 && !tower && !inArch(x, y) && hash(x * 5 + y * 3) < 0.02 && c !== K) c = GS.a;
-          put(x, y, c);
+        // 1) 가운데 벽: 작은 벽돌 (망루보다 한 톤 어둡게 · 안으로 물러난 면)
+        for (let y = 0; y < h; y++) for (let x = TW; x < w - TW; x++) { if (inOpen(x, y)) continue; const row = Math.floor(y / 3), off = row % 2 ? 3 : 0, seam = y % 3 === 2 || (x + off) % 6 === 5;
+          put(x, y, seam ? WG[8] : WG[hsh(Math.floor((x + off) / 6), row, 3) < 0.3 ? 5 : 6]); }
+        // 2) 망루: 큰 마름돌 (줄마다 엇갈림) · 바깥 모서리 귓돌 · 안쪽 옆면 그늘 · 화살창 · 아래 굽돌
+        for (const side of [0, 1]) { const x0 = side ? w - TW : 0, x1 = x0 + TW - 1;
+          for (let row = 0; row * 5 < h - 7; row++) { const y0 = row * 5, y1 = Math.min(h - 8, y0 + 3), off = row % 2 ? 4 : 0;
+            for (let bx = x0 - off; bx <= x1; bx += 8) { const a0 = Math.max(x0, bx), a1 = Math.min(x1, bx + 6); if (a1 < a0) continue; ashlar(put, a0, y0, a1, y1, 4, side * 50 + row * 7 + bx, { crack: hsh(bx, row, side) < 0.12 }); if (bx + 7 <= x1) for (let y = y0; y <= y1; y++) put(bx + 7, y, WG[8]); }
+            for (let x = x0; x <= x1; x++) put(x, y0 + 4, WG[8]); }
+          // 귓돌: 바깥 모서리에 길고 짧은 돌이 번갈아 (밝게 튀어나옴)
+          for (let row = 0; row * 5 < h - 7; row++) { const y0 = row * 5, len = row % 2 ? 4 : 7, ox = side ? x1 - len + 1 : x0; ashlar(put, ox, y0, ox + len - 1, Math.min(h - 8, y0 + 3), 3, 900 + row + side * 40); }
+          // 안쪽 옆면 (가운데 벽 쪽으로 꺾인 면 · 3칸 그늘)
+          const ix = side ? x0 : x1; for (let y = 0; y < h - 6; y++) for (let k = 0; k < 3; k++) { const x = side ? ix + k : ix - k; put(x, y, (y % 5 === 4) ? WG[8] : WG[side ? 7 - Math.min(1, k) : 6 + (k === 0 ? 1 : 0)]); }
+          // 화살창: 돌 테 + 깊은 어둠
+          const sx = x0 + 15; for (let y = 4; y <= 15; y++) { put(sx - 1, y, WG[3]); put(sx + 2, y, WG[6]); } for (let x = sx - 1; x <= sx + 2; x++) { put(x, 3, WG[2]); put(x, 16, WG[5]); }
+          for (let y = 4; y <= 15; y++) { put(sx, y, y < 6 ? '#0a0908' : '#050404'); put(sx + 1, y, '#050404'); }
+          // 굽돌 (아래 6줄): 비스듬한 윗면 + 큰 돌
+          for (let x = x0; x <= x1; x++) { put(x, h - 7, WG[2]); put(x, h - 6, WG[3]); }
+          for (let bx = x0; bx <= x1; bx += 11) ashlar(put, bx, h - 5, Math.min(x1, bx + 9), h - 2, 4, 700 + bx, { noTop: true }), (bx + 10 <= x1) && [h - 5, h - 4, h - 3, h - 2].forEach(y => put(bx + 10, y, WG[8]));
         }
-        for (let y = 0; y <= 12; y++) for (let x = cx - 7; x <= cx + 6; x++) { if (y > 12 - Math.max(0, Math.abs(x + 0.5 - cx) - 5)) continue; const e = x === cx - 7 || x === cx + 6 || y === 12 || y === 0; put(x, y, e ? K : x <= cx - 5 || y === 1 ? GS.H : x >= cx + 4 ? GS.d : GS.h); } // 쐐기돌
-        [TW / 2, w - TW / 2].forEach(bx => { // 왕의 깃발
+        // 3) 아치: 홍예석 (부챗살 쐐기 15개 · 바깥 테두리 빛) + 아래 문설주 (길고 짧은 돌 번갈아)
+        const NV = 15;
+        for (let y = 0; y < h; y++) for (let x = TW; x < w - TW; x++) { if (!inArch(x, y) || inOpen(x, y)) continue;
+          if (y < ay + 0.5) { const a = Math.atan2(y + 0.5 - ay, x + 0.5 - cx), seg = Math.floor((a + Math.PI) / (Math.PI / NV)), a2 = Math.atan2(y + 0.5 - ay, x - 0.5 - cx), seg2 = Math.floor((a2 + Math.PI) / (Math.PI / NV)), r = Math.hypot(x + 0.5 - cx, y + 0.5 - ay);
+            let k = 4 + (hsh(seg, 1, 5) < 0.35 ? 1 : 0) - (x < cx ? 1 : 0); if (r > RO - 1.2) k -= 1; if (r < RI + 1.3) k += 1; if (seg !== seg2) k = 8; put(x, y, WG[Math.max(0, Math.min(8, k))]); }
+          else { const j = y - ay, row = Math.floor(j / 4), longS = row % 2 === 0, inner = Math.abs(x + 0.5 - cx) <= RI + (longS ? 7 : 4); if (!inner) continue;
+            let k = x < cx ? 3 : 5; if (j % 4 === 0) k -= 1; if (j % 4 === 3) k = 8; if (hsh(x, row, 8) < 0.05) k += 1; put(x, y, WG[Math.max(0, Math.min(8, k))]); } }
+        for (let y = 0; y < h; y++) for (let x = TW; x < w - TW; x++) if (inArch(x, y) && !inOpen(x, y) && (!inArch(x - 1, y) || !inArch(x + 1, y) || !inArch(x, y - 1)) && y < ay) put(x, y, WG[8]); // 아치 바깥 줄눈
+        // 쐐기돌: 크게 튀어나온 이맛돌
+        for (let y = 0; y <= 9; y++) for (let x = cx - 5; x <= cx + 4; x++) { let k = x <= cx - 4 ? 1 : x >= cx + 3 ? 5 : 3; if (y === 0) k = 1; if (y === 9) k = 6; put(x, y, WG[k]); }
+        for (let y = 0; y <= 9; y++) { put(cx - 6, y, WG[8]); put(cx + 5, y, WG[8]); }
+        // 4) 문 안쪽 면 (벽 두께): 위 · 왼쪽은 그늘, 오른쪽은 더 깊은 그늘 — 문짝 위에 덮여 문이 안으로 물러나 보임
+        for (let y = 0; y < bot; y++) for (let x = TW; x < w - TW; x++) { if (!inOpen(x, y)) continue; let d = 9; for (let k = 1; k <= RV; k++) if (!inOpen(x - k, y) || !inOpen(x + k, y) || !inOpen(x, y - k)) { d = k; break; } if (d > RV) continue;
+          const left = !inOpen(x - d, y), top = !inOpen(x, y - d); put(x, y, top ? (d === 1 ? WG[6] : WG[7]) : left ? (d === 1 ? WG[5] : WG[6]) : (d === 1 ? WG[7] : WG[8])); }
+        // 문턱돌
+        for (let x = cx - RI - 1; x <= cx + RI; x++) { put(x, bot, WG[3]); put(x, bot + 1, WG[5]); put(x, bot + 2, WG[6]); put(x, bot + 3, WG[7]); }
+        // 5) 왕의 깃발: 쇠막대 · 고리 · 세로 주름(빛 · 그늘) · 금테 · 왕관 · 찢긴 끝
+        [TW / 2, w - TW / 2].forEach((bx, side) => {
           const x0 = Math.round(bx) - 7, y0 = 24, bw = 14, bh = 30;
-          const inF = (xx, yy) => { const tt = yy >= y0 + bh ? (yy - y0 - bh + 1) : 0; return xx >= x0 && xx < x0 + bw && yy >= y0 && yy < y0 + bh + 3 && !(tt && Math.abs(xx + 0.5 - (x0 + bw / 2)) < tt * 2.2); };
+          const cut = x => { const u = Math.abs(x + 0.5 - (x0 + bw / 2)); return u < 3 ? 4 - Math.round(u) : Math.floor(hsh(x, side, 66) * 3); }; // 가운데 갈라진 제비꼬리 · 가장자리 들쭉날쭉
+          const inF = (xx, yy) => xx >= x0 && xx < x0 + bw && yy >= y0 && yy < y0 + bh + 3 - cut(xx) && !(hsh(xx, yy, 77) < 0.015 && yy > y0 + 6);
           for (let y = y0 - 1; y < y0 + bh + 4; y++) for (let x = x0 - 1; x <= x0 + bw; x++) {
             if (!inF(x, y)) { if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => inF(x + dx, y + dy))) put(x, y, K); continue; }
-            let c = x === x0 ? '#7a1a26' : x >= x0 + bw - 2 ? '#3a0810' : (x - x0) % 4 === 3 ? '#4e0c16' : '#62121e';
-            if (y === y0 || y === y0 + 1) c = GOLD.o; if (y === y0) c = GOLD.y;
-            if ((x === x0 + 1 || x === x0 + bw - 2) && y > y0 + 1) c = GOLD.o;
+            const f = (x - x0) % 5; let c = f === 0 ? VEL[1] : f === 1 ? VEL[1] : f === 2 ? VEL[2] : f === 3 ? VEL[3] : VEL[2]; // 주름
+            if (x === x0 + 1 && y > y0 + 2) c = VEL[0]; if (y > y0 + bh - 4 && c !== VEL[3]) c = VEL[VEL.indexOf(c) + 1]; // 아래 끝은 한 톤 어둡게 (그을림)
+            if (y === y0 || y === y0 + 1) c = y === y0 ? GLD[1] : GLD[2]; else if (x === x0 + 1 || x === x0 + bw - 2) c = GLD[2]; else if (x === x0 || x === x0 + bw - 1) c = VEL[3];
             put(x, y, c);
           }
-          for (let x = x0 - 2; x <= x0 + bw + 1; x++) { put(x, y0 - 2, K); put(x, y0 - 3, IRON.m); }
-          const cxb = x0 + 7, cy = y0 + 12; ['#..#..#', '##.#.##', '#######', '#######'].forEach((r, yy) => [...r].forEach((ch, xx) => { if (ch === '#') put(cxb - 3 + xx, cy + yy, yy === 0 ? GOLD.Y : GOLD.y); }));
-          for (let xx = -3; xx <= 3; xx++) put(cxb + xx, cy + 4, GOLD.o);
+          for (let x = x0 - 2; x <= x0 + bw + 1; x++) { put(x, y0 - 3, IRW[1]); put(x, y0 - 2, IRW[3]); } put(x0 - 3, y0 - 3, IRW[0]); put(x0 + bw + 2, y0 - 3, IRW[0]); put(x0 - 3, y0 - 2, IRW[2]); put(x0 + bw + 2, y0 - 2, IRW[2]); // 쇠막대 + 끝장식
+          for (const rx of [x0 + 2, x0 + bw - 3]) { put(rx, y0 - 1, IRW[1]); }
+          const cxb = x0 + 7, cy = y0 + 11; ['#..#..#', '##.#.##', '#######', '#.#.#.#', '#######'].forEach((r, yy) => [...r].forEach((ch, xx) => { if (ch === '#') put(cxb - 3 + xx, cy + yy, yy === 0 ? GLD[0] : yy === 4 ? GLD[2] : xx === 0 ? GLD[0] : GLD[1]); else if (yy === 3) put(cxb - 3 + xx, cy + yy, VEL[0]); }));
         });
+        // 6) 바닥에 쌓인 재 · 굽돌 앞 부스러기
+        for (let x = 0; x < w; x++) if (hsh(x, 3, 91) < 0.18) put(x, h - 2, hsh(x, 4, 91) < 0.5 ? '#8e887e' : '#6e695f');
+        for (let x = 0; x < w; x++) put(x, h - 1, K);
+        for (let y = 0; y < h; y++) { put(0, y, K); put(w - 1, y, K); }
       });
       const back = cellCanvas(w, h, put => { // 문 너머: 왕도 대로 · 진홍 융단 · 멀리 선 기둥 · 잉걸 빛
         for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
           if (!inOpen(x, y)) continue;
-          const dy = bot - y; let c = dy < 4 ? '#3a1a14' : dy < 12 ? '#24120f' : dy < 22 ? '#160c0e' : '#0a080c';
+          const dy = bot - y; let c = dy < 4 ? '#3a1a14' : dy < 12 ? '#24120f' : dy < 22 ? '#160c0e' : '#0a080a';
           const half = 3 + Math.floor(dy < 30 ? (30 - dy) / 6 : 0);
           if (Math.abs(x + 0.5 - cx) <= half && dy < 30) c = dy < 8 ? '#9a1c2c' : dy < 18 ? '#6a1020' : '#40080f';
-          if ((Math.abs(x + 0.5 - cx) === 12.5 || Math.abs(x + 0.5 - cx) === 18.5) && dy > 6 && dy < 34) c = '#1c1922';
+          if ((Math.abs(x + 0.5 - cx) === 12.5 || Math.abs(x + 0.5 - cx) === 18.5) && dy > 6 && dy < 34) c = '#1c1a16';
           if (dy === 30 && hash(x * 3) < 0.6) c = '#ff7a20';
           if (dy === 31 && hash(x * 7) < 0.25) c = '#c03018';
           put(x, y, c);
         }
       });
       const LW = RI;
-      const leaf = cellCanvas(LW, h, put => { // 왼쪽 문짝 (오른쪽은 좌우 대칭)
+      const leaf = cellCanvas(LW, h, put => { // 왼쪽 문짝 (오른쪽은 좌우 대칭): 널 4칸(왼쪽 빛 · 오른쪽 이음 그늘 · 결 · 옹이) · 쇠띠 셋(징 · 끝 장식) · 징 · 고리
         for (let y = 0; y < h; y++) for (let lx = 0; lx < LW; lx++) {
           if (!inOpen(cx - LW + lx, y)) continue;
-          let c = (Math.floor(lx / 4) % 2) ? '#2a1a12' : '#20140e'; if (lx % 4 === 3) c = '#120a06';
-          if (lx === 0) c = '#120a06';
-          if ([18, 34, 50].some(b => y === b || y === b + 1)) { c = y % 2 ? IRON.d : IRON.m; if (lx % 4 === 1) c = IRON.l; }
-          if (lx === LW - 1) c = K;
-          put(lx, y, c);
+          const pl = Math.floor(lx / 4), f = lx % 4; let k = f === 0 ? 1 : f === 3 ? 3 : 2; if (pl % 2) k += 0; if (hsh(lx, Math.floor(y / 3), pl + 5) < 0.12 && f > 0 && f < 3) k += 1; // 결
+          if (y > bot - 6) k += 1; if (lx === LW - 1) k = 4; put(lx, y, OAK[Math.min(4, k)]);
         }
-        [[0, 0], [-1, 1], [1, 1], [-1, 2], [1, 2], [0, 3]].forEach(([dx, dy]) => put(LW - 4 + dx, 46 + dy, IRON.l)); // 문고리
-        for (let y = 6; y < bot; y += 8) for (let lx = 2; lx < LW - 1; lx += 6) put(lx, y, IRON.m); // 징
+        for (const [kx, ky] of [[6, 27], [17, 43], [10, 58]]) { put(kx, ky, OAK[4]); put(kx + 1, ky, OAK[3]); put(kx, ky + 1, OAK[3]); } // 옹이
+        for (const b of [16, 32, 48]) for (let lx = 0; lx < LW - 1; lx++) { if (!inOpen(cx - LW + lx, b)) continue; put(lx, b, IRW[1]); put(lx, b + 1, IRW[2]); put(lx, b + 2, IRW[3]); if (lx % 5 === 2) { put(lx, b, IRW[0]); put(lx, b + 1, IRW[1]); } } // 쇠띠 + 징머리
+        for (const b of [16, 32, 48]) { put(0, b - 1, IRW[1]); put(1, b - 1, IRW[2]); put(0, b + 3, IRW[2]); } // 띠 끝 (경첩 쪽 갈래)
+        for (let y = 7; y < bot - 4; y += 6) for (let lx = 2; lx < LW - 2; lx += 4) if (![16, 17, 18, 32, 33, 34, 48, 49, 50].includes(y) && inOpen(cx - LW + lx, y)) { put(lx, y, IRW[1]); put(lx, y + 1, IRW[3]); } // 징
+        for (const [dx, dy, c] of [[0, 0, 1], [-1, 1, 0], [1, 1, 2], [-2, 2, 0], [2, 2, 2], [-2, 3, 1], [2, 3, 3], [-1, 4, 2], [1, 4, 3], [0, 4, 3], [0, -1, 2]]) put(LW - 4 + dx, 38 + dy, IRW[c]); // 고리
       });
-      return (GATE = { w, h, cx, LW, bot, frame, back, leaves: [leaf, mirror(leaf)] });
+      // 앞 돌계단 3단 (윗면 빛 · 앞면 마름돌)
+      const SW = 84, steps = cellCanvas(SW, 12, put => { for (let i = 0; i < 3; i++) { const hw = 32 + i * 4, x0 = SW / 2 - hw, x1 = SW / 2 + hw - 1, ty = i * 3; for (let x = x0 - 1; x <= x1 + 1; x++) put(x, ty + 3, K);
+        for (let x = x0; x <= x1; x++) { put(x, ty, WG[x === x0 ? 2 : hsh(x, i, 4) < 0.12 ? 1 : 3]); }
+        let bx = x0; while (bx <= x1) { const ex = Math.min(x1, bx + 7 + Math.floor(hsh(bx, i, 2) * 4)); ashlar(put, bx, ty + 1, ex, ty + 2, 5 + Math.min(1, i), 300 + i * 20 + bx, { noTop: true }); if (ex < x1) { put(ex, ty + 1, WG[8]); put(ex, ty + 2, WG[8]); } bx = ex + 1; } put(x0 - 1, ty, K); put(x1 + 1, ty, K); put(x0 - 1, ty + 1, K); put(x1 + 1, ty + 1, K); put(x0 - 1, ty + 2, K); put(x1 + 1, ty + 2, K); } });
+      // v3.20 배경 요소처럼 보이게: 검은 외곽선 · 가장 어두운 줄눈을 배경 벽의 줄눈색으로 누그러뜨림
+      const soften = c => { const g = c.getContext('2d'), d = g.getImageData(0, 0, c.width, c.height), q = d.data;
+        for (let i = 0; i < q.length; i += 4) { if (!q[i + 3]) continue; const r = q[i], gg = q[i + 1], b = q[i + 2];
+          if ((r === 0x0b && gg === 0x0a && b === 0x0e) || (r === 0x15 && gg === 0x13 && b === 0x10)) { q[i] = 0x1e; q[i + 1] = 0x1c; q[i + 2] = 0x18; } }
+        g.putImageData(d, 0, 0); return c; };
+      soften(frame); soften(steps);
+      return (GATE = { w, h, cx, LW, bot, frame, back, leaves: [leaf, mirror(leaf)], steps, SW });
     }
 
     // ---- 배치 (방 기준 좌표)
@@ -298,7 +344,7 @@
       G.loot = []; G.drops = []; G.mood = null;
       enterRoom(R, null);
       const P = G.player; P.x = CX; P.y = A.y1 - 26;
-      PILLARS = PILLARS.filter(x => Math.abs(x - CX) > 170); TORCHES = TORCHES.filter(t => Math.abs(t.x - CX) > 170); // 성문 자리의 벽 기둥·횃불은 뺀다
+      // v3.20 성문 양옆 벽 기둥 · 창 · 횃불은 enterRoom(05_dungeon.js)에서 좌우 대칭으로 놓음
       if (!wmStart()) greet();
     }
     function greet() { banner('왕도 성문', '세 개의 파편을 제단에 바쳐야 성문이 열립니다'); }
@@ -343,8 +389,8 @@
       const t = st(), lay = L(), lit = [0, 1, 2].map(i => t >= TL.snap[i] + TL.snapDur);
       list.push({ y: A.y0 - 300, d: () => drawBrand(t, lit) }); // 바닥 낙인 (바닥 바로 위)
       list.push({ y: lay.gb, d: () => drawGate(t) });
-      list.push({ y: lay.AB, d: () => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(lay.AX + 2, lay.AB - 2, 88, 6); blit(altarArt(lit), lay.AX, lay.AY); } });
-      lay.stat.forEach((sx, i) => list.push({ y: lay.statY, d: () => { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(snap2(sx - 16), lay.statY - 2, 32, 4); const c = statueArt(t >= TL.stat[i], i === 1); blit(c, sx - 16, lay.statY - c.height * CS); } }));
+      list.push({ y: lay.AB, d: () => { dshRect(ctx, lay.AX + 2, lay.AB - 2, 88, 6, 0.5); blit(altarArt(lit), lay.AX, lay.AY); } });
+      lay.stat.forEach((sx, i) => list.push({ y: lay.statY, d: () => { dshRect(ctx, snap2(sx - 16), lay.statY - 2, 32, 4, 0.5); const c = statueArt(t >= TL.stat[i], i === 1); blit(c, sx - 16, lay.statY - c.height * CS); } }));
     }
     function drawGate(t) {
       const Gt = gateArt(), lay = L(), x0 = lay.gx, y0 = lay.gy;
@@ -356,7 +402,7 @@
         if (open > 0) { ctx.fillStyle = `rgba(0,0,0,${Math.min(0.6, Math.ceil(open / 5) * 0.12)})`; ctx.fillRect(lx, y0, wk * CS, Gt.bot * CS); }
       });
       blit(Gt.frame, x0, y0);
-      for (let i = 0; i < 3; i++) { const hw = 64 + i * 8, y = lay.gb + i * 6; ctx.fillStyle = '#000'; ctx.fillRect(CX - hw - 2, y, hw * 2 + 4, 7); ctx.fillStyle = i === 0 ? '#3c3844' : i === 1 ? '#2e2b34' : '#25222a'; ctx.fillRect(CX - hw, y, hw * 2, 5); ctx.fillStyle = '#4e4a56'; ctx.fillRect(CX - hw, y, hw * 2, 1); }
+      blit(Gt.steps, CX - Gt.SW, lay.gb); // v3.20 돌계단 (칸 그림)
       if (t > TL.gate[0] && t < TL.gate[1] + 0.6) for (let i = 0; i < 22; i++) { const ph = ((t - TL.gate[0]) * 0.9 + hash(i)) % 1, x = CX + (hash(i * 5) - 0.5) * 120 + (hash(i * 9) - 0.5) * 30 * ph; ctx.fillStyle = ph > 0.66 ? '#5e5868' : '#8a8496'; ctx.fillRect(snap2(x), snap2(lay.gb + 4 + ph * 22), 2, 2); }
     }
     function top() { // 어둠 위: 파편 · 왕관 · 빛기둥 · 불티
@@ -409,7 +455,7 @@
       const k = Math.min(4, Math.floor((R.seqT - TL.fade[0]) / ((TL.fade[1] - TL.fade[0]) / 4)) + 1);
       ctx.fillStyle = `rgba(0,0,0,${k / 4})`; ctx.fillRect(0, 0, VW, VH);
     }
-    return { enter, greet, interact, start, busy, update, ents, top, lights, screen, isRoom: () => !!R0(), crownArt, GEM }; // v2.54 왕관 그림은 엔딩도 씀
+    return { enter, greet, interact, start, busy, update, ents, top, lights, screen, isRoom: () => !!R0(), crownArt, GEM, gateArt, altarArt, statueArt }; // v2.54 왕관 그림은 엔딩도 씀
   })();
 
   // ================================================================ v1.02 대장간 방: 스테이지 사이에 걸어 다니는 고정 대장간
@@ -424,22 +470,6 @@
     const line = (g, x0, y0, x1, y1, c, w = 0) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 2 || 1; for (let i = 0; i <= n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; for (let a = -w; a <= w; a++) for (let b = -w; b <= w; b++) put(g, x + a, y + b, c); } };
     return { mk, put, ell, rect, line };
   })();
-  // v1.02 손으로 찍은 대장간 도트 (2px 칸·4단계 명암·왼쪽 위 광원)
-  const FPAL = {'k': '#0b0a0e', '1': '#8a8494', '2': '#625c72', '3': '#45404f', '4': '#2c2834', 'i': '#d8dce4', 'I': '#a4aab4', 'j': '#6e747e', 'J': '#43474f', 'o': '#b07c44', 'O': '#83592f', 'p': '#5c3c20', 'P': '#3c2614', 'y': '#fff3c0', 'Y': '#ffd060', 'r': '#ff8a2a', 'R': '#d0401a', 'e': '#7a1a10', 'c': '#2e282c', 'C': '#18141a', 'u': '#7ab4da', 'U': '#3e6e94', 'g': '#f0c860', 'G': '#a07828', 'l': '#9a6440', 'L': '#64402a', 'b': '#8c5a32', 'B': '#5e3a1e', 'h': '#b88050', 'f': '#e6c494', 'F': '#b8946a', 'n': '#140e0c', 'w': '#ffffff', 'a': '#5a3e2a', 'A': '#3a281c', 't': '#3c3646', 'T': '#26212e'};
-  const FMAP = {
-    BARREL: ['..kkkkkk..', '.kuuuuuUk.', 'kJUUUUUUJk', 'kjjjjjjjJk', 'kooOOOOOpk', 'koOOOOOOpk', 'kjjjjjjjJk', 'koOOOOOOpk', 'koOOOOOppk', 'kjjjjjjjJk', '.kOOOOOpk.', '..kkkkkk..'],
-    COAL: ['......kkkk........', '....kkcJcCkk......', '..kkcCccRcCckk....', '.kcCcJCcccrCcckk..', 'kcCcRcccCcJccCcck.', 'kCcccCccccCcRcCcCk', 'kCCcCCCcCCCcCCCcCk', '.kkkkkkkkkkkkkkkk.'],
-    ORE: ['.....kkkk.......', '...kk1223kk.kk..', '..k12L223Lkk12k.', '.k122223L33k2L3k', 'k12L2233L2k2L33k', 'k22233L333k23L3k', 'k333344334k3344k', '.kkkkkkkkkkkkkk.'],
-  };
-  const FORGE_PAL = { b: '#8a3a26', B: '#5a2216', k: '#0b0a0e', s: '#9aa0a8', S: '#5e626a', D: '#3a3e44', w: '#d8dce4', o: '#6b4a2a', O: '#4a3020', q: '#8a6a40', h: '#6a6470', l: '#4a4652', d: '#34303a', x: '#221e26', r: '#ff8a3a', R: '#c03a1a', y: '#ffd060', Y: '#fff0b0', c: '#1a1618', C: '#2e2a2e', W: '#3a6a8a', V: '#6aa0c0', L: '#7a5232', g: '#8d9097', G: '#c0c4ca' };
-  // 장식: 담금질 통 · 석탄 더미 · 광석 (대장간 방은 그림판 + FP 새 소품, 이 셋은 용의 유적 · 갱도 굽기 원본)
-  const FORGE_DECO = {
-    barrel: () => fromRows(FMAP.BARREL),
-    coal: () => fromRows(FMAP.COAL),
-    ore: () => fromRows(FMAP.ORE),
-  };
-  const NEWDECO = new Set(['barrel', 'coal', 'ore']);
-  const forgeArt = (k, fn) => art('forge_' + k, () => gCanvas(fn(), NEWDECO.has(k) ? FPAL : FORGE_PAL));
   // 방 만들기
   // ================================================================ v1.71 출장 대장간 — 곰 대장장이의 마차가 챕터 사이 길목에 섬
   // 월드맵의 대장간 자리에 맞춘 야외 3종: A 강가 다리 아래(1→2, 성채 옛 포석) · B 부락 절벽 끝(2→3) · C 잿빛 산길(3→4)
@@ -571,6 +601,9 @@
   // v2.93 대장장이 「쿤」: 흰 스피츠 (플레이어와 같은 정면 2등신 · 세로 눈 · 파란 눈동자 · 까만 코 · 가죽 앞치마) — A 망치를 든 장면 · B 모루로 내려친 장면
   const KOON_A = ["...k......k.kkk...", "..kVk....kVkiIJk..", ".kVpwkkkkwpVIJJk..", ".kwwwwwwwwwwkOk...", ".kwwnwwwwnwwkOk...", ".kWwvwnnwvwwkOk...", "kWWwwwwwwwwWwOk...", "kVWwwwwwwwwwwk....", ".kwWAaaaaAWwwk....", "kwVaaaagaaakwk....", "kwkaaaaaaaakk.....", ".kkaaaAaaaak......", "...ktTkktTk.......", "..kPPPkkPPPk......"];
   const KOON_B = ["...k......k.......", "..kVk....kVk......", ".kVpwkkkkwpVk.....", ".kwwwwwwwwwwk.....", ".kwwnwwwwnwwk.....", ".kWwvwnnwvwwk.....", "kWWwwwwwwwwWWk....", "kVWwwwwwwwwwVk....", ".kwWAaaaaAWwkk....", "kwVaaaagaaaVwwk...", "kwkaaaaaaaakkOk...", ".kkaaaAaaaakiIJk..", "...ktTkktTkkIJJk..", "..kPPPkkPPPkkkk..."];
+  const KOON_TAIL = ['....kkk..', '..kkwwwk.', '.kwwwwwwk', 'kwwwwwWk.', '.kkwwWWk.', '...kkWWWk', '.....kkk.']; // v3.20 쿤 꼬리: 그레이브 꼬리 모양 · 흰 털 한 색에 아래 · 뒤쪽만 음영 (몸 6~12줄 왼쪽에 붙음)
+  // v3.20 꼬리 장면: 0 기본 · 1 끝이 바깥(왼쪽 위)으로 휘어 올라감 · 2 끝이 한 칸 아래로 처짐 (칸 단위로만 · 붙은 뿌리 쪽 줄은 그대로)
+  const koonTail = f => f === 0 ? KOON_TAIL : f === 1 ? ['...kkk....', '.kkwwwk...', 'kwwwwwwk..', '.kwwwwwWk.', '..kkwwWWk.', '....kkWWWk', '......kkk.'] : ['.........', '....kkk..', '..kkwwwk.', '.kwwwwwWk', 'kwwwwWWk.', '.kkkWWWWk', '....kkkk.'];
   const KOON_PAL = {"k": "#0b0a0e", "w": "#f6f4f0", "W": "#dcd8d0", "V": "#aca69c", "p": "#eaa4a4", "n": "#141010", "h": "#ffffff", "v": "#4a3f3a", "a": "#5a3e2a", "A": "#3a281c", "g": "#f0c860", "t": "#3c3646", "T": "#26212e", "P": "#3c2614", "i": "#d8dce4", "I": "#a4aab4", "J": "#43474f", "O": "#83592f", "r": "#c03a30", "R": "#8a2420", "u": "#7ab4da", "U": "#3e6e94", "y": "#e8e0c8"};
   // v2.94 쿤 분리: 몸(KB_*)과 망치(KH_*)를 따로 그려 망치·타격 섬광이 모루 위 레이어에 오도록
   const KB_A = ["...k......k..........", "..kVk....kVk.........", ".kVpwkkkkwpVk........", ".kwwwwwwwwwwk........", ".kwwnwwwwnwwk........", ".kWwvwnnwvwwk........", "kWWwwwwwwwwWwk.......", "kVWwwwwwwwwwwk.......", ".kwWAaaaaAWwwk.......", "kwVaaaagaaakwk.......", "kwkaaaaaaaakk........", ".kkaaaAaaaak.........", "...ktTkktTk..........", "..kPPPkkPPPk........."];
@@ -589,6 +622,8 @@
   function drawSmith(R) {
     const P = G.player, near = Math.hypot(P.x - R.smith.x, P.y - R.smith.y) < 70, k = koonState(R), fr = k.ph === 2 ? 1 : 0;
     const c = art('forge_koonb_' + fr + (k.blink ? 'b' : '') + (k.ear ? 'e' : '') + (k.crouch ? 'c' : ''), () => gCanvas(fromRows(koonVar(fr ? KB_B : KB_A, k.blink, k.ear, k.crouch)), KOON_PAL)); // v2.94 몸만
+    { const cyc = (time % 1.3) / 1.3, tf = k.ph === 1 ? 1 : k.ph === 2 ? 2 : (Math.floor(cyc * 4) % 2); // v3.20 꼬리도 박자에 맞춰 움직임: 숨 고를 땐 살랑(0↔1) · 들어올릴 때 끝이 바깥으로 · 내려칠 때 끝이 아래로 툭
+      ctx.drawImage(art('forge_koon_tail3_' + tf, () => gCanvas(fromRows(koonTail(tf)), KOON_PAL)), k.x - 14 - (tf === 1 ? 2 : 0), k.y + 12 + (k.crouch ? 2 : 0)); } // 몸이 내려앉으면 꼬리도 1칸
     ctx.drawImage(c, k.x, k.y);
     if (fr === 1 && !R.hit) { R.hit = true; R.hitT = time; sfx('block', 1.4); const hx = R.smith.x + 21, hy = R.smith.y - 10; // 망치 머리가 모루 윗면에 닿는 지점
       for (let i = 0; i < 14; i++) { const an = rand(-Math.PI * 0.95, -Math.PI * 0.05); G.parts.push({ x: hx, y: hy, vx: Math.cos(an) * rand(50, 150), vy: Math.sin(an) * rand(60, 150), t: rand(0.25, 0.6), c: pick(['#ffffff', '#fff0b0', '#ffd060', '#ff8a2a']), g: 340, glow: true }); }
@@ -634,7 +669,7 @@
       G.pfire = G.pfire.filter(f => f.t > 0); }
     for (const e of G.enemies) if (!e.dead && e.bleedT > 0) { e.bleedT -= dt; e.bleedTick -= dt;
       if (Math.random() < dt * 10) G.parts.push({ x: e.x + rand(-5, 5), y: e.y - rand(6, 20), vx: rand(-10, 10), vy: rand(10, 30), t: 0.4, c: pick(['#a3161c', '#7a1018']), g: 120, floor: e.y + 2 });
-      if (e.bleedTick <= 0) { e.bleedTick = 0.5; gxSpurt(e, 4); damageEnemy(e, 0.15, { dot: true, proc: true, gauge: 0 }); } }
+      if (e.bleedTick <= 0) { e.bleedTick = 0.5; gxSpurt(e, 4); damageEnemy(e, 0.15 * (e.bleedN || 1), { dot: true, proc: true, gauge: 0 }); } if (e.bleedT <= 0) e.bleedN = 0; } // v3.21 뼈 톱질 출혈 3중첩
   }
   const fxRing = (x, y, c, grow) => G.fx.push({ kind: 'ring', x, y, r: 8, t: 0.35, max: 0.35, c, grow });
   const nearFoes = (x, y, r, skip) => G.enemies.filter(o => !o.dead && o !== skip && o.type !== 'flag' && Math.hypot(o.x - x, o.y - y) < r);
@@ -823,7 +858,7 @@
     const L = LOOT[l.type];
     const blink = l.life < 4 && Math.floor(l.life * 8) % 2 === 0;
     const hover = l.z + (l.vz === 0 && l.z === 0 ? 2 + Math.sin(time * 4 + l.bob) * 1.5 : 0);
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(l.x, l.y, 5, 2, 0, 0, TAU); ctx.fill();
+    dshEll(ctx, l.x, l.y, 5, 2, 0.5);
     if (blink) return;
     if (l.type === 'hue') { const c = l.hue || 'r', yy = l.y - hover + 1; drawSprite('hue_' + c, 'hue_' + c, 2, l.x, yy, false); if (Math.floor(time * 4 + l.bob) % 4 === 0) { ctx.fillStyle = '#fffbe6'; ctx.fillRect(snap2(l.x + 4), snap2(yy - 14), 2, 2); } return; }
     if (l.type === 'gear') {
@@ -920,7 +955,7 @@ const FP = (() => {
     const xr = Math.max(...low.keys()), yr = low.get(xr); for (let i = 1; i <= dx; i++) { S.SH.set((xr + i) + ',' + yr, a * 0.6); } }
   const selC = c => { const n = parseInt(c.slice(1), 16), f = v => Math.round(v * 0.45).toString(16).padStart(2, '0'); return '#' + f(n >> 16) + f((n >> 8) & 255) + f(n & 255); }; // v3.19 셀아웃: 구조물 위에 걸린 물건은 제 색을 어둡게
   function render(S, outline = true) { const W = S.w + 2 * S.pad, H = S.h + 2 * S.pad, c = document.createElement('canvas'); c.width = W * 2; c.height = H * 2; const g = c.getContext('2d'), p = S.pad;
-    for (const [k, a] of S.SH) { if (S.M.has(k)) continue; const [x, y] = k.split(',').map(Number); g.fillStyle = `rgba(4,3,8,${a})`; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
+    for (const [k, a] of S.SH) { if (S.M.has(k)) continue; const [x, y] = k.split(',').map(Number); if (!dshOn(x + p, y + p, a * 0.9)) continue; g.fillStyle = DSH_C; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); } // v3.20 디더 그림자
     if (outline) for (const k of S.M.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!S.M.has((x + dx) + ',' + (y + dy))) { g.fillStyle = K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }
     for (const [k, col] of S.M) { const [x, y] = k.split(',').map(Number); g.fillStyle = col; g.fillRect((x + p) * 2, (y + p) * 2, 2, 2); }
     for (const O of (S.OV || [])) { for (const k of O.keys()) { const [x, y] = k.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!O.has((x + dx) + ',' + (y + dy))) { g.fillStyle = O.sel && window.DEOUT !== false && S.M.has((x + dx) + ',' + (y + dy)) ? selC(O.get(k)) : K; g.fillRect((x + dx + p) * 2, (y + dy + p) * 2, 2, 2); } }

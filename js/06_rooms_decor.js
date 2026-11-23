@@ -25,11 +25,11 @@
   function flushBubbles() {
     BUB_LAST.clear(); drawBubble.mute = false;
     if (G && G.player && !G.player.dead && P_BUBBLE.until > time && P_BUBBLE.text) {
-      drawBubble(P_BUBBLE.text, G.player.x, G.player.y - 38, 0); // v3.19 말주머니는 캐릭터 동작(들림 · 숨쉬기)에 따라 위아래로 흔들리지 않음
+      if (P_BUBBLE.seq) for (const q of P_BUBBLE.seq) if (q.s <= time) P_BUBBLE.text = q.t; drawBubble(P_BUBBLE.text, G.player.x, G.player.y - 38, 0); // v3.19 말주머니는 캐릭터 동작(들림 · 숨쉬기)에 따라 위아래로 흔들리지 않음
     }
     // v3.18 말주머니끼리 겹치면 나중 것을 겹친 말주머니 위로 올려 쌓음 (겹쳐 그려져 깨져 보이지 않게)
     const placed = []; ctx.font = '10px Galmuri9';
-    for (const b of BUBBLES) { if (b[3] < 0) continue; const note = b[0].endsWith('♪'), t = note ? b[0].slice(0, -1) : b[0], w = ((Math.ceil(ctx.measureText(t).width) + (note ? 14 : 0) + 14) & ~1) + 6, h = 30;
+    for (const b of BUBBLES) { if (b[3] < 0) continue; const note = b[0].endsWith('♪'), t = (note ? b[0].slice(0, -1) : b[0]).replace(/[{}]/g, ''), w = ((Math.ceil(ctx.measureText(t).width) + (note ? 14 : 0) + 14) & ~1) + 6, h = 30;
       for (let k = 0; k < 6; k++) { const x0 = b[1] - w / 2, y0 = b[2] - h, hit = placed.find(p => x0 < p[0] + p[2] && p[0] < x0 + w && y0 < p[1] + p[3] && p[1] < y0 + h); if (!hit) break; b[2] = hit[1] - 2; }
       placed.push([b[1] - w / 2, b[2] - h, w, h]); }
     for (const b of BUBBLES) paintBubble(b[0], b[1], b[2], b[3]);
@@ -229,8 +229,10 @@
   const P_BUBBLE = { text: null, until: 0 };
   function sayPlayer(text, dur = 3.8) {
     if (!text) return;
-    P_BUBBLE.text = text;
-    P_BUBBLE.until = time + dur;
+    // v3.20 문장이 둘 이상이면 한 말주머니에 몰지 않고 문장마다 차례로 띄움 (문장당 최소 1.6초) · '|'가 있으면 그 자리에서만 나눔
+    const parts = (String(text).includes('|') ? String(text).split('|') : String(text).split(/(?<=[.!?])\s+/)).map(s => s.trim()).filter(Boolean), per = parts.length > 1 ? Math.max(1.6, dur / parts.length) : dur;
+    P_BUBBLE.text = parts[0]; P_BUBBLE.seq = parts.length > 1 ? parts.map((t, i) => ({ t, s: time + i * per })) : null;
+    P_BUBBLE.until = time + per * parts.length;
   }
 
   // 시네마틱 암전 스포트라이트 + 레터박스 시스템 (방식 1)
@@ -414,7 +416,7 @@
   function paintBubble(text, x, y, side) { // (x, y) = 꼬리 끝. side 0: 몸통이 위, 꼬리 아래로 / side -1: 몸통이 왼쪽, 꼬리 오른쪽으로
     const note = text.endsWith('♪'); if (note) text = text.slice(0, -1);
     ctx.font = '10px Galmuri9'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    const tw = Math.ceil(ctx.measureText(text).width) + (note ? 14 : 0), w = (tw + 14) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1;
+    const plain = text.replace(/[{}]/g, ''), tw = Math.ceil(ctx.measureText(plain).width) + (note ? 14 : 0), w = (tw + 14) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1;
     let bx = side < 0 ? X - 6 - w : (X - (w >> 1)) & ~1; const by = side < 0 ? Y - 8 : Y - h - 6;
     { const m = ctx.getTransform(); // v3.18 화면 밖으로 잘리지 않게 몸통만 안쪽으로 (꼬리는 그대로) · 말주머니 자리를 기록해 마우스 커서를 숨김
       if (side >= 0 && m.a === 1) { const sx = bx + m.e, lo = 4 - sx, hi = VW - 4 - (sx + w); if (lo > 0) bx += (lo + 1) & ~1; else if (hi < 0) bx -= (-hi + 1) & ~1; bx = Math.max(Math.min(bx, X - 6), X + 6 - w); } // 꼬리는 몸통 안쪽에 남게
@@ -429,7 +431,10 @@
       const tx = X - 2; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(tx - 2, by + h, 8, 2); ctx.fillRect(tx, by + h + 2, 4, 2); ctx.fillRect(tx + 2, by + h + 4, 2, 2);
       ctx.fillStyle = '#d8c8a4'; ctx.fillRect(tx, by + h, 4, 2); ctx.fillStyle = '#f4ead2'; ctx.fillRect(tx, by + h - 2, 4, 2);
     }
-    ctx.fillStyle = '#2a1e18'; fillTextW(text, bx + w / 2 - (note ? 7 : 0), by + 12);
+    if (plain === text) { ctx.fillStyle = '#2a1e18'; fillTextW(text, bx + w / 2 - (note ? 7 : 0), by + 12); }
+    else { ctx.textAlign = 'left'; let cx = bx + w / 2 - (note ? 7 : 0) - ctx.measureText(plain).width / 2; // v3.20 {강조}: 해 · 낮 같은 말은 다른 색 (엠브라즈 말주머니와 같은 색)
+      for (const [s_, hl] of text.split(/(\{[^}]*\})/).filter(Boolean).map(q => q[0] === '{' ? [q.slice(1, -1), 1] : [q, 0])) { ctx.fillStyle = hl ? '#c0601a' : '#2a1e18'; fillTextW(s_, cx, by + 12); cx += ctx.measureText(s_).width; }
+      ctx.textAlign = 'center'; }
     if (note) { const nx = (bx + w - 18) & ~1, ny = by + 3; NOTE_G.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === 'k') ctx.fillRect(nx + i * 2, ny + j * 2, 2, 2); }); }
   }
   function drawPriceTag(price, x, y, ok) { // 동전 + 가격, 어두운 판 (y = 판 위쪽)
@@ -455,7 +460,7 @@
   }
   function drawShopItem(s) {
     const x = Math.round(s.x) & ~1, y = Math.round(s.y) & ~1, st = srArt('stand', G.stage, SR.stand); // v1.11 천 덮인 진열대
-    ctx.fillStyle = 'rgba(0,0,0,.3)'; { const xa = x - st.width / 2 + 4, xb = x + st.width / 2 - 4; if (xb > xa) ctx.fillRect(xa, y + 2, Math.ceil((xb - xa) / 2) * 2, 2); }
+    { const xa = x - st.width / 2 + 4, xb = x + st.width / 2 - 4; if (xb > xa) dshRect(ctx, xa, y + 2, Math.ceil((xb - xa) / 2) * 2, 2, 0.5); }
     ctx.drawImage(st, x - st.width / 2, y - st.height + 4);
     if (s.sold) return;
     const by = (y - st.height + 8 + (Math.floor(time * 2 + x) % 2 ? 0 : -2)) & ~1;
@@ -631,7 +636,8 @@
       if (r.props.some(p => rectHit(me, propRect(p), 6)) || r.obs.some(b => rectHit(me, obsVis(b), 4))) return false;
       r.props.push(q); return true; };
     const fightRoom = ['combat', 'elite', 'survive', 'start'].includes(r.type);
-    if (stage === 3) decorOrc(r, add, W0, H0, keyPts);
+    if (r.type === 'start') decorStart(r, st4 ? 4 : stage, add, W0, H0); // v3.20 시작 방: 그 장의 시설물을 정해진 자리에
+    else if (stage === 3) decorOrc(r, add, W0, H0, keyPts);
     else if (st4) decorAsh(r, add, W0, H0);
     else if (stage === 2) {
       const nx = DOOR.n.x, topY = A.y0 + 18;
@@ -704,6 +710,13 @@
       const i = r.props.map(solid).lastIndexOf(true); r.props.splice(i, 1);
     }
   }
+  // v3.20 시작 방 시설물 — 방 비율 자리 [이름, u, v] · 좌우 대칭으로 짝지어 놓음 (문 앞 · 방 가운데는 add가 알아서 비킴)
+  const START_PROPS = {
+    1: [['signpost', 0.36, 0.16], ['ruinPillar', 0.05, 0.5], ['ruinPillar', 0.95, 0.5]],
+    2: [['brazier', 0.05, 0.12], ['brazier', 0.95, 0.12], ['armor', 0.3, 0.08], ['armor', 0.7, 0.08], ['candelabra', 0.05, 0.56], ['candelabra', 0.95, 0.56], ['table', 0.5, 0.88], ['chairBroken', 0.42, 0.9]],
+    3: [['orcFire', 0.24, 0.3], ['orcFire', 0.76, 0.3], ['hideRack', 0.06, 0.14], ['meatRack', 0.94, 0.14], ['skullPike', 0.36, 0.06], ['skullPike', 0.64, 0.06], ['woodPile', 0.42, 0.9], ['boneHeap', 0.58, 0.9]],
+    4: [['ashLamp', 0.2, 0.12], ['ashLamp', 0.8, 0.12], ['royalBanner', 0.36, 0.06], ['royalBanner', 0.64, 0.06], ['crownBrazier', 0.05, 0.14], ['crownBrazier', 0.95, 0.14], ['folkA', 0.4, 0.86], ['folkB', 0.6, 0.86]] };
+  function decorStart(r, stage, add, W0, H0) { if (stage === 3) ensureOrcProps(); for (const [nm, u, v] of START_PROPS[stage] || []) add(nm, A.x0 + u * W0, A.y0 + v * H0); }
   function drawGroProp(p, sp) { // v1.52 움직이는 기괴한 소품 (칸 단위로만 움직임)
     const P = G.player, dx = P ? P.x - p.x : 999, d = P ? Math.hypot(dx, P.y - p.y) : 999, by = p.y + 2;
     if (sp.anim === 'flower') { // 웃는 꽃: 가까이 오면 이빨 난 입을 벌리고 고개를 돌림
@@ -727,13 +740,13 @@
   }
   function drawProp(p) {
     const s1 = G.stage >= 1 && G.stage <= 4 && typeof RUIN1 !== 'undefined'; // v3.19 1장: 납작 띠 그림자 → 밑동에 붙은 그림자 (오른쪽 2칸 · 끝줄 디더)
-    if (PROPS[p.name].anim) { const sp = PROPS[p.name]; if (s1) { const bx = (p.x & ~1) - 2; ctx.fillStyle = 'rgba(4,3,8,.55)'; ctx.fillRect(bx, p.y, 8, 2); ctx.fillStyle = 'rgba(4,3,8,.42)'; ctx.fillRect(bx + 2, p.y + 2, 8, 2); ctx.fillStyle = 'rgba(4,3,8,.28)'; ctx.fillRect(bx + 4, p.y + 4, 2, 2); ctx.fillRect(bx + 8, p.y + 4, 2, 2); } else { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect((p.x - (sp.r || 8)) & ~1, p.y, ((sp.r || 8) * 2) & ~1, 2); } drawGroProp(p, sp); return; }
+    if (PROPS[p.name].anim) { const sp = PROPS[p.name]; if (s1) { const bx = (p.x & ~1) - 2; dshRect(ctx, bx, p.y, 8, 2, 0.5); dshRect(ctx, bx + 2, p.y + 2, 8, 2, 0.4); dshRect(ctx, bx + 4, p.y + 4, 6, 2, 0.25); } else dshRect(ctx, (p.x - (sp.r || 8)) & ~1, p.y, ((sp.r || 8) * 2) & ~1, 2, 0.5); drawGroProp(p, sp); return; }
     if (p.name === 'ruinPillar' && G.stage === 1 && typeof RUIN1 !== 'undefined') { const c = drawProp._rs || (drawProp._rs = RUIN1.stub(9)); ctx.drawImage(c, (p.x - c.width / 2) & ~1, (p.y - 50) & ~1); return; } // v3.19 1장: 폐허의 부러진 돌기둥 (붙은 그림자 포함)
     if (p.name === 'orcFire' && typeof CAMP3 !== 'undefined') { const c = drawProp._of || (drawProp._of = CAMP3.orcFire(10)), x = (p.x - c.width / 2) & ~1, y = (p.y - 36) & ~1, f = Math.floor(time * 10 + p.x) % 3; ctx.drawImage(c, x, y); ctx.fillStyle = '#ffd060'; ctx.fillRect(x + 32 + (f === 1 ? 2 : 0), y + 12 - (f === 2 ? 2 : 0), 2, 2); ctx.fillStyle = '#f08a28'; ctx.fillRect(x + 28 + (f === 0 ? 2 : 0), y + 16 - (f === 1 ? 2 : 0), 2, 2); return; } // v3.19 오크 모닥불: 돌 고리 · 장작 · 꼬치 (불꽃 끝은 3프레임으로 일렁임)
     if (p.name === 'cage' && G.stage === 2 && typeof KEEP2 !== 'undefined') { const c = drawProp._cg || (drawProp._cg = KEEP2.cage(4)); ctx.drawImage(c, (p.x - c.width / 2) & ~1, (p.y - 50) & ~1); return; } // v3.19 2장 철창: 둥근 지붕 · 쇠살 · 안에 해골
     const sp = PROPS[p.name], c = sp.raw ? propCanvas(p.name) : ash4(propCanvas(p.name), 'prop_' + p.name), x = (p.x - c.width / 2) & ~1, y = (p.y - c.height + (sp.foot || 0) * 2) & ~1;
     if (s1 && !sp.pit) { const m = drawProp._sh || (drawProp._sh = {}); const sk = (G.stage === 4 ? '4_' : '') + p.name; ctx.drawImage(m[sk] || (m[sk] = RUIN1.withShadow(c)), x - 8, y - 8); } else {
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; { const xa = x + 2, xb = x + c.width - 2; if (xb > xa) ctx.fillRect(xa, p.y, Math.ceil((xb - xa) / 2) * 2, 2); } }
+    { const xa = x + 2, xb = x + c.width - 2; if (xb > xa) dshRect(ctx, xa, p.y, Math.ceil((xb - xa) / 2) * 2, 2, 0.5); } }
     if (p.amb && sp.folk) { // 매복 조각상: 눈에 희미한 불씨, 깨어나기 직전엔 떨린다
       const R = G.dun && G.dun.cur, on = R && !R.cleared, sx = p.warn && on ? (Math.floor(time * 24) % 2 ? 2 : -2) : 0, e = FOLK_EYE[p.name];
       ctx.drawImage(c, x + sx, y);
@@ -1197,7 +1210,7 @@
     for (const pr of G.eproj) {
       const gx = Math.round(pr.x) & ~1, gy = Math.round(pr.y) & ~1, hy = pr.y - 10;
       // 바닥 그림자 (날아가는 높이를 보여 준다)
-      ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(gx - 4, gy, 8, 2); ctx.fillRect(gx - 2, gy - 2, 4, 2);
+      dshEll(ctx, gx, gy, 5, 2, 0.5); // v3.20 디더
       if (pr.kind === 'fireball') { drawMProj({ kind: 'fireball', x: pr.x, y: pr.y - 10, r: pr.r, hist: pr.hist.map(q => ({ x: q.x, y: q.y - 10 })) }); continue; } // v3.20 갱도 교단 마법사: 여우 마법사 불덩이와 같은 모습
       if (pr.kind === 'arrow' || pr.kind === 'spear') {
         drawBlade(pr.kind === 'arrow' ? (blink ? PROJ_W.arrowB : PROJ_W.arrow) : (blink ? PROJ_W.spearB : PROJ_W.spear), gx, hy, pr.ang); // v1.05 칸 단위 회전 도트 (투척꾼은 다시 투창)

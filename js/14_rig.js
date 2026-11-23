@@ -70,7 +70,7 @@
     for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) { const on = sparse ? ((x + ph * 2) % 4 === 0 && (y + (x >> 1) * 2 + ph) % 2 === 0) || ((x + y * 2 + ph * 2) % 4 === 0 && y % 2 === 1) : (x + y + ph) % 2 === 0; if (on) g.fillRect(x * 2, y * 2, 2, 2); }
     return (AURA_DITH[k] = c);
   }
-  const AURA_NOP = { beginPath() {}, ellipse() {}, fill() {}, set fillStyle(v) {} }; // 실루엣 단계에서는 그림자를 그리지 않음 (본 그림 때 한 번만)
+  const AURA_NOP = { beginPath() {}, ellipse() {}, fill() {}, fillRect() {}, set fillStyle(v) {} }; // 실루엣 단계에서는 그림자를 그리지 않음 (본 그림 때 한 번만)
   let AURA_MAIN = null; // 오오라용으로 따로 그리는 동안 그림자는 본 화면에 그린다
   function pxAura(e, col, lv, S, below, ax, ay, fn) {
     const id = 'S' + S, buf = n => AURA_BUF[id + n] || (AURA_BUF[id + n] = n ? mkCanvas(S, S) : (c => [c, c.getContext('2d', { willReadFrequently: true })])(Object.assign(document.createElement('canvas'), { width: S, height: S }))); // 0번은 실루엣을 읽어 오므로 CPU 쪽 캔버스
@@ -178,9 +178,12 @@
     e._bpT = time; return (e._bp = P);
   }
   // v2.04 허수아비 도트: 나무 기둥 + 짚 몸통 + 자루 머리(과녁 그림) + 팔 막대
+  // v3.20 맞으면 회전 대신 칸 단위로 기우뚱 (머리 · 어깨는 2칸, 몸은 1칸, 받침은 그대로) — 기운 그림은 처음 쓸 때 한 번 만듦
+  function dummyLean(dir, lv) { const k = 'dummy' + (dir > 0 ? 'R' : 'L') + lv; if (!MAPS[k]) MAPS[k] = MAPS.dummy.map((r, y) => { const d = dir * (y < 12 ? lv : y < 24 ? lv - 1 : 0); return d > 0 ? '.'.repeat(d) + r.slice(0, r.length - d) : d < 0 ? r.slice(-d) + '.'.repeat(-d) : r; }); return k; }
   function drawDummy(e, white) {
-    drawShadow(e.x, e.y + 1, 9);
-    drawSprite('dummy', 'dummy', 2, e.x, e.y + 2, false, { white, rot: e.lean });
+    drawShadow(e.x, e.y + 1, 10);
+    const L = e.lean || 0, lv = Math.abs(L) > 0.12 ? 2 : Math.abs(L) > 0.04 ? 1 : 0;
+    drawSprite(lv ? dummyLean(Math.sign(L), lv) : 'dummy', 'dummy', 2, e.x, e.y + 2, false, { white });
   }
   function drawEnemyBody(e) {
     const flip = e.face < 0, white = e.flash > 0;
@@ -327,15 +330,43 @@
       if (e.grogiMax) { ctx.fillStyle = '#e8c35a'; ctx.fillRect(Math.round(e.x - w / 2), Math.round(e.y - top) + 2, Math.round(w * (e.grogiT > 0 ? 1 : e.grogi / e.grogiMax)), 1); }
     }
   }
+  // v3.20 어세신 대시: 앞쪽 몸은 그대로 두고 몸 뒷부분만 이동 반대쪽으로 늘임 — 뒤쪽 가장자리 칸의 색을 칸 단위로 끌어 늘이고(가운데 길게 · 위아래 짧게 → 뾰족한 꼬리), 바깥에 검은 테두리. 가로·세로·대각선(8방향)
+  const SMEAR_C = new Map();
+  function smearCv(key, pal, flip, ux, uy, L) {
+    const ck = key + pal + (flip ? 1 : 0) + ux + ',' + uy + ',' + L; if (SMEAR_C.has(ck)) return SMEAR_C.get(ck);
+    const rows = MAPS[key], pc = PAL[pal]; let x0 = 99, x1 = 0; rows.forEach(r => { for (let x = 0; x < r.length; x++) if (r[x] !== '.') { x0 = Math.min(x0, x); x1 = Math.max(x1, x); } });
+    const W = x1 - x0 + 1, H = rows.length, m = L + 2, GW = W + m * 2, GH = H + m * 2, G2 = new Array(GW * GH).fill(null), at = (x, y) => (x < 0 || y < 0 || x >= GW || y >= GH) ? null : G2[y * GW + x];
+    const src = (x, y) => { if (x < 0 || y < 0 || x >= W || y >= H) return null; const ch = rows[y][flip ? x1 - x : x0 + x]; return ch && ch !== '.' && pc[ch] ? ch : null; };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const ch = src(x, y); if (ch) G2[(y + m) * GW + x + m] = pc[ch]; }
+    const tx = -ux, ty = -uy, ql = Math.hypot(uy, ux) || 1, qx = -uy / ql, qy = ux / ql; let hw = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (src(x, y)) hw = Math.max(hw, Math.abs((x + 0.5 - W / 2) * qx + (y + 0.5 - H / 2) * qy));
+    const ext = [];
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const ch = src(x, y); if (!ch || src(x + tx, y + ty)) continue;
+      const pr = ((x + 0.5 - W / 2) * qx + (y + 0.5 - H / 2) * qy) / (hw || 1), n = Math.round(L * (1 - pr * pr)); if (n <= 0) continue;
+      const lt = -pr * (qx + qy >= 0 ? 1 : -1), c = pc[lt > 0.4 ? 'L' : lt < -0.4 ? 'D' : 'o'] || pc.o; // 네로의 털색 3단 (밝음 L · 중간 o · 어둠 D, 빛은 왼쪽 위)
+      ext.push([x + m, y + m, c]); for (let k = 1; k <= n; k++) ext.push([x + m + tx * k, y + m + ty * k, c]); }
+    for (const [x, y, c] of ext) G2[y * GW + x] = c;
+    const OC = pc.k || '#0b0a0e', edge = [];
+    for (const [x, y] of ext) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!at(x + dx, y + dy) && x + dx >= 0 && y + dy >= 0 && x + dx < GW && y + dy < GH) edge.push((y + dy) * GW + x + dx);
+    for (const e of edge) G2[e] = OC;
+    const [c, g] = mkCanvas(GW * 2, GH * 2); for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) { const v = G2[y * GW + x]; if (v) { g.fillStyle = v; g.fillRect(x * 2, y * 2, 2, 2); } }
+    const r = { c, ox: W - 0 + m * 2, oy: H * 2 + m * 2, m }; r.ox = Math.floor(W * 2 / 2) + m * 2; SMEAR_C.set(ck, r); return r;
+  }
+  function dashSmear(P, key, alpha) {
+    let pal = 'hRanger'; if (STEALTH_DRAW && PAL.hRangerGhost) pal = 'hRangerGhost'; else if (ASH_DRAW) pal = ashPalKey(pal);
+    const k = clamp((P.t - 0.03) / (BLINK - 0.03), 0, 1), L = Math.round(14 - 7 * k), ux = Math.abs(P.dvx) > 0.38 ? Math.sign(P.dvx) : 0, uy = Math.abs(P.dvy) > 0.38 ? Math.sign(P.dvy) : 0;
+    const r = smearCv(key, pal, P.face < 0, ux, uy, L); ctx.save(); ctx.globalAlpha = alpha; ctx.drawImage(r.c, snap2(P.x) - r.ox, snap2(P.y + 2) - r.oy); ctx.restore();
+  }
   function drawRanger() {
     const P = G.player, storm = P.state === 'storm', tex = storm ? BLADES.daggerG : weaponTex('ranger');
+    if (P.arsHide && !P.dead) return; // v3.22 박쥐 떼 · 사슬에 끌려가는 동안 몸을 감춤
     if (P.dead) {
       drawShadow(P.x, P.y + 1, 8);
       drawBlade(weaponTex('ranger'), P.x + 10, P.y - 2, 0.3, 0.9); drawBlade(weaponTex('ranger'), P.x - 8, P.y, 2.6, 0.9);
       drawSprite('hRanger', 'hRanger', 2, P.x, P.y + 4, P.face < 0, { rot: Math.PI / 2 * P.face, alpha: 0.85 });
       return;
     }
-    if ((P.state === 'dodge' && P.t < BLINK) || (P.state === 'shadow' && P.t < 0.08)) return;
+    if (P.state === 'shadow' && P.t < 0.08) return; // v3.20 회피는 숨지 않고 몸이 늘어나는 대시
     const blink = P.inv > 0 && Math.floor(time * 16) % 2 === 0;
     drawShadow(P.x, P.y + 1, 8);
     if (storm) {
@@ -346,15 +377,16 @@
     }
     const ifr = idleFrame(P), wFr = walkFr(P), bob = ifr ? (ifr.F.drop ? 2 : 0) : (wFr % 2 || wFr === -2) ? 2 : 0; // v2.43 걷기 4프레임 · v2.51 대기 동작
     let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
-    if (P.state === 'dodge') { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; }
+    const dashS = P.state === 'dodge' && P.t >= 0.03 && P.t < BLINK;
+    if (P.state === 'dodge') { const [a, b] = DASH_POSE(P.t), hz = Math.abs(P.dvx) >= Math.abs(P.dvy); [sx, sy] = hz ? [a, b] : [b, a]; } // v3.20 어세신 대시: 웅크림 → 몸 뒷부분만 늘어남 → 되튐 → 자리잡기 (눌림 방향은 가로·세로 중 큰 쪽)
     if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'shadow') { rot = 0.25 * P.face; sx = 1.1; sy = 0.92; }
     if (storm) { rot = Math.sin(time * 30) * 0.15; }
     const fhx = P.x + P.face * 7, fhy = P.y - 5 + bob, bhx = P.x - P.face * 7, bhy = P.y - 6 + bob; // v2.43 새 도트의 양손
-    const swinging = P.state === 'attack' || P.state === 'shadow' || storm;
+    const swinging = P.state === 'attack' || P.state === 'shadow' || storm || (P.state === 'ars' && P.arsFront);
     const col = storm ? '120,255,180' : P.state === 'shadow' ? '190,140,255' : weaponTrailCol(weaponTex('ranger'), 0.4); // v2.19 평타 궤적은 무기 색
     if (swinging) {
-      const sc = storm ? SLASH_COL.storm : P.state === 'shadow' ? SLASH_COL.shadow : rbySlash('ranger', SLASH_COL.ranger); // v2.50 도트 궤적 · v3.19 RGB? 무지개
+      const sc = storm ? SLASH_COL.storm : P.state === 'shadow' ? SLASH_COL.shadow : AWK.on('ranger') ? '#ff3a3a' : rbySlash('ranger', SLASH_COL.ranger); // v3.23 개다래나무 가지: 눈과 같은 붉은 궤적 // v2.50 도트 궤적 · v3.19 RGB? 무지개
       drawSlashPx(P.trail, fhx, fhy, storm ? 34 : 42, sc, P.combo === 2);
       drawSlashPx(P.trail2, bhx, bhy, storm ? 34 : 42, sc, P.combo === 2);
     }
@@ -363,9 +395,10 @@
     const v1 = P.blade + REV, v2 = P.blade2 + REV;
     const f1x = fhx + Math.cos(P.blade) * ext, f1y = fhy + Math.sin(P.blade) * ext * 0.7, b2x = bhx + Math.cos(P.blade2) * ext, b2y = bhy + Math.sin(P.blade2) * ext * 0.7;
     // v1.09 겹침 순서: 뒷날(+광채) → 몸 → 앞날(+광채). 뒷날 광채가 몸 위로 올라오던 문제 수정
-    drawBlade(tex, b2x, b2y, v2, alpha * 0.95); if (!storm) weaponAura(tex, b2x, b2y, v2, 'ranger');
-    drawSprite(ifr ? ifr.key : heroMap(walkMap('hRanger', wFr), P), 'hRanger', 2, P.x, P.y + 2, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
-    if (!(ifr && ifr.a.st === 2)) { drawBlade(tex, f1x, f1y, v1, alpha); if (!storm) weaponAura(tex, f1x, f1y, v1, 'ranger'); } // v2.51 그루밍 중엔 앞손 단검을 내려놓음
+    if (!P.arsHideW) { drawBlade(tex, b2x, b2y, v2, alpha * 0.95); if (!storm) weaponAura(tex, b2x, b2y, v2, 'ranger'); } // v3.22 쌍낫을 던진 동안 빈손
+    if (dashS) dashSmear(P, heroMap(walkMap('hRanger', wFr), P), alpha);
+    else drawSprite(ifr ? ifr.key : heroMap(walkMap('hRanger', wFr), P), 'hRanger', 2, P.x, P.y + 2, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    if (!(ifr && ifr.a.st === 2) && !P.arsHideW) { drawBlade(tex, f1x, f1y, v1, alpha); if (!storm) weaponAura(tex, f1x, f1y, v1, 'ranger'); } // v2.51 그루밍 중엔 앞손 단검을 내려놓음
     if (ifr) idleZz(ifr, snap2(P.x), snap2(P.y + 2), P.face < 0);
     if (storm) for (let i = 0; i < 4; i++) { const a = P.spin * 1.3 + i * Math.PI / 2; drawBlade(BLADES.daggerG, P.x + Math.cos(a) * 16, P.y - 10 + Math.sin(a) * 7, a, 0.75, false, 1, 'lighter'); }
     ctx.fillStyle = 'rgba(232,228,216,.45)';
@@ -387,12 +420,13 @@
     if (G.cls === 'ranger') return drawRanger();
     if (G.cls === 'mage' || G.cls === 'priest' || G.cls === 'gunner') return drawHero();
     const P = G.player;
+    if (P.krsHideW) ROLL_HIDEW = true; // v3.21 바게트 · 대검을 던져 손이 비어 있음
     const lift = P.lift || 0;
     const ifr = idleFrame(P), wFr = walkFr(P), bob = ifr ? (ifr.F.drop ? 2 : 0) : (wFr % 2 || wFr === -2) ? 2 : 0; // v2.43 걷기 4프레임 · v2.51 대기 동작
     const hx = P.x + P.face * 7, hy = P.y - 9 - lift + bob; // v2.43 새 도트: 옆구리의 손
     const holy = P.awakenT > 0 || P.state === 'awaken';
     const brk = !holy && G.breadBrk > 0 && wSkill() === 'bread', tex = brk ? breadHalf(0) : weaponTex('knight'); // v2.19 각성해도 들고 있는 무기 모양 그대로 (금빛은 덧칠로)
-    const chainLash = !holy && wSkill() === 'chain' && P.state === 'attack' && P.combo === 2;
+    const chainLash = !holy && wSkill() === 'chain' && ((P.state === 'attack' && P.combo === 2) || (P.state === 'krs' && P.krsChain));
     if (P.dead) {
       drawShadow(P.x, P.y + 1, 8);
       drawBlade(weaponTex('knight'), P.x + 14, P.y - 2, 0.15, 0.9);
@@ -409,7 +443,7 @@
     if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
     if (P.state === 'skill') { rot = (P.t < SKILL.wind ? -0.25 : 0.2) * P.face; sx = 1.06; sy = P.t < SKILL.wind ? 0.9 : 1.04; }
     if (P.state === 'awaken') { sy = P.t < 0.15 ? 0.88 : 1; rot = P.t > 0.9 && P.t < 1.1 ? 0.3 * P.sign : 0; }
-    const swinging = P.state === 'attack' || P.state === 'skill' || P.state === 'awaken';
+    const swinging = P.state === 'attack' || P.state === 'skill' || P.state === 'awaken' || (P.state === 'krs' && P.krsFront);
     const behind = !swinging && P.state !== 'charge';
     const trailCol = P.state === 'skill' ? '170,220,255' : holy ? '255,214,120' : weaponTrailCol(tex, P.combo === 2 ? 0.3 : 0.5); // v2.19 평타 궤적은 무기 색
     const giantK = P.state === 'awaken' ? (P.giant || 0) : 0;
@@ -460,7 +494,7 @@
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = f.c;
       const R = Math.max(2, f.grow ? f.r : f.r + p * 26), ph = p < 0.35 ? 0 : p < 0.7 ? 1 : 2, n = Math.max(16, Math.round(R * 3.2)), seen = new Set();
       for (let i = 0; i < n; i++) { if (ph === 2 && (i >> 1) % 3) continue; const a = i / n * TAU;
-        for (let d = 0; d <= (ph === 0 ? 2 : 0); d += 2) { const x = snap2(f.x + Math.cos(a) * (R - d)), y = snap2(f.y + Math.sin(a) * (R - d)), k = x * 8192 + y; if (seen.has(k)) continue; seen.add(k); ctx.fillRect(x, y, 2, 2); } }
+        for (let d = 0; d <= (ph === 0 ? 2 : 0); d += 2) { const x = snap2(f.x + Math.cos(a) * (R - d)), y = snap2(f.y + Math.sin(a) * (R - d) * (f.ry || 1)), k = x * 8192 + y; if (seen.has(k)) continue; seen.add(k); if (typeof SKD !== 'undefined') SKD.pd(x, y, SKD.oid(f), f.c); else ctx.fillRect(x, y, 2, 2); } } // v3.22 겹침 디더
     } else if (f.kind === 'ring') {
       ctx.strokeStyle = f.c; ctx.globalAlpha = 1 - p; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(f.x, f.y, Math.max(1, f.grow ? f.r : f.r + p * 26), 0, TAU); ctx.stroke();
@@ -586,7 +620,7 @@
     } else if (f.kind === 'spikes') { // 투기장 가시 함정: 솟았다가 다시 들어간다 (2px 칸 도트)
       const up = (p < 0.12 ? p / 0.12 : p > 0.7 ? (1 - p) / 0.3 : 1) * (f.big ? 1.7 : 1), bx = Math.round(f.x) & ~1, by = Math.round(f.y) & ~1;
       if (f.big && p < 0.25) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,90,40,${0.5 * (1 - p * 4)})`; ctx.fillRect(bx - 14, by - 30, 28, 30); ctx.restore(); }
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(bx - 12, by - 2, 24, 4);
+      dshEll(ctx, bx, by, 12, 4, 0.5);
       for (const [ox, h0] of [[-8, 8], [-3, 12], [2, 14], [7, 10], [11, 6]]) { const h = Math.round(h0 * up / 2) * 2; if (h <= 0) continue;
         ctx.fillStyle = '#140c08'; ctx.fillRect(bx + ox - 2, by - h - 2, 6, h + 2);
         ctx.fillStyle = '#b8b0a0'; ctx.fillRect(bx + ox, by - h, 2, h); ctx.fillStyle = '#e8e0d0'; ctx.fillRect(bx + ox, by - h, 2, 2); ctx.fillStyle = '#7a3020'; ctx.fillRect(bx + ox, by - 4, 2, 2); }
@@ -647,58 +681,27 @@
     const x = sx + (d.x - sx) * p, y = sy + (d.y - sy) * p;
     drawLoot({ type: 'gear', it: d.it, x, y, z: Math.sin(p * Math.PI) * 34, vz: p < 1 ? 1 : 0, bob: d.x, life: 999, t: Math.max(0, d.t - 0.5) });
   }
-  // 잿빛 회오리 (v0.67): 바깥은 핏빛 폭풍 — 안으로 휘몰아치는 잿빛 줄기 · 번개 · 안쪽을 향한 톱니 가장자리 · 조여 들 때 경고 화살표
+  // v3.20 칠흑의 장막 (이전 잿빛 회오리): 범위 바깥을 효과 없이 완전 검은색으로 — 2px 줄마다 원 안 구간만 비우고 양옆을 채움 (원 가장자리도 2px 칸)
+  // 바깥의 적 · 발도르도 어둠에 가려지고, 플레이어만 어둠 위에 다시 그림
   function drawVortex() {
     const v = G.vortex; if (!v) return;
-    const shrinking = v.t < v.shrink, hold = !shrinking && v.t < v.shrink + v.hold, P = G.player, outside = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(cam.x - 40, cam.y - 40, VW + 80, VH + 80); ctx.moveTo(v.cx + v.r, v.cy); ctx.arc(v.cx, v.cy, v.r, 0, TAU, true);
-    ctx.fillStyle = `rgba(36,8,22,${0.62 + 0.1 * Math.sin(time * 5)})`; ctx.fill('evenodd');
-    ctx.clip('evenodd');
-    // 디더링된 핏빛 안개 덩어리
-    for (let y = (cam.y - 40) & ~3; y < cam.y + VH + 40; y += 4) for (let x = (cam.x - 40) & ~3; x < cam.x + VW + 40; x += 4) {
-      const d = Math.hypot(x - v.cx, y - v.cy) - v.r; if (d < 0 || d > 160) continue;
-      const n = Math.sin(x * 0.05 + time * 3 + Math.atan2(y - v.cy, x - v.cx) * 4) + Math.sin(y * 0.07 - time * 2);
-      if (n > 0.6 - d / 200) { ctx.fillStyle = n > 1.3 ? 'rgba(160,30,60,.55)' : 'rgba(90,20,40,.5)'; ctx.fillRect(x, y, 4, 4); }
-    }
-    // 안으로 휘몰아치는 잿빛·핏빛 줄기 (나선)
-    ctx.lineWidth = 3;
-    for (let i = 0; i < 14; i++) {
-      const base = time * (2.2 + (i % 3) * 0.4) + i * 0.9, r0 = v.r + 8 + (i % 7) * 26;
-      ctx.strokeStyle = i % 4 === 0 ? `rgba(230,60,90,${0.45 + 0.2 * Math.sin(time * 4 + i)})` : `rgba(170,160,180,${0.25 + 0.15 * Math.sin(time * 3 + i)})`;
-      ctx.beginPath(); for (let k = 0; k <= 12; k++) { const a = base + k * 0.13, r = r0 - k * 2.2; const x = v.cx + Math.cos(a) * r, y = v.cy + Math.sin(a) * r; k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
-    }
-    // 번개: 가끔 폭풍 속에서 갈라지는 빛
-    v.boltT = (v.boltT == null ? 1.2 : v.boltT) - 1 / 60;
-    if (!v.bolt || v.bolt.t <= 0) { if (v.boltT <= 0) { v.boltT = rand(2.6, 4.2); /* 번개는 2.6~4.2초에 한 번, 천둥은 낮고 묵직하게 (v0.75) */ const a = rand(0, TAU), r1 = v.r + rand(30, 140), pts = []; let x = v.cx + Math.cos(a) * r1, y = v.cy + Math.sin(a) * r1; for (let k = 0; k < 7; k++) { pts.push([x, y]); x += Math.cos(a + Math.PI) * 12 + rand(-10, 10); y += Math.sin(a + Math.PI) * 12 + rand(-10, 10); } v.bolt = { pts, t: 0.14 }; sfx('blast', 0.5); } }
-    if (v.bolt && v.bolt.t > 0) { v.bolt.t -= 1 / 60; ctx.globalCompositeOperation = 'lighter'; ctx.strokeStyle = 'rgba(255,200,230,.9)'; ctx.lineWidth = 2; ctx.beginPath(); v.bolt.pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.globalCompositeOperation = 'source-over'; }
+    const P = G.player, outside = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r;
+    const x0 = (Math.floor(cam.x) & ~1) - 40, x1 = x0 + VW + 80, y0 = (Math.floor(cam.y) & ~1) - 40, y1 = y0 + VH + 80, cx = Math.round(v.cx) & ~1, cy = Math.round(v.cy) & ~1, r2 = v.r * v.r;
+    ctx.save(); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#000';
+    for (let y = y0; y < y1; y += 2) { const dy = y + 1 - cy;
+      if (dy * dy >= r2) { ctx.fillRect(x0, y, x1 - x0, 2); continue; }
+      const hw = (Math.round(Math.sqrt(r2 - dy * dy) / 2) * 2), l = cx - hw, r = cx + hw;
+      if (l > x0) ctx.fillRect(x0, y, l - x0, 2); if (r < x1) ctx.fillRect(r, y, x1 - r, 2); }
     ctx.restore();
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    const fl = 0.7 + Math.sin(time * (shrinking ? 18 : 10)) * 0.3;
-    // 톱니 가장자리 (안쪽을 향해, 돌면서 맥동)
-    const n = Math.max(24, Math.round(v.r / 7)), tooth = 7 + 3 * Math.sin(time * 6);
-    ctx.fillStyle = `rgba(255,40,70,${0.75 * fl})`; ctx.beginPath();
-    for (let i = 0; i <= n * 2; i++) { const a = i / (n * 2) * TAU + time * 0.6, r = i % 2 ? v.r - tooth : v.r + 2; const x = v.cx + Math.cos(a) * r, y = v.cy + Math.sin(a) * r; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-    ctx.closePath(); ctx.moveTo(v.cx + v.r + 4, v.cy); ctx.arc(v.cx, v.cy, v.r + 4, 0, TAU, true); ctx.fill('evenodd');
-    ctx.strokeStyle = `rgba(255,50,80,${0.85 * fl})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(v.cx, v.cy, v.r, 0, TAU); ctx.stroke();
-    ctx.strokeStyle = `rgba(255,230,235,${0.75 * fl})`; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(v.cx, v.cy, v.r + 3, 0, TAU); ctx.stroke();
-    // 조여 드는 동안: 안쪽을 가리키는 경고 화살표가 가장자리를 따라 흐른다
-    if (shrinking) for (let i = 0; i < 12; i++) { const a = i / 12 * TAU - time * 0.4, r = v.r + 16 + ((time * 40) % 14), x = v.cx + Math.cos(a) * r, y = v.cy + Math.sin(a) * r, ix = -Math.cos(a), iy = -Math.sin(a), s2 = 6;
-      ctx.strokeStyle = `rgba(255,220,120,${0.8 * fl})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - ix * s2 - iy * s2, y - iy * s2 + ix * s2); ctx.lineTo(x, y); ctx.lineTo(x - ix * s2 + iy * s2, y - iy * s2 - ix * s2); ctx.stroke(); }
-    ctx.restore();
-    for (let i = 0; i < 10; i++) { const a = rand(0, TAU), r = v.r + rand(2, 90); G.parts.push({ x: v.cx + Math.cos(a) * r, y: v.cy + Math.sin(a) * r, vx: -Math.sin(a) * 150 - Math.cos(a) * 60, vy: Math.cos(a) * 150 - Math.sin(a) * 60, t: 0.5, c: Math.random() < 0.35 ? '#ff5070' : '#8d8496', g: 0, glow: Math.random() < 0.3 }); }
+    if (outside && !P.dead) drawPlayer();
   }
-  // 회오리 밖에 있으면 화면 가장자리가 붉게 맥동한다 (화면 좌표)
+  // 칠흑의 장막: 남은 시간 · 바깥에 있을 때 경고 문구만 (화면 좌표 · 붉은 테두리 효과 없음)
   function drawVortexVignette() {
     const v = G && G.vortex; if (!v) return;
-    const P = G.player, out = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r, k = out ? 0.55 + 0.35 * Math.sin(time * 12) : 0.18 + 0.08 * Math.sin(time * 4);
-    const gr = dRadial(ctx, VW / 2, VH / 2, VH * 0.35, VW / 2, VH / 2, VH * 0.85);
-    gr.addColorStop(0, 'rgba(120,0,20,0)'); gr.addColorStop(1, `rgba(150,0,30,${k})`);
-    ctx.fillStyle = gr.p(ctx, 0, 0, VW, VH); ctx.fillRect(0, 0, VW, VH);
+    const P = G.player, out = Math.hypot(P.x - v.cx, P.y - v.cy) > v.r;
     const shr = v.t < v.shrink, hold = !shr && v.t < v.shrink + v.hold;
-    if (shr || hold) { const left = shr ? v.shrink - v.t + v.hold : v.shrink + v.hold - v.t, txt = (shr ? '잿빛 회오리가 조여 온다 ' : '잿빛 회오리 ') + left.toFixed(1) + 's'; ctx.font = '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(txt, VW / 2 + 1, 151); ctx.fillStyle = '#ff9aa8'; ctx.fillText(txt, VW / 2, 150); }
-    if (out) { ctx.font = 'bold 12px Galmuri11'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('회오리 안으로!', VW / 2 + 1, 167); ctx.fillStyle = Math.floor(time * 6) % 2 ? '#ffffff' : '#ff6070'; ctx.fillText('회오리 안으로!', VW / 2, 166); }
+    if (shr || hold) { const left = shr ? v.shrink - v.t + v.hold : v.shrink + v.hold - v.t, txt = (shr ? '칠흑의 장막이 조여 온다 ' : '칠흑의 장막 ') + left.toFixed(1) + 's'; ctx.font = '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(txt, VW / 2 + 1, 151); ctx.fillStyle = '#ff9aa8'; ctx.fillText(txt, VW / 2, 150); }
+    if (out) { ctx.font = 'bold 12px Galmuri11'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('장막 안으로!', VW / 2 + 1, 167); ctx.fillStyle = Math.floor(time * 6) % 2 ? '#ffffff' : '#ff6070'; ctx.fillText('장막 안으로!', VW / 2, 166); }
   }
   function drawTorches() {
     TORCHES.forEach((tc, i) => {

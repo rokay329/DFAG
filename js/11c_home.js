@@ -1052,7 +1052,7 @@
       P.line(x + 8, y + 4, x + 7, y + 7, '#45404c'); P.line(x + 7, y + 7, x + 8, y + 9, '#45404c');
       for (let j = h - 5; j < h; j++) for (let i = 0; i < fw + sw; i++) if (inAny(i, j) && h2(i, j, s + 1) < (j - h + 6) * 0.11) P.put(x + i, y + j, MOSS[(i + j) % 3]);
       for (let i = 2; i < 7; i++) if (h2(i, 0, s + 2) < 0.5) P.put(x + i, y + 1 + (i % 2), MOSS[i % 2]);
-      P.rect(x - 1, y + h, fw + sw + 2, 1, '#18201a'); // 발치 그림자
+      for (let i = -1; i < fw + sw + 1; i++) if ((x + i + y + h) & 1) P.put(x + i, y + h, '#18201a'); // 발치 그림자 (v3.20 디더)
     };
     // 고리 달린 돌 십자 (켈트식, 작게)
     const ringCross = (x, y, s) => {
@@ -1131,7 +1131,7 @@
     const roofH = 20, wallH = 13, SL = 0.5;
     const insAt = j => Math.floor((roofH - 1 - j) * SL);
     // 그림자 · 밟혀 다져진 흙 (입구 앞)
-    for (let i = -4; i < TW + 8; i++) for (let j = 0; j < 4; j++) if ((i + j) & 1 || j === 0) P.put(tx0 + i, ty0 + roofH + wallH + 1 + j, '#121810');
+    for (let i = -4; i < TW + 8; i++) for (let j = 0; j < 4; j++) if ((i + j) & 1 && (j < 2 || (i + j * 3) % 4 === 1)) P.put(tx0 + i, ty0 + roofH + wallH + 1 + j, '#121810'); // v3.20 디더
     blot(P, tx0 + 40, ty0 + roofH + wallH + 7, 14, 4, '#3e3428', 611, 1.0); blot(P, tx0 + 40, ty0 + roofH + wallH + 7, 9, 3, '#4a3e2e', 612, 0.8);
     // 지붕
     for (let j = 0; j < roofH; j++) for (let i = 0; i < TW; i++) {
@@ -1296,7 +1296,8 @@
       set: a => new Set(a.map(c => c.toLowerCase())),
       on(S, x, y, c) { if (S.has(col(x, y))) P.put(x, y, c); },
       // 접지 그림자: 소품 밑동 아래 두 줄 (윗줄 진하게, 아랫줄 디더)
-      shadow(S, x0, x1, y, c1, c2) { for (let x = x0; x < x1; x++) { T.on(S, x, y, c1); if ((x + y) & 1 || (x > x0 + 1 && x < x1 - 2)) T.on(S, x, y + 1, c2 || c1); } },
+      shadow(S, x0, x1, y, c1, c2) { for (let x = x0; x < x1; x++) { if ((x + y) & 1) T.on(S, x, y, c1); if (((x + y + 1) & 1) && x > x0 + 1 && x < x1 - 2 && ((x >> 1) & 1)) T.on(S, x, y + 1, c2 || c1); } }, // v3.20 디더
+      shOval(S, cx, cy, rx, ry, c, seed, dens = 1) { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const q = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2; if (q > 1 || !((x + y) & 1)) continue; if (q < 0.4 * dens || h2(x, y, seed) < (1.2 - q) * dens) T.on(S, x, y, c); } }, // v3.20 디더 그림자 타원
       oval(S, cx, cy, rx, ry, c, seed, dens = 1) { for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++) { const q = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2; if (q > 1) continue; if (q < 0.4 * dens || (((x + y) & 1) && h2(x, y, seed) < (1.2 - q) * dens)) T.on(S, x, y, c); } },
       // 폴리라인 따라 닳은 길 (디더)
       path(S, pts, w, c, seed, dens = 0.5) {
@@ -1374,8 +1375,8 @@
     for (let y = RY0; y < RY0 + 4; y++) for (let x = RX0; x < RX1; x++) if (y < RY0 + 2 || (y === RY0 + 2 && (x & 1)) || (y === RY0 + 3 && x % 4 === 1)) fset(x, y, '#18141a');
     for (let y = RY0; y < RY1; y++) for (const [x0, dir] of [[RX0, 1], [RX1 - 1, -1]]) for (let k = 0; k < 3; k++) if (k === 0 || bay(x0 + dir * k, y) < 0.5 - k * 0.15) fset(x0 + dir * k, y, '#18141a');
     // 접지 그림자
-    const shadowOval = (ox, oy, rx, ry, seed, c = '#141016') => { for (let y = Math.floor(oy - ry); y <= oy + ry; y++) for (let x = Math.floor(ox - rx); x <= ox + rx; x++) { const q = ((x - ox) / rx) ** 2 + ((y - oy) / ry) ** 2; if (q > 1) continue; if (q < 0.45 || bay(x, y) < (1 - q) * 1.6) fset(x, y, c); } };
-    for (const [x, y, len, th] of LOGS) { for (let i = -1; i < len + 3; i++) { fset(x + i + 1, y + th + 1, '#100c10'); fset(x + i + 2, y + th + 2, '#100c10'); if ((i + y) & 1) fset(x + i + 3, y + th + 3, '#141016'); } }
+    const shadowOval = (ox, oy, rx, ry, seed, c) => { const sh = !c; c = c || '#141016'; for (let y = Math.floor(oy - ry); y <= oy + ry; y++) for (let x = Math.floor(ox - rx); x <= ox + rx; x++) { const q = ((x - ox) / rx) ** 2 + ((y - oy) / ry) ** 2; if (q > 1 || (sh && !((x + y) & 1))) continue; if (q < 0.45 || bay(x, y) < (1 - q) * 1.6) fset(x, y, c); } }; // v3.20 그림자는 디더 (색을 준 핏자국은 그대로)
+    for (const [x, y, len, th] of LOGS) { for (let i = -1; i < len + 3; i++) { if ((i + y) & 1) fset(x + i + 1, y + th + 1, '#100c10'); if ((i + y) & 1) fset(x + i + 2, y + th + 2, '#100c10'); if (((i + y) & 3) === 1) fset(x + i + 3, y + th + 3, '#141016'); } } // v3.20 디더
     shadowOval(110, 72, 26, 5, 841); shadowOval(264, 70, 22, 5, 842); shadowOval(270, 149, 13, 1.6, 843);
     // 빛 (디더 글로우) — 바닥: 무너진 틈으로 떨어진 달빛 자리 · 들보 잉걸불 후광 (소품은 건드리지 않음)
     const glowF = (x, y, lv, tint) => { const c = fget(x, y); if (!c || lv < bay(x, y) * 0.9) return; const k = lv > 0.72 ? 0.5 : lv > 0.45 ? 0.34 : 0.2, [r, g, b] = rgbOf(c); fset(x, y, toHex(r + (tint[0] - r) * k + 14 * k, g + (tint[1] - g) * k + 14 * k, b + (tint[2] - b) * k + 14 * k)); };
@@ -1451,7 +1452,7 @@
       const LAY = seed === 861 ? [[112, 50, 4, 3], [100, 52, 3.2, 2], [126, 51, 3, 2], [88, 61, 4.2, 3], [104, 59, 5, 3], [121, 58, 5.6, 3], [131, 64, 4.6, 3], [96, 68, 6, 4], [116, 70, 7, 4], [84, 71, 2.4, 2], [137, 71, 2.4, 2]]
         : [[266, 47, 3.4, 2], [246, 53, 3.4, 2], [258, 55, 5, 3], [276, 53, 4.2, 3], [285, 60, 4, 3], [250, 63, 6, 4], [270, 65, 7, 4], [240, 64, 2.4, 2], [291, 68, 2.4, 2]];
       LAY.forEach(([x, y, sz, hg], i) => { const k = 5 + Math.floor(h2(i, 4, seed + 3) * 2), pts = []; for (let j = 0; j < k; j++) { const t2 = (j / k) * Math.PI * 2 + h2(i, 10 + j, seed + 3) * 0.7, r = sz * (0.7 + h2(i, 20 + j, seed + 3) * 0.45); pts.push([x + Math.cos(t2) * r * 1.2, y + Math.sin(t2) * r * 0.6]); }
-        for (let yy = Math.floor(y - sz); yy <= y + sz + hg + 2; yy++) for (let xx = Math.floor(x - sz * 1.3); xx <= x + sz * 1.3 + 2; xx++) { const q = ((xx - x - 1.5) / (sz * 1.25)) ** 2 + ((yy - y - hg - 0.5) / (sz * 0.6)) ** 2; if (q < 1 && ((xx + yy) & 1 || q < 0.5)) put(xx, yy, '#1c181e'); } // 그림자
+        for (let yy = Math.floor(y - sz); yy <= y + sz + hg + 2; yy++) for (let xx = Math.floor(x - sz * 1.3); xx <= x + sz * 1.3 + 2; xx++) { const q = ((xx - x - 1.5) / (sz * 1.25)) ** 2 + ((yy - y - hg - 0.5) / (sz * 0.6)) ** 2; if (q < 1 && (xx + yy) & 1) put(xx, yy, '#1c181e'); } // 그림자 (v3.20 디더)
         stoneP(pts, hg, seed * 7 + i); });
       // 벽에서 떨어진 다듬은 돌 (네모 반듯)
       for (const [x, y] of seed === 861 ? [[94, 57], [128, 72]] : [[282, 69]]) stoneP([[x - 5, y - 2], [x + 4, y - 3], [x + 6, y + 1], [x - 3, y + 2]], 3, x);
@@ -1620,9 +1621,9 @@
         for (let x = ox - rx + 6; x <= ox + rx - 6; x += 2) { const y = oy + Math.round(ry * Math.sqrt(Math.max(0, 1 - ((x - ox) / rx) ** 2))) + 1; P.put(x, y, '#a0703a'); } }
       T.refresh(); const FL2 = T.set(Object.values(PL).concat(['#4e3828', '#684c38', '#604632', '#583e2c', '#725842', '#6a2e2a', '#723430', '#7a3a30', '#5e2626', '#8a5a3a']));
       // 다락 밑 그늘
-      for (let y = RY0 + 37; y < RY0 + 50; y++) for (let x = RX0; x < RX0 + 57; x++) if (y < RY0 + 41 || (((x + y) & 1) && h2(x, y, 63) < 1 - (y - RY0 - 41) / 9)) T.on(FL2, x, y, '#2e2016');
+      for (let y = RY0 + 37; y < RY0 + 50; y++) for (let x = RX0; x < RX0 + 57; x++) if (((x + y) & 1) && (y < RY0 + 41 || h2(x, y, 63) < 1 - (y - RY0 - 41) / 9)) T.on(FL2, x, y, '#2e2016'); // v3.20 디더
       // 접지 그림자
-      const SH = (x0, x1, y) => T.oval(FL2, (x0 + x1) / 2 + 2, y + 0.5, (x1 - x0) / 2 + 3, 2.6, '#1e140c', x0 + y, 1.3); // 빛이 왼쪽 위에서 → 그림자는 오른쪽 아래로 살짝
+      const SH = (x0, x1, y) => T.shOval(FL2, (x0 + x1) / 2 + 2, y + 0.5, (x1 - x0) / 2 + 3, 2.6, '#1e140c', x0 + y, 1.3); // 빛이 왼쪽 위에서 → 그림자는 오른쪽 아래로 살짝
       SH(99, 111, 152); SH(111, 123, 156); SH(257, 274, 153); SH(271, 285, 154); SH(167, 175, 117); SH(197, 205, 119); SH(219, 227, 130);
       T.oval(FL2, 186, 112, 10, 2.2, '#2a1414', 64, 1.4); SH(101, 106, 106); SH(145, 150, 106); SH(131, 143, 111);
       // 끌린 핏자국: 쪽문에서 카운터 뒤로 (마른 검붉은 색 · 군데군데 번진 자국)
@@ -2202,7 +2203,7 @@
       const T = DK(P), FM = T.set(['#46424f', '#423e4a', '#3e3a46', '#24222c', '#524e5c', '#5a5668']);
       T.refresh(); const F2 = T.set(['#46424f', '#423e4a', '#3e3a46', '#24222c', '#524e5c', '#5a5668', '#64505e', '#544858']);
       // 접지 그림자
-      const SH = (cx, cy, rx) => T.oval(F2, cx + 2, cy + 0.5, rx, 2.4, '#1c1a22', cx * 7 + cy, 1.3);
+      const SH = (cx, cy, rx) => T.shOval(F2, cx + 2, cy + 0.5, rx, 2.4, '#1c1a22', cx * 7 + cy, 1.3);
       SH(159, 95, 9); SH(91, 97, 4); SH(124, 97, 4); SH(262, 95, 8); SH(255, 117, 26); SH(221, 119, 8); SH(289, 120, 8); SH(124, 117, 6); SH(138, 153, 6); SH(106, 133, 6); SH(260, 152, 7); SH(210, 98, 7);
       // 바닥 금 · 벽 밑 이끼
       for (const pts of [[[96, 140], [104, 144], [106, 150], [114, 154]], [[276, 92], [282, 98], [281, 104]], [[150, 162], [158, 166], [166, 165]]]) for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], n = Math.max(Math.abs(bx - ax), Math.abs(by - ay)); for (let k = 0; k <= n; k++) T.on(F2, Math.round(ax + (bx - ax) * k / n), Math.round(ay + (by - ay) * k / n), '#1c1a22'); }
@@ -2465,6 +2466,11 @@
       for (const [x, y] of [[x0 - 4, 166], [x1 + 3, 171], [x0 + 3, y0 - 2]]) { put(x, y, '#3e5634'); put(x, y + 1, '#2e4228'); } }
     { const D3 = P.g.getImageData(0, 0, GW, GH).data, keys = new Set(); for (const [x, y] of MAGE_FG_CHAIR) { keys.add(x + ',' + y); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) keys.add((x + dx) + ',' + (y + dy)); }
       MAGE_FG_CHAIR_PIX = [...keys].map(k => { const [x, y] = k.split(',').map(Number), i = (y * GW + x) * 4; return [x, y, toHex(D3[i], D3[i + 1], D3[i + 2])]; }); }
+    // v3.22 배경에 그려진 소품(칠판 · 혼천의 · 책상 · 책 더미 · 망원경 등)도 앞 겹으로 오려 깊이 순서에 넣음 → 바닥에 까는 기술 효과가 소품 밑으로 깔림
+    { const D4 = P.g.getImageData(0, 0, GW, GH).data, FLOOR = new Set(Object.values(FS));
+      for (const [a, b, c, d] of [[89, 61, 126, 99], [248, 56, 278, 97], [282, 104, 297, 123], [129, 82, 145, 97], [175, 64, 217, 96], [235, 90, 283, 127]]) { const pix = [];
+        for (let y = b; y < d; y++) for (let x = a; x < c; x++) { const i = (y * GW + x) * 4, col = toHex(D4[i], D4[i + 1], D4[i + 2]); if (inE(x, y) && (FLOOR.has(col) || col === floorAt(x, y))) continue; pix.push([x, y, col]); }
+        if (pix.length) MAGE_FG.push({ base: d - 2, pix }); } }
     // ================================================================ 10. 빛 (디더 글로우): 창 노을빛이 바닥으로 길게 · 마법진 은은한 금빛 · 책상 촛불 후광
     { const D = P.g.getImageData(0, 0, GW, GH).data;
       const glowAt = (x, y, lv, tint) => { if (x < 0 || y < 0 || x >= GW || y >= GH) return; if (lv < bay(x, y) * 0.9) return; const k = lv > 0.72 ? 0.5 : lv > 0.45 ? 0.34 : 0.2, i = (y * GW + x) * 4; put(x, y, toHex(D[i] + (tint[0] - D[i]) * k + 14 * k, D[i + 1] + (tint[1] - D[i + 1]) * k + 14 * k, D[i + 2] + (tint[2] - D[i + 2]) * k + 14 * k)); };
@@ -2960,9 +2966,9 @@
         T.refresh(); }
       const free = (x0, y0, w, h) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) if (!GR.has(T.col(x, y))) return false; return true; };
       // 접지 그림자 (빛은 왼쪽 위 → 오른쪽 아래로)
-      for (const [gx, gy] of [[112, 110], [144, 110], [176, 110], [112, 146], [144, 146], [176, 146]]) T.oval(GR, gx + 3, gy + 1.5, 8, 2.4, '#141c12', gx + gy, 1.3);
-      T.oval(GR, 176, 75, 10, 2.4, '#141c12', 711, 1.3); T.oval(GR, 245, 150, 18, 2.6, '#141c12', 712, 1.2); T.oval(GR, 280, 156, 15, 2.2, '#141c12', 713, 1.2);
-      T.oval(GR, 92, 172, 6, 1.8, '#141c12', 714, 1.3); T.oval(GR, 304, 172, 6, 1.8, '#141c12', 715, 1.3); T.oval(GR, 128, 84, 44, 3, '#141c12', 716, 1);
+      for (const [gx, gy] of [[112, 110], [144, 110], [176, 110], [112, 146], [144, 146], [176, 146]]) T.shOval(GR, gx + 3, gy + 1.5, 8, 2.4, '#141c12', gx + gy, 1.3);
+      T.shOval(GR, 176, 75, 10, 2.4, '#141c12', 711, 1.3); T.shOval(GR, 245, 150, 18, 2.6, '#141c12', 712, 1.2); T.shOval(GR, 280, 156, 15, 2.2, '#141c12', 713, 1.2);
+      T.shOval(GR, 92, 172, 6, 1.8, '#141c12', 714, 1.3); T.shOval(GR, 304, 172, 6, 1.8, '#141c12', 715, 1.3); T.shOval(GR, 128, 84, 44, 3, '#141c12', 716, 1);
       T.refresh();
       // 풀포기 (3가지 모양) · 들꽃 · 버섯 — 빈 풀밭에만, 격자 피해 흩뿌림
       const TUFT = [['.g..g', 'gGg.G', '.Gg.g'], ['g.g', 'GgG'], ['..g.', '.gG.', 'gGgG']];
@@ -3599,6 +3605,7 @@
     const R = G && G.dun && G.dun.cur, x = R ? Math.round((A.x0 + A.x1) / 2 - CAMX) : VW / 2, y = R ? Math.round((A.y0 + A.y1) / 2 - CAMY) + 8 : VH / 2 + 8; // 맵(방) 가운데
     ctx.fillStyle = '#000'; for (const [dx, dy] of [[2, 0], [-2, 0], [0, 2], [0, -2], [2, 2]]) ctx.fillText(txt, x + dx, y + dy);
     ctx.fillStyle = '#5e0f16'; ctx.fillText(txt, x, y + 3); ctx.fillStyle = '#f2d78c'; ctx.fillText(txt, x, y);
+    { const nt = `${SAVE.runs}번째 밤`; ctx.font = '12px Galmuri11'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1]]) ctx.fillText(nt, x + dx, y - 32 + dy); ctx.fillStyle = '#9ab0d8'; ctx.fillText(nt, x, y - 32); ctx.font = 'bold 24px Galmuri11'; } // v3.23 회차 = 밤 (장소 이름 위)
     if (sub) { ctx.font = '12px Galmuri11'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1]]) ctx.fillText(sub, x + dx, y + 22 + dy); ctx.fillStyle = '#c8b898'; ctx.fillText(sub, x, y + 22); } // v2.96 장소 설명 한 줄
     ctx.restore();
   }

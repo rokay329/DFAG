@@ -485,6 +485,12 @@
     coin:    [['arp', [88, 95, 100], 0.04, 0.32], ['tone', 'square', 1900, 2400, 0.08, 0.15]],
     frenzy:  [['tone', 'sawtooth', 110, 330, 0.4, 0.45], ['noise', 'bandpass', 600, 2400, 0.35, 0.5], ['arp', [62, 65, 69, 74], 0.05, 0.3]],
   };
+  // v3.20 디더 그림자 (소품 공통): 2px 칸을 체크무늬로 찍음 — 진하기 a(0~1)는 찍는 칸의 비율 (0.5 = 체크무늬 한 겹)
+  const DSH_B = [0.125, 0.625, 0.875, 0.375], DSH_C = 'rgba(4,3,8,.8)';
+  function dshOn(cx, cy, a) { return DSH_B[(cy & 1) * 2 + (cx & 1)] < a; }
+  // v3.20 디더 타원 그림자 (캐릭터 · 적 · 투사체 · 떨어진 물건): 가운데 a, 가장자리 a×0.55 — s = 칸 크기(px)
+  function dshEll(g, cx, cy, rx, ry, a = 0.5, s = 2) { if (!g || !g.fillRect || rx <= 0) return; g.fillStyle = DSH_C; ry = Math.max(ry, s); const ox = Math.round(cx / s) * s, oy = Math.round(cy / s) * s, nx = Math.ceil(rx / s), ny = Math.ceil(ry / s); for (let j = -ny; j < ny; j++) for (let i = -nx; i < nx; i++) { const q = (((i + 0.5) * s) / rx) ** 2 + (((j + 0.5) * s) / ry) ** 2; if (q > 1) continue; const x = ox + i * s, y = oy + j * s; const ci = Math.floor(x / s), cj = Math.floor(y / s), chk = ((ci + cj) & 1) === 0, sp = chk && (((ci - (cj & 1)) >> 1) & 1) === 0; if (a >= 0.45 ? chk : a >= 0.15 && sp) g.fillRect(x, y, s, s); } } // 가운데를 칸 경계에 맞춰 좌우·위아래 대칭
+  function dshRect(g, x, y, w, h, a = 0.5) { g.fillStyle = DSH_C; x = Math.round(x) & ~1; y = Math.round(y) & ~1; for (let yy = y; yy < y + h; yy += 2) for (let xx = x; xx < x + w; xx += 2) if (dshOn(xx >> 1, yy >> 1, a)) g.fillRect(xx, yy, 2, 2); }
   const sfxLast = {};
   function sfx(name, pitch = 1) {
     if (!AC || !window.AudioSys.sfxBus) return;
@@ -1105,7 +1111,7 @@
     medal: ['.rRRr.', '.rRRr.', '..kk..', '.kYYk.', 'kYWYyk', 'kYYYyk', '.kyyk.'], // v2.02 잿빛 훈장
     heartFull: ['.kk.kk.', 'kqpkppk', 'kppppPk', 'kppppPk', '.kppPk.', '..kPk..', '...k...'], // v2.01 하트 한 칸
     heartHalf: ['.kk.kk.', 'kqpkrrk', 'kppkrrk', 'kppkrrk', '.kpkrk.', '..kkk..', '...k...'], // v2.01 하트 반 칸 (오른쪽은 빈 칸)
-    dummy: ['....kkkk....', '...kSSSSk...', '..kSrrrrSk..', '..kSrwwrSk..', '..kSrrrrSk..', '...kSSSSk...', '....kbbk....', 'kkkkkbbkkkkk', 'kBBBBbbBBBBk', 'kkkkybbykkkk', '...kyyyyk...', '..kyYyyYyk..', '..kyyYyyyk..', '..kyyyYyyk..', '...kyyyyk...', '....kbbk....', '....kbbk....', '....kbbk....', '...kBBBBk...', '..kkkkkkkk..'], // v2.04 허수아비
+    dummy: ['..........kYk.........', '.........kykYk........', '........kYkykyk.......', '.......kSSSSssk.......', '......kSSSttsssk......', '......kSStwwTszk......', '.....kSStwttwTzzk.....', '.....kSStwttwTzzk.....', '......ksstwwTzzk......', '......ksssttzzZk......', '.......kszzzzZk.......', '.......kkggGGGk.......', '.kkkkkkSySSSssYkkkkkk.', 'kySgSSSSSSSsssssssgsyk', 'yksgssSSSSssZssszzgzkY', 'kYzGzzSSSSssssszZZGZYk', 'YykZZkSSSsssZszzkZZkYy', 'kk.kkkSSggGssszzkkk.kk', '.....kSSggssZzzzk.....', '.....kSssssszzzzk.....', '.....kssssszZzzZk.....', '.....kgggggGGGGGk.....', '.....ksssszzzzZZk.....', '......ksszzzzZZk......', '......kykYbBkyYk......', '.......kYkyBYkk.......', '........kkbBk.........', '........kkbBkk........', '.....kkkbbbBBBkkk.....', '....kbbbbbbBBBBBBk....', '...kddddddddddddddk...', '....kkkkkkkkkkkkkk....'], // v3.20 연습용 허수아비: 짚을 채운 자루 몸 · 팔(가로대) · 과녁 그린 자루 머리 · 밧줄 · 짚 · 십자 받침
     shieldPk: ['kkkkkkk', 'kWnnnyk', 'knnYnyk', 'knYYYyk', '.knYnk.', '..kyk..', '...k...'], // v2.00 방패 조각
     gear: ['....kk', '...kck', '..kck.', 'kkck..', '.kk...', 'k.k...'],
     knight: [
@@ -1401,7 +1407,7 @@
     ],
   };
   const PAL = {
-    dummy: { k: '#120c0a', S: '#c8b088', r: '#b0242c', w: '#f0e8d8', b: '#7a5232', B: '#5a3a22', y: '#d8b860', Y: '#a8883a' }, // v2.04 허수아비
+    dummy: { k: '#120c0a', S: '#d8c098', s: '#b89c72', z: '#8a7050', Z: '#665238', y: '#e8cc70', Y: '#b8983c', b: '#9a7048', B: '#6e4c2e', d: '#4a3220', t: '#c03030', T: '#841c22', w: '#efe6d2', g: '#5a4a36', G: '#3e3226' }, // v3.20 허수아비
     squire: {'S': '#8a9476', 'D': '#5a2a2a', 'b': '#4a3020', 'y': '#b89040', 'k':  '#0e0c10', 'w':  '#d8dce4', 'l':  '#9aa0ac', 'm':  '#6a707c', 'd':  '#3c404a', 'e':  '#ff4030', 'c':  '#7a7a80', 'C':  '#4a4a52', 'R':  '#4a0e14', 'r':  '#7a1a22', 'g':  '#b89040'},
     chaplain: {'k':  '#0e0a0c', 'W':  '#7e786c', 'w':  '#c0b8a6', 'g':  '#c9a24a', 'S':  '#2a2228', 'e':  '#ffcc66', 'R':  '#6a1520', 'r':  '#8a1a1a', 's':  '#c9b49a'},
     pknight: {'k':  '#121012', 'l':  '#8a8e96', 'm':  '#5a5e68', 'd':  '#3a3c44', 's':  '#8f9a6a', 'S':  '#5f6a45', 'P':  '#a3452e', 'e':  '#ff3b2c'},

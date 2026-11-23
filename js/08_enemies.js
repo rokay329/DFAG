@@ -485,7 +485,7 @@
   function drawShrew(e, ya, al, white) {
     const I = invInit(), flip = e.face < 0, mp = INV_MAP[e.type], gold = e.type === 'shrewB', c = e.chak;
     if (c && c.st !== 'held') { // 날아가는·떨어진 차크람 (칸 단위로 회전)
-      const fl = gold ? I.chakBf : I.chakAf; ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect((Math.round(c.x) & ~1) - 8, Math.round(c.y) & ~1, 16, 2);
+      const fl = gold ? I.chakBf : I.chakAf; dshRect(ctx, (Math.round(c.x) & ~1) - 8, Math.round(c.y) & ~1, 16, 2, 0.5);
       if (c.st === 'drop') drawBlade(fl, c.x, c.y - 4, 0.3, Math.floor(time * 4) % 2 ? 1 : 0.7); else drawBlade(fl, c.x, c.y - 10, c.spin);
     }
     if (e.ps === 'dodge' && e.t < BLINK) return;
@@ -1095,7 +1095,7 @@
   function bossStageCheck(b) {
     const pct = b.hp / b.maxHp;
     if (b.stage === 1 && pct <= 0.7) { b.stage = 2; banner('2단계', '망령 기사 소환 · 죽음의 표식'); bossRoar(b, '#b45cff'); cancelTele(b); b.state = 'idle'; b.cd = 0.6; b.summonT = 0; }
-    if (b.stage === 2 && pct <= 0.35) { b.stage = 3; banner('광폭화', '잿빛 회오리가 몰아친다'); bossRoar(b, '#ff3050'); cancelTele(b); b.state = 'idle'; b.cd = 0.6; b.vortexT = 0; b.spd *= 1.25; }
+    if (b.stage === 2 && pct <= 0.35) { b.stage = 3; banner('광폭화', '칠흑의 장막이 드리운다'); bossRoar(b, '#ff3050'); cancelTele(b); b.state = 'idle'; b.cd = 0.6; b.vortexT = 0; b.spd *= 1.25; }
   }
   function updateBoss(b, dt) {
     const P = G.player;
@@ -1294,7 +1294,7 @@
     const s = G.stats;
     // v2.00 하트 방식: 한 번 맞으면 반 칸. 장판·독·화상은 2.5초에 반 칸. 방어력 없음
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
-    const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.awakenT > 0 ? 0.7 : 1) * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
+    const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
     if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; P.evOutT = 0.45; G.fx = G.fx.filter(f => !(f.t >= (f.max || 0) - 0.001 && ['ring', 'impact', 'hitspark', 'hitflash', 'boom'].includes(f.kind) && Math.hypot(f.x - P.x, f.y - (P.y - 10)) < 30)); /* v2.35 몸에 뜨던 원 대신 도트 외곽선 */ const lb = { knight: '흘려냄', ranger: '베어냄', priest: '신의 가호', gunner: '빗나감', mage: '마나 격류' }[G.cls] || '0'; rec('ev_' + G.cls); G.nums.push({ x: P.x, y: P.y - 30, v: lb, t: 0.8, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 2 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
     if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1; G.hitStage = G.stage; // v2.36 순례자의 지팡이 기록 (이번 챕터에 맞음)
@@ -1449,14 +1449,15 @@
       }
       if (id === 'skK') {
         const nm = m.K || C.skill;
-        const cd = (G && G.stats) ? Math.max(0.5, C.skillCd * (1 - G.stats.cdr)).toFixed(1) : C.skillCd;
+        const cd = (G && G.stats) ? Math.max(0.5, skCdBase() * (1 - G.stats.cdr)).toFixed(1) : C.skillCd;
         const eq = G && typeof eqWeapon === 'function' ? eqWeapon(cls) : null;
-        const extra = (ws && m.K && eq && eq.desc) ? eq.desc : C.skillD;
+        const extra = (ws && m.KD) ? m.KD : (ws && m.K && eq && eq.desc) ? eq.desc : C.skillD;
         return [`${nm} <span class="key">우클릭</span> <span style="color:var(--quiet)">쿨타임 ${cd}초</span>`, extra, '#9fd2ff'];
       }
       if (id === 'skL') {
         const nm = m.L || C.awaken;
         const d = (ws === 'hourglass' && EQUIP_FX.hourglass) ? EQUIP_FX.hourglass.d : C.awakenD;
+        if (G && G.cls === 'priest') return [`${nm} <span style="color:var(--quiet)">패시브</span>`, d, '#ffd34d']; // v3.23 기적: 쓰는 기술이 아님
         return [`${nm} <span class="key">E</span> <span style="color:var(--quiet)">각성 게이지 100%</span>`, d, '#ffd34d'];
       }
       if (typeof isRoll === 'function' && isRoll()) return ['구르기 <span class="key">SPACE</span>', '짧은 거리를 굴러서 회피 · 공격 직전 사용 시 퍼펙트 회피', '#9ee88a']; // v3.20 기사 · 거너 · 사제

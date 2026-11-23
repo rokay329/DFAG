@@ -360,9 +360,13 @@ const LINES = {
 };
 const REFUSE = { knight: '싸우러 온 게 아니다.', ranger: '…사양할게.', mage: '싸울 이유가 없어요.', priest: '도끼를 거두세요.', gunner: '총알 아깝다.' };
 const CROWN = { knight: '다만, 왕관에 대해 아는 것이 있다면 듣고 싶다.', ranger: '대신 왕관 얘기나 좀 해 줘.', mage: '그보다… 왕관에 대해 알고 계신 걸 들려주세요.', priest: '저는 왕관의 비밀을 알고 싶어요.', gunner: '왕관에 대해 아는 걸 말해.' };
-const LAST = '왕관은 바치는 게 아니다. 해에 비추어-';
+// v3.20 선조에게 하는 부탁 — 캐릭터마다 성격대로
+const ANC_ASK = { knight: ['크루가쉬의 저주를 풀어, 그의 영혼을 자유롭게 해 주십시오.'], ranger: ['크루가쉬.', '그 녀석 저주, 풀어 줘.'], mage: ['크루가쉬에게 걸린 저주를 풀어 주세요.', '그 광기는 그의 뜻이 아니었을 거예요.'], priest: ['크루가쉬의 저주를 거두어 주세요.', '그의 영혼이 쉴 수 있도록.'], gunner: ['주절주절거리지 말고', '크루가쉬 저주나 풀어 줘.'] };
+const LAST = '왕관의 주인은 {해}가 비치는 곳에…';
+// v3.20 크루가쉬의 마지막 말에 대한 주인공의 반응 (이번 판에 키륵에게서 먼저 「해」를 들었음)
+const KG_SUN = { knight: '…또 {해}. 끝내 그 뜻을 듣지 못했군.', ranger: '…{해}. 그 고블린도, 너도.', mage: '{해}가 비치는 곳…|하늘에 별 말고 무언가가 더 있었다는 걸까요.', priest: '{해}…|이분도 그 말을 남기셨네요.', gunner: '{해}라… 말은 다 하고 뒤지라고.' };
 // 이 판에서 원이 열리는가: 진실 1 · 2를 안 기록(저장) + 그 캐릭터의 2회차 + 이번 판에서 아직 저주를 풀지 않음
-const circleOn = () => !!(TS().t1 && TS().t2 && TRUTH.loop2() && !T3().freed);
+const circleOn = () => { const run = G.truthRun || {}; return !!(run.t1 && run.t2 && TRUTH.loop2() && !T3().freed); }; // v3.20 진실 1 · 2를 이번 판에서 봤을 때만 (예전 판 기록은 보지 않음)
 
 // ---------------------------------------------------------------- ① 피의 결투 원 (3장 전투 방 하나)
 function pickRoom() {
@@ -560,7 +564,7 @@ function ancDown(e) {
 }
 function finale() {
   const t3 = T3(); t3.finalAt = null; t3.show = true;
-  const L = [['gor', '원하는 것이 무엇인가, 작은 자여.'], ['pl', '크루가쉬의 저주를 풀어, 그의 영혼을 자유롭게 해 주십시오.'], ['utu', '…그러고 보니, 그 아이의 냄새가 희미하구나.'], ['zak', '좋다. 그 바람, 들어주도록 하지.'], ['gor', '크루가쉬. 피의 아이여.'], ['zak', '우리 피로 네 영혼을 씻는다.'], ['utu', '깨어나라. 결투는 네 것이다.']];
+  const L = [['gor', '원하는 것이 무엇인가, 작은 자여.'], ...(ANC_ASK[G.cls] || ANC_ASK.knight).map(t => ['pl', t]), ['utu', '…그러고 보니, 그 아이의 냄새가 희미하구나.'], ['zak', '좋다. 그 바람, 들어주도록 하지.'], ['gor', '크루가쉬. 피의 아이여.'], ['zak', '우리 피로 네 영혼을 씻는다.'], ['utu', '깨어나라. 결투는 네 것이다.']];
   SEQ = { k: 'appear3', t: 0, dur: 1.4, end: () => TRUTH.talk(L, () => { SEQ = { k: 'rise', t: 0, dur: 2.6, end: () => { t3.show = false; t3.freed = true; banner('선조의 피가 흩어졌다', '세 선조가 크루가쉬의 이름을 부르며 사라졌다'); sfx('legend'); } }; sfx('awaken'); }) };
   sfx('awaken');
 }
@@ -579,16 +583,12 @@ function kgTick(b, dt) {
     banner('약속의 결투', '크루가쉬가 도끼를 들었다'); sfx('roar', 0.8);
   }
 }
-function kgDying(b, dt) {
+function kgDying(b, dt) { // v3.20 빛기둥 삭제: 마지막 말을 남기고 스스로 쓰러짐 (보통 처치 연출)
   const D = b.kgD; D.t += dt;
-  if (D.t >= 1.9 && !D.hit) { if (D.bt == null) { D.bt = 0; D.x = b.x; D.y = b.y; sfx('whoosh', 0.5); } }
-  if (D.bt != null) {
-    D.bt += dt;
-    if (!D.hit && D.bt >= BEAM_HIT) { D.hit = true; b.hidden = true; b.passKill = true; flashT = Math.max(flashT, 0.22); flashColor = '#fff4d8'; sfx('blast', 0.5); sfx('crunch', 0.8); const R = curR(); if (R) R.kgBeam = { x: D.x, y: D.y, t0: time - D.bt }; ORIG.killEnemy(b); }
-  }
+  if (D.t >= 2.0 && !D.hit) { D.hit = true; b.passKill = true; sfx('growl', 0.4); const R = curR(); if (R) R.kgFell = { t0: time, x: b.x, y: b.y }; ORIG.killEnemy(b); } // v3.20 말하는 도중 사망 장면이 시작되며 숨이 끊어짐
 }
 function parchment() {
-  showTruthParchment({ no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', ac: RED, paras: ['"' + LAST + '"', '말을 끝내기도 전에 하늘에서 떨어진 빛줄기에 의해 크루가쉬의 몸은 산산조각 갈라졌다.'], onClose: () => {
+  showTruthParchment({ no: '핏빛 엄니 부락', title: '크루가쉬의 마지막 말', ac: RED, paras: ['"' + LAST + '"', '말을 끝맺지 못한 채 크루가쉬는 무릎을 꿇었고, 다시는 일어나지 않았다.'], onClose: () => {
     const first = !TS().t3; TS().t3 = true; (G.truthRun || (G.truthRun = {})).t3 = true; persist();
     lootFeed('진실 기록 — 크루가쉬의 마지막 말', RED, 3600); if (first) sfx('legend');
   } });
@@ -609,7 +609,8 @@ function tick(dt) {
     const b = G.enemies.find(e => e.kind === 'krugash');
     if (b && b.kg) kgTick(b, dt);
     if (b && b.kgD) kgDying(b, dt);
-    if (R.kgBeam && !R.kgBeam.read && time - R.kgBeam.t0 > 3.2 && mode === 'play') { R.kgBeam.read = true; parchment(); }
+    if (R.kgFell && !R.kgFell.said && time - R.kgFell.t0 > 2.0 && mode === 'play') { R.kgFell.said = true; // v3.20 무릎 꿇는 장면이 끝나면 주인공이 「해」에 반응 (멈춰 서서 F로 넘김) → 끝나면 양피지
+      TRUTH.talk(((q) => q.includes('|') ? q.split('|') : q.split(/(?<=[.!?])\s+/))(KG_SUN[G.cls] || KG_SUN.knight).map(t => ['pl', t.trim()]), () => { R.kgFell.read = true; parchment(); }); }
   }
 }
 function busy() { return !!SEQ; }
@@ -646,7 +647,8 @@ function top() {
   if (R.blood && SEQ && SEQ.k === 'enter') { const B = R.blood; at(B.x, B.y, 0, 0, () => bloodCircle(0, 0, 'enter', SEQ.t)); }
   if (R.kgBeam) { const K = R.kgBeam, t = time - K.t0; if (t < 3) at(K.x, K.y, 200, 260, () => beamKill(200, 260, t, 'f')); }
   if (R.type === 'boss' && G.stage === 3) { const b = G.enemies.find(e => e.kind === 'krugash' && !e.dead);
-    if (b && b.kgD && b.kgD.t < 1.95) drawBubble(LAST, b.x, b.y - 92, 0);
+    if (b && b.kgD && b.kgD.t < 2.05) drawBubble(LAST, b.x, b.y - 92, 0);
+    { const F = R.kgFell; if (F && F.x != null && time - F.t0 < 0.45) drawBubble(LAST, F.x, F.y - 92, 0); } // 쓰러지기 시작한 뒤에도 말주머니가 잠깐 남아 끊긴 말처럼
     if (b && b.kg && b.kg.ph === 'charge') drawBubble('!!', G.player.x, G.player.y - 38, 0); }
 }
 function lights(list) {
@@ -686,7 +688,7 @@ function spk(who) {
 const ORIG = { killEnemy, damageEnemy, playerDie, updateEnemy, drawEnemyBody, spawnKrugash, updateKrugash, paintRoomFloor };
 killEnemy = function (e, silent) {
   if (e && e.type === 'anc') { ancDown(e); return; }
-  if (e && e.kind === 'krugash' && e.freed && !e.passKill) { // 약속의 결투에서 짐: 마지막 말 → 빛기둥
+  if (e && e.kind === 'krugash' && e.freed && !e.passKill) { // 약속의 결투에서 짐: 마지막 말 → 스스로 쓰러짐 (v3.20 빛기둥 삭제)
     if (e.kgD) return; e.kgD = { t: 0 }; e.hp = 1; cancelTele(e); e.steps = null; e.dash = null; e.air = null; e.z = 0; e.state = 'recover'; e.t = 99; e.hold = true; G.tele = G.tele.filter(t => t.owner !== e); e.spikeQ = [];
     sfx('growl', 0.6); return; }
   return ORIG.killEnemy(e, silent);

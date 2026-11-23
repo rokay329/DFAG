@@ -154,7 +154,7 @@ const RUIN1 = (() => {
     const low = new Map(); for (let x = 0; x < w; x++) for (let y = h - 1; y >= 0; y--) if (on(x, y)) { low.set(x, y); break; } if (!low.size) { g.drawImage(t, pad, pad); return c; } const ym = Math.max(...low.values()); for (const [x, y] of [...low]) if (y < ym - (opt.band || 3)) low.delete(x);
     const SH = new Map(); for (const [x, y] of low) for (let k = 1; k <= 3; k++) { const xx = x + 2 - (k === 1 ? 1 : 0), yy = y + k; if (k <= 2) SH.set(xx + ',' + yy, k === 2 ? 0.42 : 0.55); else if ((xx + yy) & 1) SH.set(xx + ',' + yy, 0.28); }
     const xr = Math.max(...low.keys()), yr = low.get(xr); SH.set((xr + 1) + ',' + yr, 0.33); SH.set((xr + 2) + ',' + yr, 0.33);
-    for (const [k, a] of SH) { const [x, y] = k.split(',').map(Number); if (on(x, y)) continue; g.fillStyle = `rgba(4,3,8,${a})`; g.fillRect(pad + x * 2, pad + y * 2, 2, 2); }
+    for (const [k, a] of SH) { const [x, y] = k.split(',').map(Number); if (on(x, y) || !dshOn(x, y, a * 0.9)) continue; g.fillStyle = DSH_C; g.fillRect(pad + x * 2, pad + y * 2, 2, 2); } // v3.20 디더 그림자
     g.drawImage(t, pad, pad); return c; }
   // ---------------------------------------------------------------- 1장 폐허 저수지 (옛 물웅덩이 · 연못 자리): 돌 테두리(판석) · 안으로 파인 벽 · 탁한 물 · 개구리밥 · 수련 · 갈대 · 물에 잠긴 계단 · 빠진 테두리 돌 · 배수구 — 바닥에 깔리는 장애물
   function reservoir(wPx, hPx, seed = 1) { const W = Math.round(wPx / 2), T = Math.round(hPx / 2), S = Spr(W, T, 6);

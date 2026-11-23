@@ -139,7 +139,7 @@
   }
   function skMax(k) { // v2.09: 장비로 늘어나는 기술 사용 횟수 (K: 특수기술, D: 점멸)
     const st = G.stats || { fx: new Set() };
-    if (k === 'K') return 1 + (st.fx.has('bulwark') && G.cls === 'knight' ? 1 : 0);
+    if (k === 'K') return 1; // v3.21 별의 서약 대검의 돌진 2회 충전은 우클릭 「별의 서약」으로 바뀜
     return 2;
   }
   function castSoup() { // 국자: 화염구 대신 끓는 수프 웅덩이 (적 화상·둔화, 내가 밟으면 조금 회복)
@@ -195,12 +195,8 @@
       if (pr.friend) continue; const d = Math.hypot(pr.x - P.x, pr.y - P.y), a = Math.atan2(pr.y - P.y, pr.x - P.x);
       if (d < 54 && Math.abs(angDiff(a, P.atkAng)) < 1.1) { pr.friend = true; pr.ang = a; pr.sp = Math.max(pr.sp, 260) * 1.2; pr.t = 2; pr.home = 0; pr.hist = []; sfx('block', 0.7); G.nums.push({ x: pr.x, y: pr.y - 22, v: '팡!', t: 0.5, c: '#ffd34d', s: 1 }); G.fx.push({ kind: 'ring', x: pr.x, y: pr.y - 10, r: 4, grow: 140, t: 0.25, max: 0.25, c: '#ffd34d' }); }
     }
-    if (sk === 'whip') { // 우클릭을 누르고 있으면 반 칸을 바쳐 8초간 공격력 2배 · v2.18 짧게 눌렀다 떼면 치유의 빛
-      const held = mouse.rdown || keys['k'], prevH = P.rHold || 0; P.rHold = held ? prevH + dt : 0;
-      if (!held && prevH > 0 && prevH <= 0.6 && !P.penLock && !P.dead && (P.state === 'idle' || P.state === 'attack')) { const slot = P.chargeCd.findIndex((c, i) => i < skMax('K') && c <= 0); if (slot >= 0) { P.chargeCd[slot] = CL().skillCd * (1 - G.stats.cdr); castHeal(); } }
-      if (!P.rHold) P.penLock = false;
+    if (sk === 'whip') { // v3.22 고해의 채찍: 우클릭은 「참회의 난타」(45_prs.js) — 예전 짧게/길게 누르기 효과는 없앰
       if (P.state === 'attack' && !P.crackDone && P.lashTip) { const st = SWING_PW[P.combo]; if (P.t > st.wind + st.swing * 0.9) { P.crackDone = true; sparks(P.lashTip.x, P.lashTip.y, P.atkAng, '#fff0d0', 5); G.fx.push({ kind: 'ring', x: P.lashTip.x, y: P.lashTip.y, r: 2, grow: 80, t: 0.15, max: 0.15, c: '#fff0d0' }); sfx('block', 1.6); } }
-      if (P.rHold > 0.6 && !P.penLock && !(P.penT > 0) && P.hp > 1) { P.penLock = true; P.hp -= 1; P.penT = 8; P.hurtT = 0.15; sfx('hurt'); flashT = 0.06; flashColor = '#a3161c'; burst(P.x, P.y - 10, '#a3161c', 10); banner('고해', '피를 바쳐 8초간 공격력 2배'); }
     }
     if (P.penT > 0) P.penT -= dt;
     if (sk === 'spear' && P.miracleT > 0) { P.spearCd = (P.spearCd || 0) - dt; if (P.spearCd <= 0) { P.spearCd = 0.22; // 성창 비
@@ -228,6 +224,7 @@
     if (P && P.state === 'attack' && wSkill() === 'fan') for (const pr of G.eproj) { if (pr.t <= 0) continue; const d = Math.hypot(pr.x - P.x, pr.y - P.y); if (d < 46 && Math.abs(angDiff(Math.atan2(pr.y - P.y, pr.x - P.x), P.atkAng)) < 1.1) { pr.t = 0; sparks(pr.x, pr.y - 10, angTo(P, pr), '#ffd0a0', 6); sfx('block', 1.4); } }
     // 무기 투사체: 부메랑 낫 · 생선 뼈 · 고양이 유령 (장애물에 막힘)
     if (G.wproj && G.wproj.length) for (let i = G.wproj.length - 1; i >= 0; i--) { const w = G.wproj[i];
+      if (/^(krs|ars|grs)/.test(w.k)) continue; // v3.21 41_krs.js에서 움직임
       if (w.k === 'sickle') { const sp = 380 * dt, ox = w.x, oy = w.y; let ang = w.ang;
         if (!w.out) ang = Math.atan2(P.y - 8 - w.y, P.x - w.x); w.x += Math.cos(ang) * sp; w.y += Math.sin(ang) * sp * 0.8; w.d += sp; w.spin = (w.spin || 0) + dt * 22;
         if (w.out && (w.d > 150 || segSolid(ox, oy, w.x, w.y))) { w.out = false; w.hit = new Set(); if (segSolid(ox, oy, w.x, w.y)) { w.x = ox; w.y = oy; sparks(w.x, w.y, 0, '#e8e8f0', 4); } }
@@ -284,10 +281,9 @@
     const P = G.player;
     if (wSkill() === 'nine' && !G.nineUsed) { G.nineUsed = true; P.hp = 2; P.inv = 2; P.stealthT = 1; banner('아홉 목숨', '꼬리 하나를 내주고 다시 일어선다'); sfx('awaken'); flashT = 0.2; flashColor = '#7af0ff'; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 260, t: 0.6, max: 0.6, c: '#7af0ff' }); return; } // v2.05
     if (hasRelic('deadring') && !G.ringUsed && (G.ringUsed = true) && Math.random() < 0.5) { P.hp = 2; P.inv = 2; banner('망자의 반지', '반지가 부서지며 다시 일어선다'); sfx('awaken'); flashT = 0.2; flashColor = '#c070f0'; G.fx.push({ kind: 'ring', x: P.x, y: P.y - 10, r: 8, grow: 220, t: 0.5, max: 0.5, c: '#c070f0' }); G.relics = G.relics.filter(k => k !== 'deadring'); return; } // v2.29
-    if (G.cls === 'priest' && P.gauge >= 100 && !(G.miracleRev || {})[G.stage]) { (G.miracleRev = G.miracleRev || {})[G.stage] = true; P.hp = 2; startMiracle(true); return; } // v2.15 부활은 챕터당 1번, 반 칸×2
     P.hp = 0; P.dead = true; P.deadT = 0; P.state = 'dead'; rec('death');
     burst(P.x, P.y - 8, '#a3161c', 24); splat(P.x, P.y, 30);
-    banner('원정 실패', '가져온 모든 것을 잃었다');
+    banner('원정 실패', `${SAVE.runs}번째 밤 · 가져온 모든 것을 잃었다`); // v3.23 회차 = 밤
   }
   function afterDeath() {
     const P = G.player;
@@ -313,7 +309,7 @@
     }
     if (e.type === 'queen' && e.blink && (e.fadeA == null ? 1 : e.fadeA) < 0.35) return; // v1.30 베일 걸음 중 흩어진 동안은 맞지 않음
     const shieldHit = e.type === 'aguard' && !o.dot && guardFront(e, P.x); // v1.24 근위병 방패
-    const crit = !o.dot && (P.critNext || P.counterT > 0 || (P.navyShot && uncK() === 'gunner12') || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0));
+    const crit = !o.dot && (P.critNext || P.counterT > 0 || (P.navyShot && uncK() === 'gunner12') || Math.random() < s.crit + (P.echoT > 0 ? 0.25 : 0) + AWK.crit());
     if (P.critNext && !o.dot) { P.critNext = false; gxCrit(e, P.firstCrit); P.firstCrit = false; if (P.firstN > 0) { P.firstN--; P.critNext = true; P.firstCrit = true; } }
     let dmg = (hasRelic('fang') && P.hp <= 2 ? 1.4 : 1) * s.atk * coef * (1 - e.def / (e.def + 500)) * (crit ? s.critDmg : 1) * (e.grogiT > 0 ? 1.5 : 1) * (G.frenzyT > 0 ? 1.3 : 1) * (CL().dmgMul || 1) * (s.fx.has('tusk') && (e.type === 'boss' || isElite(e) || isSemi(e)) ? 1.15 : 1) * (s.efx.has('exec') && e.hp < e.maxHp * 0.3 ? 1.25 : 1) * (s.set4.has('orc') && P.hp < s.hp * 0.5 ? 1.3 : 1);
     dmg *= (P.penT > 0 ? 2 : 1) * (wSkill() === 'water' && (G.stage === 2 || G.stage === 4) ? 1.3 : 1); // v2.13 고해의 채찍 · 성수 물뿌리개

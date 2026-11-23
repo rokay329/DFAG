@@ -746,9 +746,9 @@
   }
   function drawWarDrum(d) {
     const spr = art('wardrum' + (d.broken ? 'b' : ''), () => withSeed(4242, () => gCanvas(genWarDrum(d.broken), ORC_BASE)));
-    if (d.drop > 0) { const k = d.drop / 0.55, oy = Math.round(k * k * 260 / 2) * 2; ctx.fillStyle = `rgba(0,0,0,${0.5 * (1 - k)})`; ctx.fillRect(Math.round(d.x - 14 * (1 - k * 0.6)) & ~1, d.y, Math.round(28 * (1 - k * 0.6)) & ~1, 4); ctx.drawImage(spr, Math.round(d.x - spr.width / 2) & ~1, Math.round(d.y + 2 - spr.height - oy)); return; }
+    if (d.drop > 0) { const k = d.drop / 0.55, oy = Math.round(k * k * 260 / 2) * 2; dshEll(ctx, d.x, d.y + 2, 14 * (1 - k * 0.6), 2, 0.5 * (1 - k) + 0.1); ctx.drawImage(spr, Math.round(d.x - spr.width / 2) & ~1, Math.round(d.y + 2 - spr.height - oy)); return; }
     const sq = d.anim > 0 ? 1 - d.anim * 0.6 : 1, x = Math.round(d.x - spr.width / 2) & ~1;
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; { const xa = x + 4, xb = x + spr.width - 4; if (xb > xa) ctx.fillRect(xa, d.y, Math.ceil((xb - xa) / 2) * 2, 2); }
+    { const xa = x + 4, xb = x + spr.width - 4; if (xb > xa) dshRect(ctx, xa, d.y, Math.ceil((xb - xa) / 2) * 2, 2, 0.5); }
     { const t = pxXform(spr, 2, 0, 1, sq, false, { pvx: 0 }), X = x - t.ax, Yd = snap2(d.y + 2) - t.ay; ctx.save(); ctx.drawImage(t.c, X, Yd); // v1.05 눌림도 칸 단위
       if (d.boss && !d.broken && d.anim > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = d.anim / 0.16 * 0.7; ctx.drawImage(t.c, X, Yd); }
       ctx.restore(); }
@@ -1154,10 +1154,11 @@
     if (!SQZ_PAT2) { const [pc, pg] = mkCanvas(4, 4); pg.fillStyle = '#0b0604'; pg.fillRect(0, 0, 2, 2); pg.fillRect(2, 2, 2, 2); SQZ_PAT2 = ctx.createPattern(pc, 'repeat'); }
     if (shown > 0.5) { // 타원 바깥을 2px 줄 단위로 어둡게 (곡선도 칸 단위 계단)
       const X0 = A.x0 - 80, Y0 = A.y0 - 40, X1 = A.x1 + 80, Y1 = A.y1 + 40, top = E.cy - E.ry, bot = E.cy + E.ry;
-      ctx.fillStyle = SQZ_PAT; ctx.fillRect(X0, Y0, X1 - X0, top - Y0); ctx.fillRect(X0, bot, X1 - X0, Y1 - bot);
+      // v3.20 바깥은 반반 체크 망점으로 한 단계 진하게 (발도르 「칠흑의 장막」의 완전한 검정과 구분) · 방책 안쪽 가장자리 띠는 약한 망점
+      ctx.fillStyle = SQZ_PAT2; ctx.fillRect(X0, Y0, X1 - X0, top - Y0); ctx.fillRect(X0, bot, X1 - X0, Y1 - bot);
       for (let y = top; y < bot; y += 2) { const k = (y + 1 - E.cy) / E.ry, hw = Math.round(E.rx * Math.sqrt(Math.max(0, 1 - k * k)) / 2) * 2;
-        ctx.fillStyle = SQZ_PAT; ctx.fillRect(X0, y, E.cx - hw - X0, 2); ctx.fillRect(E.cx + hw, y, X1 - E.cx - hw, 2);
-        ctx.fillStyle = SQZ_PAT2; const bw = Math.min(hw, 12); ctx.fillRect(E.cx - hw, y, bw, 2); ctx.fillRect(E.cx + hw - bw, y, bw, 2); }
+        ctx.fillStyle = SQZ_PAT2; ctx.fillRect(X0, y, E.cx - hw - X0, 2); ctx.fillRect(E.cx + hw, y, X1 - E.cx - hw, 2);
+        ctx.fillStyle = SQZ_PAT; const bw = Math.min(hw, 12); ctx.fillRect(E.cx - hw, y, bw, 2); ctx.fillRect(E.cx + hw - bw, y, bw, 2); }
     }
   }
   // v2.57 말뚝은 캐릭터와 함께 깊이 정렬 — 아래쪽 줄은 캐릭터 앞, 위쪽 줄은 뒤 (맵 하단 울타리 규칙)
@@ -1175,7 +1176,7 @@
       const q = -Math.PI / 2 + (i + ring * 0.5) / N * Math.PI * 2, rr = ring ? 8 : 0;
       const x = Math.round((E.cx + Math.cos(q) * (E.rx + rr) - 5) / 2) * 2, by = Math.round((E.cy + Math.sin(q) * (E.ry + rr * 0.6)) / 2) * 2;
       const img = sqzStake((i * 2 + ring) % 6, !ring && i % 3 === 0 ? fl(i) : 0);
-      ents.push({ y: by - 1, d: () => { if (oy < -6) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x + 2, by, 6, 2); } ctx.drawImage(img, x, by - 24 + oy); } }); }
+      ents.push({ y: by - 1, d: () => { if (oy < -6) dshRect(ctx, x + 2, by, 6, 2, 0.5); ctx.drawImage(img, x, by - 24 + oy); } }); }
   }
   function updateKrugash(b, dt) {
     const P = G.player;

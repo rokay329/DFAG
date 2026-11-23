@@ -1058,7 +1058,7 @@ huskUp:[
       ctx.fillStyle = '#0b0a09'; ctx.fillRect(snap2(q.x) - 4, snap2(y) - 8, 8, 12); ctx.fillStyle = '#ff7a30'; ctx.fillRect(snap2(q.x) - 2, snap2(y) - 4, 4, 6); ctx.fillStyle = '#ffc070'; ctx.fillRect(snap2(q.x) - 2, snap2(y) - 6, 2, 4);
       ctx.fillStyle = 'rgba(255,140,60,.5)'; for (let j = 4; j < 20; j += 4) ctx.fillRect(snap2(q.x), snap2(y) - 6 - j, 2, 2); }
     if (A2 < 0.05) return;
-    ctx.fillStyle = `rgba(0,0,0,${0.35 * fa})`; ctx.beginPath(); ctx.ellipse(e.x, e.y + 1, 14, 4, 0, 0, TAU); ctx.fill();
+    dshEll(ctx, e.x, e.y + 1, 14, 4, 0.5 * fa);
     // v1.33 팔 없이 몸 전체의 움직임으로 공격을 보여 준다 (기울이기·늘이기는 칸 단위). k = 준비 진행도(바닥 경고), u = 공격 뒤 시간
     const pose = e.state === 'wind' || e.state === 'recover' ? e.pose : null, k = clamp(e.glow || 0, 0, 1), ez = k * k * (3 - 2 * k);
     let dx = 0, dy = 0, rot = 0, sx = 1, sy = 1;
@@ -1264,7 +1264,7 @@ huskUp:[
     const bk = brookCurve(); if (bk && bk.vert) paintMeadowCurve(g, Object.assign({}, bk, { clip: t => t < A.y0 - 20, noBridge: true }));
     const row = (yBase, dim, step) => {
       for (let x = -20; x < W + 20; x += randi(step[0], step[1])) {
-        const r = Math.random(), kind = r < 0.38 ? 'round' : r < 0.66 ? 'pine' : r < 0.82 ? 'birch' : 'dead';
+        const r = Math.random(), kind = r < 0.45 ? 'round' : r < 0.8 ? 'pine' : 'dead'; // v3.20 숲 줄에서도 자작나무(흰 줄기) 삭제
         const palK = kind === 'pine' ? (Math.random() < 0.5 ? 'deep' : 'green') : kind === 'birch' ? 'birch' : kind === 'dead' ? 'green' : pick(['green', 'green', 'deep', 'autumn', 'gold', 'dusk']);
         const c = treeCv(kind, palK, '#140e22', dim, randi(0, 3)), y = Math.max(12, yBase - c.height + randi(-6, 6)); // v2.21 바닥 캔버스 위 끝(카메라 최상단)에서 나무 꼭대기가 잘리지 않게
         if (onDoorPath(x - c.width * 0.2, y, c.width * 0.4, c.height)) continue; // 잎 가운데 40%만 판정
@@ -1274,8 +1274,7 @@ huskUp:[
     };
     row(A.y0 - 26, 0.5, [16, 26]);   // 뒷줄 (어둡게 깔린다)
     row(A.y0 + 4, 0, [26, 40]);      // 앞줄
-    // 뿌리 쪽 덤불과 풀
-    for (let x = 0; x < W; x += randi(10, 18)) stamp(g, DECO_MAPS[pick(['bush', 'tuft1', 'tuft2', 'tuft3'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 - 2 + randi(-3, 3), 2, Math.random() < 0.5);
+    // v3.20 뿌리 쪽 덤불 삭제 — 위쪽 울타리 뒤로 덤불이 비치지 않게 (덤불은 울타리 앞에만 듬성듬성)
   }
   function paintMeadowProps(g) {
     if (G) withDecor(g, CUR_ROOM, () => paintMeadowDecor(g, CUR_ROOM));
@@ -1295,7 +1294,7 @@ huskUp:[
     }
     if (DR.n != null) { stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x - 32, A.y0 - 18, 2); stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x + 22, A.y0 - 18, 2); }
     // v3.19 위쪽 울타리 발치의 덤불 · 풀은 울타리 위로 올라오게 (울타리를 찍은 뒤에 한 번 더)
-    for (let x = A.x0 - 4 + randi(0, 30); x < A.x1 - 8; x += randi(40, 90)) { if (DR.n != null && x + 16 > DOOR.n.x - 30 && x < DOOR.n.x + 30) continue; stamp(g, DECO_MAPS[pick(['bush', 'bush', 'tuft1', 'tuft2'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 - 8 + randi(-3, 3), 2, Math.random() < 0.5); }
+    for (let x = A.x0 - 4 + randi(0, 30); x < A.x1 - 8; x += randi(40, 90)) { if (DR.n != null && x + 16 > DOOR.n.x - 30 && x < DOOR.n.x + 30) continue; stamp(g, DECO_MAPS[pick(['bush', 'bush', 'tuft1', 'tuft2'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 + 2 + randi(0, 3), 2, Math.random() < 0.5); } // v3.20 울타리 줄에 겹치지 않게 울타리 발치 앞으로 내림
     // 양옆 세로 울타리
     for (let y = A.y0 + 8; y < A.y1 - 20; y += 22) for (const x of [A.x0 - 10, A.x1 + 2]) {
       if (((x < CX && DR.w != null) || (x > CX && DR.e != null)) && y + 22 > CY - 24 && y < CY + 24) continue;
@@ -1359,7 +1358,7 @@ huskUp:[
     // 솟기: 0~0.07 쑥 올라오며 살짝 튀었다 자리 잡고, 0.72부터 바스러지며 땅속으로 가라앉는다
     const up = p < 0.07 ? easeOut(p / 0.07) * 1.12 : p < 0.13 ? 1.12 - (p - 0.07) / 0.06 * 0.12 : p < 0.72 ? 1 : Math.max(0, 1 - (p - 0.72) / 0.28);
     const vis = Math.min(H, Math.round(H * up / 2) * 2);
-    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx - 14, by - 2, 28, 4); ctx.fillRect(bx - 10, by - 4, 20, 2); ctx.fillRect(bx - 10, by + 2, 20, 2);
+    dshEll(ctx, bx, by, 14, 5, 0.5);
     if (p < 0.2) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,110,40,${0.55 * (1 - p / 0.2)})`; ctx.fillRect(bx - 12, by - 4, 24, 6); ctx.restore(); }
     if (vis > 0) {
       ctx.save(); if (f.fl) { ctx.translate(bx * 2, 0); ctx.scale(-1, 1); }
@@ -1411,7 +1410,7 @@ huskUp:[
   function drawLob(f, p) {
     const k = (p - (f.d0 || 0)) / (1 - (f.d0 || 0)); if (k < 0) return;
     const x = f.x0 + (f.x1 - f.x0) * k, gy = f.gy0 + (f.y1 - f.gy0) * k, y = f.y0 + (f.y1 - f.y0) * k - Math.sin(k * Math.PI) * f.h;
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, gy, f.rock ? 8 : 4, f.rock ? 3 : 1.5, 0, 0, TAU); ctx.fill();
+    dshEll(ctx, x, gy, f.rock ? 8 : 4, f.rock ? 3 : 2, 0.5);
     if (f.rock) { drawSprite('boulder', 'deco', 2, x, y + 7, false, { rot: k * 6 }); return; }
     if (f.meat) { // 관중의 선물: 빙글빙글 도는 뼈 달린 고깃덩이
       const X = Math.round(x) & ~1, Y = Math.round(y) & ~1, fl = Math.floor(k * 8) % 2;
@@ -2041,7 +2040,18 @@ huskUp:[
     paintMeadowProps(g);
     // 길을 마지막에 그려 잔디·꽃·덤불이 덮거나 끊어 보이지 않게 한다.
     for (const c of meadowCurves()) paintMeadowCurve(g, c.kind === 'brook' && ROOMSTYLE.side ? Object.assign({}, c, { clip: t => brookIn(c, t) }) : c);
+    nightGrade(g); if (g === fmg) nightGrade(ffg);
   }
+  // v3.23 밤 공기: 풀(초록)과 흙(갈색)만 골라 푸른 초록 · 낮은 채도로 옮김. 꽃 · 돌 · 물 등 다른 색은 그대로. window.NIGHT_GROUND = false면 끔
+  function nightGrade(g) { if (window.NIGHT_GROUND === false) return; const c = g.canvas, w = c.width, h = c.height; let id; try { id = g.getImageData(0, 0, w, h); } catch (e) { return; } const d = id.data;
+    for (let i = 0; i < d.length; i += 4) { if (!d[i + 3]) continue; const r = d[i] / 255, gg = d[i + 1] / 255, b = d[i + 2] / 255, mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), dl = mx - mn; if (dl < 0.04) continue;
+      let hh = mx === r ? ((gg - b) / dl) % 6 : mx === gg ? (b - r) / dl + 2 : (r - gg) / dl + 4; hh *= 60; if (hh < 0) hh += 360; let s = dl / mx, v = mx;
+      if (hh >= 55 && hh <= 175) { hh += (158 - hh) * 0.55; s *= 0.62; v *= 0.9; } // 풀 · 이끼 · 나뭇잎
+      else if (hh >= 12 && hh < 55 && s < 0.85) { hh += (hh < 40 ? 6 : 0); s *= 0.55; v *= 0.86; } // 흙 · 마른 풀 · 나무 밑동
+      else continue;
+      const C = v * s, X = C * (1 - Math.abs((hh / 60) % 2 - 1)), m = v - C, k = Math.floor(hh / 60) % 6, rr = [C, X, 0, 0, X, C][k], g2 = [X, C, C, X, 0, 0][k], b2 = [0, 0, X, C, C, X][k];
+      d[i] = Math.round((rr + m) * 255); d[i + 1] = Math.round((g2 + m) * 255); d[i + 2] = Math.round((b2 + m) * 255); }
+    g.putImageData(id, 0, 0); }
   paintMeadowFloor(fmg);
 
   // ---------- 스테이지 정의

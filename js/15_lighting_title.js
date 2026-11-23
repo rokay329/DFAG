@@ -333,7 +333,6 @@ void main() {
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     enemySays(); TRUTH.top(); BDC.top(); // v2.58 · v3.18 머리 위 뼈주사위
-    flushBubbles(); // v1.10 말주머니는 모든 물체 위에
     drawGearTop();
     drawWproj(); // v2.05
     drawHarp(); // v2.19 작살은 캐릭터 위에
@@ -341,12 +340,12 @@ void main() {
       ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x - 2, y - 2, 28, 6); ctx.fillStyle = '#3a2f40'; ctx.fillRect(x, y, 24, 2); ctx.fillStyle = '#d02030'; ctx.fillRect(x, y, Math.round(24 * k / 2) * 2, 2);
       ctx.font = '8px Galmuri7'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#000'; fillTextW('무기 버리기', x + 13, y - 4); ctx.fillStyle = '#ff9a8a'; fillTextW('무기 버리기', x + 12, y - 5); }
     for (const d of G.drops) drawDrop(d);
-    for (const f of G.fx) if (f.kind !== 'rockspike') drawFx(f);
+    for (const f of G.fx) if (f.kind !== 'rockspike' && f.zY == null) drawFx(f); // v3.22 zY 붙은 기술 효과는 깊이 정렬로 그림 (SKD)
     for (const pr of G.proj) drawProj(pr);
     BDC.air(); // v3.18 칼날카드
     for (const pr of G.mproj) drawMProj(pr);
     drawMeteorRock(); drawAimLine();
-    for (const p of G.parts) { ctx.globalAlpha = Math.min(1, p.t * 3); ctx.fillStyle = p.c; ctx.fillRect(snap2(p.x), snap2(p.y), 2, 2); } // 2px 칸
+    for (const p of G.parts) { if (p.zY != null) continue; ctx.globalAlpha = Math.min(1, p.t * 3); ctx.fillStyle = p.c; ctx.fillRect(snap2(p.x), snap2(p.y), 2, 2); } // 2px 칸
     ctx.globalAlpha = 1;
     if (G.dun) ambBack(); // v1.55
     // v1.86 안개 제거 (7%로 옅어 거의 안 보이고, 도트 규칙의 예외였음)
@@ -389,6 +388,7 @@ void main() {
     } }
     { const t0 = PERF.on ? performance.now() : 0; pixelPass(); if (PERF.on) PERF.pp += performance.now() - t0; } // v1.05 화면 도트화 (글자·프롬프트·숫자는 이 뒤)
     engDraw(); // v2.41
+    flushBubbles(); // v3.20 말주머니는 조명 · 어둠 · 잿빛 · 도트화 뒤에 — 주변 환경과 상관없이 또렷하게 (v1.10 모든 물체 위)
     drawPrompt();
     for (const n of G.nums) { if (n.v == null || /NaN|undefined|Infinity|null|object|function|=>|\$\{|\d[eE][+-]/.test(String(n.v))) continue; /* v2.38 잘못된 값은 그리지 않음 */ ctx.globalAlpha = Math.min(1, n.t * 3); if (n.txt || (typeof n.v === 'string' && /[^0-9+\-]/.test(n.v))) { /* v2.33 글자(흘려냄·반격! 등)는 숫자 글꼴로 안 그려져 보이지 않던 문제 → 글자로, 외곽선 */ const big = (n.s || 1) >= 2, x = Math.round(n.x), y = Math.round(n.y) - (n.pop > 0 ? 2 : 0); ctx.font = big ? '11px Galmuri11' : '9px Galmuri9'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1]]) ctx.fillText(n.v, x + dx, y + dy); ctx.fillStyle = n.c; ctx.fillText(n.v, x, y); } else { const nv = typeof n.v === 'number' ? (isFinite(n.v) ? String(Math.round(n.v)) : '') : String(n.v).replace(/(\d)\.\d+/g, '$1'); /* v2.38 소수·무한대가 0000…으로 그려지던 문제 */ if (nv) drawNumber(nv, n.x, n.y - (n.pop > 0 ? 2 : 0), n.pop > 0 ? '#ffffff' : n.c, n.s + (n.pop > 0 ? 1 : 0)); } }
     ctx.globalAlpha = 1;

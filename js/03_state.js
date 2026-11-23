@@ -7,6 +7,7 @@
   const DEV = (() => { try { const q = new URLSearchParams(location.search); if (q.has('dev')) { if (q.get('dev') === 'off' || q.get('dev') === '0') localStorage.removeItem('dfag_dev'); else localStorage.setItem('dfag_dev', '1'); }
     return localStorage.getItem('dfag_dev') === '1'; } catch (e) { return false; } })();
   window.DEV = DEV;
+  let DEV_LIST = (() => { try { return localStorage.getItem('dfag_devlist') !== '0'; } catch (e) { return true; } })(); // v3.20 테스트 단축키 목록 열림 (Shift+? 로 열고 닫음 · 기억)
   const DEVK = new Map(); // v3.20 테스트 단축키 → 설명 (dbgK에 설명을 붙이거나 DEVK.set으로 등록하면 목록에 자동으로 추가)
   if (DEV) addEventListener('DOMContentLoaded', () => { // 오른쪽 아래: 테스트 단축키 목록
     const el = document.createElement('div'); el.id = 'devKeys'; el.className = 'hud pf glass';
@@ -14,6 +15,7 @@
     (document.getElementById('ui') || document.body).appendChild(el); let key = '';
     setInterval(() => { const on = typeof mode !== 'undefined' && mode === 'play' && !!G; el.style.display = on ? 'block' : 'none'; if (!on) return;
       const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? '1~4' : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
+      if (!DEV_LIST) { if (key === 'closed') return; key = 'closed'; el.innerHTML = '<span style="color:#ffe9b0">Shift+?</span> 테스트 단축키 열기'; return; }
       if (k2 === key) return; key = k2;
       el.innerHTML = '<b style="color:#9fd2ff;font:9px Galmuri9">테스트 단축키</b><br>' + rows.map(([k, d]) => `<span style="color:#ffe9b0">Shift+${k}</span> ${d}${k === 'O' && GOD_MODE ? ' <span style="color:#9fd2ff">(켜짐)</span>' : ''}`).join('<br>'); }, 400); });
   if (DEV) addEventListener('DOMContentLoaded', () => { const b = document.createElement('div'); b.textContent = 'TEST';
@@ -85,7 +87,7 @@
       g.fillStyle = '#3a3644'; g.fillRect(x - 9, 0, 3, A.y0 + 4);
       g.fillStyle = '#0c0b10'; g.fillRect(x + 7, 0, 2, A.y0 + 4);
       g.fillStyle = '#2b2733'; g.fillRect(x - 11, A.y0 - 2, 22, 6);
-      if (i % 2 === 1) {
+      if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && CUR_ROOM.type === 'altar' ? (i === 1 || i === PILLARS.length - 2) : i % 2 === 1) { // v3.20 왕도 성문 방은 성문 양옆 기둥에 하나씩 (좌우 대칭)
         g.fillStyle = '#5c1016'; g.fillRect(x - 6, T0 + 4, 12, 22);
         g.fillStyle = '#7d1820'; g.fillRect(x - 6, T0 + 4, 3, 22);
         for (let k = 0; k < 6; k++) { g.fillStyle = '#5c1016'; g.fillRect(x - 6 + k * 2, T0 + 26, 2, randi(1, 5)); }
@@ -128,6 +130,7 @@
   // 바닥: 성채를 잿빛으로 → 벽 밑·구석에 재가 쌓이고, 바람결 따라 재 줄무늬, 발자국, 가운데엔 반쯤 묻힌 금빛 왕관 모자이크
   function ashCityFloor(g, R) {
     ashImg(g, W, H);
+    if (typeof ROAD4 !== 'undefined') ROAD4.paint(g, R); // v3.20 재에 덮인 옛 가도 (재 더께보다 먼저)
     const A0 = { x0: A.x0, y0: A.y0, x1: A.x1, y1: A.y1 }, ph = rand(0, 6), ph2 = rand(0, 6);
     const AL = ['#4a4640', '#5e5952', '#77726a', '#948e84'];
     // 재 더께: 2px 칸 디더, 가장자리와 낮은 주파수 얼룩에서 두껍게
@@ -221,25 +224,25 @@
     knight: {
       dmgMul: 1.22, n: '기사', name: '알드릭', sub: '??? 기사', role: '탱커 · 그로기', map: 'hKnight', pal: 'hKnight', ghostPal: 'hKnightGhost', weapon: '대검',
       base: { atk: 20, def: 0, hp: 6, crit: 0.10, spd: 88 }, tier: { atk: '상', crit: '하', spd: '하' }, skill: '돌진 참격', skillCd: 8, awaken: '성채의 맹세',
-      skillD: '돌진한 뒤 크게 올려베며 푸른 검기를 날립니다.', awakenD: '회전베기 2번 뒤 빛의 거대검을 내려치고, 5초간 30% 확률로 흘려냅니다.',
+      skillD: '돌진한 뒤 크게 올려베며 푸른 검기를 날립니다.', awakenD: '8초 동안 갑옷이 빛나며 밀려나지 않고 경직되지 않습니다. 기본 공격 3타마다 빛의 검 충격파가 앞으로 날아갑니다.',
       atkD: '묵직한 3연타, 3타는 회전베기입니다. 흘려내기: 맞을 때 10% 확률로 흘려냅니다.',
     },
     ranger: {
       n: '어세신', name: '네로', sub: '고양이 어세신', role: '근접 연타 딜러', map: 'hRanger', pal: 'hRanger', ghostPal: 'hRangerGhost', weapon: '쌍검',
-      base: { atk: 18, def: 0, hp: 6, crit: 0.18, spd: 100 }, tier: { atk: '중', crit: '중', spd: '상' }, skill: '그림자 도약', skillCd: 7, awaken: '칼날 폭풍',
-      skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베고, 반드시 치명타가 됩니다.', awakenD: '3초 동안 쌍검 회오리를 일으키고, 그동안 50% 확률로 흘려냅니다.',
+      base: { atk: 18, def: 0, hp: 6, crit: 0.18, spd: 100 }, tier: { atk: '중', crit: '중', spd: '상' }, skill: '그림자 도약', skillCd: 7, awaken: '개다래나무 가지',
+      skillD: '조준한 적의 등 뒤로 순간 이동해 X자로 베고, 반드시 치명타가 됩니다.', awakenD: '7초 동안 몸에 붉은 기운이 돌고 눈이 붉어집니다. 공격 속도와 치명타 확률이 증가하고, 이동 속도가 크게 증가합니다.',
       atkD: '빠른 3연타, 3타는 교차베기입니다. 베어내기: 기본 공격 중 맞을 때 10% 확률로 베어냅니다.',
     },
     mage: {
       dmgMul: 0.88, n: '마법사', name: '세리안', sub: '여우 마법사', role: '원거리 광역 딜러', map: 'hMage', pal: 'hMage', ghostPal: 'hMageGhost', weapon: '지팡이',
-      base: { atk: 24, def: 0, hp: 5, crit: 0.12, spd: 90 }, tier: { atk: '상', crit: '중', spd: '중' }, skill: '화염구', skillCd: 10, awaken: '운석 낙하',
-      skillD: '폭발하는 화염구를 날립니다. 범위 피해를 주고 3초 동안 화상을 입힙니다.', awakenD: 'E로 조준해 클릭한 지점에 운석을 떨어뜨리고, 넓게 화상을 입힙니다.',
+      base: { atk: 24, def: 0, hp: 5, crit: 0.12, spd: 90 }, tier: { atk: '상', crit: '중', spd: '중' }, skill: '화염구', skillCd: 10, awaken: '영혼박리',
+      skillD: '폭발하는 화염구를 날립니다. 범위 피해를 주고 3초 동안 화상을 입힙니다.', awakenD: '10초 동안 마나로 된 분신을 만듭니다. 분신은 따라다니며 기본 공격을 절반의 피해로 따라 쏩니다. 기본 공격에 붙는 효과와 우클릭 기술은 따라 하지 않습니다.',
       atkD: '마력탄을 연사하고 3발마다 큰 탄이 나갑니다. 마나 격류: 점멸 뒤 3초간 10% 확률로 흘려냅니다.', icons: ['bolt', 'fireball', 'meteor'],
     },
     priest: {
       n: '사제', name: '미레아', sub: '토끼 사제', role: '방패 · 버프', map: 'hPriest', pal: 'hPriest', ghostPal: 'hPriestGhost', weapon: '메이스',
       base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, tier: { atk: '중', crit: '하', spd: '중' }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
-      skillD: '빛의 방패 1칸을 얻고 주변 적을 밀쳐냅니다.', awakenD: '3초 무적 빛기둥을 세웁니다. 챕터마다 한 번, 쓰러지면 저절로 발동합니다.',
+      skillD: '빛의 방패 1칸을 얻고 주변 적을 밀쳐냅니다.', awakenD: '사용할 수 없습니다. 한 판에 한 번, 쓰러지면 하트 1.5칸으로 되살아납니다.',
       atkD: '메이스 3연타, 3타는 충격파를 일으킵니다. 신의 가호: 맞을 때 10% 확률로 막아냅니다.', icons: ['mace', 'heal', 'miracle'],
     },
     gunner: {
@@ -277,15 +280,15 @@
     { k: 'spd', n: '이동 속도 +{v}%', r: [4, 8] },
   ];
   const LEGEND_FX = {
-    bulwark: { n: '별의 서약 대검', d: '돌진 참격을 2번까지 충전할 수 있습니다. 돌진한 길에 빛의 검기가 남았다가 터집니다.' },
-    execsword: { n: '잿빛 왕의 처형검', d: '3타가 잿불 장판을 남깁니다. 각성 내려찍기의 둘레도 잿불로 탑니다.' },
-    fangs: { n: '쌍둥이 송곳니', d: '퍼펙트 회피에 성공하면 그림자 도약이 충전됩니다. 도약한 뒤 2초 동안 은신합니다.' },
+    bulwark: { n: '별의 서약 대검', d: '기본 공격 3타가 적을 꿰뚫는 빛의 검기를 날립니다.' },
+    execsword: { n: '잿빛 왕의 처형검', d: '3타가 잿불 장판을 남깁니다. 성채의 맹세의 빛의 검 충격파가 지나간 자리도 잿불로 탑니다.' },
+    fangs: { n: '쌍둥이 송곳니', d: '퍼펙트 회피에 성공하면 우클릭 기술이 충전됩니다. 우클릭 기술을 쓴 뒤 2초 동안 은신합니다.' },
     kingrev: { n: '왕의 연발총', d: '6발을 연달아 쏩니다. 마지막 탄은 폭발하고, 재장전할 때 주변 적을 밀쳐냅니다.' },
-    spearrain: { n: '날개 달린 성창', d: '기적 중에 성창이 떨어집니다. 기적 중 적을 처치할 때마다 기적이 0.5초 증가합니다.' },
-    hourglass: { n: '모래시계 지팡이', d: '각성하면 3초 동안 시간이 멈춥니다. 시간이 다시 흐를 때 그동안 넣은 피해의 50%가 추가로 들어갑니다. 보스는 멈추는 대신 감소합니다.' },
+    spearrain: { n: '날개 달린 성창', d: '기적으로 되살아난 뒤 무적인 동안 성창이 떨어집니다. 그동안 적을 처치할 때마다 무적 시간이 0.5초 증가합니다.' },
+    hourglass: { n: '모래시계 지팡이', d: '영혼박리의 분신이 4초 더 오래 남습니다.' },
     nine: { n: '아홉 목숨', d: '한 판에 한 번, 쓰러져도 되살아납니다. 적을 처치할 때마다 고양이 유령이 나타나 적을 쫓습니다.' },
-    ashstar: { n: '잿빛 별의 홀', d: '화염구가 3갈래로 나갑니다. 운석 주위에 작은 운석 5개가 함께 떨어집니다.' },
-    dawn: { n: '별빛 성가', d: '치유의 빛이 2초 동안 모든 피해를 막는 보호막도 함께 줍니다.' },
+    ashstar: { n: '잿빛 별의 홀', d: '기본 공격의 큰 마력탄이 3갈래로 나갑니다.' },
+    dawn: { n: '별빛 성가', d: '우클릭 기술을 쓰면 2초 동안 모든 피해를 막는 보호막도 함께 얻습니다.' },
     undertaker: { n: '장의사의 머스킷', d: '등 맡기기에서 하비가 쏘는 산탄의 피해가 150%로 증가합니다.' },
     vigil: { n: '철야의 ', d: '퍼펙트 회피를 5번 할 때마다 하트 반 칸을 회복합니다.' },
     ember: { n: '불씨의 ', d: '콤보 3타가 사방으로 충격파를 일으킵니다.' },

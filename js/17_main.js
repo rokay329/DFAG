@@ -22,7 +22,7 @@
   try { if (sessionStorage.getItem('acr_reset_done')) { sessionStorage.removeItem('acr_reset_done'); const b = document.querySelector('#tmMain [data-act="reset"]'); if (b) b.textContent = '초기화 완료'; } } catch (e) { /* 무시 */ } // v2.86 저장 초기화 뒤 새로 불러왔음을 표시
   requestAnimationFrame(frame);
 
-  window.__proto = { TRUTH, get dlv() { return DLV; }, set dlv(v) { DLV = v; DGC.clear(); }, dRadial: (...a) => dRadial(...a), get dither() { return DITHER_ON; }, set dither(v) { DITHER_ON = !!v; LIGHT_DITH = !!v; }, get lightDith() { return LIGHT_DITH; }, set lightDith(v) { LIGHT_DITH = !!v; }, get lightGL() { return !!(LGL && !LGL.off && LIGHT_GL); }, set lightGL(v) { LIGHT_GL = !!v; }, wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genPillar, genWallBlock, KING4, BELL4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed, forge: () => ({ furnace: gCanvas(genFurnace(), FORGE_PAL), rack: gCanvas(FORGE_DECO.rack(), FORGE_PAL), tools: gCanvas(FORGE_DECO.tools(), FORGE_PAL), ingots: gCanvas(FORGE_DECO.ingots(), FORGE_PAL) }) }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, asc: { ASC, get lv() { return ascLv(); }, set lv(v) { if (G) G.asc = v; }, F: ASCF, save: () => SAVE.asc, result: w => showResult(w), openSelect: () => openSelect(), rest: () => openRest() }, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
+  window.__proto = { TRUTH, get dlv() { return DLV; }, set dlv(v) { DLV = v; DGC.clear(); }, dRadial: (...a) => dRadial(...a), get dither() { return DITHER_ON; }, set dither(v) { DITHER_ON = !!v; LIGHT_DITH = !!v; }, get lightDith() { return LIGHT_DITH; }, set lightDith(v) { LIGHT_DITH = !!v; }, get lightGL() { return !!(LGL && !LGL.off && LIGHT_GL); }, set lightGL(v) { LIGHT_GL = !!v; }, wmIntro: () => wmStart(), get wmReady() { return WM.ready; }, spawnInv: (k, x, y) => { invInit(); const e = makeEnemy(k, x, y); G.enemies.push(e); return e; }, spawnPanda: (x, y) => { invInit(); const e = makeEnemy("panda", x, y); G.enemies.push(e); return e; }, invade: { markInvader, startInvasion }, art4: () => ({ genMeltKing, genBell, genWallBlock, KING4, BELL4, STONE4, ashCap, gCanvas, propCanvas, withSeed }), set opt(v) { OPT = v; }, get opt() { return OPT; }, renderAt: (t, seed) => { const t0 = time; time = t; withSeed(seed || 7, () => { render(); }); time = t0; return document.getElementById('game').toDataURL(); }, setMode: m => { mode = m; }, sr: { SR, srPal, gCanvas }, camS: () => [CAMX, CAMY], spr: { sprite, drawSprite, drawBlade, BLADES, get ctx() { return ctx; } }, artk: { genHedge, genWallBlock, genPalisade, LEAF, STONE, PEN_PAL, gCanvas, withSeed }, WEAP, fxt: { chainBolt, ghostSword, fireWave, gearOnKill, gearOnHurt, fxRing, nearFoes, damageEnemy, killEnemy, gxNova, gxThorns, gxCoins, gxCrit, gxExec, gxSpurt, gxFocus, gxIgnite, gxOrbs }, gear: { makeItem, spawnLoot, openForge, EFX, SETS, CURSES, setCount, recalc: () => { G.stats = calcStats(G.buffs); } }, get G() { return G; }, get cam() { return cam; }, get fxs() { return { shake, zoomK }; }, get mode() { return mode; }, start, SAVE: () => SAVE, mk: makeEnemy, stage3: () => { G.stage = 3; G.last = 3; G.ash = []; newDungeon(); }, orc: { ORC_SPEC, orcSprite, genOrcBody, rotW }, inv: { open: openInv, close: closeInv, equipNow, statsIf, makeItem, get sel() { return invSel; } }, choose: chooseClass, asc: { ASC, get lv() { return ascLv(); }, set lv(v) { if (G) G.asc = v; }, F: ASCF, save: () => SAVE.asc, result: w => showResult(w), openSelect: () => openSelect(), rest: () => openRest() }, dbg: { get ICON32() { return ICON32; }, pen: (wc, hc, k) => gCanvas(genPalisade(wc, hc, k).g, PEN_PAL), propCv: n => { ensureOrcProps(); return propCanvas(n); }, floorCv: () => fg.canvas, MAPS, PAL, sprite, propRect, navFlood, navIdx, get CENTER() { return { x: CX, y: CY - 10, r: CLEAR_R }; }, artCache, DOOR, doorIn, doorState, hitCrack, crackPoint, enterRoom, goRoom, newDungeon: () => { G.dun = genDungeon(G.stage); G.dun.cur = null; enterRoom(G.dun.start, null); }, get mode() { return mode; } } };
 
   // ================================================================
   // 전서(캐릭터 전기) & 스테이지 입장 양피지 서사 시스템
@@ -254,6 +254,7 @@
       .stFoot { display: flex; justify-content: center; gap: 12px; margin-top: 7px; font-family: 'Galmuri7'; font-size: 8px; color: var(--quiet); }
       .stFoot > span { display: inline-flex; align-items: center; gap: 3px; }
       .stFoot #parchSkip { cursor: pointer; } .stFoot #parchSkip:hover { color: var(--ink); }
+      .parchHL { color: #c0601a; } /* v3.20 양피지 · 진실 기록의 {강조} — 말주머니 강조색과 같음 */
       .stCaret { display: inline-block; width: 4px; height: 8px; margin-left: 1px; vertical-align: -1px; background: #2a1a0e; animation: blink .6s steps(2) infinite; }
 
       .chrWin { width: 470px; height: 372px; display: flex; flex-direction: column; padding: 11px 14px 6px; }
@@ -311,7 +312,7 @@
     const data = STAGE_PARCHMENT[stage];
     if (!data || !data[cls] || (G && G.dun && G.dun.forge)) {
       mode = 'play';
-      banner(`STAGE ${stage}`, STG().n, true); // v2.51 목표 문구 없이 · v2.55 화면 가운데
+      banner(`STAGE ${stage}`, `영원한 어둠의 땅 · ${STG().n}`, true); // v2.51 목표 문구 없이 · v2.55 화면 가운데 · v3.23 상위 지명
       return;
     }
     mode = 'parchment';
@@ -322,7 +323,7 @@
     $('parchStg').textContent = data.title;
     $('parchCls').textContent = `${C.name} · ${C.sub}`;
     const paras = data[cls];
-    $('parchBody').innerHTML = paras.map(t => `<div class="stPara wait"><span class="typed"></span><span class="rest">${t}</span></div>`).join(''); // 자리를 미리 잡아 창 크기가 변하지 않게
+    $('parchBody').innerHTML = paras.map(t => `<div class="stPara wait"><span class="typed"></span><span class="rest">${parchPlain(t)}</span></div>`).join(''); // 자리를 미리 잡아 창 크기가 변하지 않게
     parchState = { stage, paras, total: paras.length, idx: -1, ch: 0, typing: false, tick: null, timer: null };
     parchPrompt();
     $('ovParchment').classList.add('on');
@@ -338,7 +339,7 @@
     $('parchStg').textContent = o.title || '';
     $('parchCls').textContent = '';
     const paras = o.paras;
-    $('parchBody').innerHTML = paras.map(t => `<div class="stPara wait"><span class="typed"></span><span class="rest">${t}</span></div>`).join('');
+    $('parchBody').innerHTML = paras.map(t => `<div class="stPara wait"><span class="typed"></span><span class="rest">${parchPlain(t)}</span></div>`).join('');
     parchState = { stage: 0, paras, total: paras.length, idx: -1, ch: 0, typing: false, tick: null, timer: null, truth: o };
     parchPrompt();
     $('ovParchment').classList.add('on');
@@ -388,16 +389,19 @@
     $('parchPrompt').innerHTML = `<span class="key go">F</span>${last ? (P.truth ? '닫기' : '출발') : '넘기기'}`; // v2.62 F 키 캡 통일 · 뒤 내용이 있으면 넘기기
     $('parchSkip').style.display = P.truth ? 'none' : '';
   }
+  // v3.20 양피지 문단의 {강조}(해 · 낮 등): 말주머니와 같은 주황색 — 찍히는 글자 수는 괄호를 뺀 글자로 셈
+  function parchPlain(s) { return String(s).replace(/[{}]/g, ''); }
+  function parchHL(raw, n) { let out = '', k = 0, on = false; for (const ch of String(raw)) { if (ch === '{') { on = true; continue; } if (ch === '}') { on = false; continue; } if (k >= n) break; out += on ? `<span class="parchHL">${ch}</span>` : ch; k++; } return out; }
   function parchPaint() {
     const P = parchState, node = $('parchBody').children[P.idx]; if (!node) return;
     const t = P.paras[P.idx];
-    node.querySelector('.typed').innerHTML = t.slice(0, P.ch) + (P.typing ? '<i class="stCaret"></i>' : '');
-    node.querySelector('.rest').textContent = t.slice(P.ch);
+    node.querySelector('.typed').innerHTML = parchHL(t, P.ch) + (P.typing ? '<i class="stCaret"></i>' : '');
+    node.querySelector('.rest').textContent = parchPlain(t).slice(P.ch);
   }
   function parchStopTimers() { const P = parchState; if (!P) return; clearInterval(P.tick); P.tick = null; clearTimeout(P.timer); P.timer = null; }
   function parchFinishLine() {
     const P = parchState; parchStopTimers();
-    P.typing = false; P.ch = P.paras[P.idx].length; parchPaint(); parchPrompt();
+    P.typing = false; P.ch = parchPlain(P.paras[P.idx]).length; parchPaint(); parchPrompt();
     if (P.idx < P.total - 1) P.timer = setTimeout(() => advanceStageParchment(), PARCH_AUTO);
   }
   function advanceStageParchment() {
@@ -414,8 +418,8 @@
     parchPaint(); parchPrompt();
     P.tick = setInterval(() => {
       if (parchState !== P) return;
-      P.ch = Math.min(P.paras[P.idx].length, P.ch + 1);
-      if (P.ch >= P.paras[P.idx].length) parchFinishLine(); else parchPaint();
+      P.ch = Math.min(parchPlain(P.paras[P.idx]).length, P.ch + 1);
+      if (P.ch >= parchPlain(P.paras[P.idx]).length) parchFinishLine(); else parchPaint();
     }, 1000 / PARCH_CPS);
   }
 
@@ -429,7 +433,7 @@
     mode = 'play';
     sfx('select');
     if (tr) { if (tr.onClose) tr.onClose(); return; } // v2.58 진실 기록
-    banner(`STAGE ${stg}`, STG().n, true); // v2.55 화면 가운데
+    banner(`STAGE ${stg}`, `영원한 어둠의 땅 · ${STG().n}`, true); // v2.55 화면 가운데 · v3.23 상위 지명
   }
 
   function openChronicle(cls) {

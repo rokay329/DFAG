@@ -40,6 +40,7 @@
     if (P.stam < skMax('D')) { P.stamT += dt * s.stamRate; if (P.stamT >= 1.5) { P.stamT = 0; P.stam++; } }
     const charges = skMax('K');
     for (let i = 0; i < charges; i++) P.chargeCd[i] = Math.max(0, P.chargeCd[i] - dt);
+    KRS.tick(dt); ARS.tick(dt); GRS.tick(dt); MRS.tick(dt); PRS.tick(dt); AWK.tick(dt); // v3.21 기사 무기별 우클릭 · 무기마다 따로 도는 쿨타임
     let mx = (keys['d'] ? 1 : 0) - (keys['a'] ? 1 : 0), my = (keys['s'] ? 1 : 0) - (keys['w'] ? 1 : 0);
     if (TOUCH.on && TOUCH.mv && TOUCH.stick) { mx = TOUCH.mv.x; my = TOUCH.mv.y; } // v2.26 모바일 아날로그 스틱
     const ml = Math.hypot(mx, my); if (ml) { mx /= ml; my /= ml; }
@@ -57,6 +58,9 @@
 
     if (pressed['j'] || pressed['k'] || pressed['e'] || pressed['l'] || RANGED()) { const te = touchAim(); /* v2.25 모바일 원딜: 누르기 전에도 조준선이 고정한 적을 가리킴 */ if (te) P.ang = Math.atan2(te.y - (isElite(te) || te.type === 'boss' ? 20 : 8) - (P.y - 10), te.x - P.x); }
     let wantAtk = take('j'), wantSkill = take('k'), wantAwk = take('l') || take('e'); const wantDodge = take(' ');
+    // v3.22 무기를 바꾼 뒤 0.4초 공용 쿨타임: 그동안 누른 우클릭은 기억해 두었다가 끝나면 씀
+    if (P.gcd > 0) { P.gcd = Math.max(0, P.gcd - dt); if (wantSkill) { P.skBuf = 0.4; wantSkill = false; } } else if (P.skBuf > 0) { wantSkill = true; P.skBuf = 0; }
+    if (P.skBuf > 0) P.skBuf = Math.max(0, P.skBuf - dt);
     if (G.meteorAim) { // v1.68 운석 조준: 클릭한 곳에 떨어뜨림, 우클릭·E로 취소
       if (G.cls !== 'mage' || P.gauge < 100 || P.dead) G.meteorAim = false;
       else if (wantAtk && P.state !== 'dodge') { G.meteorAim = false; startMeteor(); wantAtk = false; }
@@ -76,23 +80,26 @@
       if (s.efx.has('blinkFire')) { (G.pfire = G.pfire || []).push({ x: P.x, y: P.y, t: 4, tick: 0 }); gxIgnite(P.x, P.y); }
       P.rolling = isRoll(); P.rollDust = 0; P.rollLand = false; if (P.rolling) P.iframe = Math.max(P.iframe, 0.3); // 구르기는 공중에 뜬 동안 무적
       if (P.rolling) { for (let i = 0; i < 5; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(0, 3), vx: -P.dvx * rand(20, 50) + rand(-15, 15), vy: rand(-18, -4), t: rand(0.25, 0.4), c: pick(['#8a8078', '#a89c90', '#6e6660']), g: 0 }); } // 구르기: 발밑 흙먼지
+      else if (G.cls === 'ranger') dashDust(P.x, P.y, -P.dvx, -P.dvy, 6); // v3.20 어세신: 몸이 늘어나는 물리 대시 (점멸 빛 없음)
       else { G.fx.push({ kind: 'ghost', x: P.x, y: P.y, face: P.face, rot: 0, t: 0.35, max: 0.35, tint: true });
       blinkBurst(P.x, P.y - 10); }
       sfx('dodge');
     }
     if (wantAwk && P.gauge >= 100 && free) {
       if (G.tut && G.tut.step === 3) G.tut.awkN++;
-      if (G.cls === 'ranger') startStorm(); else if (G.cls === 'mage') { if (wSkill() === 'hourglass') timeStop(); else if (!document.body.classList.contains('touch')) { G.meteorAim = true; sfx('aim'); } else startMeteor(); } else if (G.cls === 'priest') startMiracle(); else if (G.cls === 'gunner') HABIULT.start(); /* v3.15 등 맡기기 (마력응축탄 대체) */ else startAwaken();
+      if (G.cls === 'gunner') HABIULT.start(); /* v3.15 등 맡기기 */ else AWK.press(); // v3.23 각성기 개편: 기사·어쌔신·마법사는 버프, 성직자는 패시브(쓰러지면 부활)
     }
-    if (wantSkill && free) {
+    if (wantSkill && free && KRS.second()) { /* v3.21 별의 서약: 꽂힌 대검으로 순간 돌진 */ }
+    else if (wantSkill && free) {
       const slot = P.chargeCd.findIndex((c, i) => i < charges && c <= 0);
       if (slot >= 0) {
         if (G.tut && G.tut.step === 2) G.tut.skN++;
-        P.chargeCd[slot] = Math.max(1, CL().skillCd * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0)); if (s.efx.has('echo')) { P.echoT = 3; gxFocus(); }
-        if (G.cls === 'ranger') { if (wSkill() === 'kusari') kusariHook(); else startShadow(); }
-        else if (G.cls === 'mage') castFireball();
-        else if (G.cls === 'priest') { if (wSkill() === 'whip') P.chargeCd[slot] = 0; else castHeal(); } // v2.18 채찍은 떼는 순간 치유
-        else if (G.cls === 'gunner') fireShotgun();
+        P.chargeCd[slot] = Math.max(1, skCdBase() * (1 - s.cdr) * (1 - pasV('kcd')) - (uncK() === 'priest13' ? 1 : 0)); if (s.efx.has('echo')) { P.echoT = 3; gxFocus(); }
+        if (G.cls === 'ranger') { if (ARS.start()) { /* v3.22 어세신 무기별 우클릭 */ } else startShadow(); }
+        else if (G.cls === 'mage') { if (!MRS.start()) castFireball(); } // v3.22 세리안 무기별 우클릭
+        else if (G.cls === 'priest') { if (!PRS.start()) castHeal(); } // v3.22 미레아 무기별 우클릭 // v2.18 채찍은 떼는 순간 치유
+        else if (G.cls === 'gunner') { if (!GRS.start()) fireShotgun(); } // v3.22 그레이브 무기별 우클릭
+        else if (KRS.start()) { /* v3.21 기사 무기별 우클릭 */ }
         else {
         P.state = 'charge'; P.t = 0.22; P.chargeHit = new Set(); P.atkAng = P.ang; P.combo = 0; P.queued = false; P.sunPath = []; // v2.03
         P.face = Math.cos(P.ang) > 0 ? 1 : -1;
@@ -107,7 +114,7 @@
       else if (wantAtk || holdMelee) startAttack(P.comboWin > 0 ? P.combo : 0);
       else if (P.comboWin > 0) P.comboWin -= dt;
       const fast = isCalm(), sp = (fast ? 2 : 1) * (P.ashSlow ? 0.6 : 1);
-      { const dr = (hasRelic('drum') && P.awakenT > 0 ? 1.2 : 1) * (time < (P.hueRushUntil || 0) ? 1.4 : 1) * (hasRelic('staff') && time < (P.staffUntil || 0) ? 1.3 : 1); P.x += mx * s.spd * sp * dr * dt; P.y += my * s.spd * sp * dr * dt; } // v2.19 전쟁 북 가죽
+      { const dr = (hasRelic('drum') && P.awakenT > 0 ? 1.2 : 1) * AWK.spd() * (time < (P.hueRushUntil || 0) ? 1.4 : 1) * (hasRelic('staff') && time < (P.staffUntil || 0) ? 1.3 : 1); P.x += mx * s.spd * sp * dr * dt; P.y += my * s.spd * sp * dr * dt; } // v2.19 전쟁 북 가죽
       if (ml) { P.walk += dt * 10 * sp; if (fast) runFx(dt, mx, my); else if (Math.random() < dt * 6) dust(P.x - mx * 4, P.y, 1); }
       if (G.cls === 'mage') P.blade = lerpAng(P.blade, (P.face > 0 ? -70 : -110) * DEG, dt * 10); // 지팡이를 세워 든다
       else if (G.cls === 'gunner') P.blade = P.reload > 0 ? P.ang + (1 - P.reload / (P.reloadMax || GUN_RELOAD)) * TAU * 2 : lerpAng(P.blade, P.ang, dt * 18); // 재장전 중 총을 두 바퀴 회전
@@ -133,13 +140,15 @@
         if (P.t >= ROLL_T) { P.state = 'idle'; P.rolling = false; P.rollEndAt = time; }
       } else if (P.t < BLINK) {
         { const bm = 80 * (1 + pasV('blink') + (hasRelic('cloak') ? 0.2 : 0) + (uncK() === 'knight13' ? 0.1 : 0)) / BLINK; const n = Math.max(1, Math.ceil(bm * dt / 3)); for (let i = 0; i < n; i++) { const px = P.x, py = P.y; P.x += P.dvx * bm * dt / n; P.y += P.dvy * bm * dt / n; if (!(G.obs && G.obs.length)) continue; const hb = obsHitL(G.obs, P.x, P.y, P.r, true); if (hb && !hb.c) { P.x = px; P.y = py; P.dvx = P.dvy = 0; break; } solveObs(P, P.r, true); } } // v2.29 잿빛 깃털 망토 · v3.19 3px씩 나눠 움직이고 네모 벽 · 소품에 닿으면 그 앞에서 멈춤 (얇은 벽을 건너뛰어 방 밖으로 나가던 문제) · 둥근 기둥은 예전처럼 비껴감
-        if (Math.random() < 0.7) G.parts.push({ x: P.x + rand(-4, 4), y: P.y - rand(2, 20), vx: -P.dvx * 40, vy: -P.dvy * 40, t: 0.3, c: pick(['#9fd2ff', '#e4f2ff']), g: 0, glow: true });
+        if (G.cls === 'ranger') { if (Math.random() < 0.5) G.parts.push({ x: P.x - P.dvx * rand(8, 20), y: P.y - rand(0, 3), vx: -P.dvx * 30, vy: rand(-12, -3), t: 0.25, c: pick(['#8a8078', '#a89c90', '#6e6660']), g: 0 }); }
+        else if (Math.random() < 0.7) G.parts.push({ x: P.x + rand(-4, 4), y: P.y - rand(2, 20), vx: -P.dvx * 40, vy: -P.dvy * 40, t: 0.3, c: pick(['#9fd2ff', '#e4f2ff']), g: 0, glow: true });
       } else if (!P.blinkEnd) {
         P.blinkEnd = true;
         P.x = clamp(P.x, A.x0 + P.r, A.x1 - P.r); P.y = clamp(P.y, A.y0 + P.r, A.y1 - P.r);
-        blinkBurst(P.x, P.y - 10);
+        if (G.cls === 'ranger') dashDust(P.x, P.y, P.dvx, P.dvy, 8); else blinkBurst(P.x, P.y - 10);
         if (pasO('wallWave') && (P.x - A.x0 < 30 || A.x1 - P.x < 30 || P.y - A.y0 < 30 || A.y1 - P.y < 30)) { G.fx.push({ kind: 'ring', x: P.x, y: P.y - 6, r: 6, grow: 140, t: 0.2, max: 0.2, c: '#d8c9a8' }); addShake(2, 0); for (const e of nearFoes(P.x, P.y, 52)) damageEnemy(e, 0.2, { proc: true, ang: angTo(P, e), kb: 120, gauge: 1 }); } // v2.22 보관 패시브: 성문 방패
-        G.fx.push({ kind: 'streak', x0: P.blinkFrom.x, y0: P.blinkFrom.y - 10, x1: P.x, y1: P.y - 10, t: 0.18, max: 0.18 });
+        if (G.cls === 'ranger') { for (const o of [-8]) G.fx.push({ kind: 'streak', px: '#cfc8bc', x0: P.blinkFrom.x - P.dvy * o * 0.3, y0: P.blinkFrom.y + o, x1: P.x - P.dvx * 12 - P.dvy * o * 0.3, y1: P.y + o - P.dvy * 12, t: 0.16, max: 0.16 }); } // 바람 가르는 선 (도트 한 색)
+        else G.fx.push({ kind: 'streak', x0: P.blinkFrom.x, y0: P.blinkFrom.y - 10, x1: P.x, y1: P.y - 10, t: 0.18, max: 0.18 });
         engOnBlinkEnd(P.blinkFrom.x, P.blinkFrom.y); // v2.41
         if (wSkill() === 'broom') { G.dustC = G.dustC || []; for (let i = 0; i <= 4; i++) G.dustC.push({ x: P.blinkFrom.x + (P.x - P.blinkFrom.x) * i / 4, y: P.blinkFrom.y + (P.y - P.blinkFrom.y) * i / 4, t: 2.5 }); } // v2.08 마녀 빗자루
       }
@@ -157,6 +166,12 @@
       }
       if (wSkill() === 'sun') P.sunPath.push({ x: P.x, y: P.y }); // v2.03 빛의 길
       if (P.t <= 0) { weaponChargeEnd(); startSkillSlash(); }
+    } else if (P.state === 'ars') { ARS.update(dt);
+    } else if (P.state === 'grs') { GRS.update(dt);
+    } else if (P.state === 'mrs') { MRS.update(dt);
+    } else if (P.state === 'prs') { PRS.update(dt);
+    } else if (P.state === 'krs') {
+      KRS.update(dt);
     } else if (P.state === 'skill') {
       updateSkillSlash(dt);
     } else if (P.state === 'awaken') {
@@ -213,6 +228,10 @@
     P.puffT = (P.puffT || 0) - dt; if (P.puffT <= 0) { P.puffT = 0.085; P.foot = -(P.foot || 1); G.fx.push({ kind: 'puff', x: P.x - mx * 8 + my * P.foot * 4, y: P.y + 1 - my * 4 - mx * P.foot * 2, t: 0.32, max: 0.32, c: G.stage === 1 ? '#b8ac8a' : '#8a8494' }); }
     if (P.stepT <= 0) { P.stepT = 0.085; P.stepN = (P.stepN || 0) + 1; sfx('step', P.stepN % 2 ? 1 : 1.25); }
   }
+  function dashDust(x, y, dx, dy, n) { // v3.20 어세신 대시: 발밑 흙먼지 (dx,dy 방향으로 튐)
+    for (let i = 0; i < n; i++) G.parts.push({ x: x + rand(-5, 5), y: y - rand(0, 3), vx: dx * rand(30, 70) + rand(-18, 18), vy: rand(-26, -6) + dy * 20, t: rand(0.25, 0.42), c: pick(['#8a8078', '#a89c90', '#6e6660', '#b8ae9e']), g: 0 });
+  }
+  const DASH_POSE = t => t < 0.03 ? [1.2, 0.8] : t < BLINK ? [1, 1] : t < BLINK + 0.04 ? [0.75, 1.25] : [1.1, 0.92]; // v3.20 어세신 대시: 웅크림 → (몸 뒷부분만 늘어남: 14_rig dashSmear) → 되튐 → 자리잡기
   function blinkBurst(x, y) {
     for (let i = 0; i < 12; i++) { const a = rand(0, TAU), sp = rand(30, 90); G.parts.push({ x, y: y + rand(-8, 8), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, t: rand(0.2, 0.4), c: pick(['#9fd2ff', '#e4f2ff', '#5f86b8']), g: 0, glow: true }); }
     G.fx.push({ kind: 'ring', x, y, r: 4, t: 0.22, max: 0.22, c: '#9fd2ff' });
@@ -439,6 +458,7 @@
     const P = G.player, cls = G.cls; if (P.dead) return null;
     if (P.state === 'attack') { const st = swingTable()[P.combo] || SWING[0]; return strikePose(P.t, st.wind, st.swing, st.rec, P.atkAng, P.face, st.heavy ? 1.4 : 1); }
     if (P.state === 'butt') return strikePose(P.t, 0.05, 0.08, 0.15, P.ang, P.face, 1.2);
+    if (P.state === 'krs' || P.state === 'ars' || P.state === 'grs' || P.state === 'mrs' || P.state === 'prs') return SKP.pose(P); // v3.22 기술 공용 몸 동작 (41_krs.js)
     if (P.state === 'rattack' && cls === 'mage') return strikePose(P.t, 0.05, 0.06, 0.16, P.atkAng == null ? P.ang : P.atkAng, P.face, 0.8);
     if (cls === 'gunner' && P.recoil > 0) { const rc = Math.min(2.5, P.recoil), a = P.blade; return { dx: -Math.cos(a) * rc * 2, dy: -Math.sin(a) * rc, sx: 1 - 0.05 * rc, sy: 1 + 0.05 * rc, rot: -0.12 * P.face * rc }; }
     return null;
@@ -835,7 +855,7 @@
     { wind: 0.05, swing: 0.1, rec: 0.16, a0: 105, a1: -110, reach: 40, coef: 1.0, grogi: 5, kb: 70, gauge: 4, lunge: 70 },
     { wind: 0.14, swing: 0.12, rec: 0.26, a0: -175, a1: 35, reach: 44, coef: 1.5, grogi: 12, kb: 160, gauge: 6, lunge: 50, heavy: true, stagger: 0.5, slam: true },
   ];
-  const SWING_PW = SWING_P.map((o, i) => Object.assign({}, o, { reach: 62, kb: 40, swing: o.swing + 0.03 }, [{ a0: -125, a1: 15 }, { a0: 115, a1: -15 }, { a0: -180, a1: 200, swing: 0.34, slam: false, kb: 120 }][i])); // v2.18 고해의 채찍: 길게 감아 때림 · v2.19 3타는 한 바퀴 돌며 주변을 감싼다
+  var SWING_PW = SWING_P.map((o, i) => Object.assign({}, o, { reach: 62, kb: 40, swing: o.swing + 0.03 }, [{ a0: -125, a1: 15 }, { a0: 115, a1: -15 }, { a0: -180, a1: 200, swing: 0.34, slam: false, kb: 120 }][i])); // v2.18 고해의 채찍: 길게 감아 때림 · v2.19 3타는 한 바퀴 돌며 주변을 감싼다
   function holySlam(x, y) {
     const big = wSkill() === 'bellh', R = big ? 112 : 56 * (1 + pasV('wave3')); if (big) { G.fx.push({ kind: 'ring', x, y, r: 10, grow: 420, t: 0.4, max: 0.4, c: '#e8c070' }); sfx('grogi', 0.6); for (let i = 0; i < 8; i++) { const a = i / 8 * TAU; dust(x + Math.cos(a) * 80, y + Math.sin(a) * 40, 3); } }
     G.fx.push({ kind: 'ring', x, y, r: 6, grow: 200, t: 0.28, max: 0.28, c: '#ffe39a' });
@@ -1087,7 +1107,7 @@
     if (P.state === 'pray') sy = 1.05;
     const h = heroHand(), hy = h.y + bob;
     const behind = cls === 'priest' ? (P.state === 'idle' || P.state === 'dodge') : cls === 'gunner' ? (Math.sin(P.blade) < 0.55 && P.state !== 'butt') /* v2.42 정면 도트: 총은 몸 뒤 옆으로 (아래로 겨눌 때만 앞) */ : (Math.sin(P.blade) < -0.45 && P.state !== 'cast' && P.state !== 'butt');
-    if (cls === 'priest' && P.state === 'attack' && !['water', 'whip'].includes(wSkill())) {
+    if (cls === 'priest' && ((P.state === 'attack' && !['water', 'whip'].includes(wSkill())) || (P.state === 'prs' && P.trail && P.trail.length && wSkill() !== 'whip'))) { // v3.22 기술 중 메이스 궤적
       drawSlashPx(P.trail, h.x, hy, tex.reach, rbySlash('priest', SLASH_COL.priest), P.combo === 2); // v2.50 도트 궤적 · v3.19 RGB? 무지개
     }
     if (cls === 'gunner' && P.state === 'butt') drawTrail(P.trail, h.x, hy, 4, 30, '230,220,200', true);
@@ -1452,16 +1472,17 @@
       const k = stiff * (0.35 + 0.65 * (1 - i / n)); /* 끝으로 갈수록 덜 펴져 휘어짐이 남는다 */ nx += (hx + Math.cos(ang) * seg * i - nx) * k; ny += (hy + Math.sin(ang) * seg * i - ny) * k; p.x = nx; p.y = ny; }
     return L;
   }
-  function whipExt(st) { const P = G.player; if (P.state !== 'attack') return 0; const t = P.t; // 0: 감김 → 1: 끝까지 뻗음
+  const wvt = () => { const P = G.player; return P.state === 'prs' && P.prsWhip ? P.prsWhip : null; }; // v3.22 참회의 난타: 기본 공격 채찍 동작을 그대로 씀 (가상 시간 tt)
+  function whipExt(st) { const P = G.player, V = wvt(); if (P.state !== 'attack' && !V) return 0; const t = V ? V.tt : P.t; // 0: 감김 → 1: 끝까지 뻗음
     if (t < st.wind) return 0.2 * t / st.wind;
     if (t < st.wind + st.swing * 0.6) return 0.2 + 0.8 * (t - st.wind) / (st.swing * 0.6);
     if (t < st.wind + st.swing + 0.05) return 1;
     return Math.max(0, 1 - (t - st.wind - st.swing - 0.05) / (st.rec * 0.7)); }
-  function whipStiff(st) { const P = G.player; if (P.state !== 'attack') return 0.32; const t = P.t, pr = (t - st.wind) / st.swing; // 휘두르는 동안 늘어지듯 따라오다 끝에서 쫙
+  function whipStiff(st) { const P = G.player, V = wvt(); if (P.state !== 'attack' && !V) return 0.32; const t = V ? V.tt : P.t, pr = (t - st.wind) / st.swing; // 휘두르는 동안 늘어지듯 따라오다 끝에서 쫙
     if (t < st.wind) return 0.06; if (pr < 1) return 0.04 + 0.5 * pr * pr * pr; return Math.max(0.2, 0.54 - (t - st.wind - st.swing) * 3); } // v2.19 덜 뻣뻣하게 — 끝까지 적당히 휜 채로
   function drawWhip(hx, hy) { // v2.19 고해의 채찍: 손잡이는 고정, 가죽 줄만 늘어나며 휘어 때린다
     const P = G.player, a = P.blade, st = SWING_PW[P.combo] || SWING_PW[0], ux = Math.cos(a), uy = Math.sin(a), ex = hx + ux * 12, ey = hy + uy * 12;
-    const n = 12, len = 14 + (st.reach - 26) * whipExt(st), L = whipSim(ex, ey, a, n, len / n, whipStiff(st), P.state === 'attack' ? 0 : 90);
+    const n = 12, len = 14 + (st.reach - 26) * whipExt(st), L = whipSim(ex, ey, a, n, len / n, whipStiff(st), P.state === 'attack' || wvt() ? 0 : 90);
     whipWrap(L, ex, ey, a, n, len);
     const thick = L.slice(0, 5).map((p, i) => { const q = L[Math.min(n, i + 1)], b = L[Math.max(0, i - 1)], nx = -(q.y - b.y), ny = q.x - b.x, d = Math.hypot(nx, ny) || 1; return { x: p.x + nx / d * 2, y: p.y + ny / d * 2 }; }); // 손잡이 쪽은 두껍게
     const lc = (i, t) => i >= n - 1 ? (i === n - 1 && t > 0.5 ? '#d8d0c0' : '#7a3a24') : (i % 2 ? '#7a3a24' : '#a0503a'); // 끝은 가는 끈 + 흰 매듭
@@ -1470,8 +1491,8 @@
   }
   // v2.19 채찍 3타: 손잡이를 중심으로 한 바퀴 돌 때 가죽 줄이 몸 둘레를 따라 둥글게 감긴다 (줄이 손잡이 뒤로 휘어 따라옴)
   function whipWrap(L, hx, hy, a, n, len) {
-    const P = G.player, st = SWING_PW[2]; if (P.state !== 'attack' || P.combo !== 2) return;
-    const t = P.t - st.wind; if (t < -0.02 || t > st.swing + 0.06) return;
+    const P = G.player, st = SWING_PW[2], V = wvt(); if ((P.state !== 'attack' && !V) || P.combo !== 2) return;
+    const t = (V ? V.tt : P.t) - st.wind; if (t < -0.02 || t > st.swing + 0.06) return;
     const dir = Math.sign(st.a1 - st.a0) * (P.sign || 1), cx = P.x, cy = P.y - 8, R = Math.max(18, Math.hypot(hx - cx, hy - cy) + 6), k = Math.min(1, (t + 0.02) / 0.08);
     const a0 = Math.atan2(hy - cy, hx - cx);
     for (let i = 1; i <= n; i++) { const s0 = i / n, r = R + (st.reach - R) * 0.55 * s0, th = a0 - dir * (len * s0) / ((R + r) / 2); // 몸 둘레를 따라 뒤로 감긴 호
@@ -1722,7 +1743,7 @@
     if (!G.wproj) return;
     for (const w of G.wproj) {
       if (w.k === 'sickle') { const r = rotW(weaponTex('ranger'), w.spin || 0, 1); ctx.drawImage(r.c, snap2(w.x) - r.o + 1, snap2(w.y) - r.o + 1); continue; }
-      if (w.k === 'puffx') continue;
+      if (w.k === 'puffx' || /^(krs|ars|grs|mrs|prs)/.test(w.k)) continue; // v3.21 기사 투척 무기는 41_krs.js에서 그림
       if (w.k === 'ball' || w.k === 'duckb' || w.k === 'coffin' || w.k === 'carrotm') { const g = w.k === 'ball' ? BALL_GLYPH : w.k === 'duckb' ? DUCK_GLYPH : w.k === 'carrotm' ? (Math.floor(w.spin || 0) % 2 ? CARROT_GH : CARROT_GV) : COFFIN_GLYPH, pal = w.k === 'carrotm' ? { g: '#5ab040', o: '#f08a2a', O: '#b8561a' } : w.k === 'ball' ? { k: '#2a1a10', b: '#6a5a4a', B: '#a89878' } : w.k === 'duckb' ? { y: '#ffe070', k: '#0b0a0e', o: '#f08a2a' } : { c: '#5a3a22', w: '#c8c0a8' }, x0 = snap2(w.x) - g[0].length, y0 = snap2(w.y) - g.length - (w.k === 'coffin' ? 4 : 0);
         g.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '.') return; ctx.fillStyle = '#0b0a0e'; ctx.fillRect(x0 + x * 2 - 1, y0 + y * 2 - 1, 4, 4); })); g.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '.') return; ctx.fillStyle = pal[ch] || '#fff'; ctx.fillRect(x0 + x * 2, y0 + y * 2, 2, 2); })); continue; }
       const g = w.k === 'cat' ? CAT_GLYPH : w.k === 'wisp' ? WISP_GLYPH : BONE_GLYPH, pal = w.k === 'cat' ? { k: '#16233a', c: '#7af0ff', w: '#ffffff' } : w.k === 'wisp' ? { w: '#e8e0cc', k: '#0b0a0e', g: '#7aff7a' } : { w: '#ece2c8' }, x0 = snap2(w.x) - g[0].length, y0 = snap2(w.y) - g.length;

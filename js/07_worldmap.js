@@ -109,6 +109,12 @@
       const seen = new Set(), col = ph < 0.5 ? '#ffe7a0' : '#c8a050';
       for (let a = 0; a < 64; a++) { const x = Math.round(nx + Math.cos(a / 64 * Math.PI * 2) * r), y = Math.round(ny + Math.sin(a / 64 * Math.PI * 2) * r * 0.8), key = x * 999 + y; if (!seen.has(key)) { seen.add(key); P(x, y, col); } }
     }
+    // v3.23 네 지역을 묶은 이름 — 지도 위쪽 가운데 띠
+    { const nA = wmStep((t - 0.2) / 0.4); if (nA > 0) { ctx.globalAlpha = A * nA; const tw = 236, th = 30, nx0 = Math.round((VW - tw) / 2), ny0 = Y0 + 8;
+      ctx.fillStyle = '#0c0908'; ctx.fillRect(nx0 - 2, ny0 - 2, tw + 4, th + 4); ctx.fillStyle = '#6a4c2a'; ctx.fillRect(nx0, ny0, tw, th); ctx.fillStyle = '#16100c'; ctx.fillRect(nx0 + 2, ny0 + 2, tw - 4, th - 4);
+      ctx.fillStyle = '#c8a050'; for (const sx of [nx0 - 10, nx0 + tw + 4]) { ctx.fillRect(sx, ny0 + th / 2 - 1, 6, 2); ctx.fillRect(sx + 2, ny0 + th / 2 - 3, 2, 6); }
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.font = '18px Galmuri11'; ctx.fillStyle = '#000'; ctx.fillText('영원한 어둠의 땅', VW / 2 + 2, ny0 + 23); ctx.fillStyle = '#e8dcc0'; ctx.fillText('영원한 어둠의 땅', VW / 2, ny0 + 21);
+      ctx.globalAlpha = A; } }
     // 챕터 이름 패찰
     const pA = wmStep((t - 1.6) / 0.35);
     if (pA > 0) {

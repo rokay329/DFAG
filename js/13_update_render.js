@@ -70,6 +70,7 @@
     persist();
     resultShowAll = false;
     $('resTitle').textContent = win ? '원정 완료' : '원정 실패';
+    { let n = $('resNight'); if (!n) { n = document.createElement('div'); n.id = 'resNight'; n.style.cssText = 'font-size:11px;color:#a89a84;letter-spacing:1px;margin-bottom:2px'; $('resTitle').before(n); } n.textContent = `영원한 어둠의 땅 · ${SAVE.runs}번째 밤`; } // v3.23 회차 = 밤
     $('resTitle').style.color = win ? 'var(--gold-l)' : '#ff7070';
     const chMsg = newChronicle ? ` · [전서 기록: ${newChronicle.label}]` : '';
     $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 원정은 STAGE 3까지 이어진다' : '다음 원정은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `${failPlace()}에서 ${quit ? '원정을 포기했다' : '쓰러졌다'} · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
@@ -157,7 +158,7 @@
     cam.bx = (cam.bx || 0) + (bxT - (cam.bx || 0)) * bk; cam.by = (cam.by || 0) + (byT - (cam.by || 0)) * bk;
     let tx = P.x - SAFE.cx + cam.bx, ty = P.y - 10 - SAFE.cy + cam.by;
     { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100), y1 = A.y1 + 88 - VH;
-      const cx = x1 >= x0 ? clamp(tx, x0, x1) : (A.x0 + A.x1 - VW) / 2, /* v3.18 화면보다 좁은 방은 방 가운데를 화면 가운데에 */ cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
+      const cx = G.dun && G.dun.altar ? snap2((A.x0 + A.x1 - VW) / 2) /* v3.20 왕도 성문 방: 성문 · 제단이 화면 가로 가운데에 오도록 방을 가운데에 고정 */ : x1 >= x0 ? clamp(tx, x0, x1) : (A.x0 + A.x1 - VW) / 2, /* v3.18 화면보다 좁은 방은 방 가운데를 화면 가운데에 */ cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
     cam.x = tx; cam.y = ty;
     bannerPlace();
   }
@@ -182,7 +183,17 @@
     if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
     if (G.tut && !G.cine) updateTut(rdt);
     if (G.kg && G.kgT < 900) { G.kgT -= rdt; if (G.kgT <= 0) G.kg = false; }
+    // v3.20 테스트: 지금 캐릭터를 2회차(전기 있음)로 켜고 끔 — 끌 때는 켜기 전 전기 상태로 되돌림
+    const devLoop2 = (want) => { const c = G.cls, B = SAVE.devLoop; // v3.20 실제 클리어 기록은 건드리지 않고 테스트용 강제 값만 바꿈 (예전 방식으로 바꿔 둔 기록은 되돌림)
+      if (B && B[c] !== undefined) { const C = SAVE.chronicle = SAVE.chronicle || {}; if (B[c]) C[c] = JSON.parse(B[c]); else delete C[c]; delete B[c]; }
+      const F = SAVE.devLoopF = SAVE.devLoopF || {}; F[c] = (want == null ? !TRUTH.loop2() : want) ? 1 : 0; persist(); return !!F[c]; };
     const dbgK = (k, d) => { if (d && !DEVK.has(k)) DEVK.set(k, d); /* v3.20 설명을 붙이면 테스트 모드 단축키 목록(오른쪽 UI)에 자동으로 실림 */ if (!DEV || pressed[k] !== 'shift') return false; /* v3.20 테스트 모드(?dev)일 때만 */ pressed[k] = false; return true; }; // v1.14 테스트 키는 Shift와 함께 (Shift+N·B·V·T·R·X), 그냥 누르면 아무 일 없음
+    if (dbgK('?', '단축키 목록 열기 / 닫기')) { DEV_LIST = !DEV_LIST; try { localStorage.setItem('dfag_devlist', DEV_LIST ? '1' : '0'); } catch (e) {} sfx('blip'); } // v3.20
+    if (dbgK('z', '1회차 ↔ 2회차 바꾸기 (지금 캐릭터)')) { const on = devLoop2(); lootFeed(on ? '테스트 — 2회차 (Shift+Z)' : '테스트 — 1회차 (Shift+Z)', on ? '#9fd2ff' : '#c8c0b0', 2600); sfx('blip'); } // v3.20 진엔딩 단서가 나오는 2회차로
+    if (dbgK('q', '제단 방 잔해 앞으로 (진실 1~3 켜기 · 회차는 지금 그대로)') && !G.trans && !G.cine && !G.player.dead) { // v3.20 테스트: 4장 앞 제단 방 오른쪽 아래 잔해 앞으로 — 바람 · 부수기는 2회차(Shift+Z)일 때만
+      G.truthRun = Object.assign(G.truthRun || {}, { t1: true, t2: true, t3: true });
+      G.altarDone = false; G.stage = 3; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment();
+      const p = ALTARWIND.pos(); Object.assign(G.player, { x: p.x - 56, y: p.y - 18 }); lootFeed(TRUTH.loop2() ? '테스트 — 제단 방 잔해 앞 · 2회차 (Shift+Q)' : '테스트 — 제단 방 잔해 앞 · 1회차 (Shift+Q)', '#9fd2ff', 2600); sfx('blip'); return; }
     if (dbgK('n', '방 클리어 (적 전부 처치)') && !G.clear) debugClearRoom();
     if (dbgK('v', '스테이지 클리어')) { debugStageClear(); return; }
     for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n, '해당 스테이지로 이동')) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
@@ -497,7 +508,7 @@
     if (b.stage === 3 && Math.random() < 0.9) G.parts.push({ x: b.x + rand(-14, 14), y: b.y - rand(4, 46), vx: rand(-8, 8), vy: -rand(30, 60), t: 0.45, c: pick(['#ff3050', '#b45cff', '#ff8060']), g: 0, glow: true });
     if (b.stage === 3 && Math.random() < 0.5) G.parts.push({ x: ex, y: ey, vx: -b.face * 40, vy: -10, t: 0.35, c: '#ff3050', g: 0, glow: true });
   }
-  function drawShadow(x, y, w) { const c = AURA_MAIN || ctx; c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(x, y, w, w * 0.32, 0, 0, TAU); c.fill(); }
+  function drawShadow(x, y, w) { const c = AURA_MAIN || ctx; dshEll(c, x, y, w, w * 0.32, 0.5); } // v3.20 디더
   // 칼날 잔상: 휘두른 궤적을 초승달 모양으로 채운다
   // v2.19 휘두름 궤적 색 = 무기 도트에서 가장 많이 쓴 밝은 색 (흰빛을 섞어 궤적답게)
   function weaponTrailCol(tex, white = 0.45) {

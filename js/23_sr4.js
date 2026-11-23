@@ -14,7 +14,7 @@ const SR4 = (() => {
     if (!on(s.k)) return oDraw(s);
     let c = cv(s.k);
     const x = (s.x - c.width / 2) & ~1, y = (s.y + (s.foot || 0) - c.height + 2) & ~1;
-    if (s.k !== 'banner') { ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(x + 4, s.y + (s.foot || 0), Math.max(0, Math.ceil((c.width - 8) / 2) * 2), 2); }
+    if (s.k !== 'banner') dshRect(ctx, x + 4, s.y + (s.foot || 0), Math.max(0, Math.ceil((c.width - 8) / 2) * 2), 2, 0.5);
     ctx.drawImage(s.flip ? flip(c) : c, x, y);
     if (s.k === 'brazier') { const fl = Math.floor(time * 10 + s.x * 0.37), ph = ((fl % 4) + 4) % 4; let fc = SR_FLAME[ph]; if (!fc) fc = SR_FLAME[ph] = gCanvas(fromRows(FLAME2[ph]), { r: '#c83018', F: '#ff6a2a', f: '#ffb040', y: '#fff3c0' }); ctx.drawImage(fc, x + 4, y - 18); }
   };

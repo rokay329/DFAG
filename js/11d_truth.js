@@ -792,7 +792,7 @@ function ceilingDrips(t) {
   const put = (b, wx, wy) => ctx.drawImage(b.c, even(wx - b.ox), even(wy - b.oy));
   const TS = () => SAVE.truth || (SAVE.truth = {});
   // v2.74 2회차 = 지금 캐릭터의 전기(연대기)가 만들어짐 (그 캐릭터로 원정 완료 · 예전 저장의 leg1/leg2 기록도 인정)
-  const loop2 = () => { const c = G && G.cls && SAVE.chronicle && SAVE.chronicle[G.cls]; return !!(c && (c.normal || c.leg1 || c.leg2)); };
+  const loop2 = () => { const F = DEV && SAVE.devLoopF && G && SAVE.devLoopF[G.cls]; if (F != null) return !!F; /* v3.20 테스트 모드 Shift+Z: 실제 기록과 상관없이 1회차 / 2회차로 강제 */ const c = G && G.cls && SAVE.chronicle && SAVE.chronicle[G.cls]; return !!(c && (c.normal || c.leg1 || c.leg2)); };
   const GR = '#7ad050';
   const Q = () => G.tq1 || (G.tq1 = { q: 0, met: false });
   const curR = () => G && G.dun && G.dun.cur;
@@ -1049,16 +1049,17 @@ function ceilingDrips(t) {
   const OWL = ["........k.......k........", ".......kbk.....kbk....kk.", ".......kBbkkkkkbBk...kGPk", "......kbBBBBBBBBBBk..kGPk", "..kkkkkbWWWBBBWWWBk..kNk.", ".kwwwwkwWYEWBWYEWWk.kNk..", "kLLLLLkwWYYWnWYYWWk.kNk..", ".kkkkkkbwWWnNWWWWBkkksk..", ".kTTTTkkRRRRRRRRkkHOsOkk.", ".kTTnTkrrcCCCCCkHOODsOok.", ".kTTTTkkcCCCCCCkOOODDOok.", ".kttttkBkcCCCCCkOOOPPOok.", ".kkkkkkkkcCCkCCkkoOOOook.", ".........kFFk.kFFkkkkkk..", ".........kkkk.kkkk......."]; // v2.76 류트: 둥근 통 · 울림구멍 · 줄받침 · 줄 · 목 · 뒤로 꺾인 줄감개
   const OWL_P = { k: '#0b0a0e', B: '#8a5a36', b: '#5e3a22', L: '#b8875a', W: '#ecdcc0', w: '#c9b18e', Y: '#f0c040', E: '#1a1010', n: '#e0a040', N: '#9a6020', C: '#3e5c5a', c: '#2a4040', R: '#a8382a', r: '#6e2018', O: '#c88a42', o: '#7a4a22', s: '#efe2c4', F: '#2a1a14', T: '#a87a4e', t: '#6e4628', H: '#e6b464', D: '#2a1608', G: '#5a3418', P: '#d8c8a0' };
   const RUMOR = {
-    A: { lines: ['초원을 건너오셨군요. 다음은 성채로 가시나요?', '그 성채에 도는 소문이 하나 있어요.', '어느 방 벽에 이상한 그림이 그려져 있다고 합니다.', '무엇을 뜻하는지 아는 사람은 없답니다.'], name: '성채 벽의 그림', again: '벽의 그림이 무엇을 뜻하는지… 궁금하지 않으세요?' },
+    A: { lines: ['또 뵙네요.', '초원을 무사히 건너오셨군요.', '다음은 성채로 가시나요?', '그 성채에 도는 소문이 하나 있어요.', '어느 방 벽에 이상한 그림이 그려져 있다고 합니다.', '무엇을 뜻하는지 아는 사람은 없답니다.'], name: '성채 벽의 그림', again: '벽의 그림이 무엇을 뜻하는지… 궁금하지 않으세요?' },
     C: { lines: ['초원으로 가시는 길이군요.', '요즘 이 초원에 도는 소문이 하나 있어요.', '언제부턴가 숲 어딘가에서 시큼한 점액 냄새가 난다고 합니다.', '냄새가 어디서 오는지 아는 사람은 없답니다.'], name: '시큼한 점액 냄새', again: '시큼한 냄새가… 어디서 오는 걸까요?' }, // v2.73 1장 시작 방
-    B: { lines: ['또 뵙네요. 성채를 무사히 빠져나오셨군요.', '이번엔 핏빛 엄니 부락에 도는 소문입니다.', '오크들에겐 선조에게서 전해 오는 곳이 있다고 해요.', '결투로 원하는 것을 쟁취하는 곳이라나요.', '입구는 피로 그린 원이라는데… 본 사람은 없답니다.'], name: '결투의 장소', again: '원하는 바가 있다면 결투로 얻어 가라… 오크들 말이에요.' },
+    B: { lines: ['다시 만났네요.', '성채를 무사히 빠져나오셨군요.', '이번엔 핏빛 엄니 부락에 도는 소문입니다.', '오크들에겐 선조에게서 전해 오는 곳이 있다고 해요.', '결투로 원하는 것을 쟁취하는 곳이라나요.', '입구는 피로 그린 원이라는데… 본 사람은 없답니다.'], name: '결투의 장소', again: '원하는 바가 있다면 결투로 얻어 가라… 오크들 말이에요.' },
+    D: { lines: ['여기서도 뵙네요.', '부락을 무사히 지나오셨군요.', '이번엔 왕도로 가는 길목의 제단 이야기예요.', '요즘 제단 쪽에서 휘파람 같은 바람 소리가 들린다고 합니다.', '바람이 어디서 들어오는지 아는 사람은 없답니다.'], name: '제단의 바람 소리', again: '제단에서 바람 소리라니… 이상하지 않나요?' }, // v3.20 3→4 대장간: 진실 1 · 2 · 3을 이번 판에 모두 봤을 때
   };
   function bard(R) { // 이 대장간에 음유시인이 있으면 자리 (처음 부를 때 충돌 칸을 둠)
     if (!R || !G.dun) return null;
-    const fk = R.type === 'forge' ? R.fk : G.stage === 1 && R === G.dun.start && !G.dun.forge && !G.dun.home ? 'C' : null; // v2.75 1장 시작 방: 2회차(그 캐릭터의 전기)부터 매 판
+    const fk = R.type === 'forge' ? (R.fk === 'C' ? 'D' : R.fk) : G.stage === 1 && R === G.dun.start && !G.dun.forge && !G.dun.home ? 'C' : null; // v2.75 1장 시작 방: 2회차(그 캐릭터의 전기)부터 매 판
     // v2.83 대장간: 전기 있는 캐릭터가 이번 판에서 그 장까지의 진엔딩 요소를 깼을 때만 (1→2 대장간: 1장 · 2→3 대장간: 1·2장). 3→4 대장간엔 없음
     const run = G.truthRun || {};
-    if (R.type === 'forge' && !(loop2() && (fk === 'A' ? run.t1 : fk === 'B' ? run.t1 && run.t2 : false))) return null;
+    if (R.type === 'forge' && !(loop2() && (fk === 'A' ? run.t1 : fk === 'B' ? run.t1 && run.t2 : fk === 'D' ? run.t1 && run.t2 && run.t3 : false))) return null;
     if (R.type !== 'forge' && !(fk === 'C' && loop2())) return null;
     if (!R.bard) { let p = { x: even(CX - 126), y: even(CY + 40) };
       if (fk === 'C') { const doors = Object.keys(R.doors).filter(d => R.doors[d] != null).map(d => doorIn(d, 30));
@@ -1088,7 +1089,9 @@ function ceilingDrips(t) {
 
   // ---------------------------------------------------------------- 키륵 의뢰
   const KIRK_ASK = ['키륵… 마법, 없어. 아무것도 없어.', '초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.', '가져오면… 좋은 거 알려 줘. 왕관 이야기.'];
-  const KIRK_READ = ['…키륵 글씨. 그런데… 키륵 생각, 아냐.', '왕관이… 시킨 거야. 지켜라, 지켜라.', '해, 안 떠. 왕관이 붙잡고 있어.', '제단… 가지 마, 사람.'];
+  // v3.20 키륵에게서 처음 「해」를 들었을 때 주인공의 반응 (주인공은 해를 모름)
+  const KIRK_SUN = { knight: '…{해}. 들어 본 적 없는 말이다.', ranger: '…{해}? 수상한 소리.', mage: '{해}…? 무엇의 이름일까요?|어떤 책에서도 본 적 없는 단어인데….', priest: '{해}… 경전 어디에도 없는 말이에요.|신께서는 아실까요.', gunner: '{해}?' };
+  const KIRK_READ = ['…키륵 글씨. 그런데… 키륵 생각, 아냐.', '왕관이… 시킨 거야. 지켜라, 지켜라.', '{해}, 안 떠. 왕관이 붙잡고 있어.', '제단… 가지 마, 사람.'];
   const JOURNAL = ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.',
     '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.',
     '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.',
@@ -1096,13 +1099,14 @@ function ceilingDrips(t) {
     '재검토 불가. 보존해야 함. 이송해야 함. 그 이유는.........'];
   function kirkAppear() {
     freeze();
-    SEQ = { k: 'appear', t: 0, dur: 2.7, end: () => { Q().met = true; talk([['kirk', '너… 사람. 칼 든 사람.']], null, { auto: 2.4 }); } };
+    SEQ = { k: 'appear', t: 0, dur: 2.7, end: () => { Q().met = true; talk([['kirk', '너… 사람. 무기 든 사람.']], null, { auto: 2.4 }); } };
     sfx('awaken');
   }
   function acceptQuest() { const q = Q(); q.q = 1; lootFeed('의뢰 — 점액왕이 삼킨 연구 일지', GR, 3200); sfx('select'); }
   function giveJournal() {
     const q = Q(); q.book = true;
-    talk(KIRK_READ.map(t => ['kirk', t]), () => {
+    const L = KIRK_READ.map(t => ['kirk', t]), si = L.findIndex(l => l[1].includes('{해}')); if (si >= 0) L.splice(si + 1, 0, ...((s) => s.includes('|') ? s.split('|') : s.split(/(?<=[.!?])\s+/))(KIRK_SUN[G.cls] || KIRK_SUN.knight).map(t => ['me', t.trim()]), ['kirk', '{해}는 {해}다. 키륵.']); // 키륵의 대답 // v3.20 「해」에 주인공이 반응
+    talk(L, () => {
       showTruthParchment({ no: '구덩이 실험실', title: '키륵의 연구 일지', paras: JOURNAL, ac: GR, onClose: () => {
         q.q = 3; q.book = false; const first = !TS().t1; TS().t1 = true; (G.truthRun || (G.truthRun = {})).t1 = true; persist(); // v2.83 이번 판에서 깸
         lootFeed('진실 기록 — 마법사의 일지', GR, 3600); if (first) sfx('legend');
@@ -1193,7 +1197,7 @@ function ceilingDrips(t) {
     bardTop();
     if (DLG && !DLG.box) { const [who, text] = DLG.lines[DLG.i], p = speakerPos(who); drawBubble(text, p.x, p.y, 0); }
     else if (R.type === 'lab' && Q().met && !SEQ) { const q = Q(), P = G.player, k = kirkPos(), near = Math.hypot(P.x - k.x, P.y - k.y) < 90;
-      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '해, 안 떠.'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
+      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '{해}, 안 떠.'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
       const s = lines && npcTalk('kirk', near, lines); if (s) drawBubble(s.line, k.x, k.y - 32, 0); }
     const q = G.tq1; if (q && q.hold > time && G.player) { const P = G.player; at(P.x, P.y - 52, 3, 2, () => { for (let yy = 0; yy < 5; yy++) for (let xx = 0; xx < 7; xx++) px(xx, yy, xx === 0 ? '#5a321c' : yy === 4 ? '#e8dcc0' : yy === 0 ? '#a8683e' : '#8a5232'); px(3, 2, '#e8c870'); px(4, 2, '#e8c870'); for (let xx = -1; xx <= 7; xx++) { px(xx, -1, OUTK); px(xx, 5, OUTK); } for (let yy = 0; yy < 5; yy++) { px(-1, yy, OUTK); px(7, yy, OUTK); } glow(3, 2, 12, '255,230,160', 0.3, 8); }); }
   }
@@ -1510,7 +1514,7 @@ const STAT_PP = { k: K, H: '#7e7884', h: '#5e5866', m: '#4a4554', d: '#34303c', 
 function shash(n) { n = (n ^ 61) ^ (n >>> 16); n = n + (n << 3); n = n ^ (n >>> 4); n = Math.imul(n, 0x27d4eb2d); return ((n ^ (n >>> 15)) >>> 0) / 4294967296; }
 var statue = function (kind, cx, by, lit) {
   const F = STAT_FIG[kind], py = F.length - 1, ox = cx - 8, oy = by - (py + STAT_PED.length);
-  g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect((ox - 1) * 2, (by - 1) * 2, 36, 4);
+  dshRect(g, (ox - 1) * 2, (by - 1) * 2, 36, 4, 0.5);
   STAT_PED.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; const c = ch === 'C' ? (lit ? (y === 0 || STAT_PED[y - 1][x] !== 'C' ? '#ff7a28' : '#d03018') : '#4e4638') : STAT_PP[ch]; px(ox + x, oy + py + y, c); }));
   F.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; let c = ch === 'e' ? (lit ? '#ff4a2a' : '#141218') : STAT_P[ch]; if (ch === 'H' && shash(x * 13 + y * 5 + kind.length * 7) < 0.35) c = '#c4beb4'; px(ox + x, oy + y, c); }));
   if (lit) { glow(cx, by - 7, 12, '255,90,40', 0.45, 6); }
@@ -1545,7 +1549,7 @@ Object.assign(STAT_PP, { H: '#544e60', h: '#403b4a', m: '#36313f', d: '#2a2632',
 STAT_FIG.sword = ['.......kk.......', '......kHdk......', '......khdk......', '.......kk.......', '......kHdk......', '......khdk......', '......kHdk......', '......khdk......', '.kkkkkkkkkkkkkk.', 'kHhhhhhhhmmmmddk', '.kkkkkhmdkkkkkk.', '.....kHhmdk.....', '.....kHhmdk.....', '.....kHhmdk.....', '.....kHhmdk.....', '.....kHhmdk.....', '.....kHhmdk.....', '...kkkHhmdkkk...', '..khHhkhmkmmdk..', '.khHhhhkkmmmddk.', 'khhhhhmmmmmdddDk', 'kkkkkkkkkkkkkkkk'];
 statue = function (kind, cx, by, lit) {
   const F = STAT_FIG[kind], py = F.length - 1, ox = cx - 8, oy = by - (py + STAT_PED.length);
-  g.fillStyle = 'rgba(0,0,0,.4)'; g.fillRect((ox - 1) * 2, (by - 1) * 2, 36, 4);
+  dshRect(g, (ox - 1) * 2, (by - 1) * 2, 36, 4, 0.5);
   STAT_PED.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; const c = ch === 'C' ? (lit ? (STAT_PED[y - 1][x] !== 'C' ? '#ff7a28' : '#d03018') : '#26221e') : STAT_PP[ch]; px(ox + x, oy + py + y, c); }));
   F.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.') return; let c = ch === 'e' ? (lit ? '#ff4a2a' : STAT_P.e) : STAT_P[ch]; if (ch === 'H' && shash(x * 13 + y * 5 + kind.length * 7) < 0.3) c = '#86808e'; px(ox + x, oy + y, c); }));
   if (lit) glow(cx, by - 7, 12, '255,90,40', 0.45, 6);
@@ -1955,8 +1959,10 @@ drawTG = function (G, ox, oy, outline = true, pal) {
   const half = v => Math.round(v / 2);
   function on(gg, fn) { const o = g; g = gg; try { fn(); } finally { g = o; } }
   const SIGS = ['sword', 'crow', 'rose', 'tower'], SNAME = { sword: '검', crow: '까마귀', rose: '장미', tower: '탑' };
+  // v3.20 발도르 주문 속 「해」를 읽은 뒤 주인공의 반응 (키륵에게 들은 「해」와 이어짐 · '|'에서 말주머니를 나눔)
+  const SPELL_SUN = { knight: '…{해}가 뜨지 않는 한.|그 고블린도 {해}라고 했지.', ranger: '…{해}…|{해}가 대체 뭐야.', mage: '{해}가 뜨지 않는 한…|키륵이 말한 「{해}, 안 떠」와 같은 이야기네요.', priest: '…{해}가 뜨지 않는 한.|키륵도 {해}를 이야기했었죠.', gunner: '{해}가 뜨지 않는 한이라…|또 그 소리군.' };
   const OATH = ['검 앞에 서약하노니,', '왕관을 쓴 왕 앞에 무릎 꿇은 자는', '그 왕이 떠난 뒤에도', '빈 왕좌를 지키리라.']; // v2.60 여는 말 · 주어 · 「그 왕」 · 끝맺음 — 문법만으로 순서가 하나
-  const SPELL = ['기사단장 발도르여,', '해가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'];
+  const SPELL = ['기사단장 발도르여,', '{해}가 뜨지 않는 한, 너는 눕지 못하리라.', '빈 자리를 지키는 자여, 네 이름은 그 자리에 묶이리라.', '왕관이 돌아올 때마다 너는 다시 눈을 뜨리라.', '재가 되어도, 서약은 재가 되지 않으리라.'];
   const PIL_OFF = { sword: [-108, -10], crow: [108, -10], rose: [-116, 104], tower: [116, 104] }; // 바닥 원 가운데 기준 기둥 발 (px)
   const curR2 = () => G && G.dun && G.dun.cur;
   const chapel = () => G && G.dun && G.dun.rooms && G.dun.rooms.find(r => r.type === 'chapel');
@@ -2062,7 +2068,7 @@ drawTG = function (G, ox, oy, outline = true, pal) {
     if (it.a === 'c2enter') { const to = G.dun.rooms[R.doors.n]; if (to) goRoom(to, 's'); return; }
     if (it.a === 'c2read') {
       showTruthParchment({ no: '기사단 밀실', title: '바닥에 새겨진 주문', paras: SPELL, ac: '#b070ff', onClose: () => {
-        const first = !TS().t2; TS().t2 = true; (G.truthRun || (G.truthRun = {})).t2 = true; persist(); lootFeed('진실 기록 — 저주의 주문', '#b070ff', 3600); if (first) sfx('legend'); } });
+        const first = !TS().t2; TS().t2 = true; (G.truthRun || (G.truthRun = {})).t2 = true; persist(); lootFeed('진실 기록 — 저주의 주문', '#b070ff', 3600); if (first) sfx('legend'); TRUTH.talk((SPELL_SUN[G.cls] || SPELL_SUN.knight).split('|').map(t => ['me', t])); } }); // v3.20 주문 속 「해」에 주인공이 반응 — 대화처럼 멈춰 서서 F로 넘김
     }
   }
   function plaque(text, sub, x, y) { // 화면 좌표로 바꿔 정수 칸에 (글자가 번지지 않게)
