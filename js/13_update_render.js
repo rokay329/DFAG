@@ -157,7 +157,7 @@
     const bk = snap ? 1 : Math.min(1, dt * 2.5), bxT = G.boss && !G.boss.dead ? (G.boss.x - P.x) * 0.15 : 0, byT = G.boss && !G.boss.dead ? (G.boss.y - P.y) * 0.15 : 0;
     cam.bx = (cam.bx || 0) + (bxT - (cam.bx || 0)) * bk; cam.by = (cam.by || 0) + (byT - (cam.by || 0)) * bk;
     let tx = P.x - SAFE.cx + cam.bx, ty = P.y - 10 - SAFE.cy + cam.by;
-    { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100), y1 = A.y1 + 88 - VH;
+    { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - ((typeof RUIN !== 'undefined' && RUIN.camTop && RUIN.camTop()) /* v3.21 교단 본거지: 윗벽 태피스트리까지 보이게 */ || (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100)), y1 = A.y1 + 88 - VH;
       const cx = G.dun && G.dun.altar ? snap2((A.x0 + A.x1 - VW) / 2) /* v3.20 왕도 성문 방: 성문 · 제단이 화면 가로 가운데에 오도록 방을 가운데에 고정 */ : x1 >= x0 ? clamp(tx, x0, x1) : (A.x0 + A.x1 - VW) / 2, /* v3.18 화면보다 좁은 방은 방 가운데를 화면 가운데에 */ cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
     cam.x = tx; cam.y = ty;
     bannerPlace();
@@ -210,6 +210,7 @@
     if (dbgK('r', '휴게방(비스트로)으로') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
     if (dbgK('c', '용의 유적 드나들기') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
     if (dbgK('j', '교단의 갱도로 바로 가기') && !G.clear && !G.trans && !G.cine) RUIN.debugMine(); // v3.20 테스트: 갱도 (유적 밖이면 유적에 들어간 뒤 갱도로)
+    if (dbgK('k', '교단 본거지로 (누를 때마다 앞 홀 → 교주의 방 → 지하 석실)') && !G.clear && !G.trans && !G.cine) RUIN.debugCult(); // v3.21 테스트
     if (dbgK('u', '안전 놀이터로') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
     if (dbgK('x', '각성 게이지 가득')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
     if (dbgK('g', '난입자 소환') && !G.clear && !G.trans && G.dun.cur.type !== 'boss' && !G.dun.forge && !G.enemies.some(x => !x.dead && INV_MAP[x.type])) { const R = G.dun.cur; R.invade = R.invade || INV_KIND[G.stage] || 'panda'; R.invaded = true; R.cleared = false; startInvasion(R); } // v1.57 테스트: 난입자 소환

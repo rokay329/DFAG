@@ -205,7 +205,7 @@ const BISTRO = (() => {
     const F = D.cats[key], n = Math.floor((time + (key === 'kuo' ? 0 : 0.6)) / 0.6) % 2, bt = (time + (key === 'kuo' ? 1.3 : 4.1)) % 8.6, blink = bt < 0.12 || (bt >= 4.3 && bt < 4.42);
     const fk = (n ? 'idle' : 'base') + (blink ? 'B' : ''), rows = F.f[fk], cc = cv(key + fk, rows, F.p), fx = feetX(F.f.base);
     const x = Math.round(c.x - fx * 2) & ~1, y = (Math.round(c.y) - cc.height + 2) & ~1;
-    if (c.sh !== null) { ctx.fillStyle = 'rgba(8,6,12,.45)'; ctx.fillRect(((c.x - 10) & ~1), c.sh === undefined ? c.y : c.sh, 20, 2); }
+    if (c.sh !== null) dshEll(ctx, c.x, (c.sh === undefined ? c.y : c.sh) + 1, 10, 3, 0.5); /* v3.23 디더 그림자 */
     const p = poseOf(key), pw = F.pw[fk], ax = x + pw[0] * 2, ay = y + pw[1] * 2, T = toolCv(p.head, p.e[0], p.e[1], p.noLine);
     if (!p.front) ctx.drawImage(T.c, ax + T.ox * 2, ay + T.oy * 2);         // 도구는 몸 뒤 (앞발이 손잡이를 쥠)
     ctx.drawImage(cc, x, y);
@@ -242,7 +242,7 @@ const BISTRO = (() => {
     const P = G.player, near = P && !P.dead && Math.hypot(P.x - b.x, P.y - b.y) < 150, say = mode === 'play' && !TK.on ? catTalk(R, near) : null, quiet = serving(); // 주문 연출 동안은 말풍선 쉼
     for (const k of ['kuo', 'cookie']) list.push({ y: B[k].y, d: () => drawCat(k, k === 'kuo' ? kuoAt(B) : B[k], !quiet && say && say.who === k ? say.line : null) });
     list.push({ y: 1e9, d: dishPop });
-    for (const k of ['sign', 'crate', 'cart', 'sack', 'barrel']) list.push({ y: B[k].y, d: () => { const S = D.props[k], c = cv(k, S.rows, S.pal), x = (B[k].x - c.width / 2) & ~1, y = (B[k].y - c.height + 2) & ~1; ctx.fillStyle = 'rgba(8,6,12,.4)'; ctx.fillRect(x + 4, B[k].y, c.width - 8, 2); ctx.drawImage(c, x, y); } });
+    for (const k of ['sign', 'crate', 'cart', 'sack', 'barrel']) list.push({ y: B[k].y, d: () => { const S = D.props[k], c = cv(k, S.rows, S.pal), x = (B[k].x - c.width / 2) & ~1, y = (B[k].y - c.height + 2) & ~1; dshEll(ctx, x + c.width / 2, B[k].y + 1, (c.width - 8) / 2, 3, 0.5); /* v3.23 디더 그림자 */ ctx.drawImage(c, x, y); } });
   }
 
   // ---- 주문 창: 기존 모닥불 축복 3택1을 요리로

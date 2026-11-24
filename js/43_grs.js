@@ -229,7 +229,7 @@ const GRS = (() => {
       for (let i = 0; i < n; i++) { if (i % 2) continue; const a = i / n * TAU + M.t; dot(M.x + Math.cos(a) * r, M.y + Math.sin(a) * r * 0.55, bl ? '#ffffff' : '#ff8a40'); }
       const ir = r * q; for (let i = 0; i < 16; i++) { const a = i / 16 * TAU; dot(M.x + Math.cos(a) * ir, M.y + Math.sin(a) * ir * 0.55, '#c04020'); }
       pxLine(M.x - 4, M.y, M.x + 4, M.y, '#ff8a40'); pxLine(M.x, M.y - 3, M.x, M.y + 3, '#ff8a40'); }
-    for (const C of K.coffins) { if (C.t >= C.land) continue; const q = C.t / C.land, w = 6 + q * 12; ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(snap2(C.x - w), snap2(C.y - 2), snap2(w * 2), 4); }
+    for (const C of K.coffins) { if (C.t >= C.land) continue; const q = C.t / C.land, w = 6 + q * 12; dshEll(ctx, C.x, C.y, w, 3, 0.5); } /* v3.23 디더 그림자 */
   }
   function drawCoffin(C) { const q = Math.min(1, C.t / C.land), y = C.y - (1 - q * q) * 260, x = snap2(C.x), Y = snap2(y), al = Math.min(1, (C.life - C.t) / 0.4);
     ctx.globalAlpha = al; const sink = C.t > C.life - 0.6 ? Math.round((C.t - (C.life - 0.6)) / 0.6 * 10) * 2 : 0;
@@ -266,11 +266,11 @@ const GRS = (() => {
         const ux = Math.cos(w.a), uy = Math.sin(w.a); pxLine(w.x - ux * 14, w.y - uy * 10, w.x, w.y, '#6b4a2a'); for (const s of [-1, 1]) pxLine(w.x + ux * 6, w.y + uy * 5, w.x - ux * 2 - uy * 5 * s, w.y - uy * 2 + ux * 4 * s, '#d8dce4'); dot(w.x + ux * 6, w.y + uy * 5, '#ffffff');
         ctx.globalAlpha = 1; }
       else if (w.k === 'grsDuck') { const hy = Math.abs(Math.sin(w.hop * Math.PI)) * 10, x = snap2(w.x), y = snap2(w.y - hy), f = w.face;
-        ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(x - 4, snap2(w.y), 8, 2);
+        dshEll(ctx, x, w.y + 1, 5, 2, 0.5); /* v3.23 디더 그림자 */
         ctx.fillStyle = '#1a120a'; ctx.fillRect(x - 6, y - 8, 12, 8); ctx.fillStyle = '#f0c838'; ctx.fillRect(x - 5, y - 6, 9, 5); ctx.fillStyle = '#c09018'; ctx.fillRect(x - 5, y - 2, 9, 1);
         ctx.fillStyle = '#f0c838'; ctx.fillRect(x + f * 2 - 2, y - 11, 5, 5); ctx.fillStyle = '#1a120a'; ctx.fillRect(x + f * 3, y - 10, 1, 1); ctx.fillStyle = '#f08a2a'; ctx.fillRect(x + (f > 0 ? 5 : -7), y - 9, 2, 2); }
       else if (w.k === 'grsPuff') { const r = Math.round(8 * w.sz / 2) * 2, x = snap2(w.x), y = snap2(w.y - r), fl = w.t > w.life - 0.3 && Math.floor(w.t * 20) % 2;
-        ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(x - r, snap2(w.y), r * 2, 2);
+        dshEll(ctx, x, w.y + 1, r, 3, 0.5); /* v3.23 디더 그림자 */
         for (let yy = -r; yy < r; yy += 2) { const hw = Math.round(Math.sqrt(r * r - (yy + 1) * (yy + 1)) / 2) * 2; ctx.fillStyle = '#2a2010'; ctx.fillRect(x - hw - 2, y + yy, hw * 2 + 4, 2); ctx.fillStyle = fl ? '#ffffff' : yy > r * 0.3 ? '#fff0b0' : '#f0d050'; ctx.fillRect(x - hw, y + yy, hw * 2, 2); }
         const n = 12; for (let i = 0; i < n; i++) { const a = i / n * TAU + w.roll * 0.3; dot(x + Math.cos(a) * (r + 3), y + Math.sin(a) * (r + 3), '#c0a020'); }
         ctx.fillStyle = '#1a120a'; ctx.fillRect(x + (w.vx > 0 ? 2 : -4), y - 4, 2, 2); ctx.fillRect(x + (w.vx > 0 ? 6 : -8), y - 4, 2, 2); ctx.fillStyle = '#c03030'; ctx.fillRect(x + (w.vx > 0 ? 4 : -6), y + 2, 2, 2); }

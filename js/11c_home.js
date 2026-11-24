@@ -3535,7 +3535,7 @@
       const c = npcArt('habi' + fk, () => { const rows = HABI.f[fk], [cv, g] = mk(rows[0].length * 2, rows.length * 2); rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '.' || !HABI.p[ch]) return; g.fillStyle = HABI.p[ch]; g.fillRect(x * 2, y * 2, 2, 2); })); return cv; });
       const fr = HABI.f.base[HABI.f.base.length - 1]; let a0 = -1, a1 = -1; for (let i = 0; i < fr.length; i++) if (fr[i] !== '.') { if (a0 < 0) a0 = i; a1 = i; }
       const x = Math.round(p.x - (a0 + a1 + 1)) & ~1, y = (p.y - c.height + 2) & ~1;
-      ctx.fillStyle = 'rgba(10,6,4,.5)'; ctx.fillRect((p.x - 10) & ~1, p.y, 20, 2);
+      dshEll(ctx, p.x, p.y + 1, 10, 3, 0.5); /* v3.23 디더 그림자 */
       ctx.drawImage(c, x, y);
     } }); } }
     { const hp = habiPos(); if (hp && TK.on !== 'habi') { const P = G.player, near = P && !P.dead && Math.hypot(P.x - hp.x, P.y - hp.y) < 80, say = npcTalk('habi', near, HABI_LINES, HABI_GREET); if (say) list.push({ y: hp.y, d: () => drawBubble(say.line, hp.x, hp.y - 26, 0) }); } } // v3.16 하비 인사 · 혼잣말
@@ -3544,12 +3544,12 @@
     const tt = (time + 3.1) % DG_CYC, A = TK.on === 'dangun' ? { stuck: true } : dgAnim(tt, p, dp); // 대화하는 동안에는 묘기를 멈추고 단도는 제자리에
     if (A.hit && !dgAnim.hitT0) { dgAnim.hitT0 = true; dust(dp.x, dp.y + 2, 5); } else if (!A.hit) dgAnim.hitT0 = false;
     const daggerC = () => npcArt('dagger', () => gCanvas(gOutline(fromRows(DAGGER)), DAGGER_PAL));
-    list.push({ y: dp.y, d: () => { ctx.fillStyle = 'rgba(10,6,4,.55)'; ctx.fillRect((dp.x - 2) & ~1, (dp.y) & ~1, 6, 2); if (!A.stuck) return; const c = daggerC(); ctx.drawImage(c, ((dp.x - c.width / 2) & ~1) + (A.wob || 0), (dp.y - c.height + 4) & ~1); } });
+    list.push({ y: dp.y, d: () => { dshEll(ctx, dp.x + 1, dp.y + 1, 4, 2, 0.5); /* v3.23 디더 그림자 */ if (!A.stuck) return; const c = daggerC(); ctx.drawImage(c, ((dp.x - c.width / 2) & ~1) + (A.wob || 0), (dp.y - c.height + 4) & ~1); } });
     list.push({ y: p.y, d: () => {
       const n = Math.floor(time / 1.2), t = time % 1.2, crouch = A.crouch || (!A.dag && !A.lean && t >= 0.6), tail = A.tail || A.pose || (n % 3 === 0 && t < 0.3), bt = (time + 2.1) % 8.6, blink = !A.dag && (bt < 0.12 || (bt >= 4.3 && bt < 4.42) || (bt >= 4.6 && bt < 4.72));
       const c = npcArt('dangun' + (+crouch) + (+blink) + (+tail), () => gCanvas(fromRows(dangunRows(crouch, blink, tail)), DANGUN_PAL));
       const x = ((p.x - c.width / 2) & ~1) + (A.lean || 0) * 2, y = (p.y - c.height + 2) & ~1;
-      ctx.fillStyle = 'rgba(10,6,4,.5)'; for (let i = 4; i < c.width - 4; i += 2) if ((i >> 1) & 1 || (i > 8 && i < c.width - 10)) ctx.fillRect(x - (A.lean || 0) * 2 + i, y + c.height - 2, 2, 2);
+      dshEll(ctx, x - (A.lean || 0) * 2 + c.width / 2, y + c.height - 1, (c.width - 8) / 2, 3, 0.5); /* v3.23 디더 그림자 */
       ctx.drawImage(c, x, y);
       if (A.look) { ctx.fillStyle = '#1a1410'; ctx.fillRect(x + 8, y + 10, 2, 2); ctx.fillRect(x + 16, y + 10, 2, 2); ctx.fillStyle = '#f6f2ea'; ctx.fillRect(x + 8, y + 12, 2, 2); ctx.fillStyle = '#d98a3e'; ctx.fillRect(x + 16, y + 12, 2, 2); } // 위로 치켜뜬 눈
       const P = G.player, near = P && !P.dead && Math.hypot(P.x - p.x, P.y - p.y) < 80, say = TK.on === 'dangun' ? null : npcTalk('dangun', near, DANGUN_LINES, DANGUN_GREET);

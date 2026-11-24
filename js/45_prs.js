@@ -267,7 +267,7 @@ const PRS = (() => {
       '..ssswwwwwwwww.',
       '...sSSs...sSSs.'])) };
   function drawBunny(b) { const hop = b.ph === 'hop' ? Math.abs(Math.sin(b.hop * Math.PI)) * 10 : b.ph === 'bounce' ? 6 : 0, pose = b.ph === 'dash' ? BUN.dash : b.ph === 'crouch' ? BUN.crouch : BUN.hop, W = pose[0].length * 2, H = pose.length * 2;
-    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(snap2(b.x) - 8, snap2(b.y), 16, 2);
+    dshEll(ctx, b.x, b.y + 1, 8, 2, 0.5); /* v3.23 디더 그림자 */
     const blink = Math.floor((time + b.life) * 2.3) % 9 === 0, P2 = blink ? Object.assign({}, BUN_PAL, { e: '#ffffff', o: '#2a1a2a' }) : BUN_PAL;
     cellDraw(pose, P2, snap2(b.x) - W / 2, snap2(b.y - hop) - H + 2, b.face < 0, SEL ? SKD.oid(SEL) : 0); }
   // ---------------- 대종: 시작방(종이 멈춘 수도원)의 청동 종과 같은 그리기 — 둥근 어깨 · 허리 · 넓은 소리 테 · 띠 둘 · 새긴 글자 띠 · 녹청 · 입술 타원 · 머리 고리 (크기 1.6배)

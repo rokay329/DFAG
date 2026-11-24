@@ -83,14 +83,14 @@ const ARCH = (() => {
       const key = s.n, S = D.spr[key];
       list.push({ y: s.y, d: () => {
         const c = sprCv(key, S.r, S.p), w = S.r[0].length, x = (s.x - Math.floor(w / 2) * 2) & ~1, y = (s.y - c.height) & ~1;
-        ctx.fillStyle = 'rgba(6,4,12,.45)'; ctx.fillRect(x + 2, s.y, c.width - 2, 2); ctx.fillRect(x + 6, s.y + 2, c.width - 10, 2);
+        dshEll(ctx, x + 1 + c.width / 2, s.y + 2, (c.width - 4) / 2, 4, 0.5); /* v3.23 디더 그림자 */
         ctx.drawImage(c, x, y);
       } });
     }
     if (R.cocoa) list.push({ y: R.cocoa.y, d: () => {
       const S = D.spr.npc_cocoa, n = Math.floor(time / 0.9) % 2, rows = n ? S.r : bob(S.r), c = sprCv('cocoa' + n, rows, S.p), w = S.r[0].length;
       const x = (R.cocoa.x - Math.floor(w / 2) * 2) & ~1, y = (R.cocoa.y - c.height) & ~1;
-      ctx.fillStyle = 'rgba(6,4,12,.45)'; ctx.fillRect(x + 6, R.cocoa.y, c.width - 12, 2);
+      dshEll(ctx, x + c.width / 2, R.cocoa.y + 1, (c.width - 12) / 2, 3, 0.5); /* v3.23 디더 그림자 */
       ctx.drawImage(c, x, y);
       if (!TRUTH.busy() && G.arch) { // 다른 NPC처럼: 다가가면 인사, 곁에 있으면 9~13초마다 인사말을 다시
         const P = G.player, near = P && !P.dead && Math.hypot(P.x - R.cocoa.x, P.y - R.cocoa.y) < 110, A0 = arcSave();
