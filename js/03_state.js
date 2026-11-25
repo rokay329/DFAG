@@ -14,7 +14,7 @@
     el.style.cssText = 'right:8px;bottom:40px;padding:6px 8px;font:8px/12px Galmuri7,monospace;color:var(--quiet);white-space:nowrap;pointer-events:none;display:none';
     (document.getElementById('ui') || document.body).appendChild(el); let key = '';
     setInterval(() => { const on = typeof mode !== 'undefined' && mode === 'play' && !!G; el.style.display = on ? 'block' : 'none'; if (!on) return;
-      const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? '1~4' : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
+      const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? (+k.slice(2) <= 4 ? '1~4' : k.slice(2)) : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
       if (!DEV_LIST) { if (key === 'closed') return; key = 'closed'; el.innerHTML = '<span style="color:#ffe9b0">Shift+?</span> 테스트 단축키 열기'; return; }
       if (k2 === key) return; key = k2;
       el.innerHTML = '<b style="color:#9fd2ff;font:9px Galmuri9">테스트 단축키</b><br>' + rows.map(([k, d]) => `<span style="color:#ffe9b0">Shift+${k}</span> ${d}${k === 'O' && GOD_MODE ? ' <span style="color:#9fd2ff">(켜짐)</span>' : ''}`).join('<br>'); }, 400); });
@@ -76,6 +76,7 @@
     for (let i = 0; i < PILLARS.length - 1; i++) {
       const mx = (PILLARS[i] + PILLARS[i + 1]) / 2;
       if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && ((CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110) || (CUR_ROOM.doors && CUR_ROOM.doors.n != null && Math.abs(mx - DOOR.n.x) < 40))) continue; // v2.64 · v3.19 북문 위엔 창문 없음 인장 벽 자리엔 창문 없음
+      if (typeof WDECO !== 'undefined' && G && G.stage === 2 && !(CUR_ROOM && CUR_ROOM.type === 'altar')) { if (WDECO.pick(CUR_ROOM, i, T0) === 'w2') WDECO.draw(g, 'w2', WDECO.slotX(i), T0); continue; } // v3.29 2장: 창 방에서만 창 (대칭 배치)
       g.fillStyle = '#07060a'; g.fillRect(mx - 9, T0 + 8, 18, 26); g.beginPath(); g.arc(mx, T0 + 8, 9, Math.PI, 0); g.fill();
       const mg = dLinear(g, 0, T0, 0, T0 + 34); mg.addColorStop(0, 'rgba(110,100,160,.35)'); mg.addColorStop(1, 'rgba(40,30,70,.1)');
       g.fillStyle = mg.p(g, mx - 7, T0 + 2, 14, 32); g.fillRect(mx - 7, T0 + 9, 14, 24); g.beginPath(); g.arc(mx, T0 + 9, 7, Math.PI, 0); g.fill();
@@ -87,7 +88,7 @@
       g.fillStyle = '#3a3644'; g.fillRect(x - 9, 0, 3, A.y0 + 4);
       g.fillStyle = '#0c0b10'; g.fillRect(x + 7, 0, 2, A.y0 + 4);
       g.fillStyle = '#2b2733'; g.fillRect(x - 11, A.y0 - 2, 22, 6);
-      if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && CUR_ROOM.type === 'altar' ? (i === 1 || i === PILLARS.length - 2) : i % 2 === 1) { // v3.20 왕도 성문 방은 성문 양옆 기둥에 하나씩 (좌우 대칭)
+      if (typeof CUR_ROOM !== 'undefined' && CUR_ROOM && CUR_ROOM.type === 'altar' ? (i === 1 || i === PILLARS.length - 2) : false) { // v3.29 기둥 깃발은 뺌 (왕도 성문 방의 대칭 깃발만 남김) // v3.20 왕도 성문 방은 성문 양옆 기둥에 하나씩 (좌우 대칭)
         g.fillStyle = '#5c1016'; g.fillRect(x - 6, T0 + 4, 12, 22);
         g.fillStyle = '#7d1820'; g.fillRect(x - 6, T0 + 4, 3, 22);
         for (let k = 0; k < 6; k++) { g.fillStyle = '#5c1016'; g.fillRect(x - 6 + k * 2, T0 + 26, 2, randi(1, 5)); }
@@ -165,13 +166,13 @@
       }
     }
     // 재 위의 발자국 줄 (두어 갈래)
-    for (let t = 0; t < 2; t++) {
+    for (let t = 0; t < 1; t++) { // v3.29 발자국 줄 2 → 1갈래
       let x = rand(A0.x0 + 40, A0.x1 - 40), y = rand(A0.y0 + 30, A0.y1 - 30); const a = rand(0, TAU);
       for (let i = 0; i < 14; i++) { x += Math.cos(a) * 14; y += Math.sin(a) * 9; if (x < A0.x0 + 8 || x > A0.x1 - 8 || y < A0.y0 + 8 || y > A0.y1 - 8) break; if ((typeof decFree === "function" && !decFree(x, y, 6, true))) continue; const s = i % 2 ? 4 : -4;
         g.fillStyle = '#3a3632'; g.fillRect((Math.round(x - Math.sin(a) * s) & ~1), (Math.round(y + Math.cos(a) * s * 0.6) & ~1), 4, 2); }
     }
     // 작은 재 둔덕과 타다 남은 잉걸
-    for (let i = 0; i < 40; i++) { const x = Math.round(rand(A0.x0 + 6, A0.x1 - 10) / 2) * 2, y = Math.round(rand(A0.y0 + 6, A0.y1 - 8) / 2) * 2; if (Math.hypot(x - CX, y - CY) < 80 || (typeof decFree === "function" && !decFree(x, y, 6, true))) continue;
+    for (let i = 0; i < 26; i++) { /* v3.29 재 둔덕 · 잉걸 빈도 줄임 (40 → 26번 시도) */ const x = Math.round(rand(A0.x0 + 6, A0.x1 - 10) / 2) * 2, y = Math.round(rand(A0.y0 + 6, A0.y1 - 8) / 2) * 2; if (Math.hypot(x - CX, y - CY) < 80 || (typeof decFree === "function" && !decFree(x, y, 6, true))) continue;
       if (window.SCN34) { if (i % 2) continue; const k = i % 5 === 0 ? 'ember' : pick(['m1', 'm1', 'm2', 'm3']); gPaint(g, fromRows(SCN34.ash[k]), SCN34.ashPal, x - 6, y - 6); continue; } // v2.82 재 둔덕 · 잉걸
       if (i % 5 === 0) { g.fillStyle = '#2a1a12'; g.fillRect(x, y, 4, 2); g.fillStyle = '#ff7a30'; g.fillRect(x + 2, y, 2, 2); }
       else { g.fillStyle = '#948e84'; g.fillRect(x, y, 6, 2); g.fillStyle = '#b4aea2'; g.fillRect(x + 2, y - 2, 2, 2); g.fillStyle = '#4a4640'; g.fillRect(x, y + 2, 6, 2); } }

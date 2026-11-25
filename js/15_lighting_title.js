@@ -3,7 +3,7 @@
   // v3.19 해가 뜨지 않는 세계: 시작 장소는 밤 — 조금 더 어둡고 푸른 어둠, 등불 · 촛불 · 창 달빛이 광원 (window.NIGHT = false면 예전)
   const HOME_NIGHT = { dark: 0.5, dk: [6, 8, 24] };
   const homeNight = () => window.NIGHT !== false && !!(G && G.dun && G.dun.home);
-  const darkA = () => homeNight() ? HOME_NIGHT.dark : (typeof RUIN !== 'undefined' && RUIN.darkA && RUIN.darkA()) || STG().dark; // v3.20 갱도는 더 어둡게
+  const darkA = () => homeNight() ? ((typeof RUIN !== 'undefined' && RUIN.ambA && RUIN.ambA()) || HOME_NIGHT.dark) : (typeof RUIN !== 'undefined' && RUIN.darkA && RUIN.darkA()) || STG().dark; // v3.20 갱도는 더 어둡게
   const MOON = window.__MOON = { x: 0.1, y: -0.45, r: 1.1, a: 0.45, c: '150,170,235', ca: 0.14, shafts: false, per: 150, bw: 34, sc: [70, 86, 130], sa: 0.22 };
   let MOON_CV = null;
   function moonShafts() { // 방마다 한 번 그려 둔 달빛 띠(세계 좌표, 2px 칸 디더)를 더해 그림
@@ -65,7 +65,7 @@ void main() {
     } catch (err) { console.warn('조명 GL 사용 안 함:', err); return null; }
   })();
   const LGL_DK = { 1: [14, 10, 30], 3: [20, 6, 4], 4: [12, 10, 8] };
-  const dkCol = () => homeNight() ? HOME_NIGHT.dk : (typeof RUIN !== 'undefined' && RUIN.dark && RUIN.dark()) || LGL_DK[G.stage] || [4, 3, 10]; // v3.20 갱도는 거의 검은 어둠
+  const dkCol = () => homeNight() ? ((typeof RUIN !== 'undefined' && RUIN.ambDk && RUIN.ambDk()) || HOME_NIGHT.dk) : (typeof RUIN !== 'undefined' && RUIN.dark && RUIN.dark()) || LGL_DK[G.stage] || [4, 3, 10]; // v3.20 갱도는 거의 검은 어둠
   function renderLightingGL(vis) {
     const S = LGL, gl = S.gl, n = Math.min(S.MAXL, vis.length);
     if (vis.length > S.MAXL) vis = vis.slice().sort((a, b) => b.r * b.a - a.r * a.a); // 넘치면 크고 센 빛부터
@@ -290,6 +290,35 @@ void main() {
     for (const e of TS.emb) { e.x += (e.vx + Math.sin(time * 2 + e.t * 3) * 4) / 60; e.y += e.vy / 60; e.t -= 1 / 60; C(Math.round(e.x), Math.round(e.y), e.c || (e.t > 1 ? '#d8d8d2' : '#6a6a6a')); }
     TS.ash = TS.ash.filter(a => a.y < 216); TS.emb = TS.emb.filter(e => e.t > 0 && e.y < 216);
   }
+  // v3.21 좌우 벽은 캐릭터를 가림: 바닥 그림(floor)의 좌우 벽 띠를 캐릭터 위에 한 번 더 그림 (초원 · 시작 장소 · 대장간 · 유적 · 도박장 · 실험실 · 기록 보관소처럼 따로 그리는 방은 제외 · 옆문 자리는 비움)
+  // v3.25 주인공 집중 조명 (어두운 실내 전부: 용의 유적 · 갱도 · 교단 본거지 · 은신처/도박장 · 실험실 · 기록 보관소 · 대장간 · 예배당): 발밑 바닥에 넓고 옅게 깔리는 빛 웅덩이 — 바닥 층에서 그려 캐릭터 위를 덮지 않음 · 2px 칸 · 월드에 고정된 4×4 망점으로 3단계
+  const SPOT = { r: 76, ry: 0.62, al: [0, 0.68, 0.8, 0.92], c: [1.0, 0.93, 0.8] }; let spotCv = null; // v3.25 소프트 라이트로 깔기: 0.5 = 그대로 · 높을수록 밝게 · 새까만 곳(바깥 어둠 · 외곽선)은 밝아지지 않음
+  function spotPool() { const P = G.player; if (!P || P.dead) return;
+    const R = SPOT.r, RY = Math.round(R * SPOT.ry), w = R * 2 + 1, h = RY * 2 + 1;
+    if (!spotCv || spotCv.width !== w) { [spotCv] = mkCanvas(w, h); spotCv.g = spotCv.getContext('2d'); spotCv.im = spotCv.g.createImageData(w, h); }
+    const B4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]], cx = Math.round(P.x / 2), cy = Math.round(P.y / 2), d = spotCv.im.data, [cr, cg, cb] = SPOT.c;
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const dx = (i - R) / R, dy = (j - RY) / RY, q = Math.sqrt(dx * dx + dy * dy), k = (j * w + i) * 4;
+      if (q >= 1) { d[k + 3] = 0; continue; } const f = Math.pow(1 - q, 1.25) * 3, t = (B4[(cy + j) & 3][(cx + i) & 3] + 0.5) / 16, lv = Math.min(3, Math.floor(f + t)), a = SPOT.al[lv];
+      if (!lv) { d[k + 3] = 0; continue; } d[k] = 255 * (0.5 + (a - 0.5) * cr); d[k + 1] = 255 * (0.5 + (a - 0.5) * cg); d[k + 2] = 255 * (0.5 + (a - 0.5) * cb); d[k + 3] = 255; }
+    spotCv.g.putImageData(spotCv.im, 0, 0);
+    ctx.save(); ctx.imageSmoothingEnabled = false; ctx.globalCompositeOperation = 'soft-light'; ctx.drawImage(spotCv, (cx - R) * 2, (cy - RY) * 2, w * 2, h * 2); ctx.restore(); }
+  const indoorDark = () => { const D = G && G.dun, R = D && D.cur; if (!R) return false; return !!(D.forge || D.den || D.lab || D.ruin || ['den', 'lab', 'archive', 'forge', 'ruin', 'chapel'].includes(R.type) || (typeof RUIN !== 'undefined' && RUIN.on()) || (typeof DEN !== 'undefined' && DEN.on && DEN.on())); };
+  const SKSHAKE = { t: 0, max: 0.3, n: 0, dx: 0, dy: 0, last: 0 };
+  function skShake(n, ang) { const A = Math.min(10, n * 0.7); if (A < SKSHAKE.n * (SKSHAKE.t / SKSHAKE.max)) return; SKSHAKE.n = A; SKSHAKE.max = 0.18 + A * 0.02; SKSHAKE.t = SKSHAKE.max; SKSHAKE.dx = ang == null ? 0 : Math.cos(ang); SKSHAKE.dy = ang == null ? 1 : Math.sin(ang); } // v3.25 화면 흔들림은 v1.07부터 꺼 두었음 — 기사 레전더리 기술(별의 서약 · 처형)에서만 켬
+  function sideClip(fn) { // v3.25 2~4장 방: 캐릭터 · 적 · 시체를 좌우 벽 안쪽(옆문 자리는 열어 둠)으로만 그림
+    const D = G && G.dun, R = D && D.cur; if (!R || G.stage === 1 || D.forge || D.home || D.ruin || D.den || D.lab || ['home', 'archive', 'lab', 'den', 'forge', 'ruin'].includes(R.type)) return fn();
+    ctx.save(); ctx.beginPath(); ctx.rect(A.x0, A.y0 - 600, A.x1 - A.x0, A.y1 - A.y0 + 1200);
+    for (const d of ['w', 'e']) if (R.doors && R.doors[d] != null && !(typeof hiddenDoor === 'function' && hiddenDoor(R, d))) { const p = DOOR[d].y; ctx.rect(d === 'w' ? A.x0 - 120 : A.x1, p - 30, 120, 60); }
+    ctx.clip(); try { return fn(); } finally { ctx.restore(); } }
+  function drawSideWalls() {
+    const D = G && G.dun, R = D && D.cur; if (!R || G.stage === 1 || D.forge || D.home || D.ruin || D.den || D.lab || ['home', 'archive', 'lab', 'den', 'forge', 'ruin'].includes(R.type)) return;
+    const y0 = Math.max(0, A.y0), y1 = Math.min(H, A.y1 + 40), WW = 64;
+    ctx.save(); ctx.imageSmoothingEnabled = false;
+    for (const [xa, xb, d] of [[Math.max(0, A.x0 - WW), A.x0, 'w'], [A.x1, Math.min(W, A.x1 + WW), 'e']]) {
+      if (xb <= xa) continue; let ys = [[y0, y1]];
+      if (R.doors && R.doors[d] != null && !(typeof hiddenDoor === 'function' && hiddenDoor(R, d))) { const p = DOOR[d].y; ys = [[y0, p - 30], [p + 30, y1]]; } // 옆문 자리는 비워 문으로 드나들 때 몸이 잘리지 않게
+      for (const [a, b] of ys) if (b > a) ctx.drawImage(floor, xa, a, xb - xa, b - a, xa, a, xb - xa, b - a); }
+    ctx.restore(); }
   function render() {
     { const hide = BUB_RECTS.some(r => mouse.x >= r[0] && mouse.x < r[0] + r[2] && mouse.y >= r[1] && mouse.y < r[1] + r[3]); // v3.18 말주머니가 마우스 커서보다 위로 보이게: 그 위에선 커서를 숨김
       cv.classList.toggle('noCur', hide); BUB_RECTS.length = 0; }
@@ -300,6 +329,7 @@ void main() {
     let sx = 0, sy = 0;
     // v1.07: 화면 흔들림 전부 끔 (사용자 결정 — 액션할 때 화면이 흔들리거나 움직이지 않게). shake 값은 계산만 남음
     // v1.05: 타격 줌(화면 전체 비정수 배율)은 도트 격자를 깨서 끔 — 흔들림·히트스톱으로 손맛
+    { const S = SKSHAKE, now = performance.now() / 1000; if (S.t > 0) { S.t -= Math.min(0.05, now - (S.last || now)); const k = Math.max(0, S.t / S.max), A = S.n * k * k; if (S.t > S.max - 0.05) { sx = S.dx * A; sy = S.dy * A; } else { sx = (Math.random() * 2 - 1) * A; sy = (Math.random() * 2 - 1) * A * 0.7; } } S.last = now; } // v3.25 기사 레전더리 기술 화면 흔들림 (2px 칸)
     camSnap(); ctx.translate(-CAMX + snap2(sx), -CAMY + snap2(sy)); // v1.05: 카메라·흔들림도 2px 단위 (v1.06 플레이어 기준)
     wtextDefer = !!G; WTEXT.length = 0;
     ctx.drawImage(G && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home)) ? floorM : floor, 0, 0);
@@ -319,19 +349,20 @@ void main() {
     drawMeteorMark(); drawMeteorAim();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) if (!t.mark) drawTele(t); DITHER_ON = dz; } // v1.79 공격 예고는 잘 보이게 디더 제외
     // 보스 전조(경고)는 보스·캐릭터 그래픽 아래에 (v0.74)
-    drawSqueeze(); drawRiteGround(); TRUTH.ground(); DEN.ground(); RUIN.ground(); // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
+    drawSqueeze(); drawRiteGround(); TRUTH.ground(); DEN.ground(); RUIN.ground(); if (indoorDark() && !RUIN.on()) spotPool(); /* 유적 · 갱도 · 교단 본거지는 RUIN.ground 안에서 */ // v2.40 관중 제거 · 3단계 좁아지는 방책 (바깥 어둠만 — 말뚝은 sqzEnts에서 깊이 정렬)
     drawSoupFloor(); drawSmokeFloor(); drawPenance(); drawGearGround();
     { const dz = DITHER_ON; DITHER_ON = false; for (const t of G.tele) { if (t.mark) drawTele(t); drawTeleGlow(t); } DITHER_ON = dz; } // v0.79: 모든 몬스터의 예고는 캐릭터·몬스터 그래픽 아래에
     drawBuffBatch(); // v2.50 바닥 강화 고리 한 장으로
-    const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.type === 'crow' && (e.z || 0) > 8 ? e.y + 4000 : e.y, d: () => drawEnemyShk(e) })); // v3.19 날고 있는 까마귀 · 나방은 벽 · 울타리 · 기둥보다 위에 그림 (밑으로 지나가 보이던 문제)
-    if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => drawCorpse(c) });
+    const ents = G.enemies.filter(e => !e.dead).map(e => ({ y: e.type === 'crow' && (e.z || 0) > 8 ? e.y + 4000 : e.y, d: e.type === 'crow' && (e.z || 0) > 8 ? () => drawEnemyShk(e) : () => sideClip(() => drawEnemyShk(e)) })); // v3.19 날고 있는 까마귀 · 나방은 벽 · 울타리 · 기둥보다 위에 그림 (밑으로 지나가 보이던 문제)
+    if (G.corpses) for (const c of G.corpses) ents.push({ y: c.e.y, d: () => sideClip(() => drawCorpse(c)) });
     ents.push({ y: G.player.y, d: drawPlayer });
     roomEnts(ents); gearEnts(ents); forgeEnts(ents); CA.ents(ents); END.ents(ents); sqzEnts(ents); TRUTH.ents(ents); DEN.ents(ents); BDC.ents(ents); if (typeof HABIULT !== 'undefined') HABIULT.ents(ents); if (typeof CASING !== 'undefined') CASING.ents(ents); // v2.57 크루가쉬 방책 말뚝도 깊이 정렬
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
-    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d()); for (const l of G.loot) drawLoot(l); /* v2.80 보상은 늘 맨 위 층 (상자 · 소품 · 캐릭터에 가려지지 않게) */ BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); G._wt = ctx.getTransform();
+    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d === drawPlayer ? sideClip(drawPlayer) : o.d()); for (const l of G.loot) drawLoot(l); /* v2.80 보상은 늘 맨 위 층 (상자 · 소품 · 캐릭터에 가려지지 않게) */ BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); G._wt = ctx.getTransform();
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
+    // v3.25 좌우 벽 가림은 sideClip(캐릭터 · 적 · 시체를 벽 안쪽으로 잘라 그림)으로 대체 — 예전 drawSideWalls는 바닥 그림을 벽 띠에 다시 덮어 옆문 · 문 기둥 · 바닥 효과까지 지웠음
     enemySays(); TRUTH.top(); BDC.top(); // v2.58 · v3.18 머리 위 뼈주사위
     drawGearTop();
     drawWproj(); // v2.05
@@ -370,7 +401,7 @@ void main() {
       if (hole) { // 나 모양 − 앞을 가리는 물체 = 컬러로 남길 자리
         for (const g of [mk, oc]) { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.clearRect(bx, by, bw, bh); g.setTransform(WT); }
         const main = ctx, wt0 = WTEXT.length, np = G.parts.length;
-        try { ctx = mk; drawPlayer(); ctx = oc; drawBubble.mute = true; try { for (const o of G._occ || []) o.d(); } finally { drawBubble.mute = false; } if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) oc.drawImage(frontM, 0, 0); }
+        try { ctx = mk; sideClip(drawPlayer); ctx = oc; drawBubble.mute = true; try { for (const o of G._occ || []) o.d(); } finally { drawBubble.mute = false; } if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) oc.drawImage(frontM, 0, 0); }
         finally { ctx = main; WTEXT.length = wt0; G.parts.length = Math.min(G.parts.length, np); }
         mk.setTransform(1, 0, 0, 1, 0, 0); mk.globalCompositeOperation = 'destination-out'; mk.drawImage(CNT_OC, bx, by, bw, bh, bx, by, bw, bh); mk.globalCompositeOperation = 'source-over';
       }

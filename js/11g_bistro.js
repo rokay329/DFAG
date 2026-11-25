@@ -75,14 +75,16 @@ const BISTRO = (() => {
   // 김 (키륵 등장 연기처럼): 동글동글한 연기 덩이가 피어오르며 커지고, 칸이 성겨지며 사라짐
   const B4S = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
   function steam(x, y) { // 쿠오 뒤에서 피어올라 머리 위로 올라옴
-    const N = 9;
+    const N = 4; // v3.25 고양이 귀 연기: 덩이마다 귀가 보이게 수를 줄이고 간격을 벌림
     for (let i = 0; i < N; i++) {
-      const k = (time * 0.32 + i / N) % 1, sw = Math.sin(time * 1.1 + i * 2.1) * (2 + k * 8);
-      const cx = Math.round((x + [-6, 6, 0, -9, 9, -3, 3, -5, 5][i] + sw) / 2), cy = Math.round((y - 2 - k * 50) / 2), r = 2.6 + k * 3.8;
-      for (let yy = -Math.ceil(r); yy <= Math.ceil(r); yy++) for (let xx = -Math.ceil(r); xx <= Math.ceil(r); xx++) {
-        const q = Math.hypot(xx, yy * 1.15) / r; if (q > 1) continue;
+      const k = (time * 0.26 + i / N) % 1, sw = Math.sin(time * 1.1 + i * 2.1) * (2 + k * 7);
+      const cx = Math.round((x + [-3, 4, -4, 3][i] + sw) / 2), cy = Math.round((y - 4 - k * 72) / 2), r = 2.8 + k * 3.4;
+      // v3.25 연기 덩이마다 고양이 귀 두 개 (쿠키 · 쿠오의 비스트로) — 동그라미 위 양옆에 뾰족한 삼각형
+      const ear = (xx, yy) => { for (const sd of [-1, 1]) { const u = (xx * sd - r * 0.22) / (r * 0.7), v = (-yy - r * 0.55) / (r * 0.8); if (u >= 0 && u <= 1 && v >= 0 && v <= 1 - Math.abs(2 * u - 1) * 1.05) return true; } return false; };
+      for (let yy = -Math.ceil(r * 1.4); yy <= Math.ceil(r); yy++) for (let xx = -Math.ceil(r); xx <= Math.ceil(r); xx++) {
+        const q = Math.hypot(xx, yy * 1.15) / r, E = q > 1 && ear(xx, yy); if (q > 1 && !E) continue;
         const gx = cx + xx, gy = cy + yy, th = B4S[((gy & 3) * 4) + (gx & 3)] / 16;
-        if (q > 0.78 && th < (q - 0.78) * 4) continue;             // 가장자리만 살짝 성기게 (동글동글)
+        if (!E && q > 0.78 && th < (q - 0.78) * 4 && yy > -r * 0.5) continue; // 가장자리만 살짝 성기게 (귀 사이 윗변은 또렷하게)
         if (th < (k - 0.6) * 2.4) continue;                          // 끝무렵에 옅어지며 사라짐
         ctx.fillStyle = yy < -r * 0.25 ? '#f0f2f6' : yy < r * 0.35 ? '#ccd0d8' : '#a2a8b4';
         ctx.fillRect(gx * 2, gy * 2, 2, 2);

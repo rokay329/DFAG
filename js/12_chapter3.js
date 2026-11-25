@@ -1318,7 +1318,8 @@
     for (let y = (A.y0 - 4) & ~1; y < A.y1 + 4; y += 2) for (let x = (A.x0 - 4) & ~1; x < A.x1 + 4; x += 2) {
       let v = nz(x, y) * 0.75 + rand(-0.12, 0.12) + 0.2, pal = EARTH;
       if (ring) { const e = Math.hypot((x - CX) / rx, (y - CY) / ry); if (e < 1 && !(e > 0.9 && dith(x >> 1, y >> 1, (e - 0.9) * 10))) { pal = SAND; v = nz(x * 1.7, y * 1.7) * 0.6 + rand(-0.1, 0.1) + 0.25; } }
-      if (pal === EARTH && paths.length) { let md = 1e9; for (const p of paths) md = Math.min(md, segD(x, y, p.x, p.y)); if (md < 16 && !(md > 10 && dith(x >> 1, y >> 1, (md - 10) / 6))) v -= 0.32; }
+      if (pal === EARTH && paths.length) { let md = 1e9; for (const p of paths) md = Math.min(md, segD(x, y, p.x, p.y)); const mw = md + (nz(x * 1.4 + 70, y * 1.4 + 30) - 0.5) * 16, wid = 14 + (nz(x * 0.45 + 300, y * 0.45 + 500) - 0.5) * 14; // v3.26 오크 부락 흙길: 굽이 · 들쭉날쭉한 폭 · 바퀴 자국 · 군데군데 끊긴 가장자리
+        if (mw < wid && !(mw > wid - 8 && dith(x >> 1, y >> 1, (mw - (wid - 8)) / 8)) && !(mw > wid - 12 && nz(x * 2.2, y * 2.2) > 0.72)) { v -= 0.3; if (Math.abs(Math.abs(mw) - 5) < 1.6 && nz(x * 1.9 + 11, y * 1.9) > 0.42) v -= 0.16; if (nz(x * 3.1 + 90, y * 3.1) > 0.8) v += 0.12; } }
       const f = clamp(v, 0, 0.999) * (pal.length - 1), i = Math.floor(f), j = Math.min(pal.length - 1, i + (dith(x >> 1, y >> 1, f - i) ? 1 : 0));
       CL.set(x, y, pal[j]);
     }
@@ -1327,7 +1328,7 @@
     const inA = (x, y, m = 8) => x > A.x0 + m && x < A.x1 - m && y > A.y0 + m && y < A.y1 - m;
     const area = (A.x1 - A.x0) * (A.y1 - A.y0) / 540000;
     const SD = window.SCN34 && SCN34.dec, SP = window.SCN34 && SCN34.decPal, dstamp = (k, x, y) => { const gr = fromRows(SD[k]); if (typeof OCC !== 'undefined' && !OCC.stamp(x, y, gr[0].length * 2, gr.length * 2)) return; gPaint(g, gr, SP, x, y); }; // v2.85 점유 지도 // v2.82 뼈 조각 · 자갈 · 짚을 작은 도트 그림으로
-    for (let i = 0; i < 14 * area; i++) { const x = randi(A.x0, A.x1) & ~1, y = randi(A.y0, A.y1) & ~1; if (!inA(x, y) || !decFree(x, y, 8)) continue; dstamp(pick(['bone1', 'bone1', 'bone2', 'jaw']), x - 6, y - 4); }
+    if (!['shrine', 'shop', 'rest', 'reward', 'secret'].includes(R.type)) /* v3.25 특수방은 뼈 없음 */ for (let i = 0; i < 14 * area; i++) { const x = randi(A.x0, A.x1) & ~1, y = randi(A.y0, A.y1) & ~1; if (!inA(x, y) || !decFree(x, y, 8)) continue; dstamp(pick(['bone1', 'bone1', 'bone2', 'jaw']), x - 6, y - 4); }
     for (let i = 0; i < 18 * area; i++) { const x = randi(A.x0, A.x1) & ~1, y = randi(A.y0, A.y1) & ~1; if (!inA(x, y) || !decFree(x, y, 8)) continue; dstamp(pick(['peb1', 'peb2']), x - 4, y - 4); }
     for (let i = 0; i < 22 * area; i++) { const x = randi(A.x0, A.x1) & ~1, y = randi(A.y0, A.y1) & ~1; if (!inA(x, y) || !decFree(x, y, 8)) continue; dstamp(pick(['straw1', 'straw2']), x - 4, y - 4); }
     for (let i = 0; i < 4 * area + 1; i++) {
@@ -1503,7 +1504,7 @@
     const ix0 = 3, ix1 = wc - 2, iy0 = BH + 1, iy1 = hc;
     // 1) 안쪽 바닥: 낮은 주파수 얼룩만 (잔노이즈 없이)
     const base = kind === 'meat' ? ['u', 'v'] : kind === 'scrap' ? ['u', 'X'] : kind === 'beast' ? ['U', 'u'] : ['u', 'U'], ph = rand(0, 6);
-    for (let y = 1; y <= hc; y++) for (let x = 1; x <= wc; x++) { const v = 0.5 + 0.25 * Math.sin(x * 0.35 + ph) + 0.25 * Math.cos(y * 0.5 + x * 0.12); g[y][x] = dith(x, y, v * 0.6) ? base[1] : base[0]; if (y <= iy0 + 1 && dith(x, y, (iy0 + 2 - y) / 3)) g[y][x] = 'K'; }
+    for (let y = 1; y <= hc; y++) for (let x = 1; x <= wc; x++) { const v = 0.5 + 0.25 * Math.sin(x * 0.35 + ph) + 0.25 * Math.cos(y * 0.5 + x * 0.12); g[y][x] = dith(x, y, v * 0.6) ? base[1] : base[0]; } // v3.26 뒤 울타리 그늘 없음 (그림자는 정면 아래에만)
     // 2) 내용물: 가운데 둔덕(타원) 안에 엇갈린 격자로 물건을 촘촘히 쌓고, 둔덕 오른쪽 아래는 한 단계 어둡게 → 쌓인 더미로 읽히게
     const r = (a, b) => randi(a, b), cx = (ix0 + ix1) / 2, cy = (iy0 + iy1) / 2 + 0.5, hx = Math.max(3, (ix1 - ix0) / 2 - 1), hy = Math.max(2, (iy1 - iy0) / 2);
     const inHeap = (x, y, s = 1) => Math.hypot((x - cx) / (hx * s), (y - cy) / (hy * s)) < 1;
@@ -1574,7 +1575,7 @@
       for (let y = 2 + (tall ? 0 : 1); y <= BH; y++) set(x, y, c === 0 ? (y > BH - 2 ? 'd' : 'l') : c === 1 ? (y > BH - 2 ? 'D' : 'd') : 'K');
       if (BH > 5) { const ry = 2 + Math.round(BH * 0.45); if (c !== 2) set(x, ry, (x % 9) < 2 ? 's' : 'D'); if (((x - 1) / 3 | 0) % 7 === 3 && c === 0) for (let y = 4; y < BH; y++) if (y % 2) set(x, y, 'r'); } // 밧줄 띠 · 흘러내린 피
       if (c === 0 && !tall) set(x, 2, 'K'); }
-    if (BH > 5) for (let x = ix0 - 1; x <= ix1 + 1; x++) { if ('uUvX'.includes(get(x, BH + 1))) set(x, BH + 1, 'K'); if (((x + BH) & 1) && 'uUvX'.includes(get(x, BH + 2))) set(x, BH + 2, 'K'); } // 뒤 울타리가 바닥에 드리운 그늘
+    if (BH > 5) for (let x = 3; x <= wc - 2; x++) if (x & 1) set(x, BH, 'U'); // 뒤 울타리 밑동 — v3.26 한 칸 건너 (두꺼운 띠 대신)
     for (let y = 2; y <= hc; y++) for (const [x, c] of [[1, 'h'], [2, 'd'], [wc - 1, 'l'], [wc, 'D']]) set(x, y, (y % 3 === 0) ? 'K' : c);
     // 4) 앞 울타리: 끝을 깎은 굵은 말뚝 (위로 솟은 뾰족 끝), 밧줄 감기, 꽂힌 해골, 흘러내린 피
     const SW = 4;
@@ -1586,10 +1587,13 @@
       else if (Math.random() < 0.18) for (let k = 0; k < r(2, 6); k++) set(x0 + r(0, 2), hc + 2 + k, k > 2 ? 'R' : 'r');
     }
     for (let x = 1; x <= wc; x++) { const y = hc + 5 + ((x >> 1) & 1); if (get(x, y) !== 'K') set(x, y, (x % 2) ? 'y' : 'o'); const y2 = hc + 10 + (((x + 1) >> 1) & 1); if (get(x, y2) !== 'K') set(x, y2, (x % 2) ? 'o' : 'O'); }
-    for (let x = 1; x <= wc; x++) { set(x, hc + HH, 'D'); if (Math.random() < 0.4) set(x, hc + HH - 1, 'U'); }
+    for (let x = 1; x <= wc; x++) { set(x, hc + HH, (x & 1) ? 'D' : 'd'); if (Math.random() < 0.4) set(x, hc + HH - 1, 'U'); }
     // v3.19 외곽선 기준: 우리 안 뼈 · 해골 · 부서진 무기는 검은 테두리 대신 제 색을 어둡게 (바닥 흙 · 울타리 그늘 · 앞 울타리는 그대로)
     if (window.DEOUT !== false && kind === 'bones') deOutlineGrid(g, PEN_PAL, ix0, iy0 + 2, ix1, hc - 4, { bg: 'uUvXx'.split('').map(c => PEN_PAL[c].toLowerCase()), sepOnly: true, f: 0.42 });
-    return { g: gOutline(g), HH };
+    const og = gOutline(g); // v3.26 밑 그림자 외곽선은 디더로 (두꺼워 보이지 않게)
+    for (let k = 0; k < 3; k++) og.push(og[0].map(() => '.')); // v3.26 정면 아래에만 디더 그림자 (2 · 3번째 줄은 더 성기게)
+    for (let x = 1; x < og[0].length - 1; x++) { let y = og.length - 4; while (y >= 0 && og[y][x] === '.') y--; if (y < 0) continue; for (let k = 1; k <= 3; k++) if (dith(x, y + k, k === 1 ? 0.6 : k === 2 ? 0.35 : 0.15)) og[y + k][x] = 'K'; }
+    return { g: og, HH };
   }
   // 망루: 네 기둥 위 발판과 난간, 가죽 지붕, 앞에 사다리와 깃발
   function genWatchtower(wc, hc) {

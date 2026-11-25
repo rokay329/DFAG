@@ -531,7 +531,7 @@
   const engHas = id => !!(ENG[id] && G && G.eng && G.eng[ENG[id].c].includes(id)); // 옛 각인 id는 항상 false
   const engDone = id => !!(G && G.engC && G.engC.has(id));
   const engAny = c => !!(G && G.eng && G.eng[c].length);
-  function engReset() { G.eng = { r: [], b: [], g: [] }; G.engC = new Set(); G.engQ = []; G.ais = []; G.engZ = []; G.engS = []; G.lant = []; G.emberUsed = false; if (G.player) { G.player.hope = 0; G.player.emberT = 0; } }
+  function engReset() { G.engBuy = { r: 0, b: 0, g: 0 }; G.palTot = { r: 0, b: 0, g: 0 }; /* v3.25 빛의 방: 색마다 산 횟수 · 이번 토벌에 모은 빛(쓴 것 포함) */ G.eng = { r: [], b: [], g: [] }; G.engC = new Set(); G.engQ = []; G.ais = []; G.engZ = []; G.engS = []; G.lant = []; G.emberUsed = false; if (G.player) { G.player.hope = 0; G.player.emberT = 0; } }
   function engQueue(c, tier) { if (!G.eng) engReset(); G.engQ.push({ c, tier }); }
   function engTryOpen() { if (!G.engQ || !G.engQ.length || mode !== 'play' || G.trans || G.cine || G.player.dead) return; openEng(G.engQ.shift()); }
   function engOptions(c, tier) {
@@ -810,27 +810,26 @@
     const pips = (P.lArm || 0) + (engHas('g_r2') ? (P.gAmmo || 0) : 0); if (pips && !P.dead) { ctx.fillStyle = '#6ad84a'; for (let i = 0; i < pips; i++) { const t = i / pips * TAU + time * 2; ctx.fillRect(Math.round(P.x + Math.cos(t) * 13) & ~1, Math.round(P.y - 10 + Math.sin(t) * 7) & ~1, 2, 2); } }
   }
   function engTip(c) { // 팔레트 툴팁: 고른 각인
-    if (!G.eng || !G.eng[c].length) return `<span style='color:#6a6474'>${HUE_TIER.map(n => n + '개').join(' · ')}에 닿을 때마다 각인을 하나 고릅니다.</span>`;
+    if (!G.eng || !G.eng[c].length) return `<span style='color:#6a6474'>빛의 방에서 이 빛을 바쳐 각인을 얻습니다.</span>`; // v3.25
     return G.eng[c].map(k => `<span style='color:${HUES[c].c}'><img src='${engIcon(k, G.engC.has(k))}' style='width:18px;height:18px;image-rendering:pixelated;vertical-align:-4px'> ${ENG[k].n}${G.engC.has(k) ? ' (완성)' : ''}</span>`).join('<br>');
   }
   // ================================================================ v2.34 색 되찾기 (문서: 색되찾기_설계) — 1단계: 잿빛 방 · 색 조각 · 색 물결 · 단계 효과 1~3
   const HUES = { r: { n: '분노의 빛', c: '#ff5a4a', rgb: '255,90,74' }, b: { n: '평온의 빛', c: '#5aa8ff', rgb: '90,168,255' }, g: { n: '희망의 빛', c: '#6ad84a', rgb: '106,216,74' } };
-  const HUE_TIER = [10, 25, 45], HUE_GRAY = 0.6; // 단계 기준 · 잿빛 방은 채도 40%만 남김
+  const HUE_TIER = [10, 25, 45], HUE_GRAY = 0.6; // 단계 기준(이번 토벌에 모은 빛 · 성난 심지 · 해금 조건) · 잿빛 방은 v3.25부터 쓰지 않음
   const BOSS_HUE = { 1: 'b', 2: 'r', 3: 'g', 4: 'r' };
-  const hueTier = c => { const n = (G && G.pal && G.pal[c]) || 0; return n >= HUE_TIER[2] ? 3 : n >= HUE_TIER[1] ? 2 : n >= HUE_TIER[0] ? 1 : 0; };
-  const grayRoom = R => !!(R && R.hue && !R.painted && ['combat', 'elite', 'survive'].includes(R.type) /* v2.46 보스방은 처음부터 색이 켜져 있음 */ && (!R.cleared || (G.paintW && G.paintW.R === R)));
+  const hueTier = c => { const n = (G && G.palTot && G.palTot[c]) || 0; /* v3.25 빛을 재화로 쓰므로 단계는 모은 개수(쓴 것 포함)로 */ return n >= HUE_TIER[2] ? 3 : n >= HUE_TIER[1] ? 2 : n >= HUE_TIER[0] ? 1 : 0; };
+  const grayRoom = R => false && !!(R && R.hue /* v3.25 잿빛 방 없앰 — 방은 늘 제 색 (사용자 결정) */ && !R.painted && ['combat', 'elite', 'survive'].includes(R.type) /* v2.46 보스방은 처음부터 색이 켜져 있음 */ && (!R.cleared || (G.paintW && G.paintW.R === R)));
   for (const c in HUES) { const H = { r: ['#ff4a4a', '#a01828', '#ffd0c8'], b: ['#5aa8ff', '#1e4a9a', '#d8ecff'], g: ['#6ad84a', '#2e7a1a', '#e0ffc8'] }[c];
     MAPS['hue_' + c] = ['....k....', '...kWk...', '..kWHHk..', '.kWHHHMk.', 'kWHHHHMMk', '.kHHHMMk.', '..kHMMk..', '...kMk...', '....k....']; PAL['hue_' + c] = { k: '#0b0a0e', W: H[2], H: H[0], M: H[1] }; }
   const hueGold = () => 1, hueChest = () => 0; // v2.41 빛의 각인으로 대체
   function hueDrop(e) { // 몬스터 처치 시 확률로 색 조각
     const R = G.dun && G.dun.cur; if (!R || !R.hue || R.type === 'boss' || isDummy(e)) return; // v2.46 보스방에선 빛 조각이 떨어지지 않음
-    const n = e.type === 'boss' ? 0 : isElite(e) ? 1 : isSemi(e) ? (Math.random() < 0.4 * engRichMul(e) ? 1 : 0) : Math.random() < 0.07 * engRichMul(e) ? 1 : 0; // v2.38 다시 절반 (일반 7% · 준엘리트 40% · 정예 1)
+    const n = e.type === 'boss' ? 0 : isElite(e) ? randi(2, 3) : isSemi(e) ? engRichMul(e) : Math.random() < 0.2 * engRichMul(e) ? 1 : 0; // v3.25 빛을 재화로 — 약 3배 (일반 20% · 준엘리트 1 · 정예 2~3)
     for (let i = 0; i < n * (G.player.counterT > 0 ? 2 : 1); i++) { const c = Math.random() < 0.7 ? R.hue : pick(['r', 'b', 'g']), l0 = G.loot.length; spawnLoot('hue', e.x, e.y); if (G.loot[l0]) G.loot[l0].hue = c; }
   }
   function hueGain(c, n) {
-    const t0 = hueTier(c); G.pal[c] = (G.pal[c] || 0) + n; const t1 = hueTier(c); { const w = eqWeapon(G.cls); if (w && w.grade === 'rby' && t1 === t0) G.stats = calcStats(G.buffs); } // v2.40 RGB?
-    if (t1 > t0) { const P = G.player, hp0 = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - hp0), 0, G.stats.hp);
-      G.nums.push({ x: P.x, y: P.y - 40, v: `${HUES[c].n} ${t1}단계`, t: 1.2, c: HUES[c].c, s: 2 }); for (let k = t0 + 1; k <= t1; k++) engQueue(c, k); } // v2.41 고정 단계 효과 대신 각인 고르기
+    if (!G.palTot) G.palTot = { r: 0, b: 0, g: 0 }; const t0 = hueTier(c); G.pal[c] = (G.pal[c] || 0) + n; G.palTot[c] = (G.palTot[c] || 0) + n; const t1 = hueTier(c); { const w = eqWeapon(G.cls); if (w && w.grade === 'rby' && t1 === t0) G.stats = calcStats(G.buffs); } // v2.40 RGB?
+    if (t1 > t0) { const P = G.player, hp0 = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - hp0), 0, G.stats.hp); } // v3.25 단계마다 각인 고르기 없앰 — 빛의 방에서 빛을 바쳐 얻음
     if (hueTier('r') >= 2 && hueTier('b') >= 2 && hueTier('g') >= 2) recOnce('u_prism'); if (hueTier('r') >= 3) recOnce('u_wick'); if (hueTier('g') >= 3) recOnce('u_lant'); // v2.36
     renderPal();
   }
@@ -861,13 +860,13 @@
     const el = $('p1pal'); if (!el || !G || !G.pal) return;
     const up = palPrev ? Object.keys(HUES).filter(c => hueTier(c) > palPrev[c]) : []; palPrev = {}; for (const c in HUES) palPrev[c] = hueTier(c);
     el.innerHTML = Object.keys(HUES).map(c => { const n = G.pal[c] || 0, t = hueTier(c), H = HUES[c], S = HUE_SH[c];
-      return `<div class="palRow${up.includes(c) ? ' up' : ''}" style="--hc:${H.c};--hl:${S[0]};--hd:${S[1]};--c:${H.c}" data-name="${H.n} · ${n}개" data-tip="${engTip(c)}"><img class="gem" src="${hueURL(c)}" alt=""><span class="pn">${H.n.replace('의 빛', '')}</span><span class="pv">${n}</span></div>`; }).join('');
+      return `<div class="palRow${up.includes(c) ? ' up' : ''}" style="--hc:${H.c};--hl:${S[0]};--hd:${S[1]};--c:${H.c}" data-name="${H.n} · ${n}개" data-tip="${engTip(c)}"><img class="gem" src="${hueURL(c)}" alt=""><span class="pv">${n}</span></div>`; }).join('');
   }
 
-  function startPaint(R, x, y) { // 방을 비우면 색 물결
-    if (!R || !R.hue || R.painted) return; G.paintW = { R, x, y, t: 0 };
-    for (let i = 0, m = 1 + (hasRelic('brush') ? 1 : 0); i < m; i++) { const l0 = G.loot.length; spawnLoot('hue', x, y); if (G.loot[l0]) G.loot[l0].hue = R.hue; }
-    sfx('heal', 0.8); sfx('grogi', 1.6); addShake(2, 0);
+  function startPaint(R, x, y) { // 방을 비우면 빛 조각 — v3.25 색 물결 · 채도 연출 · 효과음 없앰 (사용자 결정), 조각 2개
+    if (!R || !R.hue || R.painted) return; R.painted = true;
+    for (let i = 0, m = 2 + (hasRelic('brush') ? 1 : 0); i < m; i++) { const l0 = G.loot.length; spawnLoot('hue', x, y); if (G.loot[l0]) G.loot[l0].hue = R.hue; }
+    const D = G.dun; if (D && !D.allPainted && D.rooms.filter(r => r.hue && r.type !== 'boss').every(r => r.painted)) { D.allPainted = true; rec('paintall'); lootFeed('<b style="color:#ffd34d">이 챕터의 전투 방을 모두 정리했습니다</b>', '#ffd34d', 3500); }
   }
   function killEnemy(e, silent) {
     e.dead = true; cancelTele(e);
@@ -880,7 +879,7 @@
     if (e.type !== 'ghost') splat(e.x, e.y, 18 * big, splatOf(e));
     if (e.type === 'bigslime' && !silent) for (const s of [-1, 1]) { const m = makeEnemy('slime', clamp(e.x + s * 12, A.x0 + 10, A.x1 - 10), e.y); m.vx = s * 120; m.cd = 0.8; m.rise = 0; G.enemies.push(m); }
     if (silent) return;
-    G.kills++;
+    G.kills++; G.lastKillAng = e.lastAng != null ? e.lastAng : angTo(G.player, e); // v3.25 마지막 적 화면 흔들림 방향
     gearOnKill(e);
     if (!isDummy(e) && isElite(e)) { rec('elite'); if (hasRelic('horn')) { G.hornT = time + 3; G.nums.push({ x: G.player.x, y: G.player.y - 34, v: '사냥꾼의 나팔', t: 0.7, c: '#f0e0b0', s: 1 }); } } // v2.29
     if (G.cls === 'knight' && G.player.counterT > 0 && !isDummy(e)) rec('k_counter');

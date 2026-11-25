@@ -14,7 +14,7 @@ const RUIN = (() => {
   img('headB', AS.head.base); img('headG', AS.head.glow[0]); AS.head.up.forEach((u, i) => img('up' + i, u[0])); AS.head.jaw.forEach((u, i) => img('jaw' + i, u[0]));
   for (const k of ['tail', 'front', 'front2']) { img(k + 'O', AS[k].ov.at); AS[k].props.forEach((q, i) => img(k + 'P' + i, q[0])); }
   for (const k of ['tail', 'front', 'front2', 'tail_nc', 'front_nc', 'front2_nc']) { img(k + 'F', AS[k].f0); img(k + 'A', AS[k].at); if (AS[k].glow) img(k + 'G', AS[k].glow[0]); }
-  img('combatB', AS.combat.base); img('combat2B', AS.combat2.base); for (const c of ['c1', 'c2', 'c3']) img(c + 'B', AS[c].base); img('stA', AS.stairs.alb); img('stK', AS.stairs.kind); img('mnA', AS.mine.alb); img('mnO', AS.mine.ov); img('mnK', AS.mine.kind); img('mnRock', AS.mine.rock); for (const k in AS.mine.pr) img('mnP_' + k, AS.mine.pr[k]); AS.mine.spk.forEach((u, i) => img('mnS' + i, u)); img('mnStaff', AS.mine.staff); for (const k in CULT_AS) { img('cr_' + k, CULT_AS[k].base); img('crK_' + k, CULT_AS[k].kind); if (CULT_AS[k].ov) img('crO_' + k, CULT_AS[k].ov); if (CULT_AS[k].lead) CULT_AS[k].lead.fr.forEach((u, i) => img('crL_' + i, u)); if (CULT_AS[k].blood) img('crB_' + k, CULT_AS[k].blood); } /* v3.21 교단 본거지 */ if (AS.combat.glow) img('combatG', AS.combat.glow[0]);
+  img('combatB', AS.combat.base); img('combat2B', AS.combat2.base); for (const c of ['c1', 'c2', 'c3']) img(c + 'B', AS[c].base); img('stA', AS.stairs.alb); img('stK', AS.stairs.kind); img('mnA', AS.mine.alb); img('mnO', AS.mine.ov); img('mnK', AS.mine.kind); img('mnRock', AS.mine.rock); for (const k in AS.mine.pr) img('mnP_' + k, AS.mine.pr[k]); AS.mine.spk.forEach((u, i) => img('mnS' + i, u)); img('mnStaff', AS.mine.staff); for (const k in CULT_AS) { img('cr_' + k, CULT_AS[k].base); img('crK_' + k, CULT_AS[k].kind); if (CULT_AS[k].ov) img('crO_' + k, CULT_AS[k].ov); if (CULT_AS[k].lead) CULT_AS[k].lead.fr.forEach((u, i) => img('crL_' + i, u)); if (CULT_AS[k].blood) img('crB_' + k, CULT_AS[k].blood); if (CULT_AS[k].wall) img('crW_' + k, CULT_AS[k].wall); if (CULT_AS[k].blf) CULT_AS[k].blf.forEach((u, i) => img('crF_' + k + i, u)); } /* v3.21 교단 본거지 */ if (AS.combat.glow) img('combatG', AS.combat.glow[0]);
 
   const SEAL = { head: '머리가 봉인되어 있다.', tail: '꼬리가 봉인되어 있다.', front: '다리가 봉인되어 있다.', front2: '다리가 봉인되어 있다.' };
   const UNDER = '유폐된 지하 유적'; // 계단방 ~ 전투방 셋 (용 머리 방 전까지)
@@ -94,7 +94,7 @@ const RUIN = (() => {
   }
   function goIn(R, from) { // from: [이 방에서 들어오는 변, 자리]
     LUMPS.length = 0; SPL.length = 0; PRT.length = 0;
-    enterRoom(R, null); R.visited = true; G.flies = null; const o = off(), P = G.player;
+    enterRoom(R, null); R.visited = true; G.flies = null; PILLARS = []; TORCHES = []; /* v3.21 유적 · 교단 본거지에는 스테이지 벽 횃불(과 그 빛)이 없음 — 들어온 스테이지의 횃불이 벽 · 문 안에 서던 문제 */ const o = off(), P = G.player;
     const [cx, cy] = from ? arrive(R, from[0], from[1]) : isSt(R) ? [CXc, SM.TOPW + 18] : isMn(R) ? [MN.CX, MN.H - 20] : isCr(R) ? [crM(R).CX, crM(R).FY1 - 21] : [CXc, 160];
     Object.assign(P, { x: o.x + cx * 2, y: o.y + cy * 2, face: 1 }); G.ruinLast = { x: P.x, y: P.y };
     if (!R.ru.spawned) { R.ru.spawned = true; spawnRoom(R); }
@@ -312,7 +312,12 @@ const RUIN = (() => {
       ctx.globalAlpha = 1;
       if (m.t > 2.8) MELT.splice(i, 1); } }
   const RC = { on: false };
-  { const o = updateEnemy; updateEnemy = function (e, dt) { if (e.rs === 'polyp') return polypAI(e, dt); if (e.rs === 'mimic') return mimicAI(e, dt); if (e.rmage) return mageAI(e, dt); return o(e, dt); }; }
+  { const o = updateEnemy; updateEnemy = function (e, dt) { if (e.rs === 'polyp') return polypAI(e, dt); if (e.rs === 'mimic') return mimicAI(e, dt); if (e.rmage) return mageAI(e, dt); if (e.rcult) return cultAI(e, dt, o); return o(e, dt); }; }
+  function cultAI(e, dt, o) { // v3.25 유적 교단원: 지팡이 교단원은 근접(붙어서 내려침) · 나머지는 2장 사제보다 짧은 간격으로 쏨 (준비 0.85→0.7초 · 다음 공격 2.2~3.2→1.4~2.0초)
+    if (e.rmelee) { const s1 = e.state; e.type = 'ghoul'; try { o(e, dt); } finally { e.type = 'cultist'; } if (s1 !== 'hold' && e.state === 'hold') { e.t = Math.max(e.t, 0.55); G.tele.push({ shape: 'cone', x: e.x, y: e.y, ang: e.holdAng, arc: 110 * DEG, r: 30, t: 0, dur: e.t, owner: e }); } return; } // 내려치기 예고: 다른 적과 같은 바닥 부채꼴
+    const s0 = e.state, r = o(e, dt);
+    if (s0 !== 'wind' && e.state === 'wind') { const t = G.tele[G.tele.length - 1]; if (t && t.owner === e) { t.dur = 0.7; const f = t.onFire; t.onFire = (...a) => { f(...a); e.cd = rand(1.4, 2.0); }; } }
+    return r; }
   { const o = drawEnemyBody; drawEnemyBody = function (e) { if (e.rmage) { RC.on = true; try { o(e); } finally { RC.on = false; } const s = IM.mnStaff; if (s && s.width) { const f = e.face >= 0, x = Math.round(e.x + (f ? 2 : -2 - s.width * 2)) & ~1, y = Math.round(e.y - 38) & ~1; ctx.save(); ctx.imageSmoothingEnabled = false; if (!f) { ctx.translate(x + s.width * 2, y); ctx.scale(-1, 1); ctx.drawImage(s, 0, 0, s.width * 2, s.height * 2); } else ctx.drawImage(s, x, y, s.width * 2, s.height * 2); ctx.restore(); } return; } if (e.rs) { drawMon(e); return; } if (e.rcult) { RC.on = true; try { o(e); } finally { RC.on = false; } return; } o(e); }; }
   { const o = nrBiped; nrBiped = function (e, map, pal, ...a) { if (RC.on && pal === 'chaplain') pal = 'chaplainR'; return o(e, map, pal, ...a); }; }
   PAL.chaplainR = AS.palR; // 피의 광신도를 붉은 비늘 교단 색으로
@@ -323,7 +328,8 @@ const RUIN = (() => {
   function hostile(R) { const o = off();
     if (R.ru.k === 'front' || R.ru.k === 'front2') { R.ru.snapT = time; sfx('block', 1.3); } // v3.20 밧줄이 툭 끊어짐
     R.obs = R.obs.filter(b => !b.cult); R.nav = buildNav(R.obs); if (G.dun.cur === R) { G.obs = R.obs; G.nav = R.nav; G.navDist = null; } // v3.20 서 있던 교단원 자리 막힘을 풀고 적으로 (쓰러진 뒤엔 시체라 지나갈 수 있음)
-    R.ru.shout0 = time; CULTS[R.ru.k].forEach(([x, y], i) => { const e = makeEnemy('cultist', o.x + x * 2, o.y + y * 2); e.rcult = true; e.rise = 0; e.cd = 0.6 + i * 0.3; G.enemies.push(e); alertMark(e, 40); });
+    const L0 = ambOrder(AS[R.ru.k])[0], li = L0 ? CULTS[R.ru.k].reduce((b, [x, y], i, A) => Math.hypot(x - L0[0], (y - L0[1]) * 0.5) < Math.hypot(A[b][0] - L0[0], (A[b][1] - L0[1]) * 0.5) ? i : b, 0) : 0; // 선창하던 지팡이 교단원
+    R.ru.shout0 = time; CULTS[R.ru.k].forEach(([x, y], i) => { const e = makeEnemy('cultist', o.x + x * 2, o.y + y * 2); e.rcult = true; e.rise = 0; e.cd = 0.25 + i * 0.15 + Math.random() * 0.25; e.spd *= 1.5; if (i === li) { e.rmelee = true; e.spd = 72; e.cd = 0.2; } G.enemies.push(e); alertMark(e, 40); }); // v3.25 반응을 빠르게: 첫 공격 당김 · 박자 흩음 · 이동 1.5배 · 지팡이 교단원은 붙어서 내려침
     sfx('hit'); addShake(4);
   }
 
@@ -414,8 +420,27 @@ const RUIN = (() => {
     // 핏덩이가 떨어진 자리
     for (let i = SPL.length - 1; i >= 0; i--) { const s = SPL[i]; s.t -= dt; if (s.t <= 0) { SPL.splice(i, 1); continue; } ctx.globalAlpha = Math.min(1, s.t) * 0.9; for (const [dx, dy] of s.px) { ctx.fillStyle = (dx + dy) % 2 ? '#5a0c10' : '#8a1418'; ctx.fillRect(s.x + dx * 2, s.y + dy * 2, 2, 2); } }
     ctx.globalAlpha = 1; ctx.restore();
+    if (typeof spotPool === 'function') spotPool(); // v3.25 주인공 발밑 집중 조명: 벽 가림용 바닥을 뜨기 전에 깔아야 벽·장애물 자리가 네모로 잘리지 않음
+    wallCap(R); // v3.21 좌우 벽 가림용으로 지금까지 그린 바닥을 떠 둠
   }
 
+  // v3.21 좌우 벽은 캐릭터를 가림 (용의 유적 · 갱도): 바닥을 다 그린 화면을 떠 두었다가, 벽 칸 모양으로 오려 캐릭터 위에 다시 그림
+  //  · 일반 유적 방(핏줄 · 머리 · 꼬리 · 앞발 방): 좌우 돌벽 띠 (옆문 자리는 비움) · 계단방: 난간 바깥 · 갱도: 줄마다 양 끝에서 이어진 바위 벽
+  const WCAP = mkCanvas(VW, VH), WMSK = mkCanvas(VW, VH), WMK = {};
+  function wallMask(R) { const k = R.ru.k; if (isCr(R)) return null; const key = k === 'stairs' || k === 'mine' ? k : 'room' + R.id; if (WMK[key]) return WMK[key];
+    if (k === 'mine') { if (!IM.mnA || !IM.mnA.complete || !IM.mnA.width) return null; const [c0, g0] = mkCanvas(MN.W, MN.H); g0.drawImage(IM.mnA, 0, 0); const AD = g0.getImageData(0, 0, MN.W, MN.H).data; // v3.25 갱도: 바위 더미는 낮은 돌무더기라 캐릭터를 자르지 않음 — 그 바깥 빈 어둠만 가림 (울퉁불퉁한 돌 가장자리에 캐릭터가 계단 모양으로 잘리던 문제)
+      const free = (x, y) => AD[(y * MN.W + x) * 4 + 3] > 0;
+      const [c, g] = mkCanvas(MN.W, MN.H); g.fillStyle = '#fff';
+      for (let y = MN.TOP; y < MN.H; y++) { let x = 0; while (x < MN.W && !free(x, y)) x++; if (x > 0) g.fillRect(0, y, x, 1); let x2 = MN.W - 1; while (x2 >= 0 && !free(x2, y)) x2--; if (x2 < MN.W - 1) g.fillRect(x2 + 1, y, MN.W - 1 - x2, 1); }
+      return (WMK[key] = c); }
+    if (k === 'stairs') { const [c, g] = mkCanvas(SM.W, SM.H); g.fillStyle = '#fff'; g.fillRect(0, SM.TOPW, SM.TX0 + 2, SM.H - SM.TOPW); g.fillRect(SM.TX1 - 1, SM.TOPW, SM.W - SM.TX1 + 1, SM.H - SM.TOPW); return (WMK[key] = c); }
+    const [c, g] = mkCanvas(384, 216); g.fillStyle = '#fff'; g.fillRect(84, WB, 9, 200 - WB); g.fillRect(292, WB, 9, 200 - WB);
+    for (const s of ['w', 'e']) { const d = R.ru.def.doors[s]; if (d) g.clearRect(s === 'w' ? 84 : 292, d[0] - 15, 9, 30); } // 옆문 자리
+    return (WMK[key] = c); }
+  function wallCap(R) { if (!wallMask(R)) return; const g = WCAP[1]; g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, VW, VH); g.drawImage(ctx.canvas, 0, 0); }
+  function wallDraw(R, o) { const m = wallMask(R); if (!m) return; const g = WMSK[1]; g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, VW, VH); g.imageSmoothingEnabled = false;
+    g.drawImage(m, Math.round(o.x - CAMX), Math.round(o.y - CAMY), m.width * 2, m.height * 2); g.globalCompositeOperation = 'source-in'; g.drawImage(WCAP[0], 0, 0); g.globalCompositeOperation = 'source-over';
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(WMSK[0], 0, 0); ctx.restore(); }
   // ---------- 긴 석재 계단방: 칸마다 빛 계산 (방들과 같은 8단 밝기 · 푸른 기운) · 마나등은 기사가 지나가면 켜짐
   let SA = null, SKd = null; const SCV = mkCanvas(SM.SX1 - SM.SX0 + 24, 230), ORB = AS.stairs.orb, SMOTE = [];
   function stData() { if (SA || !IM.stA.complete || !IM.stK.complete || !IM.stA.width) return !!SA; const [c, g] = mkCanvas(SM.W, SM.H);
@@ -490,8 +515,8 @@ const RUIN = (() => {
     for (const [x, yb, cs] of A.runs) { const j = JIT[(f + hs(x, yb) % 12) % JIT.length], L = Math.max(1, Math.min(cs.length + j, cs.length + 2));
       for (let k = 0; k < Math.min(L, cs.length); k++) put(x, yb - k, cs[k]);
       for (let k = cs.length; k < L; k++) put(x, yb - k, k === L - 1 ? TIP : '#e8502a'); } }
-  // v3.21 시체 반사광: 빛을 받는 쪽 외곽선이 불빛처럼 일렁임 (세기 3단마다 어두운 색 · 살짝 밝은 색 두 가지를 오감 · 가까운 칸끼리 같은 박자)
-  const RIMP = [['#b07850', '#d89a70'], ['#86583e', '#a86c4c'], ['#5a3a2c', '#7a4c38']], RFL = [1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1];
+  // v3.21 시체 반사광: 빛을 받는 쪽 외곽선이 불빛처럼 일렁임 (세기 3단마다 깊은 주황 · 밝은 주황 두 가지를 오감 · 가까운 칸끼리 같은 박자)
+  const RIMP = [['#ff8a34', '#ffc46a'], ['#e0682a', '#ff9a44'], ['#a8441e', '#d8642a']], RFL = [1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1]; // 횃불 반사광: 채도 높은 주황 — 깊은 주황 ↔ 노랑빛 주황 (가까운 불일수록 밝게)
   function rim(put, A, t) { if (!A.rim) return; const f = Math.floor(t * 7); for (const [x, y, c] of A.rim) put(x, y, RIMP[c][RFL[(f + hs(Math.round(x / 10), Math.round(y / 10)) % 12) % 12]]); }
   // 흩어진 불씨: 숨 쉬듯 밝았다 어두워졌다 잠깐 꺼짐
   const EMC = ['#ffd870', '#ff9a3a', '#e8502a', '#a82a1a'];
@@ -526,7 +551,7 @@ const RUIN = (() => {
   // 교단의 알 수 없는 말: 읊조림이 끊이지 않고 이어짐 (말주머니마다 다른 글자 줄)
   const SAY_ON = 1.7, SAY_GAP = 0.7;
   function sayLine(gly, t) { const n = Math.floor(t / (SAY_ON + SAY_GAP)); if (t % (SAY_ON + SAY_GAP) > SAY_ON) return null; let s = (n * 0x9e3779b9 + 0x6d2b79f5) >>> 0; const r = () => { s = (s + 0x6d2b79f5) >>> 0; let q = Math.imul(s ^ (s >>> 15), 1 | s); q = (q + Math.imul(q ^ (q >>> 7), 61 | q)) ^ q; return ((q ^ (q >>> 14)) >>> 0) / 4294967296; }; const len = 3 + ((r() * 3) | 0); return Array.from({ length: len }, () => gly[(r() * gly.length) | 0]); }
-  return { rim, fire, embers, parts, lamp, eatFrame, chips, sayLine, clear: () => { P.length = 0; CH.length = 0; } };
+  return { flick: (f, gx, gy) => RFL[(f + hs(gx, gy) % 12) % 12], rim, fire, embers, parts, lamp, eatFrame, chips, sayLine, clear: () => { P.length = 0; CH.length = 0; } };
 })();
 
   // v3.21 피 발자국: 피 칸을 밟으면 발바닥에 피가 묻어(10걸음) 7칸마다 좌우 번갈아 찍힘 · 피에서 벗어나면 걸음마다 옅고 듬성해짐 · 5초 뒤부터 디더로 지워져 8초에 사라짐
@@ -543,12 +568,15 @@ const RUIN = (() => {
   function footDraw(o, dt) { for (let i = FP.length - 1; i >= 0; i--) { const f = FP[i]; f.t += dt; if (f.t >= FP_LIFE) { FP.splice(i, 1); continue; }
     const S = FPS[f.k], w = S[0].length, h = S.length, gone = f.t > FP_FADE ? (f.t - FP_FADE) / (FP_LIFE - FP_FADE) : 0, dry = (1 - f.s) * 0.55, col = f.s > 0.55 ? '#7c1416' : '#5c0d12';
     S.forEach((r, j) => { for (let q = 0; q < w; q++) { if (r[q] !== 'a') continue; const hh = (((f.sd + q * 374761393 + j * 668265263) >>> 0) % 1000) / 1000; if (hh < dry || hh < gone) continue; px(o, f.x - (w >> 1) + q, f.y - h + 1 + j, col); } }); } }
+  // v3.21 불빛 받은 피웅덩이: 불에 가까운 피 칸이 빛을 받아 밝아지고, 반사광과 같은 박자로 밝은 장 · 어두운 장을 오가며 일렁임 (밝은 칸 · 어두운 칸이 잡음 모양 덩어리로 흘러 바뀜 — 네모 덩어리 없음)
+  function bloodLit(o, k) { const F = CR[k].blf, M = CR[k].meta; if (!F) return; const im = IM['crF_' + k + (Math.floor(time * 5) % F.length)]; if (!im || !im.width) return; // 6장을 차례로 (밝은 칸 · 어두운 칸이 부드러운 덩어리 모양으로 흘러 바뀜)
+    const cy0 = Math.max(0, Math.floor((CAMY - o.y) / 2) - 2), hh = Math.min(M.CH - cy0, (VH >> 1) + 8); if (hh > 0) ctx.drawImage(im, 0, cy0, M.CW, hh, o.x, o.y + cy0 * 2, M.CW * 2, hh * 2); }
   function crFlame(o, x, y, i, half) { FX.lamp((X, Y, c) => px(o, X, Y, c), x, y, i, time, half); }
   function groundCr(R, o, dt) { const M = crM(R), im = IM['cr_' + R.ru.k];
     ctx.fillStyle = 'rgb(4,3,8)'; ctx.fillRect(CAMX - 8, CAMY - 8, VW + 16, VH + 16);
     if (im && im.width) { const cy0 = Math.max(0, Math.floor((CAMY - o.y) / 2) - 2), hh = Math.min(M.CH - cy0, (VH >> 1) + 8); if (hh > 0) ctx.drawImage(im, 0, cy0, M.CW, hh, o.x, o.y + cy0 * 2, M.CW * 2, hh * 2); }
     const put = (x, y, c) => px(o, x, y, c), AN = CR[R.ru.k].anim;
-    footTick(R, o); footDraw(o, dt); // 피 발자국
+    bloodLit(o, R.ru.k); footTick(R, o); footDraw(o, dt); // 불빛 받은 피웅덩이 · 피 발자국
     if (AN) { FX.rim(put, AN, time); FX.fire(put, AN, time); FX.embers(put, AN, time); FX.parts(put, AN, time, dt); } // 타는 천 · 바닥 불 · 타는 시체 불길 일렁임 · 불씨 깜빡임 · 불티 · 연기 · 재
     if (R.ru.k === 'vault') { const Ld = CR.vault.lead, im2 = IM['crL_' + FX.eatFrame(time)[0]]; if (im2 && im2.width) ctx.drawImage(im2, o.x + Ld.x * 2, o.y + Ld.y * 2, Ld.w * 2, Ld.h * 2); FX.chips(put, { hx: M.LFX + 1, hy: M.LFY - 6 }, time, dt); // 교주가 비늘을 뜯어 먹음
       M.LAMPS.forEach(([x, y], i) => crFlame(o, x, y, i, i < 3 ? null : [i < 6 ? 40 : 339, i < 6 ? 1 : -1])); } // 석실 등잔: 정면 셋 · 옆벽 반쪽 사발
@@ -703,8 +731,12 @@ const RUIN = (() => {
   // ---------------------------------------------------------------- 캐릭터와 같이 깊이 정렬되는 것: 던진 핏덩이
   function ents(list) {
     const R = cur(); if (!R) return; list.push({ y: 2e9, d: () => gateArrows(R) }); const dt = 1 / 60, k = R.ru.k, o = off();
+    list.push({ y: 1e9 - 1, d: () => wallDraw(R, o) }); // v3.21 좌우 벽이 캐릭터를 가림 (갱도 들보 · 매단 등은 그 위)
     if (k === 'stairs' && CAMY < o.y + 120 * 2) { const c = ladderCv(); if (c) list.push({ y: o.y + 46 * 2, d: () => { ctx.imageSmoothingEnabled = false; ctx.drawImage(c, o.x + LAD.x0 * 2, o.y + LAD.y0 * 2); } }); } // v3.20 위 아치의 석재 사다리
-    if (isCr(R)) { const M = crM(R), ov = IM['crO_' + k]; if (ov && ov.width) M.COLS.forEach(([cx, by], i) => list.push({ y: o.y + by * 2, d: () => { ctx.imageSmoothingEnabled = false; const sx = cx - 20, sy = by - 92; ctx.drawImage(ov, sx, sy, 40, 96, o.x + sx * 2, o.y + sy * 2, 80, 192); const L = M.LAMPS[i]; if (L) crFlame(o, L[0], L[1], i); } })); return; } // v3.21 기둥 (등잔 포함): 주춧돌 기준으로 캐릭터와 앞뒤를 가림
+    if (isCr(R)) { const M = crM(R), ov = IM['crO_' + k]; if (ov && ov.width) M.COLS.forEach(([cx, by], i) => list.push({ y: o.y + by * 2, d: () => { ctx.imageSmoothingEnabled = false; const sx = cx - 20, sy = by - 92; ctx.drawImage(ov, sx, sy, 40, 96, o.x + sx * 2, o.y + sy * 2, 80, 192); const L = M.LAMPS[i]; if (L) crFlame(o, L[0], L[1], i); } }));
+      const wl = IM['crW_' + k]; if (wl && wl.width) list.push({ y: 1e9, d: () => { const cy0 = Math.max(0, Math.floor((CAMY - o.y) / 2) - 2), hh = Math.min(M.CH - cy0, (VH >> 1) + 8); if (hh <= 0) return; ctx.imageSmoothingEnabled = false; ctx.drawImage(wl, 0, cy0, M.CW, hh, o.x, o.y + cy0 * 2, M.CW * 2, hh * 2); // v3.21 좌우 석벽은 캐릭터를 가림
+        if (k === 'vault') M.LAMPS.forEach(([x, y], i) => { if (i >= 3) crFlame(o, x, y, i, [i < 6 ? 40 : 339, i < 6 ? 1 : -1]); }); } }); // 옆벽 반쪽 등잔 불꽃은 벽 위에 다시
+      return; } // v3.21 기둥 (등잔 포함): 주춧돌 기준으로 캐릭터와 앞뒤를 가림
     if (k === 'mine') { const cy0 = Math.max(0, Math.floor((CAMY - o.y) / 2) - 2), hh = Math.min(MN.H - cy0, (VH >> 1) + 6);
       MN.traps.forEach(([tx, ty], i) => { if (ty < cy0 - 40 || ty > cy0 + hh + 40) return; const h = spikeH(i), im = IM['mnS' + h]; if (!h || !im || !im.width) return;
         for (let j = 0; j < 4; j++) { const sy = 6 + 5 * j; list.push({ y: o.y + (ty - 8 + sy + 5) * 2, d: () => { ctx.imageSmoothingEnabled = false; ctx.drawImage(im, 0, sy, im.width, 7, o.x + tx * 2, o.y + (ty - 8 + sy) * 2, im.width * 2, 14); } }); } });
@@ -728,7 +760,7 @@ const RUIN = (() => {
   }
   function lights(list) {
     const R = cur(); if (!R) return; const o = off(), k = R.ru.k, L = (x, y, r, a, c, ca) => list.push({ x: o.x + x * 2, y: o.y + y * 2, r, a, c, ca });
-    if (isCr(R)) { crM(R).FIRE.forEach(([x, y, r, a], i) => L(x, y, r * 2, Math.min(0.95, a + 0.1) * (0.94 + 0.06 * Math.sin(time * 9 + i * 1.7)), '255,160,80', r > 40 ? 0.08 : 0.06)); return; } // v3.21 시안의 불빛 자리 그대로 (등잔 · 타는 천 · 타는 시체)
+    if (isCr(R)) { crM(R).FIRE.forEach(([x, y, r, a], i) => L(x, y, r * 2, Math.min(0.8, a) * (0.94 + 0.06 * Math.sin(time * 9 + i * 1.7)), '255,160,80', r > 40 ? 0.05 : 0.04)); /* v3.25 횃불이 캐릭터보다 튀지 않게: 불빛은 약하게 · 캐릭터 · 적에 따로 빛 */ const P = G.player; for (const e of G.enemies) if (!e.dead) list.push({ x: e.x, y: e.y - 12, r: 64, a: 0.5 }); return; } // v3.21 시안의 불빛 자리 그대로 (등잔 · 타는 천 · 타는 시체)
     if (k === 'mine') { for (const [x, y] of MN.lamps) L(x, y, 110, 0.85, '255,170,80', 0.12); for (const [x, y, lit] of MN.lampf) if (lit) L(x, y + 5, 100, 0.75, '255,170,80', 0.1); L(MN.exit[0], MN.exit[1] - 8, 90, 0.7, '255,50,40', 0.14); for (const pr of G.eproj) if (pr.kind === 'fireball') list.push({ x: pr.x, y: pr.y - 10, r: 70, a: 0.9, c: '255,140,60', ca: 0.2 }); const mg = R.ru.mage; if (mg && !mg.dead) list.push({ x: mg.x, y: mg.y - 14, r: 60 + Math.sin(time * 6) * 6, a: 0.75, c: '255,60,50', ca: 0.16 }); return; } // 갱도: 등 · 위 문틈 붉은빛
     for (const s in R.ru.def.doors) { if (isSt(R) && s === 'n') { L(CXc, SM.TOPW - 8, 54, 0.85, '120,190,255', 0.14); continue; } /* v3.20 사다리 아치: 문이 열렸을 때와 같은 푸른빛 (양옆 구슬) */ const p = R.ru.def.doors[s][0], [cx, cy] = s === 'n' ? [p, RECT(R)[1] - 24] : s === 's' ? [p, RECT(R)[3] - 1] : s === 'w' ? [92, p] : [292, p]; if (doorOpen(R, s)) L(cx, cy, 54, 0.85, '120,190,255', 0.14); else L(cx, cy, 34, 0.6, '200,50,60', 0.08); } // 문 자리 빛
     if (k === 'stairs') { for (const p of R.ru.lamps) { const I = lampI(p); if (I > 0) L(p.x + p.s * 8, p.y + 4, 130, Math.min(1, 0.75 * I), '120,200,255', 0.14); } L(CXc, SM.BOT, 70, 0.6, '230,70,60', 0.08); L(CXc, SM.TOPW + 8, 110, 0.75, '150,175,230', 0.06); } // 아래 문틈 붉은빛 · 위 아치로 드는 희미한 빛
@@ -817,7 +849,7 @@ const RUIN = (() => {
     g.textAlign = 'left'; g.fillStyle = on ? '#ffe9b0' : '#9a8ea5'; g.fillText(label, X + 7, Y + 11); g.restore(); }
   // 교단원 말주머니: 게임 말주머니 모양 · 알 수 없는 글자 (칸 = 2px)
   const SHOUT = [AS.gly[1], AS.gly[3], AS.gly[0], AS.gly[5], AS.gly[1]];
-  const AMB0 = 0.7, AMBS = 0.42, ambOrder = S => (S && S.bub ? S.bub.slice().sort((a, b) => a[2] - b[2]) : []); // v3.20 알아챈 뒤 첫 외침까지 · 따라 외치는 간격 (선창 = 기도 때 먼저 읊던 지팡이 교단원)
+  const AMB0 = 0.7, AMBS = 0.28, ambOrder = S => (S && S.bub ? S.bub.slice().sort((a, b) => a[2] - b[2]) : []); // v3.20 알아챈 뒤 첫 외침까지 · 따라 외치는 간격 (선창 = 기도 때 먼저 읊던 지팡이 교단원)
   function glyphBubble(x, y, line, red) { const g = ctx, n = line.length, w = (n * 8 + 12) & ~1, h = 16, X = Math.round(x) & ~1, Y = Math.round(y) & ~1, bx = (X - (w >> 1)) & ~1, by = Y - h - 6;
     g.fillStyle = '#0b0a0e'; g.fillRect(bx + 2, by - 2, w - 4, h + 4); g.fillRect(bx, by, w, h); g.fillRect(bx - 2, by + 2, w + 4, h - 4);
     g.fillStyle = '#f4ead2'; g.fillRect(bx + 2, by, w - 4, h); g.fillRect(bx, by + 2, w, h - 4); g.fillStyle = '#d8c8a4'; g.fillRect(bx + 2, by + h - 2, w - 4, 2);
@@ -865,7 +897,7 @@ const RUIN = (() => {
     if (CULTS[R.ru.k] && R.ru.attack && !foes(R)) R.ru.done = true; // 교단원을 다 물리친 방
     if (R.ru.amb != null && !R.ru.attack) { const t = time - R.ru.amb, n = ambOrder(AS[R.ru.k]).length; // v3.20 선창 → 따라 외침 소리 · 다 외치면 덤빔
       while (R.ru.ambI < n && t >= AMB0 + R.ru.ambI * AMBS) { sfx(R.ru.ambI ? 'blip' : 'hit', R.ru.ambI ? 0.7 : 0.9); if (!R.ru.ambI) addShake(2); R.ru.ambI++; }
-      if (t >= AMB0 + n * AMBS + 0.6) { R.ru.amb = null; R.ru.attack = true; paint(fg, R); hostile(R); } }
+      if (t >= AMB0 + n * AMBS + 0.3) { R.ru.amb = null; R.ru.attack = true; paint(fg, R); hostile(R); } }
     if (isMn(R)) mineTick(R, dt || 1 / 60);
     if (isSt(R)) stairTick(R, c);
     if (!walk(R, c.x, c.y)) { if (G.ruinLast) { P.x = G.ruinLast.x; P.y = G.ruinLast.y; } } else G.ruinLast = { x: P.x, y: P.y };
@@ -876,5 +908,5 @@ const RUIN = (() => {
       if (band && doorOpen(R, s)) { goDoor(R, s); return; } }
   }
 
-  return { debugMine: () => { const go = () => { const L = G.dun.rooms.find(q => q.ru && q.ru.k === 'mine'); G.trans = { t: 0, dur: 0.2, phase: 'out', go: () => goIn(L, ['s', MN.CX]) }; }; if (cur()) go(); else { debugEnter(); const w = () => { if (G.trans) setTimeout(w, 60); else if (cur()) go(); }; setTimeout(w, 60); } }, debugCult: () => { const R = cur(), ks = ['hall', 'sanct', 'vault'], nx = R && isCr(R) ? ks[(ks.indexOf(R.ru.k) + 1) % 3] : 'hall'; const go = () => { const L = G.dun.rooms.find(q => q.ru && q.ru.k === nx); G.trans = { t: 0, dur: 0.2, phase: 'out', go: () => goIn(L, ['s', CR[nx].meta.CX]) }; }; if (cur()) go(); else { debugEnter(); const w = () => { if (G.trans) setTimeout(w, 60); else if (cur()) go(); }; setTimeout(w, 60); } }, camTop: () => { const R = cur(); return isCr(R) ? (crM(R).FY0 - (crM(R).WY0 || 10)) * 2 + 8 : 0; }, dark: () => { const R = cur(); return isMn(R) || isCr(R) ? [4, 3, 8] : null; }, darkA: () => { const R = cur(); return isMn(R) ? 0.86 : isCr(R) ? (R.ru.k === 'vault' ? 0.45 : 0.5) : null; }, topFog: () => isMn(cur()) ? 0.5 : 0, _go: i => goIn(G.dun.rooms[i], null), _mim: (x, y, sd) => { const e = spawnMimic(x, y); if (sd) { e.mart = brokenArt(mimicArt(), sd); e.broken = true; } return e; }, name: () => { const R = cur(); return R && R.ru.def.area ? R.ru.def.area : R && R.ru.def.under ? UNDER : NAME; }, busy, update, ground, screen, tick, debugEnter, leave, on: () => !!cur() };
+  return { debugMine: () => { const go = () => { const L = G.dun.rooms.find(q => q.ru && q.ru.k === 'mine'); G.trans = { t: 0, dur: 0.2, phase: 'out', go: () => goIn(L, ['s', MN.CX]) }; }; if (cur()) go(); else { debugEnter(); const w = () => { if (G.trans) setTimeout(w, 60); else if (cur()) go(); }; setTimeout(w, 60); } }, debugCult: () => { const R = cur(), ks = ['hall', 'sanct', 'vault'], nx = R && isCr(R) ? ks[(ks.indexOf(R.ru.k) + 1) % 3] : 'hall'; const go = () => { const L = G.dun.rooms.find(q => q.ru && q.ru.k === nx); G.trans = { t: 0, dur: 0.2, phase: 'out', go: () => goIn(L, ['s', CR[nx].meta.CX]) }; }; if (cur()) go(); else { debugEnter(); const w = () => { if (G.trans) setTimeout(w, 60); else if (cur()) go(); }; setTimeout(w, 60); } }, camTop: () => { const R = cur(); return isCr(R) ? (crM(R).FY0 - (crM(R).WY0 || 10)) * 2 + 8 : 0; }, dark: () => { const R = cur(); return isMn(R) || isCr(R) ? [4, 3, 8] : null; }, ambA: () => { const R = cur(); return isCr(R) ? (R.ru.k === 'vault' ? 0.36 : 0.32) : null; }, ambDk: () => isCr(cur()) ? [12, 6, 10] : null, /* v3.25 교단 본거지: 바탕 그림에 이미 어둠이 들어 있어 화면 어둠은 옅게 · 붉은 기운 */ darkA: () => { const R = cur(); return isMn(R) ? 0.86 : isCr(R) ? (R.ru.k === 'vault' ? 0.45 : 0.5) : null; }, topFog: () => isMn(cur()) ? 0.5 : 0, _go: i => goIn(G.dun.rooms[i], null), _mim: (x, y, sd) => { const e = spawnMimic(x, y); if (sd) { e.mart = brokenArt(mimicArt(), sd); e.broken = true; } return e; }, name: () => { const R = cur(); return R && R.ru.def.area ? R.ru.def.area : R && R.ru.def.under ? UNDER : NAME; }, busy, update, ground, screen, tick, debugEnter, leave, on: () => !!cur() };
 })();

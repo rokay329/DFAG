@@ -21,6 +21,7 @@
     A.y0 = 100 + Math.max(0, Math.round((540 - sh.h) / 4) * 2); A.y1 = A.y0 + sh.h;
     CX = (A.x0 + A.x1) / 2; CY = (A.y0 + A.y1) / 2;
     PILLARS = []; for (let x = A.x0 + 34; x <= A.x1 - 20; x += 157) PILLARS.push(x);
+    if (G && (G.stage === 2 || G.stage === 4)) { const n = PILLARS.length; PILLARS = PILLARS.map((_, k) => Math.round((CX + (k - (n - 1) / 2) * 157) / 2) * 2); } // v3.29 2장 · 4장 기둥은 방 가운데 기준 좌우 대칭
     TORCHES = PILLARS.map(x => ({ x, y: A.y0 - 38 }));
     // 문은 장식 기둥 간격에 맞추지 않고 각 변의 정확한 중앙에 고정한다.
     const nx = Math.round(CX / 2) * 2;
@@ -28,7 +29,7 @@
     NC = Math.ceil((A.x1 - A.x0) / NAV); NR = Math.ceil((A.y1 - A.y0) / NAV);
   }
   const doorIn = (d, k = 26) => ({ x: DOOR[d].x + (d === 'w' ? k : d === 'e' ? -k : 0), y: DOOR[d].y + (d === 'n' ? k : d === 's' ? -k : 0) });
-  const ROOM_N = { altar: '왕도 성문', forge: '쿤의 대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '쿠키 · 쿠오의 출장 비스트로', reward: '보물 방', shop: '살구의 비밀상점', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
+  const ROOM_N = { shrine: '빛의 방', altar: '왕도 성문', forge: '쿤의 대장간', start: '시작 방', combat: '전투 방', elite: '엘리트 방', survive: '봉인된 방', rest: '쿠키 · 쿠오의 출장 비스트로', reward: '보물 방', shop: '살구의 비밀상점', secret: '비밀 방', boss: '보스', hidden: '숨은 공터', lab: '구덩이 실험실', chapel: '기사단 밀실' };
   // v1.21 챕터마다 다른 엘리트 방 이름·문구 (tier 4 = 첫째 엘리트 방, tier 9 = 둘째)
   const ELITE_ROOM = {
     1: { n: '우두머리의 굴', tag: '굴', foe: '우두머리', clear: '우두머리 처치', loot: '우두머리의 전리품',
@@ -43,7 +44,7 @@
   const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
   const roomName = t => t === 'ruin' ? RUIN.name() : t === 'den' ? DEN.name() : t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];
   const roomTag = t => t === 'elite' ? ER().tag : ROOM_TAG[t];
-  const ROOM_TAG = { altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '비스트로', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
+  const ROOM_TAG = { shrine: '빛', altar: '성문', forge: '대장간', start: '시작', combat: '전투', elite: '엘리트', survive: '봉인', rest: '비스트로', reward: '보물', shop: '상인', secret: '비밀', boss: '보스', hidden: '공터', lab: '실험실', chapel: '밀실' };
 
   // withSeed: 04_monsters.js에서 불러올 때 먼저 써서 그쪽으로 옮김
 
@@ -98,6 +99,7 @@
     F = free().sort((a, b) => Math.abs(depth[a.id] - 3) - Math.abs(depth[b.id] - 3));
     if (!F.length) return null;
     F[0].type = 'rest'; F[0].tier = 5;
+    if (stage <= 4) { F = free().filter(r => depth[r.id] >= 2).sort((a, b) => Math.abs(depth[a.id] - 4) - Math.abs(depth[b.id] - 4)); if (!F.length) return null; F[0].type = 'shrine'; F[0].tier = 5; } // v3.25 빛의 방 (1~4장 · 챕터마다 1개)
     F = free().filter(r => depth[r.id] >= 2);
     if (!F.length) return null;
     const sv = pick(F); sv.type = 'survive'; sv.tier = 10;
@@ -128,7 +130,7 @@
       if (r.type === 'boss') r.tier = 11;
     }
     // 텔레포터: 시작·상인·모닥불·보물·봉인·보스 앞방 + 일부 전투 방
-    for (const r of rooms) if (['start', 'shop', 'rest', 'reward', 'survive', 'boss'].includes(r.type) || r === foyer || (r.type === 'combat' && Math.random() < 0.3)) r.hasTele = true;
+    for (const r of rooms) if (['start', 'shop', 'rest', 'reward', 'survive', 'boss', 'shrine'].includes(r.type) || r === foyer || (r.type === 'combat' && Math.random() < 0.3)) r.hasTele = true;
     // 방 모양: 양쪽 문만 있는 전투 방은 오솔길·복도가 되기 쉽고, 엘리트·봉인은 넓은 방, 쉼터는 작은 방
     const [STD, COR, CORV, SMALL, BIG] = stage === 1 ? ['field', 'trail', 'trailV', 'glade', 'plain'] : stage === 4 ? ['plaza', 'gallery', 'belfry', 'sanctum', 'court'] : stage === 2 ? ['hall', 'corridor', 'corridorV', 'chamber', 'greathall'] : ['square', 'fence', 'canyon', 'tents', 'arena'];
     const wpick = arr => { let t = Math.random() * arr.reduce((a, b) => a + b[1], 0); for (const [k, w] of arr) { if (t < w) return k; t -= w; } return arr[0][0]; };
@@ -140,7 +142,7 @@
         : r.type === 'survive' ? wpick([[STD, 1], [BIG, 2]])
         : r.type === 'start' ? 'start' + stage
         : r.type === 'secret' ? 'vault' // v1.11 특별한 방은 작게
-        : ['shop', 'rest', 'reward'].includes(r.type) ? 'nook'
+        : ['shop', 'rest', 'reward', 'shrine'].includes(r.type) ? 'nook'
         : SMALL;
     }
     // 모든 칸에 적어도 오솔길/복도 하나는 나오게
@@ -318,10 +320,12 @@
       let obs = [];
       for (let tries = 0; tries < 12 && pool.length; tries++) {
         const name = pool.splice(randi(0, pool.length - 1), 1)[0];
-        obs = naturalize(LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)), name, stage === 2).map(b => stage === 3 ? thick3(b) : realStage === 1 ? min1(b) : b).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
+        obs = naturalize(LAYOUTS[name]().map(sp => scaled(name) ? mkObs(sp, sx, sy) : mkObs(sp)), name, stage === 2 || stage === 3 /* v3.26 3장 토템도 2장 기둥처럼 줄 맞춤 */).map(b => stage === 3 ? thick3(b) : realStage === 1 ? min1(b) : b).filter(b => !keyPts.some(p => obsHitL([b], p.x, p.y, Math.min(62, (Math.min(A.x1 - A.x0, A.y1 - A.y0)) * 0.22))));
         // 방 가운데(보상 상자·텔레포터 자리)는 비운다: 큰 벽·구덩이가 걸리면 다른 배치, 바위·기둥은 빼기 (v0.59)
         if (obs.some(b => !b.c && obsHitL([b], CX, CY - 10, CLEAR_R))) { obs = []; continue; }
         obs = obs.filter(b => !obsHitL([b], CX, CY - 10, CLEAR_R));
+        if (stage === 3) { const sgD = (px, py, ax, ay) => { const vx = CX - ax, vy = CY - ay, L = vx * vx + vy * vy || 1, t = clamp(((px - ax) * vx + (py - ay) * vy) / L, 0, 1); return Math.hypot(px - ax - vx * t, py - ay - vy * t); }; // v3.26 바위 · 토템 등 둥근 장애물은 문 → 가운데 길을 막지 않게
+          const drs = Object.keys(r.doors).filter(d => r.doors[d] != null).map(d => DOOR[d]); obs = obs.filter(b => !b.c || drs.every(q => sgD(b.x, b.y, q.x, q.y) > b.r + 24)); }
         if (big && !obs.some(rectOk)) { obs = []; continue; }
         // 둥근 장애물끼리 겹치지 않게
         obs = obs.filter((b, i) => !b.c || !obs.slice(0, i).some(o => o.c ? Math.hypot(o.x - b.x, o.y - b.y) < o.r + b.r + (stage === 3 ? 30 : 10) : obsHitL([o], b.x, b.y, b.r + 6)));
@@ -345,8 +349,9 @@
       }
       if (stage === 3) for (const b of obs) {
         const sq = b.w <= 150 && b.h <= 150 && b.w / b.h > 0.5 && b.w / b.h < 2;
-        if (b.t === 'pit') { if (sq) { b.t = 'wall'; b.tower = true; } } // v3.19 네모난 작은 구덩이만 망루로 — 나머지는 피웅덩이로 남음
-        else if (b.t === 'wall' && sq && b.w >= 36 && Math.random() < 0.5) b.tower = true;
+        const NO_TOWER3 = true; // v3.26 망루 삭제 (false로 두면 예전처럼 망루가 나옴)
+        if (b.t === 'pit') { if (sq && !NO_TOWER3) { b.t = 'wall'; b.tower = true; } } // v3.19 네모난 작은 구덩이만 망루로 — 나머지는 피웅덩이로 남음
+        else if (!NO_TOWER3 && b.t === 'wall' && sq && b.w >= 36 && Math.random() < 0.5) b.tower = true;
       }
       // v0.99 망루는 네 기둥만 막힌다 — 발판 아래로 지나갈 수 있음 (그림은 b, 판정은 기둥 4개)
       if (stage === 3) for (const b of obs.slice()) if (b.tower) { b.ghost = true; for (const [x, y] of [[b.x0 + 7, b.y0 + 2], [b.x1 - 7, b.y0 + 2], [b.x0 + 3, b.y1 - 4], [b.x1 - 3, b.y1 - 4]]) obs.push({ t: 'post', c: true, x, y, r: 5, of: b }); }
@@ -460,7 +465,8 @@
     if (R.type === 'secret' && !R.greeted) { rec('secret'); R.greeted = true; banner('비밀 방', '잊힌 틈새에 남은 물건이 있다'); }
     const RM = { den: 'den', ruin: 'ruin', rest: 'rmBistro', shop: 'rmShop', reward: 'rmReward', secret: 'rmSecret' }; // v3.19 쉬는 방마다 전용 곡 (비스트로 · 상점 · 보물 방 · 비밀 방)
     if (RM[R.type]) setMood(RM[R.type]); else
-    setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward'].includes(R.type) ? 'Rest' : ''));
+    setMood(stageMood(R.type === 'boss' && fresh ? 'Boss' : R.type === 'survive' && fresh ? 'Survive' : ['rest', 'shop', 'secret', 'reward', 'shrine'].includes(R.type) ? 'Rest' : ''));
+    if (R.type === 'shrine' && !R.greeted) { R.greeted = true; banner('빛의 방', '세 빛이 겹친 자리에 흰 빛이 떠 있다'); } // v3.25
     if (R.type === 'start') {
       spawnDummy(); // v2.04 시작 방 허수아비 (무기 시험용)
       if (G.stage === 1 && !SAVE.tutDone && !G.tutDone) G.tut = { step: 0, moveT: 0, atkN: 0, skN: 0, awkN: 0, dashN: 0, doneT: 0 };
@@ -565,7 +571,7 @@
   function roomClear() {
     const R = G.dun.cur;
     if (R.invade && !R.invaded) { R.invaded = true; startInvasion(R); return; } // v1.57 난입
-    R.cleared = true; R.clearAt = time; G.rs.state = 'done'; startPaint(R, G.player.x, G.player.y - 8); // v2.34 색 물결
+    R.cleared = true; R.clearAt = time; G.rs.state = 'done'; startPaint(R, G.player.x, G.player.y - 8); skShake(7, G.lastKillAng); // v2.34 빛 조각 · v3.25 마지막 적을 쓰러뜨리면 화면 흔들림
     sealRoom(false);
     if (R.type === 'elite') {
       const n = ++G.dun.eliteDone;
@@ -608,6 +614,13 @@
     goRoom(D.boss, entry);
   }
 
+  function debugToShrine() { // v3.25 테스트: 빛의 방으로 (Shift+H) · 다시 쓸 수 있게 · 빛 각 45개
+    const D = G.dun, R = D.rooms && D.rooms.find(r => r.type === 'shrine');
+    if (!R) { lootFeed('테스트 — 이 층에는 빛의 방이 없습니다', '#9a8f8a', 2500); return; }
+    R.shrineUsed = false; R.shrineOpts = null; R.visited = R.seen = true; for (const c of ['r', 'b', 'g']) G.pal[c] = Math.max(G.pal[c] || 0, 45); renderPal(); /* 해금 기록이 남지 않게 hueGain을 거치지 않음 */
+    if (D.cur === R) { lootFeed('테스트 — 흰 빛을 다시 쓸 수 있습니다', '#9fd2ff', 2000); return; }
+    goRoom(R, Object.keys(R.doors).find(d => R.doors[d] != null));
+  }
   function debugToRest() { // v3.10 테스트: 휴게방(비스트로)으로 바로 이동 (Shift+R). 이미 휴게방이면 주문만 다시 가능하게
     const D = G.dun, R = D.rooms && D.rooms.find(r => r.type === 'rest');
     if (!R) { lootFeed('테스트 — 이 층에는 휴게방이 없습니다', '#9a8f8a', 2500); return; }
@@ -664,6 +677,7 @@
     if (R.shop) for (const it of R.shop) if (!it.sold && near(it, 26)) return { k: 'shop', o: it, x: it.x, y: it.y - 34, t: `F ${SHOP_N[it.k]} · ${it.price}G`, bad: G.gold < it.price };
     if (R.altars) for (const a of R.altars) if (!a.used && near(a, 30)) { const t = altarText(a); return { k: 'altar', o: a, x: a.x, y: a.y - 40, t: t.t, bad: !t.ok }; }
     { const bi = BISTRO.interact(); if (bi) return bi; } // v3.10 쿠오 · 쿠키에게 말 걸기
+    { const si = SHRINE.interact(R); if (si) return si; } // v3.25 빛의 방
     if (G.bonfire && !R.used && near(G.bonfire, 50)) return { k: 'rest', o: G.bonfire, x: G.bonfire.x, y: G.bonfire.y + 20, t: 'F 주문하기' }; // v3.10 비스트로
     if (R.tele && R.cleared && near(R.tele, 22)) return { k: 'tele', o: R.tele, x: R.tele.x, y: R.tele.y - 24, t: 'F 지도 · 순간이동' };
     return null;
@@ -741,6 +755,7 @@
       G.nums.push({ x: s.x, y: s.y - 30, v: String(s.price), t: 0.8, c: '#ffd34d', s: 2 });
     } else if (it.k === 'altar') {
       useAltar(it.o);
+    } else if (it.k === 'shrine') { SHRINE.open();
     } else if (it.k === 'rest') {
       openRest();
     } else if (it.k === 'tele') openMap();
@@ -1968,8 +1983,9 @@
     reward: st => [['statue', -118, -74, 14], ['statue', 118, -74, 14], ['brazier', -64, -36, 9], ['brazier', 64, -36, 9], ['gold', -96, 34, 20], ['coins', 98, 38, 12], /* v2.80 보물 더미 하나 + 작은 금화 더미 하나 */
       ['banner', -196, -86, 0, 1], ['banner', 196, -86, 0, 1], ['brazier', -190, 90, 9], ['brazier', 190, 90, 9]],
     secret: st => [['altar', 0, -11, [92, 14]]], // v1.11 대리석 제단 위 상자 하나만
+    shrine: st => [], // v3.25 빛의 방: 시설물 없이 원형 돌바닥 · 세 빛의 마법진 · 빛기둥 · 흰 구체 (51_shrine.js가 바닥과 빛을 그림)
   };
-  const SR_TELE = { shop: [-188, 54], rest: [150, 70], reward: [-150, 66] };
+  const SR_TELE = { shop: [-188, 54], rest: [150, 70], reward: [-150, 66], shrine: [-206, 96] };
   const SR_FIRE = { dx: 0, dy: 10 };
   function srPlace(r, stage) {
     r.props = []; r.srp = [];
@@ -2019,6 +2035,7 @@
   function srFloor(g, R) {
     const st = G.stage, P = srPal(st), px = (x, y, c) => { g.fillStyle = c; g.fillRect(x & ~1, y & ~1, 2, 2); };
     const blot = (cx, cy, rx, ry, lv, col) => { for (let y = -ry; y <= ry; y += 2) for (let x = -rx; x <= rx; x += 2) { const q = Math.hypot(x / rx, y / ry); if (q < 1 && dith((cx + x) >> 1, (cy + y) >> 1, lv * (1 - q))) px(cx + x, cy + y, col); } };
+    if (R.type === 'shrine') SHRINE.floor(g, px, dith); // v3.25 빛의 방: 원형 돌바닥 + 세 빛의 마법진
     if (R.type === 'shop') { // 물건 아래 짠 깔개: 테두리 띠 · 마름모 줄무늬 · 양끝 술
       const W0 = 160, H0 = 22, x0 = (CX - W0) & ~1, y0 = (CY + 28) & ~1, C = st === 2 ? ['#1e2a44', '#34406a', '#4a5c94', '#b8863a', '#d8c09a'] : st === 3 ? ['#2e1c10', '#5a3418', '#7a4a22', '#c08a3a', '#e0c08a'] : ['#2a1610', '#5a2a1a', '#7e3a22', '#c09040', '#e8d0a0'];
       for (let j = 0; j < H0; j++) for (let i = 0; i < W0; i++) { const e = Math.min(i, W0 - 1 - i, j, H0 - 1 - j); let c = e === 0 ? C[0] : e === 1 ? C[3] : e === 2 ? C[1] : ((i + j) % 8 < 1 || (i - j + 400) % 8 < 1) ? C[2] : (j === H0 >> 1 && i % 4 < 2) ? C[4] : C[1]; if (e > 2 && Math.random() < 0.04) c = C[0]; px(x0 + i * 2, y0 + j * 2, c); }
@@ -2026,24 +2043,41 @@
       blot(CX - 100, CY - 28, 90, 26, 0.5, 'rgba(0,0,0,.35)'); // 노점 아래 그늘
     }
     if (R.type === 'rest') { const f = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy };
-      blot(f.x, f.y, 120, 56, 0.55, st === 1 ? '#3e3020' : 'rgba(30,22,16,.6)'); blot(f.x, f.y, 52, 22, 0.8, '#2a2622'); blot(f.x, f.y, 34, 14, 0.9, '#55504a');
-      for (let i = 0; i < 26; i++) { const a = rand(0, TAU), d = rand(26, 90); px(f.x + Math.cos(a) * d, f.y + Math.sin(a) * d * 0.45, pick(['#6a5a48', '#3a2a1c', '#8a7a64'])); }
-      for (let i = 0; i < 6; i++) { const x = f.x + rand(-100, 100), y = f.y + rand(-40, 40); if (Math.hypot(x - f.x, (y - f.y) * 2) < 60) continue; for (let k = 0; k < 4; k++) px(x + k * 2, y + (k > 1 ? 2 : 0), '#4a3020'); } // 잔가지
+      // v3.25 모닥불 화덕 자리: 돌을 둥글게 두른 화덕 · 안쪽 숯 바닥 · 둘레로 번진 그을음과 재 (가장자리는 디더로 바닥에 녹아듦). 천 · 나무 · 짚처럼 불붙는 깔개는 쓰지 않음
+      const hsh = (a, b) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }, cl = v => Math.max(0, Math.min(1, v));
+      const vn = (x, y, s, k) => { const X = x / s, Y = y / s, x0 = Math.floor(X), y0 = Math.floor(Y), fx = X - x0, fy = Y - y0, sm = t => t * t * (3 - 2 * t), a = hsh(x0 * 7 + k, y0), b = hsh(x0 * 7 + 7 + k, y0), c = hsh(x0 * 7 + k, y0 + 1), d = hsh(x0 * 7 + 7 + k, y0 + 1), u = sm(fx), v = sm(fy); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+      const SR = 64, SRY = 26, ST = { 1: ['#7a7a70', '#5e5e56', '#42423c'], 2: ['#6e6a78', '#55515f', '#3a3644'], 3: ['#7e7062', '#605448', '#443a30'], 4: ['#86828c', '#686470', '#4a4650'] }[st] || ['#6e6a78', '#55515f', '#3a3644'];
+      // 1) 그을음 · 재: 화덕에서 멀수록 옅게, 덩어리 소음으로 가장자리가 들쭉날쭉
+      for (let y = -60; y <= 60; y += 2) for (let x = -134; x <= 134; x += 2) { const X = f.x + x, Y = f.y + y, u = Math.hypot(x / 130, y / 56); if (u > 1.05) continue;
+        const N = vn(X, Y * 2.2, 14, 21), lv = cl((1 - u) * 1.15 + (N - 0.5) * 0.7) * 0.9; if (!dith(X >> 1, Y >> 1, lv)) { if (u < 0.95 && dith((X >> 1) + 2, (Y >> 1) + 1, 0.05)) px(X, Y, '#6a645c'); continue; } // 가장자리엔 재 티끌
+        px(X, Y, u < 0.5 ? (hsh(X, Y) < 0.5 ? '#221e1c' : '#2a2522') : u < 0.78 ? '#332e2a' : '#3e3832'); }
+      // 2) 화덕 안쪽: 숯 바닥 + 사그라든 불씨
+      for (let y = -SRY; y <= SRY; y += 2) for (let x = -SR; x <= SR; x += 2) { const u = Math.hypot(x / (SR - 7), y / (SRY - 4)); if (u > 1) continue; const X = f.x + x, Y = f.y + y, n = hsh(X * 3, Y);
+        px(X, Y, n < 0.04 ? '#c0501a' : n < 0.06 ? '#ff8a3a' : n < 0.4 ? '#1a1614' : '#14100f'); }
+      // 3) 화덕 돌: 둥글게 두른 돌 16개 — 두어 개는 빠지거나 밖으로 굴러가 있음
+      const NS = 22;
+      for (let k = 0; k < NS; k++) { const a = k / NS * TAU + 0.1, r0 = hsh(k, 41); if (r0 < 0.12) continue; const out = r0 > 0.9 ? 1.45 : 1;
+        const sx = Math.round((f.x + Math.cos(a) * SR * out) / 2) * 2, sy = Math.round((f.y + Math.sin(a) * SRY * out) / 2) * 2, w = 4 + (hsh(k, 43) < 0.5 ? 1 : 0), h = 3;
+        for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const e = (i === 0 || i === w - 1) && (j === 0 || j === h - 1); if (e) continue;
+          px(sx + (i - (w >> 1)) * 2, sy + (j - 1) * 2, j === 0 ? ST[0] : j === h - 1 ? ST[2] : ST[1]); }
+        px(sx + ((w >> 1) - 1) * 2, sy + 4, '#1a1614'); } // 돌 아래 그늘 한 칸
     }
-    if (R.type === 'reward') { // 단: 계단 테두리 · 판석 · 금 상감 고리 · 룬
-      const cx = CX, cy = CY - 14, RX = 100, RY = 46, S = [P['1'], P['2'], P['3'], P['4']];
-      for (let y = -RY - 2; y <= RY + 10; y += 2) for (let x = -RX - 2; x <= RX + 2; x += 2) {
-        const q = Math.hypot(x / RX, y / RY), qs = Math.hypot(x / RX, (y - 6) / RY);
-        if (q > 1 && qs <= 1) { px(cx + x, cy + y, y > 0 ? S[3] : S[2]); continue; } // 앞 계단 옆면
-        if (q > 1) { const inn = (u, v) => Math.hypot(u / RX, v / RY) <= 1 || Math.hypot(u / RX, (v - 6) / RY) <= 1; if (inn(x - 2, y) || inn(x + 2, y) || inn(x, y - 2) || inn(x, y + 2)) px(cx + x, cy + y, '#0b0a0e'); continue; } // v2.80 외곽선 1칸
-        const ang = Math.atan2(y / RY, x / RX), ring = q * 5 | 0, seg = ((ang + Math.PI) / TAU * (8 + ring * 4)) | 0;
+    if (R.type === 'reward') { // 판석 원판 · 금 상감 고리 · 룬 — v3.25 빛의 방처럼 가장자리가 부서지며 바닥에 녹아듦 (계단 옆면 · 외곽선 없앰)
+      const cx = CX, cy = CY - 14, RX = 112, RY = 52, S = [P['1'], P['2'], P['3'], P['4']];
+      const hsh = (a, b) => { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177 | 0; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }, cl = v => Math.max(0, Math.min(1, v));
+      const vn = (x, y, s, k) => { const X = x / s, Y = y / s, x0 = Math.floor(X), y0 = Math.floor(Y), fx = X - x0, fy = Y - y0, sm = t => t * t * (3 - 2 * t), a = hsh(x0 * 7 + k, y0), b = hsh(x0 * 7 + 7 + k, y0), c = hsh(x0 * 7 + k, y0 + 1), d = hsh(x0 * 7 + 7 + k, y0 + 1), u = sm(fx), v = sm(fy); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; };
+      for (let y = -RY - 2; y <= RY + 2; y += 2) for (let x = -RX - 2; x <= RX + 2; x += 2) {
+        const q = Math.hypot(x / RX, y / RY); if (q > 1) continue;
+        const ang = Math.atan2(y / RY, x / RX), ring = q * 5 | 0, seg = ((ang + Math.PI) / TAU * (8 + ring * 4)) | 0, X = cx + x, Y = cy + y, bx = X >> 1, by = Y >> 1;
+        const N = vn(X, Y * 2.1, 16, 3), N2 = vn(X, Y * 2.1, 6, 8), keep = 1 - cl((q - 0.72) / 0.28 * 1.15 + (N - 0.5) * 0.9 + (N2 - 0.5) * 0.35);
+        if (keep < 1 && !dith(bx, by, keep)) { if (keep > 0.15 && dith(bx + 1, by + 2, 0.12)) px(X, Y, S[3]); continue; } // 깎인 가장자리 · 부스러기
+        if (ring >= 3 && hsh(seg * 31 + ring, 17) < (ring - 2) * 0.22) { if (dith(bx, by, 0.16)) px(X, Y, S[3]); continue; } // 바깥 고리 판석이 군데군데 빠짐
         let c = (seg + ring) % 2 ? S[1] : S[2];
         if (Math.abs(q - 0.62) < 0.035 || Math.abs(q - 0.93) < 0.03) c = Math.abs(q - 0.62) < 0.035 ? '#e0a030' : S[3];
         if (q < 0.25) c = (x + y) % 4 ? S[0] : S[1];
         if (q > 0.7 && q < 0.88 && seg % 3 === 0 && Math.abs((q - 0.79)) < 0.04) c = '#ffd060'; // 룬 점
         if ((x * 3 + y * 7) % 37 === 0) c = S[3]; // 금
-        if (x * 0.7 + y < -RY * 0.6 && q > 0.9) c = S[0]; // 윗 테 빛
-        px(cx + x, cy + y, c);
+        px(X, Y, c);
       }
     }
     if (R.type === 'secret') blot(CX, CY - 4, 70, 18, 0.6, 'rgba(0,0,0,.35)'); // v1.11 제단 그늘만

@@ -160,7 +160,7 @@
       P.blade = lerpAng(P.blade, P.atkAng + Math.PI * 0.85 * P.face, dt * 16);
       if (Math.random() < 0.7) dust(P.x, P.y, 1);
       G.fx.push({ kind: 'ghost', x: P.x, y: P.y, face: P.face, rot: 0.25 * P.face, t: 0.16, max: 0.16, tint: true });
-      for (const e of G.enemies) if (!e.dead && !P.chargeHit.has(e) && dist(e, P) < e.r + P.r + 12) {
+      for (const e of G.enemies) if (!e.dead && !P.chargeHit.has(e) && dist(e, P) < e.r + P.r + 12 + RS_PAD) { // v3.25 우클릭 판정 여유
         P.chargeHit.add(e);
         damageEnemy(e, 1.2, { grogi: 10, kb: wSkill() === 'gate' ? 520 : 120, ang: P.atkAng, heavy: true, stagger: 0.6, gauge: 5 });
       }
@@ -272,7 +272,7 @@
         P.swooshed = true; sfx('whoosh'); addShake(4, P.atkAng);
         G.proj.push({ x: P.x + Math.cos(P.atkAng) * 16, y: P.y - 9 + Math.sin(P.atkAng) * 16, ang: P.atkAng, sp: 440, t: 0.45, hit: new Set(), r: 24, hist: [] });
       }
-      sweepHits(P.atkAng, P.sign, P.prevRel, P.swingRel, S.reach, P.hitSet, { coef: 1.6, grogi: 15, kb: 220, heavy: true, stagger: 0.6, gauge: 6 });
+      sweepHits(P.atkAng, P.sign, P.prevRel, P.swingRel, S.reach + RS_PAD, P.hitSet, { coef: 1.6, grogi: 15, kb: 220, heavy: true, stagger: 0.6, gauge: 6 });
       P.trail.push({ a: P.blade, t: 0.15 });
     }
     if (P.t >= end + S.rec) P.state = 'idle';
@@ -364,7 +364,7 @@
     for (const e of G.enemies) {
       if (e.dead) continue;
       const d = dist(P, e);
-      if (d < 210 && Math.abs(angDiff(angTo(P, e), P.ang)) < 0.95 && d < bd) { bd = d; best = e; }
+      if (d < 210 + RS_PAD && coneIn(P, e, P.ang, 0.95) && d < bd) { bd = d; best = e; } // v3.25 우클릭 판정 여유
     }
     P.state = 'shadow'; P.t = 0; P.shTarget = best; P.shArrived = false; P.shFrom = { x: P.x, y: P.y };
     P.iframe = Math.max(P.iframe, 0.4); P.combo = 0; P.queued = false; P.hitSet = new Set(); P.swooshed = false;
@@ -460,6 +460,7 @@
     if (P.state === 'butt') return strikePose(P.t, 0.05, 0.08, 0.15, P.ang, P.face, 1.2);
     if (P.state === 'krs' || P.state === 'ars' || P.state === 'grs' || P.state === 'mrs' || P.state === 'prs') return SKP.pose(P); // v3.22 기술 공용 몸 동작 (41_krs.js)
     if (P.state === 'rattack' && cls === 'mage') return strikePose(P.t, 0.05, 0.06, 0.16, P.atkAng == null ? P.ang : P.atkAng, P.face, 0.8);
+    if (SWAPFX.on()) return SWAPFX.pose(P); // v3.25 무기 바꾸기: 몸 동작
     if (cls === 'gunner' && P.recoil > 0) { const rc = Math.min(2.5, P.recoil), a = P.blade; return { dx: -Math.cos(a) * rc * 2, dy: -Math.sin(a) * rc, sx: 1 - 0.05 * rc, sy: 1 + 0.05 * rc, rot: -0.12 * P.face * rc }; }
     return null;
   }

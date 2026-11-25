@@ -1227,7 +1227,7 @@ WF.knight = (H) => {
   // 기본 공격력은 레어 수준(12), 이번 런에 모은 색 조각(분노·평온·희망의 빛 합계) 4개마다 +1. 무기는 가끔 흰·빨·파·초로 깜빡인다
   const RBY_HEX = ['#ffffff', '#ff3a3a', '#4a8cff', '#5ad84a'], RBY_RGB = ['255,255,255', '255,58,58', '74,140,255', '90,216,74'];
   const rbyShards = () => (G && G.pal ? (G.pal.r || 0) + (G.pal.b || 0) + (G.pal.g || 0) : 0);
-  const rbyPal = c => (G && G.pal ? G.pal[c] || 0 : 0);
+  const rbyPal = c => (G && G.palTot ? G.palTot[c] || 0 : G && G.pal ? G.pal[c] || 0 : 0); // v3.25 빛을 써도 줄지 않게 (이번 토벌에 모은 개수)
   function rbyVal() { return 15 + Math.floor(rbyPal('r') / 2); } // v2.55 기본 15 · 분노의 빛 2개마다 공격력 +1
   function rbyOpts() { const o = [], cd = Math.min(30, Math.floor(rbyPal('b') / 2)), cr = Math.min(30, Math.floor(rbyPal('g') / 2)); if (cd) o.push({ k: 'cdr', v: cd }); if (cr) o.push({ k: 'crit', v: cr }); return o; } // 평온 → 쿨타임 · 희망 → 치명타 (v2.55 각 2개마다 1%, 최대 30%)
   // RGB? 고유 도트: 직업별 무기 꼴은 유지하되 잿빛 몸체 + 빨·파·초 세 면의 프리즘 보석 + 날·총신의 삼색 상감. 크기는 기본 무기와 비슷하게
@@ -1290,9 +1290,11 @@ WF.knight = (H) => {
     else if (b.c) { const [c, g] = mkCanvas(b.c.width, b.c.height); g.filter = 'brightness(3)'; g.drawImage(b.c, 0, 0); w = Object.assign({}, b, { c }); }
     else w = b; WHITE_BLADE.set(b, w); return w;
   }
+  let SWAP_DRAW = false; // v3.25 무기 바꾸기 모션 중 (50_swap.js)
   let ROLL_HIDEW = false; // v3.19 구르기 공중 동작 중엔 손에 든 무기를 그리지 않음 (몸과 따로 돌아 어색함)
   function drawBlade(b, x, y, ang, alpha = 1, white, scale = 1, comp) {
     if (ROLL_HIDEW) return;
+    if (SWAP_DRAW) { const m = SWAPFX.mod(b, x, y, ang); if (!m) return; b = m.b; x = m.x; y = m.y; ang = m.ang; alpha *= m.a; if (m.w) white = true; } // v3.25 무기 바꾸기 모션
     const ash = ASH_DRAW && !comp; if (ash) b = ashBlade(b); // v1.99 잿불 외형
     if (white) b = whiteBlade(b);
     if (b.cells) { // v1.05: 배율도 칸 단위, 칸 경계를 2px 격자에 맞춤

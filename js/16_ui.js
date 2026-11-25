@@ -802,6 +802,7 @@
     }
     else if (mode === 'rest' && ['1', '2', '3'].includes(k)) { const b = $('restChoices').children[+k - 1]; if (b) b.click(); }
     else if (mode === 'eng' && ['1', '2', '3'].includes(k)) { const b = $('engChoices').children[+k - 1]; if (b) b.click(); }
+    else if (mode === 'shrine') { if (['1', '2', '3'].includes(k)) { const b = $('engChoices').children[+k - 1]; if (b) b.click(); } else if (k === 'Escape') SHRINE.close(); } // v3.25 빛의 방
   });
 
   // ---------------------------------------------------------------- 장비 · 인벤토리 (v0.52)
@@ -887,7 +888,7 @@
     if (isEq(G.cls, it)) return;
     if (it.hold) { lootFeed('장착할 수 없는 무기입니다.', '#ff9a9a', 1400); sfx('blip', 0.6); return; } // v3.18 칼날카드
     if (!['idle', 'rattack'].includes(P.state)) { pressed[String(i + 1)] = true; return; } // 공격·기술 중이면 끝나고 바꾼다
-    equipIt(G.cls, it); P.gcd = SWAP_GCD; const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
+    const oldTex = weaponTex(G.cls); equipIt(G.cls, it); SWAPFX.start(oldTex); P.gcd = SWAP_GCD; // v3.25 무기 바꾸기 모션 const oldHp = G.stats.hp; G.stats = calcStats(G.buffs); P.hp = clamp(P.hp + Math.max(0, G.stats.hp - oldHp), 1, G.stats.hp);
     P.state = 'idle'; P.combo = 0; P.chainL = null; P.whipL = null;
     if (G.cls === 'gunner') { P.ammo = 0; startReload(); } // 총을 바꾸면 새로 장전
     persist(); sfx('select'); lootFeed(`<b style="color:${gradeOf(it).c}">[${i + 1}] ${it.name}</b>`, gradeOf(it).c, 1400);

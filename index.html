@@ -56,7 +56,7 @@
   #party, #phase { transition: opacity .15s; }
   #party { left: 8px; top: 8px; width: 140px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; }
   /* v2.35 색 되찾기 팔레트 — 캐릭터 패널 아래 따로, 막대마다 픽셀 장식 틀 */
-  #p1pal { display: flex; flex-direction: row; justify-content: space-between; gap: 4px; padding: 5px 7px; } /* v2.35 다른 패널과 같은 .pf.glass 틀 · v2.51 이름과 개수만 한 줄 */
+  #p1pal { display: flex; flex-direction: row; justify-content: space-around; gap: 4px; padding: 5px 7px; } /* v3.25 이름 없이 색 기호 + 개수 (이름 · 설명은 마우스를 올리면) */ /* v2.35 다른 패널과 같은 .pf.glass 틀 · v2.51 이름과 개수만 한 줄 */
   #p1pal:empty { display: none; }
   .palRow { display: flex; flex-direction: row; align-items: center; gap: 3px; pointer-events: auto; cursor: default; }
   .palRow .pTopL, .palRow .pBot { display: flex; align-items: center; gap: 4px; }
@@ -350,6 +350,13 @@
   .engC::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 6px; height: 2px; background: repeating-linear-gradient(90deg, var(--ec) 0 6px, transparent 6px 8px, var(--ec) 8px 10px, transparent 10px 16px); opacity: .45; }
   .engC .engSeal { display: block; width: 64px; height: 64px; margin: 4px auto 8px; }
   .engC .engSeal img { display: block; width: 64px; height: 64px; image-rendering: pixelated; }
+  .engC .engHue { display: block; font-size: 11px; color: var(--ec); letter-spacing: 1px; margin-bottom: 2px; } /* v3.25 빛의 방 */
+  .engC .engCost { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; font-size: 13px; color: #f0e8d8; }
+  .engC .engCost img { width: 18px; height: 18px; image-rendering: pixelated; }
+  .engC.poor { opacity: .45; cursor: not-allowed; } .engC.poor .engCost { color: #ff7a6a; }
+  .engC.none { opacity: .35; cursor: default; }
+  .shrineLeave { display: block; margin: 14px auto 0; padding: 6px 18px; background: #231f29; color: #bfb8c8; border: 2px solid #3a3444; font: inherit; font-size: 12px; cursor: pointer; }
+  .shrineLeave:hover { color: #fff; border-color: #6a6474; }
   .engC b { color: var(--ec); font-size: 13px; text-shadow: 0 2px 0 #000; margin-bottom: 4px; }
   .engC .engD { display: block; word-break: keep-all; font-size: 11px; line-height: 15px; color: #bfb8c8; min-height: 45px; }
   .engC .key { display: inline-block; margin-top: 6px; }
@@ -960,5 +967,15 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/47_awk.js"></script>
 <script src="js/48_moon.js"></script>
 <script src="js/49_pups.js"></script>
+<script src="js/50_swap.js"></script>
+<script src="js/51_shrine.js"></script>
+<script src="js/52_bloodaltar.js"></script>
+<script src="js/53_pathclear.js"></script>
+<script src="js/54_out2.js"></script>
+<script src="js/55_out3.js"></script>
+<script src="js/56_orc3.js"></script>
+<script src="js/57_out4.js"></script>
+<script src="js/58_walldeco.js"></script>
+<script src="js/59_pillars.js"></script>
 </body>
 </html>

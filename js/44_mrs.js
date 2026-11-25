@@ -119,7 +119,7 @@ const MRS = (() => {
   function end(P) { P.state = 'idle'; P.mrs = null; P.t = 0; P.lift = 0; }
   // 연쇄 번개: 지팡이 → 가까운 적 → 그 옆 적 … (최대 6번)
   function chain(P, a, n) { const tp = staffTip(), hit = new Set(); let from = { x: tp.x, y: tp.y }, cur = null;
-    let first = foes().filter(e => dist(P, e) < 220 && Math.abs(angDiff(angTo(P, e), a)) < 0.9).sort((p, q) => dist(P, p) - dist(P, q))[0];
+    let first = foes().filter(e => dist(P, e) < 220 && coneIn(P, e, a, 0.9)).sort((p, q) => dist(P, p) - dist(P, q))[0];
     FXK.flash('#e8f4ff', 0.05); FXK.punch(6 + n * 2, 0.02, 0.04, a + Math.PI); sfx('bolt', 0.8 + n * 0.15); sfx('blast', 1.6);
     if (!first) { const x = P.x + Math.cos(a) * 150, y = P.y + Math.sin(a) * 110; bolt(from.x, from.y, x, y - 6, 3, 0.25); blast(x, y - 6, 20, PAL_B); return; }
     cur = first;

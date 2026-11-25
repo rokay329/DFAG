@@ -627,12 +627,13 @@
       && !keyPts.some(p => Math.hypot(p.x - x, p.y - y) < rad + (p.big ? CLEAR_R : 46)) && !r.props.some(p => Math.hypot(p.x - x, p.y - y) < rad + p.rad + 12);
     // 그려지는 모양(높이 포함)끼리도 겹치지 않게: 소품끼리, 소품과 나무·바위·벽 (v0.59)
     const obsVis = b => b.c ? (b.t === 'pillar' ? { x0: b.x - b.r * 2.4, y0: b.y - b.r * 6, x1: b.x + b.r * 2.4, y1: b.y + b.r } : { x0: b.x - b.r - 2, y0: b.y - b.r * 1.8, x1: b.x + b.r + 2, y1: b.y + b.r }) : b.t === 'pit' ? { x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 } : { x0: b.x0, y0: b.y0 - (b.tower ? 90 : 40), x1: b.x1, y1: b.y1 };
-    const add = (name, x, y) => { const sp = PROPS[name], rad = sp.r || (sp.w ? (sp.pit ? Math.max(sp.w, sp.h) / 2 + 6 : sp.w / 2) : 8);
+    const ONE = ['brazier', 'cage', 'table', 'campfire', 'crownBrazier', 'feastTable']; // v3.29 눈에 띄는 소품(화로 · 우리 · 탁자)은 방마다 하나만 (2장 · 4장)
+    const add = (name, x, y) => { if (stage === 2 && ONE.includes(name) && r.props.some(p => p.name === name)) return false; const sp = PROPS[name], rad = sp.r || (sp.w ? (sp.pit ? Math.max(sp.w, sp.h) / 2 + 6 : sp.w / 2) : 8);
       if (typeof OCC !== 'undefined' && OCC.on()) { // v2.85 점유 지도: 발 자리 · 실제 그림으로 겹침 판정
         if (!(x > A.x0 + rad + 4 && x < A.x1 - rad - 4 && y > A.y0 + 8 && y < A.y1 - rad - 4) || onRoad(x, y, rad + 20)) return false;
-        const q = { name, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, rad }; if (!OCC.prop(q)) return false; r.props.push(q); return true; }
+        const q = { name, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, rad }; if (typeof PATHCLR !== 'undefined' && PATHCLR.hitRect(r, propRect(q))) return false; /* v3.26 길 둘레 비우기 */ if (!OCC.prop(q)) return false; r.props.push(q); return true; }
       if (!ok(x, y, rad)) return false;
-      const q = { name, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, rad }, me = propRect(q);
+      const q = { name, x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2, rad }, me = propRect(q); if (typeof PATHCLR !== 'undefined' && PATHCLR.hitRect(r, me)) return false; // v3.26 길 둘레 비우기
       if (r.props.some(p => rectHit(me, propRect(p), 6)) || r.obs.some(b => rectHit(me, obsVis(b), 4))) return false;
       r.props.push(q); return true; };
     const fightRoom = ['combat', 'elite', 'survive', 'start'].includes(r.type);
@@ -993,6 +994,7 @@
     for (let i = 0; i < PILLARS.length - 1; i++) {
       const mx = Math.round((PILLARS[i] + PILLARS[i + 1]) / 4) * 2;
       if (Math.abs(mx - DOOR.n.x) < (CUR_ROOM && CUR_ROOM.doors && CUR_ROOM.doors.n != null ? 40 : 8) || (CUR_ROOM && CUR_ROOM.sealW && Math.abs(mx - DOOR.n.x) < 110)) continue; // v2.59 인장 벽 둘레엔 장식 없음
+      if (typeof WDECO !== 'undefined' && G && G.stage === 2) { const k2 = WDECO.pick(CUR_ROOM, i, T0); if (k2 && k2 !== 'w2') WDECO.draw(g, k2, WDECO.slotX(i), T0); continue; } // v3.29 2장 새 벽장식 · 대칭 배치 (창은 03에서)
       const k = ROOMSTYLE.wall ? ROOMSTYLE.wall[i % ROOMSTYLE.wall.length] : 'window';
       if (k === 'window') continue;
       { const m0 = PROP_MAPS[k], g0 = fromRows(m0[0]), w0 = g0[0].length * 2, h0 = g0.length * 2, y0 = T0 + 30 - h0 / 2 + (k === 'tapestry' ? 6 : 0); if (typeof OCC !== 'undefined' && !OCC.wall(mx - w0 / 2, y0, w0, h0)) continue; } // v2.85 벽 장식은 앞에 선 소품 · 장애물 그림과 겹치면 걸지 않음
@@ -1401,6 +1403,7 @@
     if (R.srp) for (const s of R.srp) ents.push({ y: s.y, d: () => drawSR(s) });
     if (R.type === 'shop') { ents.push({ y: R.keeper ? R.keeper.y - 5 : CY - 28, d: () => drawShopKeeper(R) }); for (const s of R.shop) ents.push({ y: s.y, d: () => drawShopItem(s) }); }
     if (R.type === 'reward' && R.chest) ents.push({ y: R.chest.y - 1, d: () => drawTreasure(R) });
+    if (R.type === 'shrine') SHRINE.ents(R, ents); // v3.25 빛의 방: 빛기둥 · 흰 구체
     if (R.altars) for (const a of R.altars) ents.push({ y: a.y, d: () => drawAltar(a) }); // v2.02 피의 제단
     if (R.type === 'rest' && G.bonfire) BISTRO.ents(ents); // v3.10 모닥불 위 큰 솥 · 쿠오 · 쿠키
     if (R.type === 'home') HOME.ents(ents); // v2.97 시작 장소 NPC (역참 단군)
@@ -1412,6 +1415,7 @@
     if (R.type === 'reward' && R.chest) { lights.push({ x: R.chest.x, y: R.chest.y - 10, r: R.chest.opened ? 80 : 120, a: 0.75, c: '255,210,110', ca: R.chest.opened ? 0.1 : 0.22 }); }
     if (R.type === 'rest' && G.bonfire) lights.push({ x: G.bonfire.x, y: G.bonfire.y - 10, r: 150 + Math.sin(time * 8) * 6, a: 0.85, c: '255,150,60', ca: 0.22 });
     if (R.type === 'rest') BISTRO.lights(lights); // v3.10 쿠오 · 쿠키 · 메뉴판
+    if (R.type === 'shrine') SHRINE.lights(R, lights); // v3.25
     if (R.exit) { lights.push({ x: R.exit.x, y: R.exit.y, r: 90, a: 0.7, c: '255,120,60', ca: 0.22 }); lights.push({ x: R.exit.x, y: R.exit.y - 70, r: 60, a: 0.45, c: '255,170,90', ca: 0.14 }); }
     if (R.tele && R.cleared) { lights.push({ x: R.tele.x, y: R.tele.y, r: 70, a: 0.6, c: '120,180,255', ca: 0.18 }); lights.push({ x: R.tele.x, y: R.tele.y - 60, r: 50, a: 0.4, c: '150,200,255', ca: 0.1 }); }
     if (R.props) for (const p of R.props) { const L = PROPS[p.name].light; if (L) lights.push({ x: p.x, y: p.y + L.dy, r: L.r + Math.sin(time * 9 + p.x) * 3, a: 0.8, c: L.c, ca: L.ca }); }
@@ -1432,7 +1436,7 @@
 
   // ---------- 미니맵 · 지도 · 순간이동
   const shapeFit = r => { const sh = SHAPES[r.shape] || SHAPES.field; return { w: sh.w >= 1300 ? 1 : sh.w >= 1000 ? 0.82 : sh.w >= 500 ? 0.6 : 0.36, h: sh.h >= 700 ? 1 : sh.h >= 500 ? 0.82 : sh.h >= 300 ? 0.6 : 0.36 }; };
-  const roomColor = (r) => ({ boss: '#a02a34', shop: '#b08a2a', rest: '#c06a2a', reward: '#c0a040', secret: '#8a5ac0', elite: '#7a2a40', survive: '#5a4a7a', start: '#4a6a4a' }[r.type] || '#3a3444');
+  const roomColor = (r) => ({ shrine: '#8a7ac8', boss: '#a02a34', shop: '#b08a2a', rest: '#c06a2a', reward: '#c0a040', secret: '#8a5ac0', elite: '#7a2a40', survive: '#5a4a7a', start: '#4a6a4a' }[r.type] || '#3a3444');
   const FIGHT_T = new Set(['combat', 'elite', 'survive', 'boss']);
   // 클리어 표시: 금색 체크 (검은 외곽선, s = 칸 크기)
   function drawCheck(x, y, s) {
@@ -1457,7 +1461,7 @@
     const out = [];
     if (r.chest && !r.chest.opened) out.unshift([(x, y) => drawMapIcon(MAP_CHEST, x, y), 1]); // v1.93 열지 않은 보물상자
     if (gear) out.push([(x, y) => drawMapIcon(MAP_SWORD, x, y), gn]); // v1.93 장비는 검 모양 하나로
-    if (n.pouch) out.push([(x, y) => drawSprite(LOOT.pouch.map, 'loot', 2, x, y, false), n.pouch]);
+    if (n.pouch) out.push([(x, y) => drawSprite('pouch', 'loot', 2, x, y, false), n.pouch]); // v3.26 지도에는 작은 금화 주머니 (v3.13 새 도트 pouchX는 바닥용 · 팔레트도 달라 지도에서 크게 깨져 보였음)
     if (n.meat) out.push([(x, y) => drawSprite('heartHalf', 'loot', 2, x, y, false), n.meat]);
     if (n.vial) out.push([(x, y) => drawSprite('vial', 'loot', 2, x, y, false), n.vial]);
     if (n.orb) out.push([(x, y) => drawSprite('orb', 'loot', 2, x, y, false), n.orb]);

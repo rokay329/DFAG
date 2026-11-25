@@ -96,6 +96,7 @@ const OCC = (() => {
     if (keyPts) for (const p of keyPts) { if (p.big) put(O, CEN, ellCells(O, CX, CY - 10, CLEAR_R, CLEAR_R)); else put(O, KEY, ellCells(O, p.x, p.y, 40, 40)); }
     else { for (const [p, r] of keysOf(R)) put(O, KEY, ellCells(O, p.x, p.y, r, r)); if (['combat', 'elite', 'survive', 'boss', 'start', 'reward', 'secret'].includes(R.type)) put(O, CEN, ellCells(O, CX, CY - 10, CLEAR_R - 8, CLEAR_R - 8)); }
     truthKeys(O, R);
+    if (['shrine', 'shop', 'rest', 'reward', 'secret'].includes(R.type)) put(O, OBS, rectCells(O, A.x0 - 16, A.y0 - 16, A.x1 + 16, A.y1 + 16)); // v3.25 특수방(빛의 방 · 상점 · 비스트로 · 보물 방 · 비밀 방): 환경 장식 · 집기를 놓지 않음 (방마다 정해진 시설만)
     for (const b of R.obs || []) if (b.t !== 'chest') put(O, b.t === 'prop' ? PROP : OBS, obsFoot(O, b));
     for (const s of R.sprites || []) mark(O.vis, maskCells(O, s.cv, s.x, s.y), OBS);
     for (const q of R.props || []) { const c = propCells(O, q); put(O, PROP, c.foot, c.vis); }

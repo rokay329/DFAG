@@ -157,7 +157,7 @@
     const bk = snap ? 1 : Math.min(1, dt * 2.5), bxT = G.boss && !G.boss.dead ? (G.boss.x - P.x) * 0.15 : 0, byT = G.boss && !G.boss.dead ? (G.boss.y - P.y) * 0.15 : 0;
     cam.bx = (cam.bx || 0) + (bxT - (cam.bx || 0)) * bk; cam.by = (cam.by || 0) + (byT - (cam.by || 0)) * bk;
     let tx = P.x - SAFE.cx + cam.bx, ty = P.y - 10 - SAFE.cy + cam.by;
-    { const x0 = A.x0 - 136, x1 = A.x1 + 16 - VW, y0 = A.y0 - ((typeof RUIN !== 'undefined' && RUIN.camTop && RUIN.camTop()) /* v3.21 교단 본거지: 윗벽 태피스트리까지 보이게 */ || (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100)), y1 = A.y1 + 88 - VH;
+    { const OW = (typeof OUT2 !== 'undefined' && OUT2.wide && OUT2.wide()) || (typeof OUT3 !== 'undefined' && OUT3.wide && OUT3.wide()) || (typeof OUT4 !== 'undefined' && OUT4.wide && OUT4.wide()) /* v3.26 3장 고원 구름다리도 */ /* v3.26 2장 벽 바깥: 오른쪽 · 아래도 판석 턱과 다리까지 보이게 (왼쪽과 같은 여유) */, x0 = A.x0 - 136, x1 = A.x1 + (OW ? 136 : 16) - VW, y0 = A.y0 - ((typeof RUIN !== 'undefined' && RUIN.camTop && RUIN.camTop()) /* v3.21 교단 본거지: 윗벽 태피스트리까지 보이게 */ || (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100)), y1 = A.y1 + (OW ? (((typeof OUT3 !== 'undefined' && OUT3.wide && OUT3.wide()) || (typeof OUT4 !== 'undefined' && OUT4.wide && OUT4.wide())) ? 150 : 120) : 88) - VH; /* v3.26 3장: 벼랑이 구름에 잠기는 데까지 */
       const cx = G.dun && G.dun.altar ? snap2((A.x0 + A.x1 - VW) / 2) /* v3.20 왕도 성문 방: 성문 · 제단이 화면 가로 가운데에 오도록 방을 가운데에 고정 */ : x1 >= x0 ? clamp(tx, x0, x1) : (A.x0 + A.x1 - VW) / 2, /* v3.18 화면보다 좁은 방은 방 가운데를 화면 가운데에 */ cy = y1 >= y0 ? clamp(ty, y0, y1) : (y0 + y1) / 2; cam.clX = cx !== tx; cam.clY = cy !== ty; tx = cx; ty = cy; }
     cam.x = tx; cam.y = ty;
     bannerPlace();
@@ -180,7 +180,7 @@
     if (take('tab')) { openMap(); return; }
     if (take('i')) { if (!G.player.dead && !G.trans) openInv('play'); return; }
     for (const n of ['1', '2', '3']) if (take(n)) { swapWeapon(+n - 1); break; } // v2.19 숫자키로 무기 바꾸기 (장비창 오른쪽 칸 순서)
-    if (take('h')) { G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
+    if (pressed.h !== 'shift' && take('h')) { /* v3.25 Shift+H(테스트: 빛의 방)는 조작 안내를 켜지 않음 */ G.kg = !G.kg; G.kgT = G.kg ? 999 : 0; G.kgAuto = false; sfx('blip'); }
     if (G.tut && !G.cine) updateTut(rdt);
     if (G.kg && G.kgT < 900) { G.kgT -= rdt; if (G.kgT <= 0) G.kg = false; }
     // v3.20 테스트: 지금 캐릭터를 2회차(전기 있음)로 켜고 끔 — 끌 때는 켜기 전 전기 상태로 되돌림
@@ -203,11 +203,13 @@
       SAVE.inv.push(it); eqOf(G.cls).weapon = it.id; G.stats = calcStats(G.buffs); persist();
       lootFeed(`<b style="color:${gradeOf(it).c}">[${gradeOf(it).n}] ${it.name}</b> 장착 (테스트)`, gradeOf(it).c); sfx('drop'); if (it.grade === 'legend') { if (G.seenLegendLore) delete G.seenLegendLore[it.fx]; triggerLegendPickup(it); }
     }
-    if (dbgK('p', '색 조각 다음 단계 (빨 → 파 → 초)')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2], n = G.pal[c] || 0, nx = HUE_TIER.find(v => v > n); if (nx) hueGain(c, nx - n); } // v2.41 테스트: 색 단계 올리기 (각인 고르기)
+    if (dbgK('p', '빛 15개 얻기 (빨 → 파 → 초 차례로)')) { const cs = ['r', 'b', 'g'], c = cs[(G.engDbg = ((G.engDbg || 0) + 1)) % 3 === 1 ? 0 : G.engDbg % 3 === 2 ? 1 : 2]; hueGain(c, 15); } // v3.25 테스트: 빛을 재화로
+    if (dbgK('h', '빛의 방으로 (빛 각 45개)') && !G.clear && !G.trans && !G.cine) debugToShrine(); // v3.25
     if (dbgK('o', '무적 켜기 / 끄기')) { GOD_MODE = !GOD_MODE; lootFeed(GOD_MODE ? '테스트 — 무적 켜짐' : '테스트 — 무적 꺼짐', GOD_MODE ? '#9fd2ff' : '#9a8f8a', 2500); sfx('blip'); } // v2.40 테스트: 무적 켜기·끄기
     if (dbgK('y', 'RGB? 장비 + 빨강 조각 +10')) { const P = G.player; spawnLoot('gear', P.x + 30, P.y, makeRBY(G.cls)); hueGain('r', 10); lootFeed('테스트 — RGB? · 색 조각 +10', '#ff2a2a', 2500); } // v2.40 테스트: RGB? 떨어뜨림 + 색 조각
     if (dbgK('b', '보스 방으로') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
     if (dbgK('r', '휴게방(비스트로)으로') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
+    if (dbgK('sd5', '비밀 방으로 (생명의 제단 · 피의 제단 다시 쓰기)') && !G.clear && !G.trans && !G.cine && typeof BLOODALT !== 'undefined') BLOODALT.debugTo(); // v3.26 테스트: 비밀 방으로
     if (dbgK('c', '용의 유적 드나들기') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
     if (dbgK('j', '교단의 갱도로 바로 가기') && !G.clear && !G.trans && !G.cine) RUIN.debugMine(); // v3.20 테스트: 갱도 (유적 밖이면 유적에 들어간 뒤 갱도로)
     if (dbgK('k', '교단 본거지로 (누를 때마다 앞 홀 → 교주의 방 → 지하 석실)') && !G.clear && !G.trans && !G.cine) RUIN.debugCult(); // v3.21 테스트

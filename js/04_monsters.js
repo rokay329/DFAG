@@ -1092,6 +1092,7 @@ huskUp:[
   }
   function withDecor(g, R, fn) {
     if (!R) return fn();
+    if (['shrine', 'shop', 'rest', 'reward', 'secret'].includes(R.type)) return; // v3.25 특수방(빛의 방 · 상점 · 비스트로 · 보물 방 · 비밀 방)은 바닥 집기 · 환경 장식 없음 (사용자 결정)
     const solid = [];
     for (const sp of R.sprites || []) solid.push({ x0: sp.x, y0: sp.y, x1: sp.x + sp.cv.width, y1: sp.y + sp.cv.height });
     for (const b of R.obs || []) if (!b.c) solid.push({ x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }); else solid.push({ x0: b.x - b.r, y0: b.y - b.r, x1: b.x + b.r, y1: b.y + b.r });
@@ -1229,11 +1230,11 @@ huskUp:[
   // 나무 밑동 앞쪽 덤불·고사리·키 큰 풀·뿌리 (나무 다음에)
   function paintUndergrowth(g) {
     for (let x = -10; x < W; x += randi(10, 22)) {
-      const y = A.y0 + randi(-4, 16), r = Math.random();
-      if (r < 0.3) stamp(g, DECO_MAPS.bush, Object.assign({}, DECO, { m: pick(['#1e3a18', '#24401c']), M: pick(['#2e5222', '#36602a']), r: pick(['#8a2030', '#5a3a7a', '#2e5222']) }), x, y - 6, 2, Math.random() < 0.5);
-      else if (r < 0.55 && G) gPaint(g, genFern(), { m: '#24401c', M: '#3e6a2c', d: '#16280f' }, x - 8, y - 14);
-      else if (r < 0.85) stamp(g, DECO_MAPS[pick(['tuft1', 'tuft2', 'tuft3'])], Object.assign({}, DECO, { m: '#2e5222', M: '#4a7a34' }), x, y, 2, Math.random() < 0.5);
-      else { g.fillStyle = '#22180e'; for (let k = 0; k < randi(3, 6); k++) g.fillRect((x + k * 2) & ~1, (y + (k % 2) * 2) & ~1, 2, 2); }
+      const y = A.y0 + 8 + randi(0, 2) * 2, r = Math.random(); // v3.25 위쪽 울타리 발치(울타리 아래 끝 A.y0+6) 바로 아래 몇 px에만 — 울타리 뒤 · 울타리에 겹쳐 나오지 않게
+      if (r < 0.3) stamp(g, DECO_MAPS.bush, Object.assign({}, DECO, { m: pick(['#1e3a18', '#24401c']), M: pick(['#2e5222', '#36602a']), r: pick(['#8a2030', '#5a3a7a', '#2e5222']) }), x, y, 2, Math.random() < 0.5);
+      else if (r < 0.55 && G) gPaint(g, genFern(), { m: '#24401c', M: '#3e6a2c', d: '#16280f' }, x - 8, y);
+      else if (r < 0.85) stamp(g, DECO_MAPS[pick(['tuft1', 'tuft2', 'tuft3'])], Object.assign({}, DECO, { m: '#2e5222', M: '#4a7a34' }), x, y + 2, 2, Math.random() < 0.5);
+      else { g.fillStyle = '#22180e'; for (let k = 0; k < randi(3, 6); k++) g.fillRect((x + k * 2) & ~1, (y + 4 + (k % 2) * 2) & ~1, 2, 2); }
     }
   }
   // 나무 그림 풀: 종류·색·어둡기마다 4가지 모양을 한 번만 만들어 두고 찍는다 (방에 들어갈 때마다 수백 그루를 칸 단위로 새로 그리면 프레임이 끊김)
@@ -1278,30 +1279,29 @@ huskUp:[
   }
   function paintMeadowProps(g) {
     if (G) withDecor(g, CUR_ROOM, () => paintMeadowDecor(g, CUR_ROOM));
-    // 울타리: 아래쪽 가로 울타리 (구간마다 모양이 다르다)
-    const DR = CUR_ROOM && G ? CUR_ROOM.doors : {};
-    for (let x = A.x0 - 6; x < A.x1; x += 22) {
-      if (DR.s != null && x + 22 > DOOR.s.x - 22 && x < DOOR.s.x + 22) continue;
-      const r = Math.random(), m = r < 0.6 ? 'fenceA' : r < 0.78 ? 'fenceB' : r < 0.92 ? 'fenceC' : 'fenceD';
-      stampBoth(g, DECO_MAPS[m], woodPal(), x, A.y1 - 16, 2);
-      if (Math.random() < 0.6) stampBoth(g, DECO_MAPS[pick(['tuft1', 'tuft2'])], DECO, x + rand(-2, 4), A.y1 + 2, 2);
-    }
-    // v2.21 위쪽 가로 울타리 (북쪽 문 자리는 비움) — 캐릭터보다 뒤라 바닥에만 찍음
-    for (let x = A.x0 - 6; x < A.x1; x += 22) {
-      if (DR.n != null && x + 22 > DOOR.n.x - 22 && x < DOOR.n.x + 22) continue;
-      const r = Math.random(), m = r < 0.6 ? 'fenceA' : r < 0.78 ? 'fenceB' : r < 0.92 ? 'fenceC' : 'fenceD';
-      stamp(g, DECO_MAPS[m], woodPal(), x, A.y0 - 18, 2);
-    }
-    if (DR.n != null) { stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x - 32, A.y0 - 18, 2); stamp(g, DECO_MAPS.fenceD, woodPal(), DOOR.n.x + 22, A.y0 - 18, 2); }
+    // v3.26 울타리는 「한 묶음」 단위: 모서리 기둥(세로 울타리 자리)이나 문 자리 기둥에서 시작해 반드시 기둥으로 끝남
+    //   칸(기둥 + 가로대)을 무작위로 끊어 늘어놓지 않음 — 부러진 가로대(fenceB) · 가로대 끝이 허공에 걸린 칸 없음, 간격은 22px 이하로 고르게 맞춤
+    const DR = CUR_ROOM && G ? CUR_ROOM.doors : {}, WP = woodPal(), XL = A.x0 - 10, XR = A.x1 + 2;
+    const POST = DECO_MAPS.fenceP || (DECO_MAPS.fenceP = DECO_MAPS.fenceD.map(r => r.slice(0, 4))); // 가로대 없는 기둥
+    const runs = (a, b, gap) => gap == null ? [[a, b]] : [[a, gap - 32], [gap + 22, b]].filter(([p, q]) => q - p >= 8);
+    const hRun = (x0, x1, y, both, tufts) => { // x0 · x1 = 처음 · 마지막 기둥 자리
+      const n = Math.max(1, Math.ceil((x1 - x0) / 22)), st = (x1 - x0) / n, put = both ? stampBoth : stamp;
+      for (let i = 0; i < n; i++) { const x = Math.round((x0 + st * i) / 2) * 2; put(g, DECO_MAPS[Math.random() < 0.15 ? 'fenceC' : 'fenceA'], WP, x, y, 2);
+        if (tufts && Math.random() < 0.6) put(g, DECO_MAPS[pick(['tuft1', 'tuft2'])], DECO, x + rand(-2, 4), A.y1 + 2, 2); }
+      put(g, POST, WP, Math.round(x1 / 2) * 2, y, 2); }; // 끝 기둥
+    // 아래쪽 가로 울타리 (캐릭터 앞 레이어에도) · 위쪽 가로 울타리 (북쪽 문 자리는 비움)
+    for (const [p, q] of runs(XL, XR, DR.s != null ? DOOR.s.x : null)) hRun(p, q, A.y1 - 16, true, true);
+    for (const [p, q] of runs(XL, XR, DR.n != null ? DOOR.n.x : null)) hRun(p, q, A.y0 - 18, false, false);
     // v3.19 위쪽 울타리 발치의 덤불 · 풀은 울타리 위로 올라오게 (울타리를 찍은 뒤에 한 번 더)
-    for (let x = A.x0 - 4 + randi(0, 30); x < A.x1 - 8; x += randi(40, 90)) { if (DR.n != null && x + 16 > DOOR.n.x - 30 && x < DOOR.n.x + 30) continue; stamp(g, DECO_MAPS[pick(['bush', 'bush', 'tuft1', 'tuft2'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 + 2 + randi(0, 3), 2, Math.random() < 0.5); } // v3.20 울타리 줄에 겹치지 않게 울타리 발치 앞으로 내림
-    // 양옆 세로 울타리
-    for (let y = A.y0 + 8; y < A.y1 - 20; y += 22) for (const x of [A.x0 - 10, A.x1 + 2]) {
-      if (((x < CX && DR.w != null) || (x > CX && DR.e != null)) && y + 22 > CY - 24 && y < CY + 24) continue;
-      stamp(g, DECO_MAPS[Math.random() < 0.2 ? 'fenceVo' : 'fenceV'], woodPal(), x, y, 2);
-    }
-    // 문 자리 양 끝 기둥
-    if (DR.s != null) { stampBoth(g, DECO_MAPS.fenceD, woodPal(), DOOR.s.x - 32, A.y1 - 16, 2); stampBoth(g, DECO_MAPS.fenceD, woodPal(), DOOR.s.x + 22, A.y1 - 16, 2); }
+    for (let x = A.x0 - 4 + randi(0, 30); x < A.x1 - 8; x += randi(40, 90)) { if (DR.n != null && x + 16 > DOOR.n.x - 30 && x < DOOR.n.x + 30) continue; stamp(g, DECO_MAPS[pick(['bush', 'bush', 'tuft1', 'tuft2'])], Object.assign({}, DECO, { m: '#1e3a18', M: '#2e5222', r: pick(['#8a2030', '#4a3070']) }), x, A.y0 + 8 + randi(0, 2) * 2, 2, Math.random() < 0.5); } // v3.20 울타리 줄에 겹치지 않게 울타리 발치 앞으로 내림 · v3.25 울타리 아래 끝(A.y0+6) 밑으로
+    // 양옆 세로 울타리 — 위쪽 모서리 기둥 아래에서 시작해 아래쪽 모서리 기둥까지 이어지고, 옆문 자리는 기둥으로 끝맺음
+    { const VP = DECO_MAPS.fenceVp || (DECO_MAPS.fenceVp = DECO_MAPS.fenceV.slice(0, 5)), Y0 = A.y0 + 8, Y1 = A.y1 - 16;
+      const vRun = (x, y0, y1, endPost) => { const n = Math.max(1, Math.ceil((y1 - y0) / 22)), st = (y1 - y0) / n;
+        for (let i = 0; i < n; i++) stamp(g, DECO_MAPS[Math.random() < 0.2 ? 'fenceVo' : 'fenceV'], WP, x, Math.round((y0 + st * i) / 2) * 2, 2);
+        if (endPost) stamp(g, VP, WP, x, Math.round(y1 / 2) * 2, 2); };
+      for (const [x, open] of [[XL, DR.w != null], [XR, DR.e != null]]) {
+        if (!open) { vRun(x, Y0, Y1, false); continue; } // 아래 끝은 가로 울타리 모서리 기둥이 받음
+        vRun(x, Y0, CY - 34, true); vRun(x, CY + 24, Y1, false); } }
   }
 
   // ---------- 독 (플레이어 상태이상)

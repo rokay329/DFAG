@@ -5,7 +5,7 @@
   // ================================================================ v1.54 일반 몹 부위 리그 — 엘리트·보스처럼 머리·몸통·팔·다리를 2px 칸 단위로 따로 움직인다
   // h=머리 끝 줄, l=다리 시작 줄, m=다리를 가르는 열, b=뒷팔 끝 열, f=앞팔 시작 열, robe=옷자락(다리 대신 흔들림)
   const NRB = {
-    goblin: { h: 6, l: 11, m: 7, b: 3, f: 10 }, goblinUp: { h: 7, l: 11, m: 7, b: 3, f: 10 },
+    goblin: { h: 6, l: 11, m: 7, b: 3, f: 10 }, goblinUp: { h: 7, l: 11, m: 8, mask: ["................", "................", "................", ".B............F.", "BBB..........FFF", "BBB..........FFF", ".BBB........FFF.", "..BB........FF..", "................", "................", "................", "................", "................", "................"] },
     ghoul: { h: 8, l: 12, m: 7, b: 3, f: 11 }, ghoulUp: { h: 10, l: 14, m: 8, b: 3, f: 13 },
     squire: { h: 8, l: 13, m: 7, b: 2, f: 10 }, squireUp: { h: 8, l: 13, m: 7, b: 2, f: 10 }, squireB: { h: 8, l: 13, m: 7, b: 2, f: 10 }, squireBUp: { h: 8, l: 13, m: 7, b: 2, f: 10 }, squireC: { h: 8, l: 13, m: 7, b: 2, f: 10 }, squireCUp: { h: 8, l: 13, m: 7, b: 2, f: 10 },
     chaplain: { h: 8, l: 12, m: 7, b: 1, f: 12, robe: 1 }, bloat: { h: 6, l: 14, m: 7 },
@@ -22,6 +22,7 @@
   };
   function nrWho(map) {
     const b = NRB[map], q = NRQ[map];
+    if (b && b.mask) return (i, j) => { const c = b.mask[j][i]; return c === 'B' ? 'armB' : c === 'F' ? 'armF' : j < b.h ? 'head' : j >= b.l ? (i < b.m ? 'legB' : 'legF') : 'torso'; }; // v3.25 팔 칸을 따로 지정 (머리 높이까지 든 팔도 몸에 붙어 움직임)
     if (b) return (i, j) => j < b.h ? 'head' : j >= b.l ? (i < b.m ? 'legB' : 'legF') : b.b != null && i <= b.b ? 'armB' : b.f != null && i >= b.f ? 'armF' : 'torso';
     if (q) return (i, j) => { if (j >= q.lr) { for (const [a, c, n] of q.legs) if (i >= a && i <= c) return n; return 'body'; } return i >= q.hx && j < q.hr ? 'head' : i <= q.tx && j < q.tr ? 'tail' : 'body'; };
     return (i, j) => j <= 7 ? 'top' : 'bot'; // 덩어리(잿더미): 7행에서 위·아래
@@ -212,7 +213,7 @@
     else if (INV_DRAW[e.type]) invDraw(e, ya, al, white); // v2.43 난입자 (공격 모션 포함)
     else if (e.type === 'goblin' || e.type === 'garcher') {
       drawShadow(e.x, e.y + 1, 8);
-      const pal = e.type, M = nrMotion(e); // v1.54 부위별 칸 단위
+      const pal = e.gv ? e.type + '_v' + e.gv : e.type, M = nrMotion(e); // v1.54 · v3.25 피부 4색 부위별 칸 단위
       nrBiped(e, e.type === 'goblin' && M.m === 'wind' ? 'goblinUp' : 'goblin', pal, e.x, e.y + 2 + ya, flip, { white, alpha: al }, M);
       if (e.state === 'hold') holdGlow(e.x + e.face * 1, e.y - 26, 1 - e.t / e.holdMax, '255,200,60');
       if (e.type === 'garcher' && !white) drawBow(e, ya);
@@ -414,7 +415,8 @@
     if (P.state === 'dodge' && P.rolling) { const rp = rollPose(P); P.rollGY = snap2(P.y); P.y -= rp.lift; ROLL_HIDEW = rp.air; } // v3.19 구르기: 공중에 뜬 높이 · 그림자는 땅에
     P.x = snap2(P.x); P.y = snap2(P.y); P.blade = P.bladeShow; if (P.blade2 != null) P.blade2 = P.blade2Show;
     ASH_DRAW = SAVE.skin === 'ash' && skinOpen(); STEALTH_DRAW = G.player.stealthT > 0; // v1.99 잿불 외형 · v2.05 숨기
-    try { drawPlayerInner(); } finally { PPOSE = null; ASH_DRAW = false; STEALTH_DRAW = false; ROLL_HIDEW = false; P.rollGY = null; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
+    SWAP_DRAW = SWAPFX.on(); // v3.25 무기 바꾸기 모션
+    try { drawPlayerInner(); if (SWAP_DRAW) { SWAP_DRAW = false; SWAPFX.post(); } } finally { SWAP_DRAW = false; PPOSE = null; ASH_DRAW = false; STEALTH_DRAW = false; ROLL_HIDEW = false; P.rollGY = null; P.x = ox; P.y = oy; P.blade = ob; P.blade2 = ob2; }
   }
   function drawPlayerInner() {
     if (G.cls === 'ranger') return drawRanger();

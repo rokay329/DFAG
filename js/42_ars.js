@@ -35,7 +35,7 @@ const ARS = (() => {
   const out = k => (G.wproj || []).some(w => w.k === k);
   const bleed = (e, n, a) => { if (!(e.bleedT > 0)) gxSpurt(e, 8, a || 0); e.bleedT = 3; e.bleedN = Math.max(e.bleedN || 1, n); if (!(e.bleedTick > 0)) e.bleedTick = 0.5; };
   const moveP = (P, dx, dy) => { const n = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 3)); for (let i = 0; i < n; i++) { P.x += dx / n; P.y += dy / n; if (G.obs && G.obs.length) solveObs(P, P.r, false); } P.x = clamp(P.x, A.x0 + P.r, A.x1 - P.r); P.y = clamp(P.y, A.y0 + P.r, A.y1 - P.r); };
-  const cone = (P, ang, reach, half, set) => foes().filter(e => !(set && set.has(e)) && dist(P, e) < reach + e.r && Math.abs(angDiff(angTo(P, e), ang)) < half);
+  const cone = (P, ang, reach, half, set) => foes().filter(e => !(set && set.has(e)) && dist(P, e) < reach + e.r && coneIn(P, e, ang, half));
   // 도트 칼자국: 초승달 모양 2px 칸 (뒤로 갈수록 가늘어짐)
   const slash = (x, y, ang, r, arc, c, c2, w, t, ry) => K.slashes.push({ x, y, ang, r, arc, c, c2: c2 || '#ffffff', w: w || 3, t, max: t, ry: ry || 0.75 });
   const pop = (x, y, v, c, s) => FXK.pop(x, y, v, c, s);

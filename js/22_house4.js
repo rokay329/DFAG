@@ -91,7 +91,7 @@ const HOUSE4 = (() => {
   }
   // v3.19 긴 벽: 한 채를 길게 늘이지 않고 모양이 다른 집 여러 채를 나란히 (지붕 모양 3가지 · 지붕 빛 3가지 · 벽 2가지 · 높이 3가지 · 굴뚝)
   function genRow(wc, hc) {
-    const HHM = 32, W0 = wc + 2, H0 = hc + HHM + 4, g = mkGrid(W0, H0), segs = [];
+    const EXT = Math.max(0, 20 - hc), HHM = 32 + EXT, W0 = wc + 2, H0 = hc + HHM + 4, g = mkGrid(W0, H0), segs = []; // v3.29 지붕 기본 두께: 바닥 자리(hc)가 얕아도 지붕은 최소 20칸 — 모자란 만큼 뒤쪽(위)으로 더 그림 (판정은 그대로)
     // 구역을 묶는 보도블록 단 (집 사이 틈과 앞 턱에 보임): 윗면 포석 · 앞면 턱
     for (let y = HHM + 1; y <= hc + HHM + 2; y++) for (let x = 1; x <= wc; x++) { const r = y - HHM - 1; g[y][x] = y > hc + HHM ? (y === hc + HHM + 1 ? (x % 7 === 0 ? 'u' : 't') : (x % 7 === 0 ? 'U' : 'u')) : (r % 4 === 0 || (x + (Math.floor(r / 4) % 2) * 3) % 6 === 0) ? 'U' : (hn(x >> 1, Math.floor(r / 4), 7) < 0.22 ? 't' : hn(x, y, 3) < 0.1 ? 'A' : hn(Math.floor((x + (Math.floor(r / 4) % 2) * 3) / 6), Math.floor(r / 4), 5) < 0.3 ? 'u' : 'T'); }
     const props = []; // [틈 x0, x1, 종류]
@@ -102,7 +102,7 @@ const HOUSE4 = (() => {
     let pH = -1, pS = -1, pT = -1;
     segs.forEach(([x0, x1], si) => { const sd = rand(0, 99), w = x1 - x0 + 1;
       let HH, style, tile; do { HH = pick([26, 29, 32]); } while (HH === pH && segs.length > 1); style = 1; do { tile = randi(0, 2); } while (tile === pT && segs.length > 1); pH = HH; pS = style; pT = tile;
-      const d = HHM - HH, T = TILE[tile], ry0 = 1 + d, ry1 = hc + d, deep = hc >= 10, cx = (x0 + x1) >> 1, drop = deep ? Math.min(8, Math.round(w / 6)) : 0, top = x => ry0 + Math.floor(Math.abs(x - cx) * drop / Math.max(1, (w >> 1))); // 뒤쪽 끝은 ㅅ자
+      const d = HHM - HH, T = TILE[tile], ry0 = 1 + d - EXT, ry1 = hc + d, deep = hc + EXT >= 10, cx = (x0 + x1) >> 1, drop = deep ? Math.min(8, Math.round(w / 6)) : 0, top = x => ry0 + Math.floor(Math.abs(x - cx) * drop / Math.max(1, (w >> 1))); // 뒤쪽 끝은 ㅅ자
       for (let y = ry0; y <= ry1; y++) for (let x = x0; x <= x1; x++) { let c; if (y < top(x)) continue;
         if (!deep) c = (x + (y % 2) * 2) % 4 === 0 ? T[3] : (hn(x, y, sd) < 0.3 ? T[0] : T[1]);
         else if (style === 1) { const u = x - cx; c = u === 0 ? T[4] : (Math.abs(u) % 2 === 0 ? (u < 0 ? T[0] : T[1]) : (u < 0 ? T[1] : T[2])); if ((y + (Math.floor(Math.abs(u) / 2) % 2) * 2) % 4 === 3) c = T[3]; } // 앞뒤로 뻗은 용마루 (왼쪽 경사 밝음)

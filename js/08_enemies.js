@@ -48,6 +48,7 @@
     if (NM_SMALL[ne.type]) ne.r = Math.min(ne.r, NM_SMALL[ne.type]); // v2.44 새 도트(파티와 같은 크기)에 맞춘 몸 반경
     if (ASH_ALIAS[ne.type]) { ne.ash = ne.type; ne.type = ASH_ALIAS[ne.type]; if (ne.ash === 'husk') { ne.sq = false; ne.blade = null; } } // v1.24 왕도 몬스터: 움직임은 원래 종을 빌린다
     if (ASH_NAMES[ne.type]) { ne.semiName = ASH_NAMES[ne.type]; ne.tall = ne.type === 'coffin' ? 70 : 76; /* v1.29 기수는 깃발 위로 이름표 */ }
+    if (type === 'goblin' || type === 'garcher') ne.gv = randi(0, 3); // v3.25 고블린 피부 4색 (오크와 같은 방식)
     if (type === 'ghoul') { ne.sq = Math.random() < 0.5; if (ne.sq) ne.sv = randi(0, 2); else ne.blade = null; } // v0.96: 감염된 주민과 타락한 종자 반반, 종자는 외형 3종
     orcInit(ne);
     if (ascOn(10) && isEliteT(type)) { ne.ascAff = pick(Object.keys(ASC_AFF)); if (ne.ascAff === 'fast') ne.spd *= 1.3; else if (ne.ascAff === 'tough') { ne.hp *= 1.35; ne.maxHp *= 1.35; } else ne.atk *= 1.2; } // v1.96 잿빛 왕관 특성
@@ -1368,7 +1369,7 @@
     // v2.36 해금 유물 2차 (12종)
     prism: { n: '프리즘 조각', d: '색 조각을 주우면 15% 확률로 1개를 더 얻습니다.', c: '#d8ecff' },
     brush: { n: '잿빛 붓', d: '방을 칠할 때 색 조각을 1개 더 얻습니다.', c: '#b8b8c0' },
-    wick: { n: '성난 심지', d: '분노의 빛 단계가 오를 때마다 치명타 피해가 10%p 증가합니다.', c: '#ff5a4a' },
+    wick: { n: '성난 심지', d: '이번 토벌에서 모은 분노의 빛이 10개 · 25개 · 45개에 이를 때마다 치명타 피해가 10%p 증가합니다.', c: '#ff5a4a' },
     droplet: { n: '고요한 물방울', d: '퍼펙트 회피 직후 다음 공격의 피해가 50% 증가합니다.', c: '#5aa8ff' },
     lantern: { n: '희망의 등불', d: '모닥불에서 쉬면 방패를 1개 얻습니다.', c: '#6ad84a' },
     duelband: { n: '결투자의 띠', d: '역습 중 적을 처치하면 역습 시간이 0.3초 증가합니다. 역습 한 번에 최대 1.2초까지 증가합니다.', c: '#e0303a' },

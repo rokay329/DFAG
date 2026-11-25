@@ -53,7 +53,7 @@ const GRS = (() => {
     else if (k === 'harpoon') { R.dur = 0.35; }
     else if (k === 'duck') { R.dur = 0.42; }
     else if (k === 'longrifle') { R.dur = 1.0; sfx('aim'); }
-    else if (k === 'revolver') { R.dur = 0.9; const L = foes().filter(e => dist(P, e) < 230 && Math.abs(angDiff(angTo(P, e), P.ang)) < 1.0).sort((a, b) => dist(P, a) - dist(P, b)); R.tg = L; }
+    else if (k === 'revolver') { R.dur = 0.9; const L = foes().filter(e => dist(P, e) < 230 && coneIn(P, e, P.ang, 1.0)).sort((a, b) => dist(P, a) - dist(P, b)); R.tg = L; }
     else if (k === 'cannon') { R.dur = 0.5; const T = aimPt(P, 200); R.T = T;
       const OFF = [[0, 0], [-44, 22], [44, -18]]; OFF.forEach(([dx, dy], i) => K.marks.push({ x: clamp(T.x + dx, A.x0 + 10, A.x1 - 10), y: clamp(T.y + dy, A.y0 + 10, A.y1 - 10), t: 0, land: 0.78 + i * 0.26, r: 52 })); R.dur = 0.72; }
     else if (k === 'puffer') { R.dur = 0.35; }
@@ -72,7 +72,7 @@ const GRS = (() => {
     if (k === 'blunder') {
       if (t < 0.12) { P.blade = R.a - P.face * 0.25 * (t / 0.12); if (Math.random() < 0.5) { const m = muzzle(); G.parts.push({ x: m.x, y: m.y, vx: rand(-20, 20), vy: rand(-40, -10), t: 0.3, c: pick(['#e0b860', '#ffffff']), g: 0, glow: true }); } }
       else if (!R.did.f) { R.did.f = true; const m = flashM(3.2), a = R.a;
-        for (const e of foes()) { const d = dist(P, e); if (d < 140 + e.r && Math.abs(angDiff(angTo(P, e), a)) < 1.05) { damageEnemy(e, 1.7 * (1 - Math.min(d, 140) / 140 * 0.4), { ang: angTo(P, e), kb: big(e) ? 0 : 420, grogi: 12, heavy: true, stagger: 0.8, gauge: 5 }); applySt(e, 'stun', 0.8); sparks(e.x, e.y - 12, angTo(P, e), '#ffe0a0', 6); blast(e.x, e.y - 10, 12); } }
+        for (const e of foes()) { const d = dist(P, e); if (d < 140 + e.r && coneIn(P, e, a, 1.05)) { damageEnemy(e, 1.7 * (1 - Math.min(d, 140) / 140 * 0.4), { ang: angTo(P, e), kb: big(e) ? 0 : 420, grogi: 12, heavy: true, stagger: 0.8, gauge: 5 }); applySt(e, 'stun', 0.8); sparks(e.x, e.y - 12, angTo(P, e), '#ffe0a0', 6); blast(e.x, e.y - 10, 12); } }
         for (let i = 0; i < 4; i++) slash(m.x + Math.cos(a) * (8 + i * 22), m.y + Math.sin(a) * (6 + i * 16), a, 14 + i * 12, 2.0, i % 2 ? '#e0b860' : '#ffe8a0', '#ffffff', 3 - (i > 1 ? 1 : 0), 0.22 + i * 0.05);
         for (let i = 0; i < 34; i++) { const b = a + rand(-1.0, 1.0), sp = rand(160, 380); G.parts.push({ x: m.x, y: m.y, vx: Math.cos(b) * sp, vy: Math.sin(b) * sp * 0.8 - rand(0, 60), t: rand(0.25, 0.55), c: pick(['#b08038', '#e0b860', '#8d9097', '#c8c8c8', '#6a4818']), g: 260 }); }
         for (let i = 0; i < 9; i++) { const b = a + (i - 4) * 0.24; tracer(m.x, m.y, m.x + Math.cos(b) * rand(90, 140), m.y + Math.sin(b) * rand(70, 110), i % 2 ? '#ffe0a0' : '#ffffff', 1, 0.14); }
@@ -117,7 +117,7 @@ const GRS = (() => {
         for (let i = 0; i < 5; i++) { const b = a + rand(-0.26, 0.26), sp = rand(180, 300); G.parts.push({ x: m.x, y: m.y, vx: Math.cos(b) * sp, vy: Math.sin(b) * sp * 0.8 - rand(0, 30), t: rand(0.3, 0.45), c: pick(['#ffe060', '#ffb030', '#ff6a20', '#ff3020', '#ffffff']), g: -60, glow: true }); }
         if (Math.random() < 0.5) G.parts.push({ x: m.x + Math.cos(a) * rand(40, 110), y: m.y + Math.sin(a) * rand(30, 80), vx: rand(-20, 20), vy: rand(-60, -30), t: rand(0.5, 0.9), c: pick(['#3a3540', '#5b5560']), g: -20 });
         FXK.light(m.x + Math.cos(a) * 50, m.y + Math.sin(a) * 36, 110, 0.35, '255,140,50', 0.03); P.recoil = 0.6 + Math.random() * 0.4; addShake(0.8, a + Math.PI);
-        if ((R.tk = (R.tk || 0) - dt) <= 0) { R.tk = 0.1; for (const e of foes()) { const d = dist(m, e); if (d < 120 + e.r && Math.abs(angDiff(angTo(m, e), a)) < 0.4) { damageEnemy(e, 0.26, { ang: a, kb: big(e) ? 0 : 40, grogi: 2, gauge: 1, dot: false }); addBurn(e, 3, 0.35); } } sfx('whoosh', 0.5 + rand(0, 0.2)); }
+        if ((R.tk = (R.tk || 0) - dt) <= 0) { R.tk = 0.1; for (const e of foes()) { const d = dist(m, e); if (d < 120 + e.r && coneIn(m, e, a, 0.4)) { damageEnemy(e, 0.26, { ang: a, kb: big(e) ? 0 : 40, grogi: 2, gauge: 1, dot: false }); addBurn(e, 3, 0.35); } } sfx('whoosh', 0.5 + rand(0, 0.2)); }
         if ((R.fb = (R.fb || 0) - dt) <= 0) { R.fb = 0.09; const d = rand(40, 115); blast(m.x + Math.cos(a) * d + rand(-8, 8), m.y + Math.sin(a) * d * 0.8 + rand(-6, 6), rand(10, 18)); }
         if ((R.fz = (R.fz || 0) - dt) <= 0) { R.fz = 0.16; const d = rand(50, 110); (G.pfire = G.pfire || []).push({ x: m.x + Math.cos(a) * d, y: P.y + Math.sin(a) * d * 0.8 + 4, t: 2.2, tick: 0 }); } }
     } else if (k === 'undertaker') { const n = Math.floor((t - 0.04) / 0.07);
