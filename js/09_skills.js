@@ -56,7 +56,7 @@
   }
   function pasOnKill(e) {
     if (isDummy(e)) return;
-    { const u = uncK(), P = G.player; if (u === 'knight12') { G.gold += 1; G.nums.push({ x: e.x, y: e.y - 20, v: '+1G', t: 0.6, c: '#ffd34d', s: 1 }); } if (u === 'ranger11' && Math.random() < 0.1) P.gauge = Math.min(100, (P.gauge || 0) + 5); } // v2.30 언커먼
+    { const u = uncK(), P = G.player; if (u === 'knight12') { G.gold += 1; G.nums.push({ x: e.x, y: e.y - 20, v: '+1G', t: 0.6, c: '#ffd34d', s: 1 }); } if (u === 'ranger11' && Math.random() < 0.1 && !ultBusy(P)) P.gauge = Math.min(100, (P.gauge || 0) + 5); } // v2.30 언커먼
     if (pasRoll('crumb')) dropFood('crumb', e.x, e.y, false);
     if (pasRoll('carrot')) dropFood('carrot', e.x, e.y, false);
     { const cat = pasRoll('bone') ? false : pasRoll('cat') ? true : null; if (cat != null) { const T = nearFoes(e.x, e.y, 180, e).sort((a, b) => dist(a, e) - dist(b, e))[0]; if (T) (G.wproj = G.wproj || []).push({ k: cat ? 'cat' : 'bone', x: e.x, y: e.y - 10, tgt: T, t: 1.2 }); } }
@@ -268,7 +268,7 @@
     P.counterT = P.counterMax = COUNTER_T + (hasRelic('mirror') ? 0.6 : 0); rec('perfect'); // v2.27 반격 시간: 2.5초 동안 모든 공격 치명타 · v2.33 피해 +15% · 직업 회피 30%
     for (const o of nearFoes(P.x, P.y, 1e5)) { applySt(o, 'stun', 0.6, 0, true); /* v2.35 방 안 모든 적 */ G.fx.push({ kind: 'ring', x: o.x, y: o.y - 10, r: 4, grow: 60, t: 0.2, max: 0.2, c: '#ffd34d' }); } // 주변 적 0.6초 경직 (보스·정예는 줄어듦)
     slowmo = 1.0; flashT = 0.12; flashColor = '#cfe6ff';
-    P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
+    if (!ultBusy(P)) P.gauge = Math.min(100, P.gauge + 15 * G.stats.gaugeRate);
     P.dropletNext = hasRelic('droplet'); P.cntKills = 0; P.cntExt = 0; G.runPerf = (G.runPerf || 0) + 1; if (G.runPerf >= 15) recOnce('u_drop'); rec('cstun', nearFoes(P.x, P.y, 1e5).filter(o => !isDummy(o)).length); // v2.36
     G.nums.push({ x: P.x, y: P.y - 32, v: '역습!', t: 0.9, c: '#ffd34d', s: 2 }); addShake(2, 0);
     G.fx.push({ kind: 'ring', x: P.x, y: P.y - 8, r: 6, t: 0.35, max: 0.35, c: '#9fd2ff' });
@@ -319,6 +319,8 @@
     if (!o.dot) { if (P.dropletNext && !o.proc) { P.dropletNext = false; dmg *= 1.5; } if (hasRelic('chain') && e.st && e.st.stunT > 0) dmg *= 1.2; if (hasRelic('candle') && e.type !== 'boss' && !isDummy(e) && G.enemies.filter(x => !x.dead && !isDummy(x)).length === 1) dmg *= 1.5; } // v2.36 물방울·사슬·촛불
     dmg = Math.max(1, Math.round(dmg));
     e.hitT = time;
+    if (isDummy(e)) { const a = o.ang != null ? o.ang : Math.atan2(e.y - P.y, e.x - P.x), dir = Math.cos(a) >= 0 ? 1 : -1, pw = o.dot ? 12 : o.heavy ? 95 : 62; e.bendV = (e.bendV || 0) + dir * pw; e.dSq = o.dot ? 0 : 0.06; // v3.64 허수아비 타격감: 맞은 방향으로 휘청 + 짚 부스러기
+      if (!o.dot) for (let i = 0; i < (o.heavy ? 10 : 6); i++) G.parts.push({ x: e.x + rand(-6, 6), y: e.y - rand(16, 40), vx: dir * rand(40, 140), vy: -rand(30, 110), t: rand(0.35, 0.7), c: pick(['#d8c098', '#b89c72', '#e8cc70']), g: 380, floor: e.y + rand(0, 8) }); }
     let wardAb = 0; if (e.ward > 0) { e.barHit = time; const ab = Math.min(e.ward, dmg); wardAb = ab; e.ward -= ab; dmg -= ab; if (e.ward <= 0) { e.ward = 0; burst(e.x, e.y - 20, '#ff6060', 10); sfx('block', 1.3); } }
     e.hp -= dmg; e.flash = o.dot ? 0.06 : 0.12;
     if (G.tstopT > 0 && e.st && e.st.tsT > 0 && !o.bank) e.st.bank = (e.st.bank || 0) + dmg * 0.5; // v2.08 시간 정지 중 피해 절반을 모아 둠
@@ -362,7 +364,7 @@
         zoomK = Math.max(zoomK, o.heavy ? 0.022 : crit ? 0.018 : 0.007);
       }
     }
-    P.gauge = Math.min(100, P.gauge + (o.gauge == null ? 4 : o.gauge) * s.gaugeRate);
+    if (!ultBusy(P)) P.gauge = Math.min(100, P.gauge + (o.gauge == null ? 4 : o.gauge) * s.gaugeRate);
     if (!o.dot) { sfx(o.heavy ? 'heavy' : 'hit', rand(0.88, 1.14)); if (crit) sfx('crit', rand(0.95, 1.08)); }
     const kb = (o.kb || 0) * e.kbRes * (o.kb && o.kb < 100 ? 1.35 : 1);
     if (kb > 0) { e.vx += Math.cos(o.ang) * kb; e.vy += Math.sin(o.ang) * kb; }
@@ -888,7 +890,7 @@
     if (!isDummy(e) && G.player.counterT > 0) { const P = G.player; P.cntKills = (P.cntKills || 0) + 1; if (P.cntKills >= 5) recOnce('u_duel'); if (hasRelic('duelband') && (P.cntExt || 0) < 1.2 - 1e-6) { const d = Math.min(0.3, 1.2 - (P.cntExt || 0)); P.cntExt = (P.cntExt || 0) + d; P.counterT += d; P.counterMax += d; } /* 역습 한 번에 최대 +1.2초 */ } // v2.36 결투자의 띠
     engOnKill(e); // v2.41 (색 3단계 고정 효과 제거)
     pasOnKill(e); // v2.22 보관 패시브
-    if (hasRelic('pact') && G.player) G.player.gauge = Math.min(100, G.player.gauge + 10); // v2.19 피의 계약
+    if (hasRelic('pact') && G.player && !ultBusy(G.player)) G.player.gauge = Math.min(100, G.player.gauge + 10); // v2.19 피의 계약
     if (hasRelic('slimecore') && Math.random() < 0.1) { G.fx.push({ kind: 'ring', x: e.x, y: e.y - 8, r: 6, grow: 200, t: 0.35, max: 0.35, c: '#7ad050' }); for (let i = 0; i < 12; i++) { const a = rand(0, TAU), sp = rand(60, 140); G.parts.push({ x: e.x, y: e.y - 8, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.6 - 20, t: rand(0.3, 0.5), c: pick(['#7ad050', '#b8f070', '#3a7a2a']), g: 120 }); } sfx('blast', 1.3); for (const q of nearFoes(e.x, e.y, 56, e)) damageEnemy(q, 1.0, { proc: true, ang: angTo(e, q), kb: 140, grogi: 3, gauge: 1 }); } // v2.19 분열하는 점액 핵
     orcOnKill(e);
     sfx('kill'); sfx('crunch', rand(0.85, 1.15));

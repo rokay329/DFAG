@@ -887,7 +887,7 @@
 
   // ---------- 바닥 꾸미기: 초원
   function paintMeadowDecor(g, R) {
-    const fl = G ? (G.flatLights = []) : [];
+    const fl = G ? (G.flatLights = []) : []; fl.room = R; // v3.74 어느 방 바닥의 빛인지 표시 (다른 방에 남은 빛이 안 보이게)
     const MPs = meadowCurves(), onPath = (x, y, clearance = 20) => MPs.some(c => { for (let t = c.a; t <= c.b; t += 6) { const m = c.at(t), px = c.vert ? m : t, py = c.vert ? t : m; if (Math.hypot(px - x, py - y) < clearance) return true; } return false; });
     const busy = (x, y, r) => (R && obsHitL(R.obs, x, y, r)) || onPath(x, y, r + 20) || !decFree(x, y, Math.max(r, 6));
     const spot = (pad = 20, r = 10) => { for (let i = 0; i < 30; i++) { const x = rand(A.x0 + pad, A.x1 - pad), y = rand(A.y0 + pad, A.y1 - pad - 10); if (!busy(x, y, r)) return { x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2 }; } return null; };
@@ -929,7 +929,7 @@
     if (Math.random() < 0.25) { const p = spot(30, 10); if (p) gPaint(g, fromRows(PROP_MAPS.wheel[0]), PROP_MAPS.wheel[1], p.x, p.y); }
     if (Math.random() < 0.5) { const left = Math.random() < 0.5, web = genWeb(); gPaint(g, left ? web : web.map(r => r.slice().reverse()), { w: 'rgba(200,200,215,.55)', W: 'rgba(230,230,240,.75)' }, left ? A.x0 + 2 : A.x1 - 26, A.y0 + 2); }
     if (Math.random() < 0.4) { const p = spot(40, 14); if (p) { stamp(g, DECO_MAPS.rune, DECO, p.x, p.y, 2); fl.push({ x: p.x + 6, y: p.y + 12, r: 30, a: 0.25, c: '255,60,60', ca: 0.1 }); } }
-    if (Math.random() < 0.35) { const p = spot(60, 20); if (p) stamp(g, DECO_MAPS.scarecrow, DECO, p.x, p.y - 30, 2, Math.random() < 0.5); }
+    // v3.63 일반 허수아비 소품 삭제 (시작 방 훈련 허수아비는 그대로)
   }
   // 초원 길 모양: 구불길·곧은길·갈림길·교차·징검돌·개울·없음
   // meadowCurves: 04_monsters.js에서 불러올 때 먼저 써서 그쪽으로 옮김
@@ -952,7 +952,7 @@
 
   // ---------- 바닥 꾸미기: 성채
   function paintCastleDecor(g, R) {
-    const fl = G ? (G.flatLights = []) : [];
+    const fl = G ? (G.flatLights = []) : []; fl.room = R; // v3.74 어느 방 바닥의 빛인지 표시 (다른 방에 남은 빛이 안 보이게)
     const busy = (x, y, r) => (R && obsHitL(R.obs, x, y, r)) || !decFree(x, y, Math.max(r, 6));
     const spot = (pad = 20, r = 10) => { for (let i = 0; i < 30; i++) { const x = rand(A.x0 + pad, A.x1 - pad), y = rand(A.y0 + pad, A.y1 - pad); if (!busy(x, y, r)) return { x: Math.round(x / 2) * 2, y: Math.round(y / 2) * 2 }; } return null; };
     const W0 = A.x1 - A.x0, H0 = A.y1 - A.y0, area = W0 * H0 / 540000, sh = R ? R.shape : 'hall';
@@ -1424,7 +1424,7 @@
     for (const e of G.enemies) if (e.chak && e.chak.st !== 'held') lights.push({ x: e.chak.x, y: e.chak.y - 10, r: 30, a: 0.45, c: e.type === 'shrewB' ? '255,210,90' : '220,225,240', ca: 0.12 });
     for (const pr of G.eproj) if (pr.kind === 'ember') lights.push({ x: pr.x, y: pr.y - 10, r: 18, a: 0.35, c: '255,150,60', ca: 0.12 });
     for (const pr of G.eproj) if (pr.kind === 'crescent') lights.push({ x: pr.x, y: pr.y - 10, r: 22, a: 0.4, c: '200,140,255', ca: 0.12 });
-    if (G.flatLights) for (const l of G.flatLights) lights.push(l.flick ? Object.assign({}, l, { r: l.r + Math.sin(time * 10 + l.x) * 2 }) : l);
+    if (G.flatLights && G.flatLights.room === R) for (const l of G.flatLights) lights.push( /* v3.74 지금 방 바닥에서 만든 빛만 — 예전 방의 버섯 · 룬 · 모닥불 빛이 유적 · 놀이터 같은 다른 방 어둠 속에 떠 보이던 것 */l.flick ? Object.assign({}, l, { r: l.r + Math.sin(time * 10 + l.x) * 2 }) : l);
     if (G.stage === 1 && G.flies) for (const f of G.flies) if (f.cx != null) lights.push({ x: f.cx, y: f.cy, r: 14, a: 0.35, c: '220,255,120', ca: 0.2 });
     if (R.socks) for (const s of R.socks) { const on = s.dual ? G.dun.sock[0] || G.dun.sock[1] : G.dun.sock[s.i]; lights.push({ x: s.x, y: s.y - SOCK_H[SST()] + 6, r: on ? 64 + Math.sin(time * 9 + s.i) * 3 : 30, a: on ? 0.8 : 0.35, c: on ? SK().rgb : '200,200,220', ca: on ? 0.22 : 0.05 }); }
     if (R.chest && !R.chest.opened) lights.push({ x: R.chest.x, y: R.chest.y - 10, r: 60, a: 0.6, c: R.chest.kind === 'secret' ? '200,140,255' : '255,200,110', ca: 0.18 });

@@ -44,7 +44,11 @@ const PATHCLR = (() => {
       STG = stage; cache = null; try { return o.apply(this, arguments); } finally { STG = null; cache = null; } }; }
   // 바닥 장식: withDecor로 찍는 것 · decFree로 자리를 묻는 것 모두 길 띠를 피함
   { const o = withDecor; withDecor = function (g, R, fn) { if (!R || typeof fn !== 'function') return o.apply(this, arguments);
-      return o.call(this, g, R, () => { if (DEC && DEC.solid) for (const q of rects(R)) DEC.solid.push(q); return fn(); }); }; }
+      return o.call(this, g, R, () => { if (DEC && DEC.solid) { for (const q of rects(R)) DEC.solid.push(q);
+          // v3.35 장애물의 실제 그림(폐허 벽 · 기둥 · 나무 잎 등 발 자리보다 큰 그림) 밑에도 바닥 장식을 찍지 않음 — 통나무가 폐허 벽 밑으로 깔려 보이던 문제
+          let S = []; try { S = typeof makeObsSprites === 'function' ? makeObsSprites(R) || [] : []; } catch (e) { S = []; }
+          for (const sp of S) if (sp && sp.cv) DEC.solid.push({ x0: sp.x, y0: sp.y, x1: sp.x + sp.cv.width, y1: sp.y + sp.cv.height }); }
+        return fn(); }); }; }
   { const o = decFree; decFree = function (x, y, r = 6) { if (!o(x, y, r)) return false; const R = typeof CUR_ROOM !== 'undefined' ? CUR_ROOM : null; return !(R && G && hitPt(R, x, y, r)); }; }
   return { PAD, rects, hitRect, hitPt };
 })();

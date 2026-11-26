@@ -1,0 +1,86 @@
+'use strict';
+// 잿빛 왕관 원정대 — 71_informant.js : v3.69 정보원 PRS-22(오목눈이) · DW-5000(햄스터) 등장 장면 (시안 _시안/정보원_PRS-22_DW-5000.html)
+//  · 일반 루트: 장마다 첫 번째 보스 문 열쇠(정령의 불씨 · 기사단 인장 조각 · 전사의 엄니 · 붉은 보석)를 줍는 순간 (v3.69b 두 번째 → 첫 번째)
+//  · 흐름: 근처 장애물 뒤가 바스락거림 → 둘이 튀어나와 플레이어 양옆에 내려앉음 → 속담 「밤말은 새가 듣고, / 쥐가 듣는다.」 → PRS-22 봉인 소문 → DW-5000 왕관 조각 소문
+//          → PRS-22는 날아가고 DW-5000은 땅을 파고 사라짐 · 장마다 대사가 다름 · 한 판에 장마다 한 번
+const INFORM = (() => {
+  const PR = {"m": [".....kkkkk.....", "....kBWWWBk....", "...kBWWWWWBk...", "...kWEWWWEwk...", "...kWWWyWWwk...", "..kBWWWWWWwBk..", "..kBPWWWWWPBk..", "..kBpPWWWPpBk..", ".kBkkpPPPpkk...", "kBk..kkkkk.....", "kk...kf.kf.....", ".....kk.kk....."], "p": {"k": "#0b0a0e", "W": "#f6f2ee", "w": "#d6cfd2", "B": "#57505f", "b": "#4a4452", "P": "#e9bcc0", "p": "#c4929c", "E": "#0b0a0e", "e": "#ffffff", "y": "#4a3a36", "f": "#6a5650"}, "bob": 5, "face": "W"};
+  const DW = {"m": [".kk.......kk.", "knOk.....kOnk", "kNOkkkkkkkONk", ".kOOOOOOOOOk.", "kOOOEOOOEOOOk", "kWOOXOnOXOOWk", "kWWWOONOOWWWk", "kWWWWWWWWWWWk", "kOWWfWWWfWWok", "kOOWWWWWWWOok", ".kOOWWWWWOok.", "..kfkkkkkfk..", "..kk.....kk.."], "p": {"k": "#0b0a0e", "O": "#e8a35a", "o": "#c47e3c", "d": "#9a5c2a", "W": "#fbf3e6", "w": "#e2d6c4", "n": "#f0a0a8", "N": "#d07884", "E": "#0b0a0e", "e": "#ffffff", "f": "#f0b8b0", "X": "#5a3420"}, "bob": 7, "face": "O"};
+  // 장마다 소문 (말주머니는 문장마다 하나)
+  const LINES = {
+    1: { intro: [['prs', '쉿, 무기는 내려 둬.'], ['prs', '우린 소문에 죽고 소문에 살지.'], ['prs', '나는 PRS-22.'], ['dw', '나는 DW-5000.'], ['prs', '밤말은 새가 듣고,'], ['dw', '쥐가 듣는다.']] /* 1장은 소개 사이에 속담 */, // v3.69c 1장: 처음 만나는 자리라 자기소개
+      prs: ['어디서 들은 얘긴데.', '정령의 불씨 두 개를 문 앞에 바치면 봉인이 풀린대.', '방금 하나를 주웠으니, 남은 건 하나야.', '나머지는 다른 우두머리의 굴에 있대.'], dw: ['이건 볼주머니에 넣어 둔 소문인데.', '문 너머 구루그가 왕관 조각 하나를 삼키고 있대.', '조각을 다 모으면 잿빛 왕에게 닿는다나 봐.'] },
+    2: { prs: ['어디서 들은 얘긴데.', '쪼개진 기사단 인장을 맞추면 성채의 문이 열린대.', '네가 주운 건 반쪽뿐이야.', '나머지 반쪽은 다른 처형장에 있대.'], dw: ['볼주머니에서 꺼낸 소문이야.', '발도르는 왕관 조각을 지키느라 성채를 떠나지 않는대.', '조각을 다 모으면 잿빛 왕에게 닿는다나 봐.'] },
+    3: { prs: ['어디서 들은 얘긴데.', '전사의 엄니 두 개를 꽂으면 부락의 문이 열린대.', '결투에서 진 전사들의 엄니라던데.', '남은 하나는 다른 결투장에 있대.'], dw: ['볼주머니 깊숙이 넣어 둔 소문인데.', '크루가쉬는 왕관 조각을 전리품처럼 지니고 있대.', '피 냄새를 따라가면 찾을 수 있다나 봐.'] },
+    4: { prs: ['어디서 들은 얘긴데.', '붉은 보석 두 개가 마지막 문을 연대.', '남은 하나는 다른 알현실에 있대.', '그 너머엔 잿빛 왕이 있다지.'], dw: ['볼주머니에 마지막으로 남은 소문이야.', '모은 조각을 들고 가면 왕관이 다시 하나가 된대.', '그다음은… 아무도 모른대.'] },
+  };
+  let S = null;
+  const sn = v => Math.round(v / 2) * 2;
+  // ---------------------------------------------------------------- 그리기 (2px 칸 · 발 가운데 기준 · face: 1 오른쪽)
+  function drawGuy(it, x, y, z, face, bob, blink, al) {
+    const m = it.m, H = m.length, W = m[0].length, X0 = sn(x) - Math.floor(W / 2) * 2, B = sn(y - z);
+    ctx.save(); if (al != null && al < 1) ctx.globalAlpha = al;
+    for (let j = H - 1; j >= 0; j--) for (let i = 0; i < W; i++) { let c = m[j][i]; if (c === '.') continue;
+      if (blink && c === 'E' && j + 1 < H && m[j + 1][i] === 'X') c = it.face; else if (blink && c === 'X') c = 'k'; else if (blink && c === 'E') c = it.face;
+      const ii = face < 0 ? W - 1 - i : i; ctx.fillStyle = it.p[c]; ctx.fillRect(X0 + ii * 2, B - (H - j) * 2 + (j < it.bob ? bob * 2 : 0), 2, 2); }
+    ctx.restore();
+  }
+  function shadow(x, y, w, a) { ctx.save(); ctx.fillStyle = 'rgba(4,3,8,.8)'; ctx.globalAlpha = a; for (let yy = -2; yy <= 2; yy += 2) for (let xx = -w; xx <= w; xx += 2) if (((xx + yy) / 2 & 1) === 0 && (xx / w) ** 2 + (yy / 3) ** 2 <= 1) ctx.fillRect(sn(x) + xx, sn(y) + yy, 2, 2); ctx.restore(); }
+  // ---------------------------------------------------------------- 시작
+  function hideSpot(R, P, used) { // 플레이어 가까운 장애물 뒤 (없으면 방 위쪽 끝)
+    let best = null, bd = 1e9;
+    for (const b of R.obs || []) { const bx = b.x != null ? b.x : (b.x0 + b.x1) / 2, by = b.y != null ? b.y : b.y0; if (bx == null || by == null) continue; const d = Math.hypot(bx - P.x, by - P.y);
+      if (d < 70 || d > 320 || used.some(u => Math.hypot(u.x - bx, u.y - by) < 60)) continue; if (d < bd) { bd = d; best = { x: bx, y: by - (b.r || 10) - 2 }; } }
+    return best || { x: clamp(P.x + (used.length ? 140 : -140), A.x0 + 30, A.x1 - 30), y: A.y0 + 14 };
+  }
+  function start() {
+    const D = G.dun, R = D && D.cur, P = G.player; if (!R || !P) return;
+    const h1 = hideSpot(R, P, []), h2 = hideSpot(R, P, [h1]);
+    const side = h1.x <= h2.x ? [-1, 1] : [1, -1];
+    const land = s => ({ x: clamp(P.x + s * 46, A.x0 + 24, A.x1 - 24), y: clamp(P.y - 10, A.y0 + 24, A.y1 - 10) });
+    S = { t: 0, ph: 'rustle', st: G.stage, a: { it: PR, h: h1, l: land(side[0]), x: h1.x, y: h1.y, z: 0, show: false }, b: { it: DW, h: h2, l: land(side[1]), x: h2.x, y: h2.y, z: 0, show: false }, parts: [] };
+    TRUTH.freeze(); P.state = 'idle'; P.face = 1; sfx('blip', 1.4);
+  }
+  function puff(x, y, cols, n, up) { for (let i = 0; i < n; i++) S.parts.push({ x: x + rand(-8, 8), y: y - rand(0, 10), vx: rand(-50, 50), vy: -rand(20, up || 80), t: rand(0.3, 0.6), c: pick(cols), g: 240 }); }
+  const LEAF = ['#6a8a4a', '#4a6a34', '#8aa060', '#5a4a36'];
+  function tick(dt) {
+    const s = S; s.t += dt; const t = s.t, P = G.player;
+    for (const q of s.parts) { q.t -= dt; q.x += q.vx * dt; q.y += q.vy * dt; q.vy += q.g * dt; } s.parts = s.parts.filter(q => q.t > 0);
+    if (s.ph === 'rustle') { // 장애물 뒤가 바스락 (두 번)
+      for (const [o, d] of [[s.a, 0], [s.b, 0.25]]) if (t > d && Math.random() < dt * 18) puff(o.h.x + rand(-10, 10), o.h.y + 4, LEAF, 1, 50);
+      if (t > 0.9) { s.ph = 'pop'; s.t = 0; sfx('dodge', 1.3); }
+    } else if (s.ph === 'pop') { // 튀어나와 포물선으로 내려앉음 (PRS-22는 날갯짓으로 조금 더 높이)
+      for (const [o, d, hgt] of [[s.a, 0, 46], [s.b, 0.18, 30]]) { const k = Math.min(1, Math.max(0, (t - d) / 0.5)); if (k > 0 && !o.show) { o.show = true; puff(o.h.x, o.h.y + 2, LEAF, 8, 120); sfx('swing', o === s.a ? 1.7 : 1.4); }
+        o.x = o.h.x + (o.l.x - o.h.x) * k; o.y = o.h.y + (o.l.y - o.h.y) * k; o.z = Math.sin(k * Math.PI) * hgt; if (k >= 1 && !o.landed) { o.landed = true; o.z = 0; puff(o.x, o.y, ['#8a8a8a', '#6a6a6a'], 4, 30); sfx('step', 1.2); } }
+      if (t > 0.9) { s.ph = 'talk'; s.t = 0; P.face = Math.sign((s.a.x + s.b.x) / 2 - P.x) || 1;
+        const L = LINES[s.st] || LINES[1], lines = [...(L.intro || [['prs', '밤말은 새가 듣고,'], ['dw', '쥐가 듣는다.']]), ...L.prs.map(x => ['prs', x]), ...L.dw.map(x => ['dw', x]), ['prs', '그럼, 우린 이만.'], ['dw', '들은 건 비밀이야.']];
+        TRUTH.talk(lines, () => { if (S) { S.ph = 'exit'; S.t = 0; sfx('dodge', 1.2); } }); }
+    } else if (s.ph === 'exit') { // PRS-22는 비스듬히 날아오르고, DW-5000은 땅을 파고 들어감
+      const a = s.a, b = s.b, ka = Math.min(1, t / 0.8);
+      a.z = ka * ka * 260; a.x = a.l.x - (a.l.x < P.x ? 1 : -1) * ka * 120; a.al = 1 - Math.max(0, (ka - 0.6) / 0.4);
+      const kb = Math.min(1, t / 0.6); b.sink = kb; if (Math.random() < dt * 30 && kb < 1) puff(b.x, b.y, ['#6a5040', '#4a3828', '#8a6a4a'], 1, 60);
+      if (t > 0.9) { if (dg) { dg.fillStyle = 'rgba(30,20,14,.6)'; for (let y = -2; y <= 2; y += 2) for (let x = -6; x <= 6; x += 2) if ((x / 6) ** 2 + (y / 3) ** 2 <= 1) dg.fillRect(sn(b.x) + x, sn(b.y) + y, 2, 2); } // 파고 들어간 자리
+        S = null; }
+    }
+    if (S && S.ph !== 'talk') { TRUTH.freeze(); G.prompt = null; }
+  }
+  function ents(list) {
+    if (!S) return; const now = time;
+    for (const [o, k] of [[S.a, 0], [S.b, 1]]) { if (!o.show) continue; const P = G.player, face = (o.x <= P.x ? 1 : -1) * (k === 0 ? 1 : 1);
+      const bob = Math.floor(now * 2 + k * 0.5) % 2, blink = ((now + k * 0.9) % 3.4) < 0.13, flap = k === 0 && o.z > 2;
+      list.push({ y: o.y, d: () => { shadow(o.x, o.y, o.it === DW ? 8 : 9, 0.8 * (1 - Math.min(1, o.z / 80)) * (o.al == null ? 1 : o.al) * (1 - (o.sink || 0)));
+        if (o.sink) { ctx.save(); ctx.beginPath(); ctx.rect(o.x - 40, o.y - 80, 80, 80 + 1); ctx.clip(); drawGuy(o.it, o.x, o.y + o.sink * 28, 0, face, bob, blink, 1); ctx.restore(); return; }
+        drawGuy(o.it, o.x, o.y, o.z, face, flap ? Math.floor(now * 14) % 2 : bob, blink, o.al); } }); }
+    for (const q of S.parts) list.push({ y: q.y + 30, d: () => { ctx.fillStyle = q.c; ctx.fillRect(sn(q.x), sn(q.y), 2, 2); } });
+  }
+  function spk(who) { if (!S) return null; const o = who === 'prs' ? S.a : who === 'dw' ? S.b : null; return o ? { x: o.x, y: o.y - 34 } : null; }
+  // ---------------------------------------------------------------- 연결
+  { const o = collectLoot; collectLoot = function (l) { const r = o.apply(this, arguments);
+      try { const D = G && G.dun; if (l && l.type === 'sealkey' && D && !D.home && !D.forge && D.keys >= 1 && !D.informed) { D.informed = true; start(); } } catch (e) { console.error(e); }
+      return r; }; }
+  { const o = TRUTH.busy; TRUTH.busy = function () { if (S && S.ph !== 'talk') { if (G) G.prompt = null; return true; } return o.apply(this, arguments); }; }
+  { const o = TRUTH.update; TRUTH.update = function (rdt) { if (S && S.ph !== 'talk') { tick(rdt); return; } const r = o.apply(this, arguments); if (S && S.ph === 'talk') { /* 대화 중에도 알갱이는 흩어짐 */ for (const q of S.parts) { q.t -= rdt; q.x += q.vx * rdt; q.y += q.vy * rdt; q.vy += q.g * rdt; } S.parts = S.parts.filter(q => q.t > 0); } return r; }; }
+  { const o = TRUTH.ents; TRUTH.ents = function (list) { o.apply(this, arguments); ents(list); }; }
+  { const o = TRUTH3.spk; TRUTH3.spk = function (who) { const q = spk(who); return q || o.apply(this, arguments); }; }
+  return { start, get on() { return !!S; } };
+})();

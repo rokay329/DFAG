@@ -181,10 +181,14 @@
   // v2.04 허수아비 도트: 나무 기둥 + 짚 몸통 + 자루 머리(과녁 그림) + 팔 막대
   // v3.20 맞으면 회전 대신 칸 단위로 기우뚱 (머리 · 어깨는 2칸, 몸은 1칸, 받침은 그대로) — 기운 그림은 처음 쓸 때 한 번 만듦
   function dummyLean(dir, lv) { const k = 'dummy' + (dir > 0 ? 'R' : 'L') + lv; if (!MAPS[k]) MAPS[k] = MAPS.dummy.map((r, y) => { const d = dir * (y < 12 ? lv : y < 24 ? lv - 1 : 0); return d > 0 ? '.'.repeat(d) + r.slice(0, r.length - d) : d < 0 ? r.slice(-d) + '.'.repeat(-d) : r; }); return k; }
+  // v3.64 맞으면 뒤로 크게 휘었다가 용수철처럼 되돌아오며 흔들림 — 기둥 밑동(26줄)을 축으로 위로 갈수록 많이 휨 (칸 단위로 다시 뽑아 도트 유지)
+  function dummyBend(b) { const k = 'dummyB' + b; if (!MAPS[k]) { const PAD = 9; MAPS[k] = MAPS.dummy.map((r, y) => { const d = y < 26 ? Math.round(b * Math.pow((26 - y) / 26, 1.5)) : 0, s = '.'.repeat(PAD) + r + '.'.repeat(PAD); return d > 0 ? '.'.repeat(d) + s.slice(0, s.length - d) : d < 0 ? s.slice(-d) + '.'.repeat(-d) : s; }); if (typeof PLAYER_MAPS !== 'undefined' && PLAYER_MAPS.add && false) PLAYER_MAPS.add(k); } return k; }
   function drawDummy(e, white) {
     drawShadow(e.x, e.y + 1, 10);
-    const L = e.lean || 0, lv = Math.abs(L) > 0.12 ? 2 : Math.abs(L) > 0.04 ? 1 : 0;
-    drawSprite(lv ? dummyLean(Math.sign(L), lv) : 'dummy', 'dummy', 2, e.x, e.y + 2, false, { white });
+    const dt = Math.min(0.05, Math.max(0, time - (e._bt == null ? time : e._bt))); e._bt = time;
+    e.bendV = (e.bendV || 0) + (-170 * (e.bend || 0) - 7 * (e.bendV || 0)) * dt; e.bend = clamp((e.bend || 0) + e.bendV * dt, -8, 8);
+    const b = Math.round(e.bend || 0), sq = e.dSq > 0 ? (e.dSq -= dt, 2) : 0;
+    drawSprite(b ? dummyBend(b) : 'dummy', 'dummy', 2, e.x, e.y + 2 + sq, false, { white });
   }
   function drawEnemyBody(e) {
     const flip = e.face < 0, white = e.flash > 0;
@@ -211,6 +215,14 @@
     else if (e.type === 'boss' && e.kind === 'ashking') withAura(e, '#ff8a3a', () => drawAshKing(e, ya, al));
     else if (e.type === 'boss' && e.kind === 'slimeking') withAura(e, '#7ae0ff', () => { drawSlimeKing(e, ya, al); TRUTH.belly(e); }); // v2.46 보스 오오라
     else if (INV_DRAW[e.type]) invDraw(e, ya, al, white); // v2.43 난입자 (공격 모션 포함)
+    else if (e.type === 'grider') GSEMI.withLine(e, al, () => GSEMI.drawRider(e, ya, al)); // v3.30 준엘리트 외곽선
+    else if (e.type === 'goblin' && GSEMI.isFallenAtk(e)) GSEMI.drawFallenAtk(e, ya, al);
+    else if (e.type === 'gcatapult') GCAT.draw(e, ya, al); // v3.31
+    else if (e.type === 'goblin' && e.crewOf && GCAT.crewDraw(e, ya, al)) { /* 투석기 사수 자세 */ }
+    else if (e.type === 'gballista') GBAL.draw(e, ya, al); // v3.32
+    else if (e.type === 'ghellaltar') GHELL.draw(e, ya, al); // v3.34 지옥불 의식대
+    else if (e.type === 'ghoul' && e.crewOf && e.crewOf.type === 'gballista' && GBAL.crewDraw(e, ya, al)) { /* 발리스타 병사 자세 */ }
+    else if (e.type === 'gbomber') GSEMI.withLine(e, al, () => GSEMI.drawBomber(e, ya, al));
     else if (e.type === 'goblin' || e.type === 'garcher') {
       drawShadow(e.x, e.y + 1, 8);
       const pal = e.gv ? e.type + '_v' + e.gv : e.type, M = nrMotion(e); // v1.54 · v3.25 피부 4색 부위별 칸 단위
@@ -456,7 +468,7 @@
     if (brk) drawBlade(breadHalf(1), P.x - P.face * 8, hy + 4, P.blade + Math.PI * 0.85 * P.face, alpha); // 반대 손의 반 토막
     if (behind && !ifr) { drawBlade(tex, hx - P.face * 2, hy + 2, P.blade, alpha); if (!holy && !brk) weaponAura(tex, hx - P.face * 2, hy + 2, P.blade, 'knight'); }
     const rmk = rollMap(P, 'hKnight'), [rox, roy] = rmk ? rollOff(rmk, rot) : [0, 0];
-    drawSprite(rmk || (ifr ? ifr.key : heroMap(walkMap('hKnight', wFr), P)), 'hKnight', 2, P.x + rox, P.y + 2 - lift + roy, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
+    drawSprite(rmk || (ifr ? ifr.key : heroMap(walkMap('hKnight', wFr), P)), (P.krs && P.krs.k === 'gate' && P.krs.did && !P.krs.did.end ? 'hKnightDark' : wSkill() === 'gate' ? 'hKnightGray' : 'hKnight') /* v3.44 철퇴를 들면 어두운 무채색 */, 2, /* v3.40 단죄 돌진 중 검은 실루엣 */ P.x + rox, P.y + 2 - lift + roy, P.face < 0, { rot, alpha, white: P.hurtT > 0.12, sx, sy });
     if (ifr) { idleKnightBlade(ifr, tex, snap2(P.x), snap2(P.y + 2 - lift), P.face < 0, alpha); idleZz(ifr, snap2(P.x), snap2(P.y + 2 - lift), P.face < 0); } // v2.51 대기 동작
     if (giantK > 0) {
       { const sc = 1 + 1.7 * giantK; // v2.19 빛의 거대검도 들고 있는 무기 모양 · 배율마다 회전 그림을 새로 만들면 끊기므로 배율 1 그림을 늘려 그린다

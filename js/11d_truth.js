@@ -720,20 +720,33 @@ function drawCellWeapon(b, hx, hy, ang) { // 칸 좌표 hx,hy = 손 · ang = 무
   for (const [k, v] of out) { const [x, y] = k.split(',').map(Number); px(hx + x, hy + y, b.pal[v]); }
 }
 function kirk2(cx, by, t, opt = {}) { // 칸 좌표 (발 가운데) · 기본은 왼쪽(플레이어 쪽)을 봄 · 몸은 플레이어와 같이 지도 그대로(외곽선 k 포함) 2배
-  const flip = !opt.right, bob = !opt.still && Math.floor(t * 2) % 2 ? 1 : 0, W = 18, H = 14, x0 = cx - 9, y0 = by - H - bob;
+  const flip = !opt.right, idle = !opt.still && !opt.book && !opt.aim, bob = 0, /* v3.78 통째로 들썩이던 것 대신 대기 모션(아래) · 일지를 읽을 땐 그대로 */ W = 18, H = 14, x0 = cx - 9, y0 = by - H - bob;
   for (let x = -7; x <= 7; x++) if (dth2(cx + x, by) < 0.75) px(cx + x, by, 'rgba(0,0,0,.45)');
   const at = (x, y) => (y >= 0 && y < H && x >= 0 && x < W) ? KIRK2[y][flip ? W - 1 - x : x] : '.';
   const f = flip ? -1 : 1, hx = flip ? x0 + 3 : x0 + 14, hy = y0 + 10;
-  const angIdle = flip ? -Math.PI / 2 - 0.22 : -Math.PI / 2 + 0.22, angAim = flip ? Math.PI + 0.42 : -0.42;
+  // v3.78 대기 모션: 숨 쉴 때 머리만 1칸 내려감(몸은 그대로) · 3.4초마다 눈 깜빡 · 5.3초마다 두 귀가 쫑긋 · 지팡이가 천천히 흔들림
+  const hd = idle && (t * 0.8) % 1 > 0.5 ? 1 : 0, blink = idle && ((t % 3.4) < 0.13 || ((t + 1.7) % 6.8) < 0.1), ear = idle && (t % 5.3) < 0.28, sway = idle ? Math.round(Math.sin(t * 1.3) * 2) * 0.04 : 0;
+  const angIdle = (flip ? -Math.PI / 2 - 0.22 : -Math.PI / 2 + 0.22) + sway, angAim = flip ? Math.PI + 0.42 : -0.42;
   if (!opt.book && !opt.aim) drawCellWeapon(NSTAFF, hx, hy, angIdle); // 세워 들면 몸 뒤
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const ch = at(x, y); if (ch !== '.') px(x0 + x, y0 + y, KIRK2_P[ch]); }
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let ch = at(x, y); if (ch === '.') continue;
+    if (blink && y === 4 && ch === 'e') ch = 'S'; // 감은 눈
+    const isEar = ear && y >= 2 && y <= 4 && (x <= 3 || x >= 14); // 귀 끝이 1칸 들림
+    px(x0 + x, y0 + y + (y < 8 ? hd : 0) - (isEar ? 1 : 0), KIRK2_P[ch]); }
+  if (opt.book) { // v3.75 읽는 눈: 눈동자가 왼→오로 천천히 훑고 줄 끝에서 처음으로 돌아감 (책을 보느라 한 칸 아래 · 눈꺼풀 반쯤)
+    const k = (t * 0.9) % 1, off = k < 0.85 ? Math.floor(k / 0.85 * 3) - 1 : -1;
+    for (let x = 0; x < W; x++) if (at(x, 4) === 'e') { px(x0 + x, y0 + 4, KIRK2_P.s); }
+    const ex = []; for (let x = 0; x < W; x++) if (at(x, 4) === 'e') ex.push(x);
+    for (const x of ex) { px(x0 + x + off, y0 + 4, KIRK2_P.e); px(x0 + x + off, y0 + 3, KIRK2_P.S); } }
   if (opt.aim) { drawCellWeapon(NSTAFF, hx, hy, angAim);
     if (opt.puff) { const L = 25, tx = hx + Math.round(Math.cos(angAim) * L), ty = hy + Math.round(Math.sin(angAim) * L), k = (t * 1.4) % 1; for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; px(Math.round(tx + Math.cos(a) * (1.5 + k * 4)), Math.round(ty + Math.sin(a) * (1 + k * 2) - k * 5), k < 0.5 ? '#a8a89e' : '#6a6a64'); } } }
   if (opt.book) { // 펼쳐 든 일지: 보는 쪽에는 활짝 펴진 겉표지(앞·뒤 표지가 V자로 · 가운데 책등 · 금박 잎 문양) + 위로 살짝 보이는 책장
     const B = ['kk.......kk', 'kpkk...kkpk', 'kCCCkkkCyCk', 'kCCCCBCyyCk', 'kCCCCBCCyCk', 'kCCCCBCCCCk', '.kkkkBkkkk.', '.....k.....'], pal = { k: '#0e120a', p: '#f0e6cc', C: '#8a5232', B: '#4e2c18', y: '#e8c870' };
-    const bx = cx - 5 + (flip ? -2 : 2), byy = y0 + 6;
+    const bx = cx - 5 + (flip ? -2 : 2), byy = y0 + 8; // v3.75 얼굴(입 · 턱) 아래 가슴 앞으로 내림
     for (let y = 0; y < B.length; y++) for (let x = 0; x < 11; x++) { const ch = B[y][flip ? 10 - x : x]; if (ch !== '.') px(bx + x, byy + y, pal[ch]); }
     for (const dx of [-1, 11]) { px(bx + dx, byy + 3, KIRK2_P.s); px(bx + dx, byy + 4, KIRK2_P.S); px(bx + dx + (dx < 0 ? -1 : 1), byy + 3, '#0e120a'); px(bx + dx + (dx < 0 ? -1 : 1), byy + 4, '#0e120a'); px(bx + dx, byy + 5, '#0e120a'); px(bx + dx, byy + 2, '#0e120a'); }
+    { const T = t % 2.6; if (T < 0.36) { // v3.75 책장 넘김: 2.6초마다 한 장이 책등을 넘어감 (펴진 쪽 → 반대쪽)
+      const k = T / 0.36, d = flip ? -1 : 1, sx = bx + 5 + Math.round((k * 2 - 1) * 4) * d, lift = Math.round(Math.sin(k * Math.PI) * 3);
+      for (let i = 0; i < 2; i++) px(sx, byy + 1 - lift + i, '#f0e6cc'); px(sx, byy - lift, '#0e120a'); px(sx, byy + 3 - lift, '#0e120a'); } }
   }
 
 }
@@ -1090,13 +1103,14 @@ function ceilingDrips(t) {
   // ---------------------------------------------------------------- 키륵 의뢰
   const KIRK_ASK = ['키륵… 마법, 없어. 아무것도 없어.', '초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.', '가져오면… 좋은 거 알려 줘. 왕관 이야기.'];
   // v3.20 키륵에게서 처음 「해」를 들었을 때 주인공의 반응 (주인공은 해를 모름)
-  const KIRK_SUN = { knight: '…{해}. 들어 본 적 없는 말이다.', ranger: '…{해}? 수상한 소리.', mage: '{해}…? 무엇의 이름일까요?|어떤 책에서도 본 적 없는 단어인데….', priest: '{해}… 경전 어디에도 없는 말이에요.|신께서는 아실까요.', gunner: '{해}?' };
+  const KIRK_SUN = { knight: '…{해}. 들어 본 적 없는 말이다.|{해}가 무엇인가?', ranger: '…{해}? 수상한 이야기군.|그게 뭐야?', mage: '{해}…? 무엇의 이름일까요?|어떤 책에서도 본 적 없는 단어인데….', priest: '{해}… 경전 어디에도 없는 말이에요.|알려주세요!', gunner: '{해}?|뭔데 그게' }; // v3.75 문구 수정 (모두 두 말주머니)
   const KIRK_READ = ['…키륵 글씨. 그런데… 키륵 생각, 아냐.', '왕관이… 시킨 거야. 지켜라, 지켜라.', '{해}, 안 떠. 왕관이 붙잡고 있어.', '제단… 가지 마, 사람.'];
   const JOURNAL = ['셋째 배양체 관찰. 동화 속도가 공급량을 상회하여 기아에 이르는 시간이 현저히 단축됨. 유기물과 무기물을 가리지 않는 무차별 포식성 확인.',
     '조각 주변의 채도가 점진적으로 감쇠함. 흡수라기보다 전송의 양상. 소실된 색의 수신처는 미상.',
     '본인은 조각의 보존을 최우선 과제로 상정하고 있음. 그 근거를 기술하고자 하였으나 전제가 성립하지 않음.',
-    '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 요망.',
-    '재검토 불가. 보존해야 함. 이송해야 함. 그 이유는.........'];
+    '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 필요.',
+    '재검토 결과. 보존해야 함. 이송해야 함. 확신 출처 불명. 재검토 필요.'];
+  const JOURNAL_MORE = [Array.from({ length: 5 }, () => '재검토 결과. 보존해야 함. 이송해야 함. 확신 출처 불명. 재검토 필요.')]; // v3.78 다음 장(2장) 한 장에 같은 문구가 되풀이되어 채워짐
   function kirkAppear() {
     freeze();
     SEQ = { k: 'appear', t: 0, dur: 2.7, end: () => { Q().met = true; talk([['kirk', '너… 사람. 무기 든 사람.']], null, { auto: 2.4 }); } };
@@ -1107,7 +1121,7 @@ function ceilingDrips(t) {
     const q = Q(); q.book = true;
     const L = KIRK_READ.map(t => ['kirk', t]), si = L.findIndex(l => l[1].includes('{해}')); if (si >= 0) L.splice(si + 1, 0, ...((s) => s.includes('|') ? s.split('|') : s.split(/(?<=[.!?])\s+/))(KIRK_SUN[G.cls] || KIRK_SUN.knight).map(t => ['me', t.trim()]), ['kirk', '{해}는 {해}다. 키륵.']); // 키륵의 대답 // v3.20 「해」에 주인공이 반응
     talk(L, () => {
-      showTruthParchment({ no: '구덩이 실험실', title: '키륵의 연구 일지', paras: JOURNAL, ac: GR, onClose: () => {
+      showTruthParchment({ no: '구덩이 실험실', title: '키륵의 연구 일지', paras: JOURNAL, pages: JOURNAL_MORE, ac: GR, onClose: () => {
         q.q = 3; q.book = false; const first = !TS().t1; TS().t1 = true; (G.truthRun || (G.truthRun = {})).t1 = true; persist(); // v2.83 이번 판에서 깸
         lootFeed('진실 기록 — 마법사의 일지', GR, 3600); if (first) sfx('legend');
       } });
@@ -1232,7 +1246,7 @@ function ceilingDrips(t) {
   }
   const hidePlayer = () => !!(G && G.pHide);
 
-  return { talk, freeze, at, box, peek, loop2, prep1, prep2: r => TRUTH2.prep2(r), floor: (gg, R) => TRUTH2.floor(gg, R), sealHidden: (R, d) => TRUTH2.sealHidden(R, d), gatePost, slimeColor, ground, ents, lights: labLights, interact, act, tick, top, hud, busy, update, belly, paintLab, hidePlayer, makeLab, get Q() { return Q(); } };
+  return { dbgLab: enterLab, dbgJournal: giveJournal, dbgKirk: kirkAppear, talk, freeze, at, box, peek, loop2, prep1, prep2: r => TRUTH2.prep2(r), floor: (gg, R) => TRUTH2.floor(gg, R), sealHidden: (R, d) => TRUTH2.sealHidden(R, d), gatePost, slimeColor, ground, ents, lights: labLights, interact, act, tick, top, hud, busy, update, belly, paintLab, hidePlayer, makeLab, get Q() { return Q(); } };
   })();
 
 // ================================================================ 2장 「기사단 서약의 밀실」 (v2.59) — 그림은 시안(_작업자료/시안/기사단밀실_시안.html)과 같은 코드

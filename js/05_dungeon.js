@@ -418,14 +418,20 @@
   // v1.81: 챕터(1~4)마다 다른 칩튠 곡 — 탐험 '' · 봉인 'Survive' · 보스 'Boss' · 휴식 'Rest'
   function stageMood(k) { return 's' + clamp((G && G.stage) | 0, 1, 4) + k; }
   const hiddenDoor = (R, d) => (R.crack && R.crack.dir === d && !R.crack.broken) || TRUTH.sealHidden(R, d); // v2.59 인장 벽(닫힘)도 숨은 문
+  function roomPillars(R) { // v3.65 방마다 벽 기둥 · 횃불 자리 정리 (enterRoom · 미리 그리기 공용)
+    if (R.sealW) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 100); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 100); }
+    if (R.doors && R.doors.n != null && !R.sealW) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 78); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 78); }
+    if (R.type === 'altar') { PILLARS = [CX - 290, CX - 190, CX + 190, CX + 290]; TORCHES = PILLARS.map(x => ({ x, y: A.y0 - 38 })); }
+  }
   function enterRoom(R, entry, opt = {}) {
-    const D = G.dun, P = G.player;
+    const D = G.dun, P = G.player, prevR = D.cur; // v3.64 직전 방
     if (G.kgAuto && D.cur && D.cur !== R) { G.kg = false; G.kgAuto = false; } // v2.19 다음 방으로 넘어가면 조작 안내를 접는다 (H로 다시)
     if (D.cur && D.cur !== R) D.cur.loot = G.loot.filter(l => l.life > 0);
     setArena(SHAPES[R.shape]);
-    if (R.sealW) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 100); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 100); } // v2.64 인장 벽 둘레엔 벽 기둥·깃발·횃불 없음
-    if (R.doors && R.doors.n != null && !R.sealW) { /* v3.20 모든 장: 3장 부락에서도 북문 안에 횃불이 서던 문제 */ PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 78); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 78); } // v3.19 북문 자리의 벽 기둥 · 횃불은 뺌 (문 · 문 옆 화로와 겹침)
-    if (R.type === 'altar') { PILLARS = [CX - 290, CX - 190, CX + 190, CX + 290]; TORCHES = PILLARS.map(x => ({ x, y: A.y0 - 38 })); } // v3.20 왕도 성문 방: 뒷벽 기둥 · 창 · 횃불을 성문 기준 좌우 대칭으로 (방 왼쪽 끝 기준이라 한쪽으로 쏠렸음)
+    roomPillars(R);
+    if (false) { PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 100); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 100); } // v2.64 인장 벽 둘레엔 벽 기둥·깃발·횃불 없음
+    if (false) { /* v3.65 roomPillars로 옮김 · v3.20 모든 장: 3장 부락에서도 북문 안에 횃불이 서던 문제 */ PILLARS = PILLARS.filter(x => Math.abs(x - DOOR.n.x) > 78); TORCHES = TORCHES.filter(t => Math.abs(t.x - DOOR.n.x) > 78); } // v3.19 북문 자리의 벽 기둥 · 횃불은 뺌 (문 · 문 옆 화로와 겹침)
+    if (false) { /* v3.65 roomPillars로 옮김 */ } // v3.20 왕도 성문 방: 뒷벽 기둥 · 창 · 횃불을 성문 기준 좌우 대칭으로 (방 왼쪽 끝 기준이라 한쪽으로 쏠렸음)
     END.prepRoom(R); // v2.54 2회차부터 대관식장 가운데에 잿빛 왕의 흔적
     R.socks = sealSocks(R);
     D.cur = R; R.visited = true; R.seen = true;
@@ -469,10 +475,11 @@
     if (R.type === 'shrine' && !R.greeted) { R.greeted = true; banner('빛의 방', '세 빛이 겹친 자리에 흰 빛이 떠 있다'); } // v3.25
     if (R.type === 'start') {
       spawnDummy(); // v2.04 시작 방 허수아비 (무기 시험용)
-      if (G.stage === 1 && !SAVE.tutDone && !G.tutDone) G.tut = { step: 0, moveT: 0, atkN: 0, skN: 0, awkN: 0, dashN: 0, doneT: 0 };
+      if (G.stage === 1 && !SAVE.tutDone && !G.tutDone) { G.tut = { step: 0, moveT: 0, atkN: 0, skN: 0, awkN: 0, dashN: 0, doneT: 0 }; G.sealed = true; G.tutSeal = true; } // v3.64 튜토리얼을 마쳐야 통로가 열림
     } else if (G.tut) {
       G.tut = null;
     }
+    if (R.type !== 'start' && prevR && prevR !== R && prevR.type === 'start' && G.player) { G.player.gauge = 0; } // v3.64 시작 방을 나가면 궁극기 게이지 0 (튜토리얼 · 허수아비로 채운 게이지를 들고 나가지 않게)
     updateCamera(0, true);
   }
   // v2.04 허수아비: 맞고, 상태 이상이 걸리고, 죽지 않는다 (HP가 바닥나면 다시 가득) · 움직이거나 공격하지 않음
@@ -840,18 +847,19 @@
   }
 
   // ---------- 그리기: 바닥(문·구덩이), 구조물 스프라이트
-  const FL_CACHE = []; // v2.35 최근 방 바닥 4개 (방 들어갈 때 바닥을 새로 그리던 60~90ms 멈춤 제거)
+  const FL_CACHE = []; // v2.35 최근 방 바닥 (v3.65 4개 → 8개 · 미리 그린 방도 여기에) (방 들어갈 때 바닥을 새로 그리던 60~90ms 멈춤 제거)
   function floorCached(R) {
     const m = G.stage === 1 && R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && R.type !== 'ruin', key = G.stage + ':' + R.id, i = FL_CACHE.findIndex(c => c.key === key && c.dun === G.dun);
     if (R.type !== 'forge' && R.type !== 'home' && R.type !== 'lab' && R.type !== 'archive' && R.type !== 'den' && R.type !== 'ruin' && i >= 0) { const c = FL_CACHE.splice(i, 1)[0]; FL_CACHE.unshift(c);
       ROOMSTYLE = R.style || { path: 'wind' }; CUR_ROOM = R;
       if (m) { fmg.clearRect(0, 0, W, H); fmg.drawImage(c.a, 0, 0); ffg.clearRect(0, 0, W, H); ffg.drawImage(c.b, 0, 0); FRONT_ON = true; } else { fg.clearRect(0, 0, W, H); fg.drawImage(c.a, 0, 0); }
+      if (G) G.flatLights = c.fl || []; // v3.65 바닥 그림과 같이 만든 빛도 되살림
       return; }
     paintRoomFloor(R);
     if (R.type === 'forge' || R.type === 'home' || R.type === 'lab' || R.type === 'archive' || R.type === 'den' || R.type === 'ruin') return;
-    let c = FL_CACHE.length >= 4 ? FL_CACHE.pop() : null; if (!c) c = { a: mkCanvas(W, H)[0], b: mkCanvas(W, H)[0] };
+    let c = FL_CACHE.length >= 8 ? FL_CACHE.pop() : null; if (!c) c = { a: mkCanvas(W, H)[0], b: mkCanvas(W, H)[0] };
     c.key = key; c.dun = G.dun; const ga = c.a.getContext('2d'), gb = c.b.getContext('2d'); ga.clearRect(0, 0, W, H); gb.clearRect(0, 0, W, H);
-    ga.drawImage(m ? floorM : floor, 0, 0); if (m) gb.drawImage(frontM, 0, 0); FL_CACHE.unshift(c);
+    ga.drawImage(m ? floorM : floor, 0, 0); if (m) gb.drawImage(frontM, 0, 0); c.fl = G.flatLights || []; FL_CACHE.unshift(c);
   }
   function paintRoomFloor(R) {
     withSeed(R.seed, () => {
@@ -1137,23 +1145,29 @@
   }
   const BAR_PAL = { k: '#0b0a0e', g: '#4a4656', G: '#7a7488', W: '#a49cb0' };
   const WOOD_BAR = { k: '#0b0806', g: '#553620', G: '#8a6034', W: '#e0d6c4' };
-  // 가시덤불: 굵은 덩굴 몇 가닥 + 가시 + 잎 + 열매
+  // 가시덤불: v3.49 네모난 띠 대신 울퉁불퉁한 덤불 덩어리 — 덩굴 뭉치(둥근 덩어리 여럿) · 위는 잎이 빛을 받고 아래로 갈수록 어둡게 · 겉으로 삐죽 나온 가시 · 덩어리를 가로지르는 굵은 덩굴 · 열매 몇 알
   function genThorns(wc, hc, vert) {
-    const g = mkGrid(wc, hc), L = vert ? wc : hc, span = vert ? hc : wc, n = Math.max(2, Math.round(span / 6));
-    for (let i = 0; i < n; i++) {
-      const ph = rand(0, 6), amp = rand(1, 2), base = 2 + i * (span - 4) / Math.max(1, n - 1);
-      for (let t = 0; t < L; t++) {
-        const o = Math.round(base + Math.sin(t * 0.45 + ph) * amp);
-        for (const k of [-1, 0]) { const x = vert ? t : o + k, y = vert ? o + k : t; if (x >= 0 && y >= 0 && x < wc && y < hc) g[y][x] = k ? 'v' : 'V'; }
-        if (t % 5 === 2) { const x = vert ? t : o - 2, y = vert ? o - 2 : t; if (x >= 0 && y >= 0 && x < wc && y < hc && g[y][x] === '.') g[y][x] = 't'; }
-        if (t % 5 === 4) { const x = vert ? t : o + 1, y = vert ? o + 1 : t; if (x >= 0 && y >= 0 && x < wc && y < hc && g[y][x] === '.') g[y][x] = 't'; }
-      }
-    }
-    for (let i = 0; i < wc * hc / 45; i++) { const x = randi(1, wc - 3), y = randi(1, hc - 2); if (g[y][x] === '.' && g[y][x + 1] === '.' && (gAt(g, x, y + 1) === 'v' || gAt(g, x, y - 1) === 'V')) { g[y][x] = 'L'; g[y][x + 1] = 'l'; } }
-    for (let i = 0; i < 2; i++) { const x = randi(2, wc - 3), y = randi(2, hc - 3); if (g[y][x] === 'V') g[y][x] = 'r'; }
+    const g = mkGrid(wc, hc), span = vert ? wc : hc, thick = vert ? hc : wc, at = (u, v) => vert ? [u, v] : [v, u];
+    const set = (u, v, c) => { const [x, y] = at(u, v); if (x >= 0 && y >= 0 && x < wc && y < hc) g[y][x] = c; }, get = (u, v) => { const [x, y] = at(u, v); return x >= 0 && y >= 0 && x < wc && y < hc ? g[y][x] : '#'; };
+    // 둥근 덤불 덩어리를 두 줄로 엇갈려 쌓음 (뒤 → 앞 순서, 앞 덩어리 가장자리엔 어두운 테 → 덩어리마다 구분)
+    const n = Math.max(3, Math.round(span / 5)), blobs = [];
+    for (let i = 0; i < n; i++) { const r = Math.min(thick / 2 - 1.2, span / n * 0.78) * rand(0.86, 1.04);
+      blobs.push({ u: 1 + (i + 0.5) * (span - 2) / n + rand(-0.6, 0.6), v: thick / 2 + (i % 2 ? 1 : -1) * thick * 0.13 + rand(-0.5, 0.5), r }); }
+    blobs.sort((p, q) => (vert ? p.v - q.v : p.u - q.u));
+    for (const B of blobs) for (let v = 0; v < thick; v++) for (let u = 0; u < span; u++) {
+      const nu = (u + 0.5 - B.u) / B.r, nv = (v + 0.5 - B.v) / B.r, d = Math.hypot(nu, nv); if (d > 1) continue;
+      const [sx, sy] = vert ? [nu, nv] : [nv, nu], lit = -(sx * 0.55 + sy * 0.85), dz = ((u * 3 + v * 5) % 4) / 10 - 0.15; // 왼쪽 위에서 빛 · 잔 디더
+      set(u, v, d > 0.86 ? 'V' : lit + dz > 0.42 ? 'l' : lit + dz > 0 ? 'L' : lit + dz > -0.45 ? 'v' : 'V'); }
+    // 덩어리를 가로지르는 굵은 덩굴 두세 가닥 (위에 겹침)
+    for (let k = 0; k < 3; k++) { const ph = rand(0, 6), base = thick * (0.3 + k * 0.2); for (let u = 0; u < span; u++) { const v = Math.round(base + Math.sin(u * 0.5 + ph) * 1.4); if (get(u, v) !== '.' && get(u, v) !== '#') { set(u, v, 'v'); if (get(u, v + 1) !== '.' && get(u, v + 1) !== '#') set(u, v + 1, 'V'); } } }
+    // 겉으로 삐죽 나온 가시
+    for (let v = 0; v < thick; v++) for (let u = 0; u < span; u++) if (get(u, v) === '.') { let nb = 0; for (const [du, dv] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const q = get(u + du, v + dv); if (q !== '.' && q !== '#' && q !== 't') nb++; } if (nb === 1 && rand(0, 1) < 0.45) { set(u, v, 't'); const du = u - (vert ? 0 : 0); } } // v3.49 가시 더 많이
+    for (let v = 0; v < thick; v++) for (let u = 0; u < span; u++) if ((get(u, v) === 'v' || get(u, v) === 'V') && rand(0, 1) < 0.07) set(u, v, 't'); // 덤불 안쪽에도 가시
+    // 열매
+    for (let i = 0; i < Math.max(2, span / 8); i++) { const u = randi(2, span - 3), v = randi(1, thick - 2); if (get(u, v) === 'L' || get(u, v) === 'v') set(u, v, 'r'); }
     return gOutline(g, 'k', 't');
   }
-  const THORN_PAL = { k: '#070a04', V: '#2a3214', v: '#4a5626', t: '#b8a878', L: '#2e5222', l: '#5a8a3a', r: '#c03040' };
+  const THORN_PAL = { k: '#070a04', V: '#1e2610', v: '#3e4a20', t: '#c8b888', L: '#2e5222', l: '#5a8a3a', r: '#c03040' };
   // 보스 문장: 붉은 해골
   const SIGIL = fromRows(['..kkkkkk..', '.krrRRrrk.', 'krRRRRRRrk', 'krkkRRkkrk', 'krkKRRkKrk', 'krRRkkRRrk', '.krRRRRrk.', '..kRkRkRk.', '...kkkkk..']);
   const SIGIL_PAL = { k: '#1a0408', K: '#ff5060', r: '#7a1020', R: '#c02838' };

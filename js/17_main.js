@@ -385,7 +385,7 @@
   }
   function parchPrompt() {
     const P = parchState; if (!P) return;
-    const last = P.idx >= P.total - 1 && !P.typing;
+    const last = P.idx >= P.total - 1 && !P.typing && !(P.truth && P.truth.pages && (P.pg || 0) < P.truth.pages.length); // v3.75 다음 장이 남았으면 넘기기
     $('parchPrompt').innerHTML = `<span class="key go">F</span>${last ? (P.truth ? '닫기' : '출발') : '넘기기'}`; // v2.62 F 키 캡 통일 · 뒤 내용이 있으면 넘기기
     $('parchSkip').style.display = P.truth ? 'none' : '';
   }
@@ -409,7 +409,13 @@
     if (!P) return;
     if (P.typing) { parchFinishLine(); return; } // 찍히는 중이면 그 문단을 마저 보여준다
     parchStopTimers();
-    if (P.idx >= P.total - 1) { closeStageParchment(); return; }
+    if (P.idx >= P.total - 1) {
+      // v3.75 여러 장 양피지: o.pages = [[문단…], …] — 마지막 문단 뒤 F를 누르면 다음 장으로 넘김 (종이를 새로 굽고 첫 문단부터 다시 찍음)
+      const more = P.truth && P.truth.pages, pg = P.pg || 0;
+      if (more && pg < more.length) { P.pg = pg + 1; P.paras = more[pg]; P.total = P.paras.length; P.idx = -1; P.stage = pg + 2;
+        $('parchBody').innerHTML = P.paras.map(t => `<div class="stPara wait"><span class="typed"></span><span class="rest">${parchPlain(t)}</span></div>`).join('');
+        bakeParchment(); sfx('denCard'); parchPrompt(); P.timer = setTimeout(() => advanceStageParchment(), 260); return; }
+      closeStageParchment(); return; }
     const nodes = $('parchBody').children;
     if (nodes[P.idx]) nodes[P.idx].classList.remove('cur');
     P.idx++; P.ch = 0; P.typing = true;

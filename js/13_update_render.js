@@ -192,11 +192,11 @@
     if (dbgK('z', '1회차 ↔ 2회차 바꾸기 (지금 캐릭터)')) { const on = devLoop2(); lootFeed(on ? '테스트 — 2회차 (Shift+Z)' : '테스트 — 1회차 (Shift+Z)', on ? '#9fd2ff' : '#c8c0b0', 2600); sfx('blip'); } // v3.20 진엔딩 단서가 나오는 2회차로
     if (dbgK('q', '제단 방 잔해 앞으로 (진실 1~3 켜기 · 회차는 지금 그대로)') && !G.trans && !G.cine && !G.player.dead) { // v3.20 테스트: 4장 앞 제단 방 오른쪽 아래 잔해 앞으로 — 바람 · 부수기는 2회차(Shift+Z)일 때만
       G.truthRun = Object.assign(G.truthRun || {}, { t1: true, t2: true, t3: true });
-      G.altarDone = false; G.stage = 3; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment();
+      G.altarDone = false; G.stage = 3; G.noLoad = true; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment();
       const p = ALTARWIND.pos(); Object.assign(G.player, { x: p.x - 56, y: p.y - 18 }); lootFeed(TRUTH.loop2() ? '테스트 — 제단 방 잔해 앞 · 2회차 (Shift+Q)' : '테스트 — 제단 방 잔해 앞 · 1회차 (Shift+Q)', '#9fd2ff', 2600); sfx('blip'); return; }
     if (dbgK('n', '방 클리어 (적 전부 처치)') && !G.clear) debugClearRoom();
     if (dbgK('v', '스테이지 클리어')) { debugStageClear(); return; }
-    for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n, '해당 스테이지로 이동')) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
+    for (const n of [1, 2, 3, 4]) if (dbgK('sd' + n, '해당 스테이지로 이동')) { if (G.trans || G.cine || G.player.dead) break; if (n === 4) G.altarDone = true; G.stage = n - 1; G.noLoad = true; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); /* 월드맵 연출 · 진입 문구는 건너뜀 */ lootFeed(`테스트 — ${n}장으로 건너뜁니다 (Shift+${n})`, '#9fd2ff', 2500); sfx('blip'); return; } // v3.19 테스트: Shift+1~4로 그 장의 첫 방으로 바로 이동 (4장은 재의 제단을 건너뜀)
     if (dbgK('t', '무기 순환 (도감 순서)')) { // 테스트: 무기 등급 순환 (커먼 → 레어 → 유니크 → 레전더리)
       const cw0 = eqWeapon(G.cls), nk = ((cw0 && cw0.wk != null ? cw0.wk : 0) + 1) % wcat(G.cls).length, W1 = wcat(G.cls)[nk]; // v2.03 도감 무기를 차례로
       const it = makeItem(G.cls, { grade: W1.grade, slot: 'weapon', wk: nk, noCurse: true }); lootFeed(`테스트 무기 ${nk + 1}/${wcat(G.cls).length} — ${it.name}`, gradeOf(it).c, 2500);
@@ -210,6 +210,7 @@
     if (dbgK('b', '보스 방으로') && !G.clear && G.dun.cur.type !== 'boss') debugToBoss();
     if (dbgK('r', '휴게방(비스트로)으로') && !G.clear && !G.trans && !G.cine) debugToRest(); // v3.10 테스트: 휴게방으로
     if (dbgK('sd5', '비밀 방으로 (생명의 제단 · 피의 제단 다시 쓰기)') && !G.clear && !G.trans && !G.cine && typeof BLOODALT !== 'undefined') BLOODALT.debugTo(); // v3.26 테스트: 비밀 방으로
+    if (dbgK('sd6', '선조의 결투장 드나들기 (3장 아니면 3장으로 건너뛴 뒤)') && !G.clear) TRUTH3.debugAnc(); // v3.54 테스트
     if (dbgK('c', '용의 유적 드나들기') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
     if (dbgK('j', '교단의 갱도로 바로 가기') && !G.clear && !G.trans && !G.cine) RUIN.debugMine(); // v3.20 테스트: 갱도 (유적 밖이면 유적에 들어간 뒤 갱도로)
     if (dbgK('k', '교단 본거지로 (누를 때마다 앞 홀 → 교주의 방 → 지하 석실)') && !G.clear && !G.trans && !G.cine) RUIN.debugCult(); // v3.21 테스트
@@ -248,7 +249,8 @@
     for (let i = 0; i < live.length; i++) {
       const a = live[i];
       for (let j = i + 1; j < live.length; j++) {
-        const b = live[j], d = dist(a, b), m = a.r + b.r;
+        const b = live[j]; if (a.crewOf === b || b.crewOf === a || (a.crewOf && a.crewOf === b.crewOf)) continue; // v3.33 거치 무기 병사: 자기 무기 · 같은 무기 병사와는 밀지 않음
+        const d = dist(a, b), m = a.r + b.r;
         if (d < m && d > 0.01) { const push = (m - d) / 2, ux = (a.x - b.x) / d, uy = (a.y - b.y) / d; if (a.type !== 'boss' && a.type !== 'flag') { a.x += ux * push; a.y += uy * push; } if (b.type !== 'boss' && b.type !== 'flag') { b.x -= ux * push; b.y -= uy * push; } }
       }
       if (!P.dead && P.state !== 'dodge' && P.state !== 'charge') {

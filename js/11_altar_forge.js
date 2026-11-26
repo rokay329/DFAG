@@ -751,7 +751,7 @@
       burst(P.x, P.y - 12, '#ff6a6a', 6);
       lootFeed(`${L.n} — 회복 · 해독`, L.c);
     } else if (l.type === 'orb') {
-      P.gauge = Math.min(100, P.gauge + 15); sfx('ready');
+      if (!ultBusy(P)) { P.gauge = Math.min(100, P.gauge + 15); sfx('ready'); }
       burst(P.x, P.y - 12, '#ffd34d', 8);
       lootFeed(`${L.n} — 투지 +15`, L.c);
     } else if (l.type === 'pouch') {

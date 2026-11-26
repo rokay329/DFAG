@@ -15,7 +15,7 @@ const OUT3 = (() => {
   const HAZE = ['#3a1c12', '#2c160e', '#22110b']; // 벼랑 밑 먼지 아지랑이 (하늘 붉은 빛과 같은 결)
   const PT = 12, LG = 14, CF = 130, CS = 16, PW = 20; // 말뚝 굵기 · 고원 턱 · 아래 벼랑 높이 · 좌우 벼랑 폭 · 흙길 반폭
   let ON = true;
-  const on3 = R => ON && G && G.stage === 3 && R && !['forge', 'home', 'archive', 'lab', 'den', 'ruin', 'boss', 'altar'].includes(R.type) && !(G.dun && G.dun.forge);
+  const on3 = R => ON && G && G.stage === 3 && R && !['forge', 'home', 'archive', 'lab', 'den', 'ruin', 'altar', 'ancArena'].includes(R.type) && !(G.dun && (G.dun.forge || G.dun.anc)); // v3.56 선조의 결투장 제외
   const geo = () => ({ L: A.x0, RR: A.x1, T: A.y0, B: A.y1, PY: CY + 2, SX: DOOR.s.x });
 
   // ================================================================ v3.26 시안07 — 다시 디자인
@@ -225,11 +225,11 @@ const OUT3 = (() => {
   }
   { const o = paintRoomFloor; paintRoomFloor = function (R) { const r = o.apply(this, arguments); if (on3(R)) withSeed((R.seed || 1) + 773, () => paint(fg, R)); return r; }; }
   // ---------------------------------------------------------------- 문 크기에 맞춘 가시 말뚝 바리케이드 (새로 그림): 가로대 통나무 + 엇갈린 끝을 깎은 말뚝 셋 (X자)
-  function barArt(vert) { return art('out3_bar_' + (vert ? 'v' : 'h'), () => { const Wc = vert ? 16 : 26, Hc = vert ? 26 : 16, cell = new Map(), set = (x, y, k) => { if (x >= 0 && y >= 0 && x < Wc && y < Hc) cell.set(x + ',' + y, k); };
+  function barArt(vert) { return art('out3_bar_' + (vert ? 'v' : 'h'), () => { const Wc = vert ? 16 : 18, Hc = vert ? 18 : 16, /* v3.49 길이 26 → 18칸: 문 틈 폭만큼만, 말뚝 울타리와 안 겹치게 */ cell = new Map(), set = (x, y, k) => { if (x >= 0 && y >= 0 && x < Wc && y < Hc) cell.set(x + ',' + y, k); };
       if (vert) for (let y = 0; y < Hc; y++) { set(6, y, 'h'); set(7, y, 'l'); set(8, y, 'd'); set(9, y, 'D'); } // 세로 가로대 (위에서 본 통나무)
       else for (let x = 0; x < Wc; x++) { set(x, 9, 'h'); set(x, 10, 'l'); set(x, 11, 'd'); set(x, 12, 'D'); } // 가로대
       const cross = (cx, cy) => { for (let i = -6; i <= 6; i++) { const tip = Math.abs(i) >= 5; for (const sg of [-1, 1]) { const x = cx + i, y = cy - i * sg * 0.9 | 0; set(x, y, tip && (i * sg < 0 ? y < cy : y < cy) ? 't' : 'l'); set(x, y + 1, tip ? 'h' : 'd'); } } };
-      if (vert) for (const cy of [4, 13, 22]) cross(8, cy); else for (const cx of [4, 13, 22]) cross(cx, 8);
+      if (vert) for (const cy of [5, 13]) cross(8, cy); else for (const cx of [5, 13]) cross(cx, 8);
       const c = document.createElement('canvas'); c.width = Wc * 2 + 4; c.height = Hc * 2 + 4; const g = c.getContext('2d'), COL = { h: WD.h, l: WD.l, d: WD.d, D: WD.D, t: WD.hi };
       const has = (x, y) => cell.has(x + ',' + y);
       for (const key of cell.keys()) { const [x, y] = key.split(',').map(Number); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!has(x + dx, y + dy)) { g.fillStyle = WD.K; g.fillRect((x + dx) * 2 + 2, (y + dy) * 2 + 2, 2, 2); } }
@@ -241,7 +241,7 @@ const OUT3 = (() => {
       if (R._out3front) { const F = R._out3front; list.push({ y: B_FRONT(), d: () => ctx.drawImage(F.c, F.x, F.y) }); }
       const { L, RR, B, PY, SX } = geo();
       for (const d of R._out3.bars) { if (doorState(R, d) === 'open') continue; const vert = d !== 's', c = barArt(vert);
-        const x = d === 'w' ? L - 4 - PT / 2 : d === 'e' ? RR + 4 + PT / 2 - 2 : SX, y = d === 's' ? B + 30 : PY + 26;
+        const x = d === 'w' ? L - 4 - PT / 2 : d === 'e' ? RR + 4 + PT / 2 - 2 : SX, y = d === 's' ? B + 30 : PY + 26 - 8; /* 짧아진 만큼 위아래 가운데 맞춤 */
         list.push({ y, d: () => ctx.drawImage(c, (x - c.width / 2) & ~1, (y - c.height) & ~1) }); } }; }
   // 북문: 아래로 깎은 통나무를 엮은 나무 문이 위로 들려 열림 (2 · 4장 북문처럼 · 장식 없이)
   let GN = null;

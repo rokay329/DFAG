@@ -19,7 +19,8 @@
   const SWING_CL = SWING.map((o, i) => i === 2 ? Object.assign({}, o, { wind: 0.2, swing: 0.07, rec: 0.3, a0: -175, a1: 15, reach: 60, coef: 2.0, grogi: 14, kb: 100, lunge: 30, stagger: 0.6 }) : o); // v2.18 도살자의 식칼: 3타는 머리 위에서 내려찍기
   const SWING_WM = SWING.map((o, i) => i === 2 ? Object.assign({}, o, { a1: o.a1 + 360, swing: 0.44, kb: 340 }) : o); // v2.03 풍차 날개
   const SWING_RC = SWING_R.map(o => Object.assign({}, o, { wind: o.wind * 0.75, swing: o.swing * 0.8, rec: o.rec * 0.7 })); // v2.05 고양이 발톱
-  const swingTable = () => (G && G.cls === 'ranger') ? (wSkill() === 'claw' ? SWING_RC : SWING_R) : (G && G.cls === 'priest') ? (wSkill() === 'whip' ? SWING_PW : SWING_P) : (G && G.cls === 'knight' ? ({ chain: SWING_CH, windmill: SWING_WM, cleaver: SWING_CL })[wSkill()] || SWING : SWING);
+  const SWING_GT = SWING.map(o => Object.assign({}, o, { wind: o.wind * 1.4, swing: o.swing * 1.2, rec: o.rec * 1.3, reach: o.reach + 10, coef: o.coef * 1.25 })); // v3.42 철퇴: 30% 느리게 · 피해 25%↑ · 거리 +10
+  const swingTable = () => (G && G.cls === 'ranger') ? (wSkill() === 'claw' ? SWING_RC : SWING_R) : (G && G.cls === 'priest') ? (wSkill() === 'whip' ? SWING_PW : SWING_P) : (G && G.cls === 'knight' ? ({ chain: SWING_CH, windmill: SWING_WM, cleaver: SWING_CL, gate: SWING_GT })[wSkill()] || SWING : SWING);
   const PIVOT_Y = 10;
   function updatePlayer(dt) {
     const P = G.player, s = G.stats;
@@ -1180,11 +1181,12 @@
       // 지난 프레임~이번 프레임 사이 칼날이 쓸고 간 각도 안의 적을 벤다
       const lo = Math.min(P.prevRel, P.swingRel), hi = Math.max(P.prevRel, P.swingRel);
       const px = P.x, py = P.y - PIVOT_Y + 4;
+      const RCH = G.cls === 'knight' ? Math.max(st.reach, weaponTex('knight').reach + 4 + (P.combo === 2 ? 6 : 0)) : st.reach; // v3.45 기사: 판정 거리를 들고 있는 무기 그림 길이(손 앞 + 칼끝)에 맞춤 · 3타 +6
       for (const e of G.enemies) {
         if (e.dead || P.hitSet.has(e)) continue;
         const ey = e.y - (e.tall ? e.tall * 0.3 : e.type === 'boss' ? 18 : isElite(e) ? 12 : 6);
         const d = Math.hypot(e.x - px, ey - py);
-        if (d > st.reach * (P.combo === 2 ? 1 + pasV('reach3') : 1) + e.r) continue;
+        if (d > RCH * (P.combo === 2 ? 1 + pasV('reach3') : 1) + e.r) continue;
         const tol = Math.atan(e.r / Math.max(d, 1)) + 0.05;
         const ra = P.sign * angDiff(Math.atan2(ey - py, e.x - px), P.atkAng);
         let hit = false;

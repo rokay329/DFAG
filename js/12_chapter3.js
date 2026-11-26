@@ -625,7 +625,7 @@
       if (e.cd <= 0 && d < 74) {
         faceTo(e, a);
         oSeq(e, [[0, () => { e.lockA = a; armTo(e, -35); e.spread = 0.6; glowFor(e, 0.6); alertMark(e, e.tall + 6); sfx('growl', 0.8); e.tl = oLt(e, a, 84, 26, 0.6, { follow: true }); }],
-          [0.6, () => { e.spread = 0; e.lockA = tAng(e.tl, angTo(e, P)); faceTo(e, e.lockA); oRt(e, e.x + Math.cos(e.lockA) * 58, e.y + Math.sin(e.lockA) * 58 * 0.85, 44, 0.32); e.dash = { ang: e.lockA, sp: 240, t: 0.24, grab: { dur: 1.15, need: 6, dmg: e.atk * 1.4, kind: 'throw' } }; armTo(e, 0); }],
+          [0.6, () => { e.spread = 0; e.lockA = tAng(e.tl, angTo(e, P)); faceTo(e, e.lockA); oRt(e, e.x + Math.cos(e.lockA) * 58, e.y + Math.sin(e.lockA) * 58 * 0.85, 44, 0.32); e.dash = { ang: e.lockA, sp: 240, t: 0.24, grab: { dur: 1.15, need: 3, dmg: e.atk * 1.4, kind: 'throw' } }; armTo(e, 0); }],
           [0.32, () => { if (e.state !== 'seq') return 'stop'; oSwing(e, 250, 0.3); e.face = -e.face; setTimeout(() => { if (!e.dead) e.face = -e.face; }, 150); oCircle(e, 44, e.atk * 0.6); sfx('swing', 0.8); }],
           [0.4, null]], 0.9, rand(2.2, 3.2));
       }
@@ -638,7 +638,7 @@
     for (const o of G.enemies) if (!o.dead && o.type === 'slave' && Math.hypot(o.x - e.x, o.y - e.y) < 170) { o.frenzyT = 1.2; burst(o.x, o.y - 14, '#ff6040', 4); }
   }
 
-  // ---------- 잡기: 플레이어를 붙잡아 던지거나(throw) 내리꽂는다(slam). 공격 연타 또는 점멸로 빠져나온다
+  // ---------- 잡기: 플레이어를 붙잡아 던지거나(throw) 내리꽂는다(slam). v3.47 SPACE 연타로만 빠져나온다 (잡기 오크 3 · 우르그 5 · 크루가쉬 6번, 4장 「재의 잠식」 4번 — 같은 규칙)
   function startGrab(e, g) {
     const P = G.player; if (P.dead || P.grab) return;
     P.grab = { by: e, t: 0, dur: g.dur, need: g.need, mash: 0, dmg: g.dmg, kind: g.kind, slams: 0 };
@@ -664,8 +664,8 @@
     const slamPhase = gr.kind === 'slam' ? (gr.t % 0.5) / 0.5 : 0;
     P.x = e.x + e.face * (e.r * 0.7 + 6); P.y = e.y + 2; P.face = -e.face;
     P.lift = (e.tall || 50) * 0.55 * k * (gr.kind === 'slam' ? 1 - Math.pow(slamPhase, 3) * 0.95 : 1);
-    if (take('j') || take('k') || take('e')) { gr.mash++; addShake(1.5); sfx('hit', 1.6); P.hurtT = 0.06; }
-    if (take(' ') && P.stam > 0) { P.stam--; gr.mash = gr.need; }
+    take('j'); take('k'); take('e'); take('l');
+    if (take(' ')) { gr.mash++; addShake(1.5); sfx('hit', 1.6); } // v3.48 흰 번쩍임 대신 공용 버둥 모션(69_grabpose)
     if (gr.mash >= gr.need) { releaseGrab(true); return; }
     if (gr.kind === 'slam' && gr.t > 0.5 * (gr.slams + 1) && gr.slams < 2) {
       gr.slams++; hurtPlayer(gr.dmg * 0.5, null, true); addShake(9); dust(P.x, P.y, 14); debris(P.x, P.y, 10); sfx('blast', 0.9);
@@ -862,8 +862,8 @@
     if (P && P.grab) {
       const gr = P.grab, x = Math.round(P.x), y = Math.round(P.y - 46 - (P.lift || 0)), w = 34, k = gr.mash / gr.need, blink = Math.floor(time * 10) % 2;
       ctx.font = '8px Galmuri7'; ctx.textAlign = 'center';
-      if (TOUCH.on) { const t = '공격 연타 · 점멸로 탈출'; ctx.fillStyle = '#000'; fillTextW(t, x + 1, y + 1); ctx.fillStyle = blink ? '#ffe9b0' : '#ff9a6a'; fillTextW(t, x, y); }
-      else { const col = blink ? '#ffe9b0' : '#ff9a6a'; drawW(() => drawKeyRow(ctx, x, y + 1, [['J', '연타'], ['SPACE', '탈출']], { color: col })); } // v2.63 키캡 (조명 위)
+      if (TOUCH.on) { const t = '점멸 연타로 탈출'; ctx.fillStyle = '#000'; fillTextW(t, x + 1, y + 1); ctx.fillStyle = blink ? '#ffe9b0' : '#ff9a6a'; fillTextW(t, x, y); }
+      else { const col = blink ? '#ffe9b0' : '#ff9a6a'; drawW(() => drawKeyRow(ctx, x, y + 1, [['SPACE', '연타로 탈출']], { color: col })); } // v2.63 키캡 (조명 위)
       ctx.fillStyle = '#000'; ctx.fillRect(x - w / 2 - 1, y + 3, w + 2, 5); ctx.fillStyle = '#3a2a20'; ctx.fillRect(x - w / 2, y + 4, w, 3); ctx.fillStyle = '#9fd2ff'; ctx.fillRect(x - w / 2, y + 4, Math.round(w * k), 3);
     }
   }
@@ -947,6 +947,18 @@
   const ORC_WPN = { orc: ['boneaxe'], othrow: ['spear'], shaman: ['totem'], ocharge: ['slasher'], odrum: ['hatchet'], ogrip: ['doubleaxe'], urg: ['greatbone'] }; // v2.50 오크 무기: 종류마다 한 가지로 고정 (주술사는 지팡이)
   const ORC_WCACHE = {};
   const ORC_NEW = { orc: 'nOrc', othrow: 'nOthrow', shaman: 'nShaman', ocharge: 'nOcharge', odrum: 'nOdrum', ogrip: 'nOgrip', otroll: 'nOtroll', urg: 'nUrg', troll: 'nTroll' };
+  function noFrontArm(key) { // v3.48 잡기: 정면 도트에서 앞쪽(그림 오른쪽) 팔을 지운 그림 · 폭은 그대로(보이지 않는 칸으로 자리 유지)
+    const nk = key + '_gA'; if (MAPS[nk]) return nk; const R = MAPS[key], H = R.length, W = R[0].length;
+    MAPS[nk] = R.map((r, j) => { const a = r.split(''); if (j >= Math.ceil(H * 0.55) && j < H - 2 && (a[W - 1] !== '.' || a[W - 2] !== '.')) for (let x = W - 3; x < W; x++) a[x] = '.'; if (j === 0) a[W - 1] = a[W - 1] === '.' ? '§' : a[W - 1]; return a.join(''); });
+    return nk; }
+  function grabArm(e, X, y, pal, al, white) { // v3.48 잡기: 어깨에서 플레이어 허리까지 든 굵은 팔 (주먹은 플레이어 뒤로 가려짐)
+    const P = G.player; if (!P || !P.grab || P.grab.by !== e) return; const p = PAL[pal] || {}, f = e.face;
+    const sx = X + f * (NM_HAND - 2), sy = y - 16, tx = P.x, ty = P.y - (P.lift || 0) - 12, L = Math.hypot(tx - sx, ty - sy), n = Math.max(2, Math.ceil(L / 2));
+    const C = white ? { o: '#ffffff', l: '#ffffff', h: '#ffffff', d: '#ffffff' } : { o: '#0b0a0e', l: p.l || '#6e9444', h: p.h || '#8fb35e', d: p.d || '#4c6c30' };
+    ctx.save(); ctx.globalAlpha = al;
+    for (const pass of ['o', 'b']) for (let i = 0; i <= n; i++) { const x = sx + (tx - sx) * i / n, yy = sy + (ty - sy) * i / n;
+      for (let dy = -4; dy <= 4; dy += 2) for (let dx = -4; dx <= 4; dx += 2) { const q = dx * dx + dy * dy; if (pass === 'o' ? q > 8 : q > 4) continue; /* 가는 팔: 플레이어 몸 뒤로 다 가려지게 */ ctx.fillStyle = pass === 'o' ? C.o : dy < 0 ? C.h : dy > 0 ? C.d : C.l; ctx.fillRect(snap2(x + dx), snap2(yy + dy), 2, 2); } }
+    ctx.restore(); }
   function drawOrcNew(e, ya, al, key) { // v2.44 오크: 정면 도트(양팔 포함) + 손에 쥔 무기만 따로 (팔이 셋이 되지 않게 짧은 주먹+무기)
     const S = orcSprite(e.orc, e.ov), SP = ORC_SPEC[e.orc], white = e.flash > 0, f = e.face, z = e.z || 0, o = nmPose(e);
     if (e.wk == null) { const L = ORC_WPN[e.orc]; e.wk = L ? L[Math.floor(Math.random() * L.length)] : SP.arm.kind === 'claw' ? 'shackle' : SP.arm.kind; } // v2.45 트롤: 손목의 쇠수갑
@@ -957,7 +969,10 @@
     const claw = SP.arm.kind === 'claw', hx = X + f * NM_HAND, hy = y - (claw ? 3 : 7) + o.bob, ang = f > 0 ? e.aa : Math.PI - e.aa; // 트롤 손은 바닥 가까이
     // v2.45 큰 무기는 평소엔 어깨에 메고(몸 뒤로 세움), 공격할 때만 휘두른다 — 땅에 박히거나 몸을 가리지 않게
     const carrying = !e.carryHold && (e.state === 'chase' || e.state === 'idle') && !e.steps && !e.asw && !(e.glowT > 0), CY0 = false, cang = (f > 0 ? -72 : -108) * DEG; // v2.50 평소에도 손에 쥐고 세워 든다 (등에 메지 않음)
-    drawNM(e, key, pal, e.x, y, o, white, al);
+    const grabbing = e.state === 'grabbing'; // v3.48 잡는 동안: 무기는 등에 메고(몸 뒤), 앞팔을 들어 플레이어를 들어 올림
+    if (grabbing && !claw) drawBlade(S.armH, X - f * 4, y - 12 + o.bob, (f > 0 ? -115 : -65) * DEG, al, white);
+    drawNM(e, grabbing ? noFrontArm(key) : key, pal, e.x, y, o, white, al); // 든 앞팔은 원래 자리에서 지움
+    if (grabbing) grabArm(e, X, y + o.bob, pal, al, white);
     if (carrying && !claw) drawBlade(S.armH, hx + f * 2, hy - 4, cang, al, white);
     if (e.type === 'odrum') { const hit = e.beatT > 1.08 || (e.steps && e.glowT > 0); drawSprite('nDrum', 'heldDrum', 2, X - f * 9, y - 3 + o.bob + (hit ? 2 : 0), e.face < 0, { white, alpha: al }); } // 옆구리에 멘 작은 북 (북채는 앞손)
     // v2.45 트롤: 긴 팔 끝의 발톱이 무기 (평소엔 땅을 향해 늘어뜨리고, 휘두르면 그 방향으로 + 발톱 자국)
@@ -969,7 +984,7 @@
         ctx.fillStyle = `rgba(255,200,120,${0.85 - ph * 0.2})`; for (let i = 0; i < 8; i++) { const a2 = i * Math.PI / 4; ctx.fillRect(snap2(ix + Math.cos(a2) * rr), snap2(iy + Math.sin(a2) * rr * 0.8), 2, 2); }
         ctx.fillStyle = `rgba(255,255,255,${0.6 - ph * 0.15})`; for (const a2 of [ang - 0.6, ang, ang + 0.6]) ctx.fillRect(snap2(ix + Math.cos(a2) * (rr + 4)), snap2(iy + Math.sin(a2) * (rr + 4) * 0.8), 2, 2);
         ctx.restore(); } }
-    else if (!carrying) drawBlade(S.armH, hx, hy, ang, al, white);
+    else if (!carrying && !grabbing) drawBlade(S.armH, hx, hy, ang, al, white);
     if (!white && e.otrail && e.otrail.length > 1) drawSlashPx(e.otrail.map(q => ({ a: f > 0 ? q.a : Math.PI - q.a, t: q.t })), hx, hy, (S.armH && S.armH.reach) || 40, slashCol(e), e.orc === 'urg'); // v2.50 준엘리트 이상 궤적
     if (e.rockHold) drawSprite('boulder', 'deco', 3, X + f * 2, y - 32, false);
     if (e.glowT > 0) { const k = 1 - e.glowT / e.glowMax, r = claw ? 12 : S.armH.reach * 0.92; holdGlow(hx + Math.cos(ang) * r, hy + Math.sin(ang) * r, k, '255,120,60'); }
@@ -1009,7 +1024,7 @@
       const steps = [[0, () => { e.tl = oCt(e, a, 60, 95, 0.5, { follow: true }); oSwing(e, -125, 0.3); glowFor(e, 0.5); e.lean = -0.18 * e.face; }],
         [0.5, punch(0, 1, 60, false, [60, 95, 0.26])], [0.12, () => oSwing(e, -70, 0.08)], [0.14, punch(0, 0.9, 60, true, [66, 100, 0.28])],
         [0.14, () => oSwing(e, 110, 0.12)], [0.14, () => { const q = tAng(e.tl, angTo(e, P)); faceTo(e, q); oSlam(e, -80, 0.1); oCone(e, q, 66, 100, e.atk * 1.2, { w: 5, step: 12, dust: 8 }); addShake(5); }]];
-      if (e.enraged) steps.push([0.3, () => { armTo(e, -30); e.spread = 0.4; glowFor(e, 0.4); e.tl = oLt(e, angTo(e, P), 100, 28, 0.4, { follow: true }); }], [0.4, () => { e.spread = 0; e.dash = { ang: tAng(e.tl, angTo(e, P)), sp: 300, t: 0.26, grab: { dur: 1.2, need: 7, dmg: e.atk * 1.3, kind: 'slam' } }; }], [0.3, null]);
+      if (e.enraged) steps.push([0.3, () => { armTo(e, -30); e.spread = 0.4; glowFor(e, 0.4); e.tl = oLt(e, angTo(e, P), 100, 28, 0.4, { follow: true }); }], [0.4, () => { e.spread = 0; e.dash = { ang: tAng(e.tl, angTo(e, P)), sp: 300, t: 0.26, grab: { dur: 1.2, need: 5, dmg: e.atk * 1.3, kind: 'slam' } }; }], [0.3, null]);
       oSeq(e, steps, 1.0, rand(0.9, 1.4));
     } else if (pat === 'pound') {
       oSeq(e, [[0, () => { oSwing(e, -150, 0.35); glowFor(e, 0.7); e.lean = -0.25 * e.face; sfx('growl', 0.6); oRt(e, e.x, e.y, 74, 0.7); }],
@@ -1291,7 +1306,7 @@
         [1.15, () => { b.crouch = 0.3; armTo(b, -135); }], [0.32, jump(0.85, 220, 0.5)], [1.05, null]], 0.9, rand(1.3, 1.8));
     } else if (pat === 'grab') {
       oSeq(b, [[0, () => { armTo(b, -40); b.spread = 0.5; glowFor(b, 0.5); alertMark(b, b.tall + 8, true); sfx('growl', 0.6); b.tl = oLt(b, a, 140, 40, 0.5, { heavy: true, follow: true }); }],
-        [0.5, () => { b.spread = 0; b.dash = { ang: tAng(b.tl, angTo(b, P)), sp: 330, t: 0.3, grab: { dur: 1.45, need: 8, dmg: b.atk * 1.1, kind: 'slam' } }; armTo(b, 0); }],
+        [0.5, () => { b.spread = 0; b.dash = { ang: tAng(b.tl, angTo(b, P)), sp: 330, t: 0.3, grab: { dur: 1.45, need: 6, dmg: b.atk * 1.1, kind: 'slam' } }; armTo(b, 0); }],
         [0.4, () => { if (b.state !== 'seq') return 'stop'; }]], 1.0, rand(1.2, 1.6));
     } else if (pat === 'frenzy') {
       const steps = [[0, () => { oSwing(b, -140, 0.2); glowFor(b, 0.3); }]];
@@ -1723,15 +1738,7 @@
   }
   function decorOrc(r, add, W0, H0, keyPts) {
     ensureOrcProps();
-    if (r.type === 'boss') { // 투기장: 철문 양옆 해골 말뚝, 네 귀퉁이 화톳불, 모래판 밖 둘레에 맹수 우리·교수대·바리케이드
-      const nx = DOOR.n.x, topY = A.y0 + 18;
-      for (const s of [-1, 1]) { add('skullPike', nx + s * 56, topY); add('skullPile', nx + s * 92, topY + 2); }
-      for (const [x, y] of [[A.x0 + 30, A.y0 + 34], [A.x1 - 30, A.y0 + 34], [A.x0 + 30, A.y1 - 26], [A.x1 - 30, A.y1 - 26]]) add('orcFire', x, y);
-      const rx = W0 * 0.4, ry = H0 * 0.38, ring = [['orcCage', 0.62], ['meatGallows', 0.8], ['spikeBar', 1.1], ['orcCage', 1.35], ['chopBlock', 1.9], ['spikeBar', 2.3], ['orcCage', 2.6], ['meatGallows', 3.3], ['spikeBar', 3.6], ['skullPile', 4.4], ['spikeBar', 5.0], ['orcCage', 5.5]];
-      for (const [nm, t] of ring) add(nm, CX + Math.cos(t) * (rx + 46), CY + Math.sin(t) * (ry + 34));
-      for (let i = 0; i < 6; i++) add(pick(['boneHeap', 'skullPike']), rand(A.x0 + 40, A.x1 - 40), pick([rand(A.y0 + 40, A.y0 + 90), rand(A.y1 - 70, A.y1 - 30)]));
-      return;
-    }
+    if (r.type === 'boss') return; // v3.49 투기장: 환경 소품은 모두 치움 (모래판 둘레에 동그랗게 두른 우리 · 도마 · 장작 · 해골 · 말뚝 · 화톳불)
     const topY = A.y0 + 16, nx = DOOR.n.x;
     if (r.doors.n != null) { add('skullPike', nx - 40, topY); add('skullPike', nx + 40, topY); }
     const n = Math.max(1, Math.floor(W0 / 240));

@@ -16,6 +16,10 @@
       slime: { hp: 34, atk: 7, def: 5, spd: 95, r: 7, kb: 1.2 },
       bigslime: { hp: 100, atk: 11, def: 10, spd: 80, r: 11, kb: 0.6 },
       goblin: { hp: 44, atk: 8, def: 10, spd: 58, r: 7, kb: 1 },
+      grider: { hp: 200, atk: 13, def: 20, spd: 66, r: 9, kb: 0.5 }, gbomber: { hp: 130, atk: 16, def: 10, spd: 48, r: 7, kb: 0.7 }, // v3.30 1장 준엘리트
+      gcatapult: { hp: 150, atk: 14, def: 30, spd: 0, r: 16, kb: 0 }, // v3.31 1장 거치 무기: 고블린 투석기
+      gballista: { hp: 200, atk: 18, def: 30, spd: 0, r: 18, kb: 0 }, // v3.32 2장 거치 무기: 해골 발리스타
+      ghellaltar: { hp: 180, atk: 16, def: 20, spd: 0, r: 24, kb: 0 }, // v3.34 3장 거치 무기: 지옥불 의식대
       gthrower: { hp: 36, atk: 9, def: 5, spd: 46, r: 7, kb: 1 },
       hob: { hp: 300, atk: 16, def: 45, spd: 36, r: 12, kb: 0.3, grogiMax: 55 },
       garcher: { hp: 36, atk: 9, def: 5, spd: 46, r: 7, kb: 1 },
@@ -586,7 +590,7 @@
   function sayEnemy(e, text, delay = 0, dur = 3.4) { if (e && text) e.say = { text, from: time + delay, until: time + delay + dur }; }
   function enemySays() { // 렌더에서 말풍선 큐에 넣는다
     for (const e of G.enemies) if (!e.dead && e.say && time >= e.say.from && time < e.say.until) drawBubble(e.say.text, e.x, e.y - 38 - (e.z || 0), 0);
-    if (G.deadSays) { G.deadSays = G.deadSays.filter(d => time < d.until); for (const d of G.deadSays) drawBubble(d.text, d.x, d.y, 0); }
+    if (G.deadSays) { G.deadSays = G.deadSays.filter(d => time < d.until); for (const d of G.deadSays) if (!(d.from > time)) drawBubble(d.text, d.x, d.y, 0); } // v3.61 from: 늦게 뜨는 말주머니 (문장 나눠 차례로)
   }
   const INV_MAP = { weasel: 'invWeasel', panda: 'invPanda', reaper: 'invReaper', shrewA: 'invShrew', shrewB: 'invShrewB' }; // 2·3·4장 난입자는 다음 작업
   function ascBoss(b) { const kh = ASCF.eHp() * ASCF.bossHp(); b.hp *= kh; b.maxHp *= kh; b.atk *= ASCF.eAtk(); b.ascRise = ascOn(10); }
@@ -683,6 +687,7 @@
     else if (e.type === 'reaper') updateReaper(e, dt, d, a, moveTo);
     else if (e.type === 'shrewA' || e.type === 'shrewB') updateShrew(e, dt, d, a, moveTo);
     else if (e.type === 'weasel') updateWeasel(e, dt, d, a, moveTo);
+    else if (e.type === 'shaman' && e.crewOf && e.crewOf.type === 'ghellaltar' && GHELL.updCrew(e, dt, d, a, moveTo)) { /* v3.34 지옥불 의식대 주술사 */ }
     else if (e.orc) updateOrc(e, dt, d, a, moveTo);
     else if (e.type === 'slime' || e.type === 'bigslime') updateSlime(e, dt, d, a);
     else if (e.type === 'toxslime') updateToxSlime(e, dt, d, a);
@@ -691,6 +696,14 @@
     else if (e.type === 'crow') updateCrow(e, dt, d, a);
     else if (e.type === 'cantor') updateCantor(e, dt, d, a, moveTo);
     else if (e.type === 'aguard') updateAGuard(e, dt, d, a, moveTo);
+    else if (e.type === 'grider') GSEMI.updRider(e, dt, d, a, moveTo); // v3.30 점액 라이더
+    else if (e.type === 'gcatapult') GCAT.update(e, dt); // v3.31 고블린 투석기
+    else if (e.type === 'goblin' && e.crewOf && GCAT.updCrew(e, dt, d, a, moveTo)) { /* 투석기 사수 */ }
+    else if (e.type === 'gballista') GBAL.update(e, dt); // v3.32 해골 발리스타
+    else if (e.type === 'ghellaltar') GHELL.update(e, dt); // v3.34 지옥불 의식대
+    else if (e.type === 'ghoul' && e.crewOf && e.crewOf.type === 'gballista' && GBAL.updCrew(e, dt, d, a, moveTo)) { /* 발리스타 조종병 · 사수 */ }
+    else if (e.type === 'goblin' && e.helm) GSEMI.updFallen(e, dt, d, a, moveTo); // v3.30 낙마한 고블린: 창 공격
+    else if (e.type === 'gbomber') GSEMI.updBomber(e, dt, d, a, moveTo); // v3.30 고블린 폭탄병
     else if (e.type === 'coffin') updateCoffin(e, dt, d, a, moveTo);
     else if (e.type === 'herald') updateHerald(e, dt, d, a, moveTo);
     else if (e.type === 'mother') updateMother(e, dt, d, a, moveTo);
@@ -1324,7 +1337,7 @@
       hitstop = Math.max(hitstop, 0.07); zoomK = Math.max(zoomK, 0.02);
       flashT = Math.max(flashT, 0.07); flashColor = '#ff1a28';
       if (G.combo) G.combo.n = 0;
-      P.gauge = Math.min(100, P.gauge + 6 * s.gaugeRate);
+      if (!ultBusy(P)) P.gauge = Math.min(100, P.gauge + 6 * s.gaugeRate);
       burst(P.x, P.y - 10, '#a3161c', 10); splat(P.x, P.y, 8);
     }
     if (P.hp <= 0) playerDie();

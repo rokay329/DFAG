@@ -30,7 +30,7 @@ const WDECO = (() => {
   const ART2 = { banner: 'tapestry2', banner2: 'tapestry2t', portrait: 'portrait2', chains: 'chains2', niche: 'niche2', window: 'w2' };
   const ART4 = { banner: 'crest4', banner2: 'crest4b', portrait: 'portrait4', niche: 'urn4', window: 'w4' };
   // 슬롯 i에 그릴 그림 키 (없으면 null) — 대칭 짝 자리가 소품에 가려 못 걸면 둘 다 비움
-  function pick(R, i, T0) { const v = layout(R), k = v[i]; if (!k || k === 'empty') return null; const a = (G.stage === 4 ? ART4 : ART2)[k]; if (!a) return null;
+  function pick(R, i, T0) { const v = layout(R), k = v[i]; if (!k || k === 'empty' || !(['banner', 'banner2', 'window'].includes(k) || (k === 'chains' && G.stage === 2))) return null; /* v3.63 깃발 · 문장 · 창만 + 2장은 사슬도 (초상화 · 벽감은 빈 벽) */ const a = (G.stage === 4 ? ART4 : ART2)[k]; if (!a) return null;
     const j = v.length - 1 - i; if (!(fits(a, slotX(i), T0) && fits(a, slotX(j), T0))) return null;
     if (a === 'w4') { const m = Math.min(i, j), q = (((R && R.seed) || 1) * 7 + m * 3) % 4; return ['w4', 'w4b', 'w4c', 'w4d'][q]; } // v3.29 4장 창 풍경 — 대칭 쌍은 같게, 쌍 · 방마다 다르게
     return a; }

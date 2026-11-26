@@ -4,6 +4,8 @@
 //  · 어쌔신 「개다래나무 가지」: 7초 — 몸에 붉은 오라, 눈이 붉어짐. 공격 속도 · 이동 속도(대폭) · 치명타 확률 증가
 //  · 마법사 「영혼박리」: 10초 — 마나로 된 분신이 따라다니며 평타(마력탄)를 따라 쏨. 우클릭 기술은 따라 하지 않음
 //  · 성직자 「기적」: 패시브 — 직접 쓸 수 없음. 한 판에 한 번, 쓰러지면 하트 1.5칸으로 되살아남
+// v3.64 궁극기(각성) 사용 중엔 궁극기 게이지가 차지 않음 — 각성 지속 시간 · 하비 「등 맡기기」 동안
+function ultBusy(P) { return !!(P && (P.awakenT > 0 || P.state === 'awaken' || (typeof HABIULT !== 'undefined' && HABIULT.on))); }
 const AWK = (() => {
   const DUR = { knight: 8, ranger: 7, mage: 10 };
   const S = { g: null, waves: [], clone: null, q: [], bolts: [] };

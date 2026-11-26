@@ -64,24 +64,27 @@
     }
     // ---------------------------------------------------------------- 빛기둥 (색마다 한 번 만든 디더 그림을 더하기 합성으로)
     const BEAM = {}, BH = 150;
-    function beam(c) {
-      if (BEAM[c]) return BEAM[c];
+    function beam(c, f = 0) { // v3.67 f: 0~7 — 무늬와 옅은 띠가 천천히 위로 흘러가는 8장
+      const key = c + f; if (BEAM[key]) return BEAM[key];
       const w = Math.round(CRX * 0.66 / 2) * 2, H = BH + CRY + 4, [cv, g] = mkCanvas(w * 2 + 2, H), [r, gg, b] = [1, 3, 5].map(i => parseInt(COL[c][0].slice(i, i + 2), 16));
       const BY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
       for (let x = 0; x <= w * 2; x += 2) { const u = (x + 1 - w) / w, side = 1 - u * u, yb = BH - Math.round(CRY * 0.66 * Math.sqrt(Math.max(0, side)) / 2) * 2; /* 기둥은 마법진 뒤쪽 테두리에서 솟음 — 바닥 마법진(겹친 색)이 가려지지 않게 */ if (side <= 0) continue;
-        for (let y = 0; y < yb; y += 2) { const t = y / yb, lv = Math.pow(t, 1.3) * (0.35 + 0.65 * side) * 0.9; /* 아래(바닥)가 진하고 위로 옅어짐 */ if (lv * 16 <= BY[((y >> 1) & 3) * 4 + ((x >> 1) & 3)]) continue;
+        for (let y = 0; y < yb; y += 2) { const t = y / yb, wave = 0.86 + 0.14 * Math.sin(t * Math.PI * 3 + f * Math.PI / 4), lv = Math.pow(t, 1.3) * (0.35 + 0.65 * side) * 0.9 * wave; /* 아래(바닥)가 진하고 위로 옅어짐 · v3.67 옅은 띠가 위로 흐름 */ if (lv * 16 <= BY[(((y >> 1) + (f >> 1)) & 3) * 4 + ((x >> 1) & 3)]) continue;
           g.fillStyle = `rgb(${r},${gg},${b})`; g.fillRect(x, y, 2, 2); } }
-      return (BEAM[c] = { cv, w });
+      return (BEAM[key] = { cv, w });
     }
     // 흰 구체 (2px 칸 원판 · 왼쪽 위 빛)
     let ORB = null;
     function orbCv() {
-      if (ORB) return ORB; const R = 6.5, N = 14, o = (N - 1) / 2, [cv, g] = mkCanvas(N * 2, N * 2); // 외곽선 없이 명암만으로 둥근 구체 (왼쪽 위 빛 · 오른쪽 아래 그늘 · 가장자리 반사광)
+      if (ORB) return ORB; const R = 6.5, N = 14, o = (N - 1) / 2, [cv, g] = mkCanvas((N + 2) * 2, (N + 2) * 2); g.translate(2, 2); // 명암으로 둥근 구체 (왼쪽 위 빛 · 오른쪽 아래 그늘 · 가장자리 반사광) + v3.67 외곽선 (검정 대신 푸른 보라 · 왼쪽 위는 밝게)
       const L = [-0.55, -0.62, 0.56], ln = Math.hypot(...L), TONE = ['#3a4470', '#56629a', '#8492c2', '#b8c4e4', '#e6ecfa', '#ffffff'];
       for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const dx = (i - o) / R, dy = (j - o) / R, r2 = dx * dx + dy * dy; if (r2 > 1) continue;
         const nz = Math.sqrt(1 - r2), sh = (dx * L[0] + dy * L[1] + nz * L[2]) / ln; let t = sh > 0.93 ? 5 : sh > 0.72 ? 4 : sh > 0.45 ? 3 : sh > 0.12 ? 2 : sh > -0.25 ? 1 : 0;
         if (r2 > 0.72 && dx + dy > 0.6 && t < 2) t = t + 1; // 오른쪽 아래 가장자리 반사광 (그늘보다 한 단계 밝게)
         g.fillStyle = TONE[t]; g.fillRect(i * 2, j * 2, 2, 2); }
+      const inO = (i, j) => { const dx = (i - o) / R, dy = (j - o) / R; return i >= 0 && j >= 0 && i < N && j < N && dx * dx + dy * dy <= 1; };
+      for (let j = -1; j <= N; j++) for (let i = -1; i <= N; i++) { if (inO(i, j)) continue; if (![[1, 0], [-1, 0], [0, 1], [0, -1]].some(([a, b]) => inO(i + a, j + b))) continue;
+        g.fillStyle = (i - o) + (j - o) < -2 ? '#7a84c4' : (i - o) + (j - o) > 2 ? '#2e3468' : '#4a5296'; g.fillRect(i * 2, j * 2, 2, 2); }
       return (ORB = cv);
     }
     // 각인을 고른 뒤 사라짐: 구체 0~0.5초(떠오르며) → 빛기둥 0.2~1.2초 → 바닥 마법진 0.6~1.8초. 다시 와도 없음
@@ -92,7 +95,10 @@
       if (K.circ > 0) list.push({ y: -1e9, d: () => { ctx.save(); ctx.globalAlpha = K.circ; ctx.drawImage(Cc.cv, Cc.x0, Cc.y0); ctx.restore(); } }); // 바닥 마법진 (가장 먼저)
       const C = circ(), used = false, fl = (0.46 + Math.sin(time * 2.2) * 0.05) * K.beam; if (K.orb <= 0 && K.beam <= 0) return;
       if (K.beam > 0) for (const c of CS) { const o = C[c], B = beam(c);
-        list.push({ y: o.y, d: () => { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fl; ctx.drawImage(B.cv, o.x - B.w - 1, o.y - BH); ctx.restore(); } }); }
+        list.push({ y: o.y, d: () => { const B2 = beam(c, Math.floor(time * 5) % 8); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fl; ctx.drawImage(B2.cv, o.x - B2.w - 1, o.y - BH);
+          const [r, gg, b] = [1, 3, 5].map(i => parseInt(COL[c][0].slice(i, i + 2), 16)); ctx.fillStyle = `rgb(${Math.min(255, r + 90)},${Math.min(255, gg + 90)},${Math.min(255, b + 90)})`; // v3.67 기둥 안을 천천히 떠오르는 빛 알갱이
+          for (let i = 0; i < 6; i++) { const k = (time * 0.18 + i / 6 + (c === 'b' ? 0.33 : c === 'g' ? 0.66 : 0)) % 1, X = Math.round((o.x + Math.sin(time * 1.3 + i * 2.1) * B2.w * 0.55) / 2) * 2, Y = Math.round((o.y - 8 - k * (BH - 20)) / 2) * 2; ctx.globalAlpha = fl * Math.sin(k * Math.PI) * 1.4; ctx.fillRect(X, Y, 2, 2); }
+          ctx.restore(); } }); }
       // 둥둥 떠 있는 느낌: 느린 위아래(최대 6px, 2px 칸) + 아주 작은 좌우 흔들림 · 바닥 그림자는 높이에 따라 크기와 진하기가 바뀜
       const F = fc(), O = orbAt(), ph = time * 1.7, lift = used ? 0 : Math.sin(ph) * 6 + Math.sin(ph * 2.3) * 1.2, bob = -Math.round(lift / 2) * 2, sway = used ? 0 : Math.round(Math.sin(time * 0.9) * 1.6 / 2) * 2;
       const rise = K.e > 0 ? Math.round(Math.min(K.e, 0.5) * 24 / 2) * 2 : 0; // 사라지며 떠오름

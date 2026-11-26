@@ -3,7 +3,7 @@
 // 잿빛 왕관 원정대 — 41_krs.js : v3.21 기사 무기별 우클릭 기술 (시안 _시안/기사_우클릭기술_시안01.html)
 //  · 레어 · 유니크 · 레전더리 기사 무기는 무기마다 고유한 우클릭 기술을 씀 (커먼 · 초록 무기는 기본 「돌진 참격」)
 //  · 우클릭 쿨타임은 무기마다 따로 돎 (장착하지 않은 무기의 쿨타임도 계속 줄어듦)
-//  · 성문 빗장 · 별의 서약 대검: 돌진 참격을 바꾸던 고유 효과를 우클릭 기술로 옮기고 새 고유 효과(무거운 빗장 · 별빛 검기)를 붙임
+//  · 철퇴(옛 성문 빗장) · 별의 서약 대검: 돌진 참격을 바꾸던 고유 효과를 우클릭 기술로 옮기고 새 고유 효과(무거운 빗장 · 별빛 검기)를 붙임
 //  · 무기는 게임 rotW(칸 단위 회전)로만 움직이고, 바닥 효과는 2px 칸 + 디더
 // ==================================================================================================
 // ---------------------------------------------------------------- v3.22 기술 공용 몸 동작 (기본 공격의 strikePose처럼 몸이 움찔 · 내딛음 · 출렁)
@@ -124,7 +124,7 @@ const KRS = (() => {
     bell: { n: '종 울리기', cd: 10, d: '추를 바닥에 내려쳐 울림 고리를 세 번 퍼뜨립니다. 고리에 닿은 적에게 피해를 주고, 그로기를 크게 쌓습니다.' },
     windmill: { n: '돌개바람', cd: 10, d: '2초 동안 날개를 돌리며 조준한 방향으로 천천히 나아갑니다. 닿은 적에게 피해를 주고 바깥으로 밀어내며, 날아오는 투사체를 쳐냅니다.' },
     fang: { n: '뼈 톱질', cd: 8, d: '톱니 대검을 앞으로 내밀고 돌진하며 지나간 적을 긁습니다. 긁힌 적에게 출혈을 3중첩 부여합니다.' },
-    gate: { n: '성문 돌파', cd: 9, d: '빗장을 앞세워 돌진하며 처음 부딪힌 적을 벽까지 밀고 갑니다. 벽에 부딪히면 충격파가 일어나 주변 적에게 피해를 주고, 밀린 적을 기절시킵니다.' },
+    gate: { n: '단죄', cd: 9, d: '무기를 앞세워 순식간에 돌진하며 처음 부딪힌 적을 벽까지 밀고 갑니다. 벽에 부딪히면 충격파가 일어나 주변 적에게 피해를 주고, 밀린 적을 기절시킵니다.' },
     bread: { n: '바게트 부메랑', cd: 7, d: '바게트를 빙글빙글 던집니다. 바게트는 앞으로 날아갔다가 되돌아오며, 오가는 길에 닿은 적을 0.8초 동안 기절시킵니다.' },
     sun: { n: '별의 서약', cd: 10, d: '조준한 지점에 대검을 던져 꽂습니다. 3초 안에 다시 누르면 꽂힌 대검으로 순간 돌진해 대검을 뽑으며 별빛을 폭발시킵니다. 다시 누르지 않으면 대검이 손으로 돌아옵니다.' },
     exec: { n: '처형', cd: 12, d: '조준한 적(없으면 조준한 방향에서 조준점에 가장 가까운 적)의 뒤로 순간 이동해 처형검을 내리칩니다. 체력이 30% 이하인 적은 즉시 처치하고, 그 밖의 적에게는 큰 피해를 줍니다. 조준한 방향에 체력이 30% 이하인 적이 있으면 그 적을 먼저 노립니다. 대상이 될 적의 머리 위에는 표식이 나타납니다.' },
@@ -201,7 +201,7 @@ const KRS = (() => {
     }
     if (k === 'exec') return startExec(P);
     P.state = 'krs';
-    P.krs.dur = { cleaver: 0.78, tuna: 0.62, chain: 1.5, bell: 0.95, windmill: 2.0, fang: 0.48, gate: 0.6 }[k] || 0.6;
+    P.krs.dur = { cleaver: 0.78, tuna: 0.62, chain: 1.5, bell: 0.95, windmill: 2.0, fang: 0.48, gate: 0.57 }[k] || 0.6;
     if (k === 'tuna' || k === 'fang' || k === 'gate') { sfx('whoosh'); P.iframe = Math.max(P.iframe, 0.12); }
     if (k === 'windmill') sfx('whoosh', 0.7);
     return true;
@@ -301,16 +301,16 @@ const KRS = (() => {
     } else if (k === 'gate') {
       P.blade = P.atkAng; P.krsFront = true;
       if (!R.did.end) {
-        const px = P.x, py = P.y; dashStep(P, 360, dt); const moved = Math.hypot(P.x - px, P.y - py);
-        dust(P.x - Math.cos(P.atkAng) * 8, P.y + 2, 2); FXK.light(P.x, P.y, 60, 0.4, '255,230,190', 0.06);
-        for (const dy of [-12, -4, 4]) G.fx.push({ kind: 'streak', px: true, x0: P.x - Math.cos(P.atkAng) * 50, y0: P.y - 8 + dy, x1: P.x - Math.cos(P.atkAng) * 14, y1: P.y - 8 + dy, t: 0.1, max: 0.1, c: dy === -4 ? '#f0e6d0' : '#a89c90' });
+        const px = P.x, py = P.y; dashStep(P, 540, dt); /* v3.40 단죄: 360 → 540, 0.45초 → 0.3초 (거리 그대로) */ const moved = Math.hypot(P.x - px, P.y - py);
+        dust(P.x - Math.cos(P.atkAng) * 8, P.y + 2, 2);
+        G.fx.push({ kind: 'jtrail', x0: px, y0: py, x1: P.x, y1: P.y, t: 0.35, max: 0.35, zY: Math.min(py, P.y) - 40 }); // v3.40 빛줄기 대신 검은 궤적 (67_judge.js)
         if (R.c) { G.parts.push({ x: P.x + Math.cos(P.atkAng) * 16, y: P.y - rand(4, 16), vx: -Math.cos(P.atkAng) * rand(60, 140), vy: rand(-80, -20), t: 0.3, c: pick(['#8a5a30', '#c8a070', '#5a3a20']), g: 300 });
           for (const e of G.enemies) { if (e.dead || e.type === 'flag' || e === R.c || R.hit.has(e)) continue; if (dist(R.c, e) < R.c.r + e.r + 6) { R.hit.add(e); const side = angDiff(angTo(R.c, e), P.atkAng) > 0 ? 1 : -1; damageEnemy(e, 0.6, { ang: P.atkAng + side * 1.2, kb: 280, grogi: 6, gauge: 2, proc: true }); } } }
         if (!R.c) hitNear(P, P.r + 12, e => { damageEnemy(e, 1.0, { ang: P.atkAng, grogi: 10, heavy: true, gauge: 5 }); if (big(e)) R.wall = e; else R.c = e; });
-        let wall = !!R.wall || (t > 0.05 && moved < 360 * dt * 0.35);
+        let wall = !!R.wall || (t > 0.05 && moved < 540 * dt * 0.35);
         if (R.c && !R.c.dead) { const c = R.c, d = P.r + c.r + 8, nx = P.x + Math.cos(P.atkAng) * d, ny = P.y + Math.sin(P.atkAng) * d * 0.8;
           if (wallAt(c.x, c.y, nx, ny)) wall = true; else { c.x = nx; c.y = ny; } c.vx = c.vy = 0; c.hitStun = Math.max(c.hitStun || 0, 0.2); }
-        if (wall || t > 0.45) { R.did.end = true; gateImpact(P, R, wall); }
+        if (wall || t > 0.42) { R.did.end = true; /* v3.43 돌진 거리 약 160 → 약 230 */ gateImpact(P, R, wall); }
       }
     } else if (k === 'exec') {
       const T = R.tgt;
@@ -367,7 +367,7 @@ const KRS = (() => {
   function gateImpact(P, R, wall) {
     const c = R.c, x = c && !c.dead ? c.x : P.x + Math.cos(P.atkAng) * 24, y = c && !c.dead ? c.y : P.y + Math.sin(P.atkAng) * 18;
     sfx(wall ? 'blast' : 'heavy', 0.8); dust(x, y, wall ? 22 : 10); addShake(wall ? 7 : 3, P.atkAng);
-    if (wall) { FXK.ring(x, y - 4, '#e8dcc0', 300, 0.4, 8); FXK.ring(x, y - 4, '#8a7c70', 200, 0.5, 4); hitCrack(x + Math.cos(P.atkAng) * 12, y, 2, 60); FXK.debris(x, y, 18); FXK.debris(x, y, 14, ['#8a5a30', '#c8a070', '#5a3a20']); FXK.burst(x, y - 10, ['#ffffff', '#fff2d0'], 12, 260, 0, true, 0.25); FXK.light(x, y, 160, 1, '255,230,190', 0.35); FXK.punch(11, 0.04, 0.1, P.atkAng); 
+    if (wall) { FXK.ring(x, y - 4, '#e8dcc0', 300, 0.4, 8); FXK.ring(x, y - 4, '#8a7c70', 200, 0.5, 4); hitCrack(x + Math.cos(P.atkAng) * 12, y, 2, 60); FXK.debris(x, y, 18); FXK.debris(x, y, 14, ['#8a5a30', '#c8a070', '#5a3a20']); FXK.burst(x, y - 10, ['#ffffff', '#fff2d0'], 12, 260, 0, true, 0.25); FXK.light(x, y, 160, 1, '255,230,190', 0.35); FXK.punch(11, 0.04, 0.1, P.atkAng); if (typeof skShake === 'function') skShake(11, P.atkAng); /* v3.40 벽 · 장애물에 부딪히면 실제 화면 흔들림 */ 
       FXK.flash('#fff6e0', 0.07); FXK.rays(x, y - 6, 10, 90, '#f0e6d0', 0.25); FXK.ring(x, y - 4, '#ffffff', 420, 0.3, 12);
       for (const da of [Math.PI - 0.5, Math.PI, Math.PI + 0.5]) K.cracks.push({ x, y: y + 4, ang: P.atkAng + da, len: 56, t: 1.4, max: 1.4, seed: Math.random() * 99 }); }
     if (c && !c.dead) { damageEnemy(c, wall ? 1.8 : 1.0, { heavy: true, grogi: 14, kb: wall ? 0 : 220, ang: P.atkAng, gauge: 6, proc: true }); if (wall) applySt(c, 'stun', 1.2); }
@@ -462,7 +462,7 @@ const KRS = (() => {
     }
   }
 
-  // ---------------------------------------------------------------- 새 고유 효과 (성문 빗장 · 별의 서약 대검)
+  // ---------------------------------------------------------------- 새 고유 효과 (철퇴 · 별의 서약 대검)
   const _woh = weaponOnHit;
   weaponOnHit = function (e, o, crit) { _woh(e, o, crit);
     const P = G.player; if (G.cls !== 'knight' || !o || !o.basic || P.state !== 'attack' || P.combo !== 2 || e.dead) return;
