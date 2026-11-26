@@ -7,13 +7,22 @@
 //  대상: 진엔딩 · NPC 대화(TRUTH) · 용의 유적(RUIN) · 안전 놀이터(DEN) 대화 · 연출 (다가가면 혼자 하는 인사 말주머니는 해당 없음)
 const CINE = (() => {
   const BAR = 36;
+  let FOC = null, focOn = false; // v3.80 화면 중앙에 둘 자리 (크루가쉬 대화 등) — 대화가 끝나면 풀림
   let k = 0, ox = 0, oy = 0, tx = 0, ty = 0, lockT = -1, lockN = 0, base = null, seen = [], pts = [], on = false;
   { const st = document.createElement('style'); st.textContent = 'body.cine #party,body.cine #phase,body.cine #bkPanel,body.cine #boss,body.cine #skills,body.cine #keyguide,body.cine #lootFeed,body.cine #gearCmp,body.cine #mute,body.cine #trQuest,body.cine #devKeys{visibility:hidden!important}'; document.head.appendChild(st); }
   const busy = () => { try { return !!((TRUTH.busy && TRUTH.busy()) || (typeof RUIN !== 'undefined' && (RUIN.talking ? RUIN.talking() : RUIN.busy())) || (typeof DEN !== 'undefined' && DEN.busy && DEN.busy())); } catch (e) { return false; } };
   const ease = v => v * v * (3 - 2 * v);
   const camOk = () => G && G.player && mode === 'play' && !G.cine && !CA.busy() && !END.busy() && !(typeof LOADQ !== 'undefined' && LOADQ.on);
+  // v3.79 대화 중엔 게임 업데이트가 멈춰 막 생긴 이펙트(줍기 고리 · 불티 · 숫자)가 몸에 얼어붙은 채 남음 → 대화 중에도 꾸밈 이펙트만 계속 흘러가 사라지게
+  function fadeFx(dt) {
+    for (const p of G.parts) { p.t -= dt; p.x += (p.vx || 0) * dt; p.y += (p.vy || 0) * dt; p.vy = (p.vy || 0) + (p.g || 0) * dt; p.vx = (p.vx || 0) * 0.96; if (p.floor && p.y > p.floor && p.g > 0) p.t = 0; }
+    { let j = 0; const A_ = G.parts; for (let i = 0; i < A_.length; i++) if (A_[i].t > 0) A_[j++] = A_[i]; A_.length = j; }
+    for (const n of G.nums) { n.t -= dt; n.y += (n.vy == null ? -24 : n.vy) * dt; } G.nums = G.nums.filter(n => n.t > 0);
+    for (const f of G.fx) { if (f.kind === 'lob') continue; f.t -= dt; if (f.grow) f.r += f.grow * dt; } G.fx = G.fx.filter(f => f.t > 0);
+  }
   function tick(dt) {
     on = camOk() && busy();
+    if (on && G && G.parts) try { fadeFx(dt); } catch (e) { /* 이펙트 */ }
     k = Math.max(0, Math.min(1, k + (on ? 1 : -1) * dt / 0.25));
     document.body.classList.toggle('cine', on);
     if (!camOk()) { ox = oy = 0; lockT = -1; return; }
@@ -21,6 +30,12 @@ const CINE = (() => {
     if (!on && !ox && !oy) return;
     // v3.73 카메라 완전 고정 — 대화가 시작된 순간의 화면을 그대로 붙잡음 (카메라를 다시 계산하지 않음 · 화자를 따라가지 않음)
     //  · 띠에 가리는 사람이 있을 때만, 띠가 들어오는 도중(0.15초) 한 번 '컷'으로 옮기고 끝까지 그대로 · 나중에 나온 말주머니는 띠 아래로 내리기만 함
+    if (on && FOC) { // v3.80 지정한 자리를 화면 한가운데로 — 부드럽게 옮겨 고정
+      focOn = true; if (lockT < 0) { lockT = 0; lockN = 4; base = { x: cam.x - ox, y: cam.y - oy }; }
+      tx = Math.round(FOC.x - VW / 2 - base.x); ty = Math.round(FOC.y - VH / 2 - base.y); const a = Math.min(1, dt * 7); ox += (tx - ox) * a; oy += (ty - oy) * a; if (Math.abs(tx - ox) < 0.5) ox = tx; if (Math.abs(ty - oy) < 0.5) oy = ty;
+      cam.x = base.x + ox; cam.y = base.y + oy; cam.clX = false; cam.clY = false; return;
+    }
+    if (!on && focOn) { focOn = false; FOC = null; }
     if (on) {
       if (lockT < 0) { lockT = 0; lockN = 0; seen = []; base = { x: cam.x - ox, y: cam.y - oy }; tx = ty = 0; }
       if (lockT < 0.15 || lockN < 4) { lockT += dt; lockN++; seen.push(...pts); { const r = typeof RUIN !== 'undefined' && RUIN.talkAt && RUIN.talkAt(); if (r) seen.push(r); }
@@ -56,10 +71,16 @@ const CINE = (() => {
     ['크루가쉬 · 약속의 결투 (3장 보스)', [toStage(3), () => { TRUTH3.T3.freed = true; debugToBoss(); }, { until: () => G.enemies.some(e => e.kind === 'krugash' && e.kg && e.kg.ph === 'wait' && e.kg.t > 0.7) }, () => { const b = G.enemies.find(e => e.kind === 'krugash'); Object.assign(G.player, { x: b.x, y: b.y + 60 }); TRUTH.act({ a: 'c3kg' }); }]], // v3.76 말을 걸어야 시작
   ];
   let evI = -1, Q = null; // Q: { steps, i, wait }
+  function skipTalk() { // v3.80 진행 중인 대화 · 연출을 모두 끊음 (테스트 전용)
+    const f = [() => TRUTH.abort(), () => INFORM.abort(), () => RUIN.abortTalk(), () => DEN.abort(), () => { if (G.cine) { G.cine = null; if (typeof setHudDim === 'function') setHudDim(false); } }];
+    for (const x of f) try { x(); } catch (e) { /* 없는 모듈 */ }
+    if (G && G.player) { G.player.state = 'idle'; G.prompt = null; } Q = null;
+  }
   function dbg(dt) {
     if (typeof DEV !== 'undefined' && DEV && !DEVK.has('sd7')) DEVK.set('sd7', '대화 장면(시네마 모드)으로 차례대로 가기');
     if (typeof DEV !== 'undefined' && DEV && pressed['sd7'] === 'shift' && G && mode === 'play') { pressed['sd7'] = false;
-      if (busy() || G.trans) { feed('테스트 — 대화가 끝난 뒤 눌러 주세요', '#9a8f8a'); }
+      if (busy() || G.cine) skipTalk(); // v3.80 대화 중에 눌러도 지금 대화를 끊고 바로 다음 장면으로
+      if (G.trans) { feed('테스트 — 방을 옮기는 중입니다. 잠시 뒤 눌러 주세요', '#9a8f8a'); }
       else { evI = (evI + 1) % EV.length; Q = { steps: EV[evI][1], i: 0, wait: 0, lim: 12 }; feed(`테스트 — 대화 장면 ${evI + 1}/${EV.length} · ${EV[evI][0]} (Shift+7 다음)`); sfx('blip'); } }
     if (!Q) return;
     Q.lim -= dt; if (Q.lim < 0) { Q = null; return; } // 12초 안에 못 가면 포기
@@ -82,5 +103,5 @@ const CINE = (() => {
         if (h > 0) for (let x = 0; x < VW; x += 4) { ctx.fillRect(x, h, 2, 2); ctx.fillRect(x + 2, VH - h - 2, 2, 2); } // 띠 끝 망점 한 줄
         ctx.restore(); }
       return r; }; }
-  return { get on() { return on; }, get k() { return k; }, get dbgT() { return [tx, ty, ox, oy, lockT, seen.length]; } };
+  return { focus(x, y) { FOC = { x, y }; }, get on() { return on; }, get k() { return k; }, get dbgT() { return [tx, ty, ox, oy, lockT, seen.length]; } };
 })();

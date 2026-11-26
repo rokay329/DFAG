@@ -113,7 +113,7 @@ const BOSSDEATH = (() => {
   const kindOf = e => e && e.type === 'boss' ? (e.kind === 'slimeking' ? 'slime' : e.kind === 'krugash' ? 'krug' : !e.kind ? 'baldor' : null) : null;
   const BYOFF = { slime: 2, baldor: 3, krug: 2 }; // 게임 좌표 e.y → 발 밑 줄
   function start(e) { const k = kindOf(e), R = G && G.dun && G.dun.cur; if (!k || !R || e._bdead) return; e._bdead = true;
-    (R.bossDead = R.bossDead || []).push({ k, x: Math.round(e.x) & ~1, y: Math.round(e.y), st: e.stage, e: { stage: e.stage }, t0: time }); }
+    (R.bossDead = R.bossDead || []).push({ k, x: Math.round(e.x) & ~1, y: Math.round(e.y), st: e.stage, e: { stage: e.stage }, t0: time - (k === 'krug' && e.kgD && e.kgD.kneel ? 0.98 : 0) }); } // v3.80 이미 무릎 꿇은 크루가쉬는 고개를 떨구는 데부터
   function frameAt(R) { const S = R.seq || (R.seq = seqOf(R)); let t = (time - R.t0) * 1000; for (let i = 0; i < S.length; i++) { if (i === S.length - 1 || t < S[i][1]) return S[i]; t -= S[i][1]; } return S[S.length - 1]; }
   function draw(R) { const f = frameAt(R); ctx.save(); try { f[0](R.x, R.y + BYOFF[R.k]); } finally { ctx.restore(); } }
   function ents(list) { const R = G && G.dun && G.dun.cur; if (!R || !R.bossDead) return; for (const d of R.bossDead) list.push({ y: d.y - 1, d: () => draw(d) }); }
@@ -123,5 +123,7 @@ const BOSSDEATH = (() => {
   killEnemy = wrap(killEnemy);
   if (typeof ORIG !== 'undefined' && ORIG.killEnemy) ORIG.killEnemy = wrap(ORIG.killEnemy);
   { const o = roomEnts; roomEnts = function (list) { o(list); ents(list); }; }
-  return { start, ents, dur, kindOf };
+  // v3.80 약속의 결투에서 진 뒤 무릎 꿇고 숨을 몰아쉬는 모습 (도끼를 박아 짚음 · up이면 고개가 내려감)
+  function kneel(e, up) { const M = krugArt(), CX = Math.round(e.x) & ~1, BY = Math.round(e.y) + BYOFF.krug; ctx.save(); try { drawShadow(CX, BY, 18); drawBlade(KRUG_AXE, CX + 30, BY - (KRUG_AXE.reach || 60) + 4, 90 * D); drawSprite(M[up ? 'kb' : 'kneel'], 'nKrugash', 2, CX, BY, false, { white: e.flash > 0 }); } finally { ctx.restore(); } }
+  return { start, ents, dur, kindOf, kneel };
 })();

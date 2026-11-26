@@ -641,7 +641,7 @@
     if (dReady && !hudPrev.D) popSkill('skD');
     hudPrev.D = dReady;
     // 보스
-    const b = G.boss;
+    const b0 = G.boss, b = b0 && b0.kind === 'krugash' && b0.freed && b0.kg && (b0.kg.ph === 'wait' || b0.kg.ph === 'talk') ? null : b0; // v3.80 저주가 풀린 크루가쉬: 대화가 끝나고 결투가 시작될 때 이름 · 체력 막대가 뜸
     $('boss').style.display = b ? 'block' : 'none';
     if (b) {
       b.hpBack = b.hpBack == null ? b.hp : b.hpBack + (b.hp - b.hpBack) * 0.06;

@@ -461,7 +461,7 @@
     } else R.cleared = true;
     if (fresh && R.type === 'elite') banner(ER().n, ER().sub[R.tier] || STG().elite);
     if (fresh && R.type === 'survive') banner('봉인된 방', `문이 닫혔다 · ${SURV_N}차례의 습격을 견뎌야 한다`);
-    if (fresh && R.type === 'boss') { banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; sfx('boss'); G.bossTime = 300; G.phase = 11; }
+    if (fresh && R.type === 'boss') { const kgQuiet = G.stage === 3 && typeof TRUTH3 !== 'undefined' && TRUTH3.T3 && TRUTH3.T3.freed; /* v3.80 저주가 풀린 크루가쉬: 이름 배너 · 보스 등장음 없이 조용히 (결투가 시작될 때 「약속의 결투」) */ if (!kgQuiet) banner(STG().boss, STG().bossSub); $('bossName').textContent = STG().boss; if (!kgQuiet) sfx('boss'); G.bossTime = 300; G.phase = 11; }
     if (R.type === 'shop') shopHeartFix(R);
     if (R.type === 'rest') { G.bonfire = { x: CX + SR_FIRE.dx, y: CY + SR_FIRE.dy }; if (!R.healed) { R.healed = true; if (hasRelic('lantern')) { addArmor(1); lootFeed('희망의 등불 — 방패 +1', '#ffd34d'); } /* v2.36 */ P.hp = ascOn(9) ? Math.min(G.stats.hp, P.hp + Math.round((G.stats.hp - P.hp) * 0.5 * ASCF.heal())) : G.stats.hp; /* v1.96 꺼진 모닥불 */ banner(BISTRO.NAME, '언제든 식사 됩니다.', false, CX); /* v3.10 맵 가운데 */ /* v3.10 */ } }
     if (R.type === 'shop' && !R.greeted) { R.greeted = true; banner('살구의 비밀상점', '네고 없음, 환불 불가'); }

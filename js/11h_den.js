@@ -205,5 +205,5 @@ const DEN = (() => {
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeEx(); } else if ('1234'.includes(e.key)) pickEx(+e.key - 1); }, true);
   addEventListener('DOMContentLoaded', () => { const b = $('denClose'); if (b) b.addEventListener('click', closeEx); setInterval(() => chipHud(true), 300); }); // 놀이터를 벗어나거나 화면이 바뀌면 칩 패널도 숨김
 
-  return { name: () => NAME, busy, update, paint, ground, ents, lights, screen, interact, act, tick, debugEnter, leave, on: () => !!cur(), dbgTalk: gi => { const R = cur(); if (!R || DLG) return; const c = R.den.c[gi], C = CATS[gi]; c.t0 = time; c.st = 'talk'; DLG = { gi, i: 0, t: 0, lines: C.lines, has: true }; G.prompt = null; TRUTH.freeze(); sfx('blip'); } };
+  return { abort: () => { DLG = null; } /* v3.80 테스트 Shift+7 */, name: () => NAME, busy, update, paint, ground, ents, lights, screen, interact, act, tick, debugEnter, leave, on: () => !!cur(), dbgTalk: gi => { const R = cur(); if (!R || DLG) return; const c = R.den.c[gi], C = CATS[gi]; c.t0 = time; c.st = 'talk'; DLG = { gi, i: 0, t: 0, lines: C.lines, has: true }; G.prompt = null; TRUTH.freeze(); sfx('blip'); } };
 })();

@@ -414,7 +414,7 @@ const KG_LAST = [['krug', '…크흐.'], ['krug', '약속대로… 말해 주지
 // v3.20 크루가쉬의 마지막 말에 대한 주인공의 반응 (이번 판에 키륵에게서 먼저 「해」를 들었음)
 const KG_SUN = { knight: '…또 {해}. 끝내 그 뜻을 듣지 못했군.', ranger: '…{해}. 그 고블린도, 너도.', mage: '{해}가 비치는 곳…|하늘에 별 말고 무언가가 더 있었다는 걸까요.', priest: '{해}…|이분도 그 말을 남기셨네요.', gunner: '{해}라… 말은 다 하고 뒤지라고.' };
 // 이 판에서 원이 열리는가: 진실 1 · 2를 안 기록(저장) + 그 캐릭터의 2회차 + 이번 판에서 아직 저주를 풀지 않음
-const circleOn = () => { const run = G.truthRun || {}; return !!(run.t1 && run.t2 && TRUTH.loop2() && !T3().freed); }; // v3.20 진실 1 · 2를 이번 판에서 봤을 때만 (예전 판 기록은 보지 않음)
+const circleOn = () => { const run = G.truthRun || {}; return !!(run.t1 && run.t2 && TRUTH.loop2() && !T3().freed && !T3().lost); }; /* v3.80 lost: 크루가쉬가 쓰러진 판에 선조가 사라짐 → 원이 닫힘 */ // v3.20 진실 1 · 2를 이번 판에서 봤을 때만 (예전 판 기록은 보지 않음)
 
 // ---------------------------------------------------------------- ① 피의 결투 원 (3장 전투 방 하나)
 function pickRoom() {
@@ -865,8 +865,17 @@ function ancDown(e) {
 }
 function finale() {
   const t3 = T3(); t3.finalAt = null; t3.show = true;
+  { const rd = t3.ret && t3.ret.dun; if (rd && rd.boss && rd.boss.cleared) { lostFinale(t3); return; } } // v3.80 크루가쉬를 이미 일반 전투로 쓰러뜨린 판
   const L = [['zak', '끝내 우리를 꺾었군.'], ['gor', '이것이 얼마 만의 패배인가.'], ['utu', '음…!'], ['pl', ANC_RUMOR[G.cls] || ANC_RUMOR.knight], ['zak', '그렇다네.'], ['gor', '그래… 그럼 원하는 것이 무엇인가, 작은 자여.'], ...(ANC_ASK[G.cls] || ANC_ASK.knight).map(t => ['pl', t]), ['utu', '…그러고 보니, 그 아이의 냄새가 희미하구나.'], ['zak', '좋다. 그 바람, 들어주도록 하지.'], ['gor', '크루가쉬. 전사의 아들이여.'], /* v3.76 대사 수정 */ ['zak', '우리 피로 네 영혼을 씻는다.'], ['utu', '깨어나라. 결투는 네 것이다.']];
   SEQ = { k: 'appear3', t: 0, dur: 1.4, end: () => TRUTH.talk(L, () => { SEQ = { k: 'rise', t: 0, dur: 2.6, end: () => { t3.show = false; t3.freed = true; banner('선조의 피가 흩어졌다', '세 선조가 크루가쉬의 이름을 부르며 사라졌다'); sfx('legend'); } }; sfx('awaken'); }) };
+  sfx('awaken');
+}
+// v3.80 크루가쉬가 이미 쓰러진 판: 결투는 똑같이 · 마지막에 「해」를 물으면 선조들은 답하지 못하고 흐려지며 사라짐 (저주를 풀지 않음 · 진실 기록 없음)
+const ANC_SUN_ASK = { knight: ['{해}가 무엇인지 알려 다오.'], ranger: ['{해}.', '그게 뭔지 알려 줘.'], mage: ['{해}에 대해 알려 주세요.', '키륵도, 발도르의 주문도 그 말을 했어요.'], priest: ['{해}가 무엇인지 알려 주실 수 있을까요?'], gunner: ['주절주절거리지 말고', '{해}가 뭔지나 말해.'] };
+function lostFinale(t3) {
+  const L = [['zak', '끝내 우리를 꺾었군.'], ['gor', '이것이 얼마 만의 패배인가.'], ['utu', '음…!'], ['pl', ANC_RUMOR[G.cls] || ANC_RUMOR.knight], ['zak', '그렇다네.'], ['gor', '그래… 그럼 원하는 것이 무엇인가, 작은 자여.'], ...(ANC_SUN_ASK[G.cls] || ANC_SUN_ASK.knight).map(t => ['pl', t]),
+    ['utu', '…그 아이의 냄새가 느껴지지 않는구나.'], ['zak', '크루가쉬는 이미 쓰러졌군.'], ['gor', '우리 영혼은 피에 묶여, 그 빛을 기억하지 못한다.'], ['zak', '그것을 아는 건 저주에서 풀려난 자뿐이지.'], ['gor', '그 아이가 살아 있었다면… 답을 들었을 텐데.']];
+  SEQ = { k: 'appear3', t: 0, dur: 1.4, end: () => TRUTH.talk(L, () => { SEQ = { k: 'vanish', t: 0, dur: 2.4, end: () => { t3.show = false; t3.lost = true; banner('선조들이 흩어졌다', '세 선조가 아무 답도 남기지 못한 채 사라졌다'); sfx('blip', 0.6); } }; sfx('awaken', 0.6); }) };
   sfx('awaken');
 }
 const finalPos = k => { const [sx, sb] = STL(k); return [sx, sb + 30]; };
@@ -874,9 +883,10 @@ const finalPos = k => { const [sx, sb] = STL(k); return [sx, sb + 30]; };
 // ---------------------------------------------------------------- ⑦ ~ ⑩ 크루가쉬 (저주가 풀린 판)
 function kgIntro(b) {
   const c = G.cls, L = [['krug', '…'], ['krug', '…머리가 맑다. 피 냄새가 가셨어.'], ['pl', KG_FREED[c] || KG_FREED.knight], ['krug', '선조의 결투장을 밟고 왔군, 작은 전사.'], ['krug', '그런 건가… 이제 방해는 없는 건가.'], ['krug', '좋다. 전사여. 이제 목숨을 건 결투를 하자.'], ['pl', REFUSE[c] || REFUSE.knight], ['pl', CROWN[c] || CROWN.knight], ['krug', '…그렇군. 왕관이 궁금한 거로군.'], ['krug', '내 도끼를 꺾어라. 그럼 왕관의 비밀을 말해 주지.']];
+  { const P = P_(); try { CINE.focus(Math.round((b.x + P.x) / 2), Math.round((b.y - 30 + P.y - 12) / 2)); } catch (e) { /* 시네마 없음 */ } } // v3.80 크루가쉬와 주인공 사이를 화면 한가운데로
   // v3.76 대화가 끝나면 돌진 없이 바로 포효 + 「약속의 결투」
   TRUTH.talk(L, () => { const P = P_(), a = angTo(b, P); faceTo(b, a); bossRoar(b, '#ff4030');
-    b.kg = { ph: 'fight', t: 0 }; b.dash = null; squeezeStart(b); b.stage = 3; b.hold = false; b.state = 'recover'; b.t = 1.0; b.cd = 0.8; b.huntT = 14; b.summonT = 999; b.armorMul = 1;
+    b.kg = { ph: 'fight', t: 0 }; G.bossTime = 300; /* v3.80 남은 시간은 결투부터 */ b.dash = null; squeezeStart(b); b.stage = 3; b.hold = false; b.state = 'recover'; b.t = 1.0; b.cd = 0.8; b.huntT = 14; b.summonT = 999; b.armorMul = 1;
     banner('약속의 결투', '크루가쉬가 도끼를 들었다'); sfx('roar', 0.8); });
 }
 function kgTick(b, dt) {
@@ -889,7 +899,8 @@ function kgTick(b, dt) {
 }
 function kgDying(b, dt) { // v3.77 약속의 결투에서 짐 → 컷신(대화)으로: 잠깐 비틀거린 뒤 마지막 말(F로 넘김) → 숨이 끊어지며 무릎 꿇음(사망 장면) → 주인공 반응 → 양피지
   const D = b.kgD; D.t += dt;
-  if (D.t >= 0.6 && !D.talk) { D.talk = true;
+  if (D.t >= 0.6 && !D.kneel) { D.kneel = true; dust(b.x, b.y, 10); sfx('crunch', 0.6); } // v3.80 털썩 무릎 꿇고 숨을 몰아쉼 — 말을 걸어야(F) 마지막 말
+  if (D.go && !D.talk) { D.talk = true;
     TRUTH.talk(KG_LAST, () => { b.passKill = true; sfx('growl', 0.4); const R = curR(); if (R) R.kgFell = { t0: time, x: b.x, y: b.y, said: true }; ORIG.killEnemy(b); if (b.dead && typeof BOSSDEATH !== 'undefined') BOSSDEATH.start(b); /* v3.77 무릎 꿇는 사망 장면 (ORIG는 37_bossdeath가 감싸지 못함) */
       SEQ = { k: 'kgfall', t: 0, dur: 2.2, end: () => TRUTH.talk(((q) => q.includes('|') ? q.split('|') : q.split(/(?<=[.!?])\s+/))(KG_SUN[G.cls] || KG_SUN.knight).map(t => ['pl', t.trim()]), () => { const R2 = curR(); if (R2 && R2.kgFell) R2.kgFell.read = true; parchment(); }) }; }); }
 }
@@ -973,7 +984,7 @@ function ents(list) {
     for (const e of G.enemies) if (e.anc === 'utu' && e.m && e.m.spikes) for (const q of e.m.spikes) list.push({ y: q.y, d: () => at(q.x, q.y, 60, 60, () => boneSpike(q)) }); // v3.62
     for (const fd of t3.fades || []) list.push({ y: fd.y, d: () => at(fd.x, fd.y, 60, 60, () => drawAnc(fd.key, 60, 60, time, { face: fd.face, fade: Math.min(1, fd.t / 1.2), noAura: fd.t > 0.3 })) });
     if (t3.show) for (const k of ORDER) { const [cx, cy] = finalPos(k), p = lw(cx, cy); let vis = 0.85, fade = 0;
-      if (SEQ && SEQ.k === 'appear3') vis = Math.min(0.85, SEQ.t / 1.2); if (SEQ && SEQ.k === 'rise') fade = Math.min(1, SEQ.t / 2.2);
+      if (SEQ && SEQ.k === 'appear3') vis = Math.min(0.85, SEQ.t / 1.2); if (SEQ && (SEQ.k === 'rise' || SEQ.k === 'vanish')) fade = Math.min(1, SEQ.t / 2.2); /* v3.80 vanish: 피를 흘리지 않고 흐려짐 */
       list.push({ y: p.y, d: () => at(p.x, p.y, 60, 60, () => drawAnc(k, 60, 60, time, { face: cx < AR.cx ? 1 : cx > AR.cx ? -1 : 1, vis, fade, noAura: fade > 0.3 })) }); }
   }
 }
@@ -985,7 +996,8 @@ function top() {
   if (R.blood && SEQ && SEQ.k === 'enter') { const B = R.blood; at(B.x, B.y, 0, 0, () => bloodCircle(0, 0, 'enter', SEQ.t)); }
   if (R.kgBeam) { const K = R.kgBeam, t = time - K.t0; if (t < 3) at(K.x, K.y, 200, 260, () => beamKill(200, 260, t, 'f')); }
   if (R.type === 'boss' && G.stage === 3) { const b = G.enemies.find(e => e.kind === 'krugash' && !e.dead);
-    if (b && b.kg && b.kg.ph === 'charge') drawBubble('!!', G.player.x, G.player.y - 38, 0); }
+    if (b && b.kg && b.kg.ph === 'charge') drawBubble('!!', G.player.x, G.player.y - 38, 0);
+    if (b && b.kgD && b.kgD.kneel && !b.kgD.go && !TRUTH.busy()) drawBubble('허억... 헉...', b.x, b.y - 62, 0); } // v3.80 무릎 꿇고 숨을 몰아쉬는 동안
 }
 function lights(list) {
   const R = curR(); if (!R) return;
@@ -1004,6 +1016,8 @@ function lights(list) {
 function interact() {
   const R = curR(), P = G.player; if (!R || !P || SEQ) return null;
   if (R.blood && R.blood.x != null && R.cleared && !G.sealed && circleOn() && inBlood(R.blood, P)) return { k: 'truth', a: 'c3in', x: R.blood.x, y: R.blood.y - 40, t: 'F 원 안에 서기' };
+  if (R.type === 'boss' && G.stage === 3) { const d = G.enemies.find(e => e.kind === 'krugash' && !e.dead && e.kgD && e.kgD.kneel && !e.kgD.go); // v3.80 무릎 꿇은 크루가쉬에게 말 걸기
+    if (d && Math.hypot(P.x - d.x, (P.y - d.y) * 1.3) < 86) return { k: 'truth', a: 'c3kgL', x: d.x, y: d.y - 90, t: 'F 말 걸기' }; }
   if (R.type === 'boss' && G.stage === 3) { const b = G.enemies.find(e => e.kind === 'krugash' && !e.dead && e.kg && e.kg.ph === 'wait'); // v3.76 저주가 풀린 크루가쉬에게 말 걸기
     if (b && b.kg.t > 0.6 && Math.hypot(P.x - b.x, (P.y - b.y) * 1.3) < 86) return { k: 'truth', a: 'c3kg', x: b.x, y: b.y - 100, t: 'F 말 걸기' }; }
   if (R.type === 'ancArena') { const t3 = T3(); if (t3.duel || t3.show || t3.finalAt) return null;
@@ -1016,6 +1030,7 @@ function act(it) {
   if (it.a === 'c3in') { TRUTH.freeze(); R.blood.enterT = 0; SEQ = { k: 'enter', t: 0, dur: 1.3, end: () => { R.blood.enterT = null; enterArena(R); } }; sfx('awaken'); flashT = 0.1; flashColor = '#ff3020'; }
   else if (it.a === 'c3duel') challenge(it.key);
   else if (it.a === 'c3out') leaveArena(false);
+  else if (it.a === 'c3kgL') { const d = G.enemies.find(e => e.kind === 'krugash' && !e.dead && e.kgD && e.kgD.kneel); if (d) d.kgD.go = true; }
   else if (it.a === 'c3kg') { const b = G.enemies.find(e => e.kind === 'krugash' && !e.dead && e.kg && e.kg.ph === 'wait'); if (b) { b.kg.ph = 'talk'; kgIntro(b); } }
 }
 function spk(who) {
@@ -1049,9 +1064,14 @@ playerDie = function () {
   return ORIG.playerDie();
 };
 updateEnemy = function (e, dt) { if (e.type === 'anc') { updAnc(e, dt); return; } return ORIG.updateEnemy(e, dt); };
-drawEnemyBody = function (e) { if (e.type === 'anc') { drawAncE(e); return; } if (e.hidden) return; return ORIG.drawEnemyBody(e); };
+drawEnemyBody = function (e) { if (e.type === 'anc') { drawAncE(e); return; } if (e.kgD && e.kgD.kneel && typeof BOSSDEATH !== 'undefined' && BOSSDEATH.kneel) { BOSSDEATH.kneel(e, Math.floor(time * 2.6) % 2); return; } /* v3.80 무릎 꿇고 숨을 몰아쉼 (고개가 오르내림) */ if (e.hidden) return; return ORIG.drawEnemyBody(e); };
 spawnKrugash = function () {
-  const r = ORIG.spawnKrugash.apply(this, arguments);
+  // v3.80 저주가 풀린 크루가쉬: 등장 연출(낙하 · 먼지 · 빛기둥 · 포효 · 흔들림 · 소리) 없이 방 한가운데에서 대기 모션으로 서 있음
+  const quiet = T3().freed; let undo = null;
+  if (quiet) { const s0 = sfx, a0 = addShake, f0 = G.fx.length, p0 = G.parts.length, sm = slowmo, ft = flashT, sh = shake; sfx = () => {}; addShake = () => {};
+    undo = () => { sfx = s0; addShake = a0; G.fx.length = f0; G.parts.length = p0; slowmo = sm; flashT = ft; shake = sh; }; }
+  let r; try { r = ORIG.spawnKrugash.apply(this, arguments); } finally { if (undo) undo(); }
+  if (quiet && G.boss && G.boss.kind === 'krugash') { const q = G.boss; q.rise = 0; q.roarUntil = 0; q.grogiLock = 0; q.state = 'idle'; q.t = 0; }
   if (T3().freed && G.boss && G.boss.kind === 'krugash') { const b = G.boss; b.x = Math.round((A.x0 + A.x1) / 2); b.y = Math.round((A.y0 + A.y1) / 2); b.dir = Math.PI / 2; /* v3.76 방 한가운데에서 기다림 */ b.freed = true; b.hold = true; b.kg = { ph: 'wait', t: 0 }; b.summonT = 999; }
   return r;
 };

@@ -463,7 +463,7 @@ void main() {
   const GATE_ARW = (() => { const c = []; for (let y = -3; y <= 3; y++) for (let x = 0; x <= 3 - Math.abs(y); x++) c.push([x, y]); return c; })(); // 오른쪽(→)
   const GATE_ARW_D = (() => { const c = []; for (let y = -3; y <= 0; y++) for (let x = 0; x <= 3; x++) if (x - y >= 3) c.push([x - 1, y + 1]); return c; })(); // 오른쪽 위(↗), 직각 끝이 바깥
   function drawGateArrows() {
-    const R = G.dun && G.dun.cur, P = G.player; if (!R || !R.cleared || G.sealed || G.trans || !P || P.dead || mode !== 'play' || END.busy() || CA.busy() || G.dun.home) return; // v2.54 연출 중엔 문 화살표 없음
+    const R = G.dun && G.dun.cur, P = G.player; if (!R || !R.cleared || G.sealed || G.trans || !P || P.dead || mode !== 'play' || END.busy() || CA.busy() || G.dun.home || G.cine || (typeof CINE !== 'undefined' && CINE.k > 0) || (typeof TRUTH !== 'undefined' && TRUTH.busy())) return; // v2.54 연출 중엔 문 화살표 없음 · v3.80 컷신(대화) 중에도 숨김
     const age = time - (R.clearAt || -9); if (age < 0.4 && Math.floor(age * 20) % 2) return; // 막 열렸을 때는 깜빡이며 등장
     const step = Math.floor(time * 4) % 2 * 2, cx = P.x, cy = P.y - 10;
     for (const d in DIRS) {

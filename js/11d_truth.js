@@ -1015,7 +1015,7 @@ function ceilingDrips(t) {
   // 실험실 드나들기: 숨은 방의 던전 상태를 그대로 두고 따로 들어감
   function enterLab() {
     const D0 = G.dun, Hr = D0.cur; Hr.loot = G.loot.filter(l => l.life > 0);
-    G.labRet = { dun: D0, room: Hr };
+    G.labRet = { dun: D0, room: Hr, px: G.player.x, py: G.player.y }; // v3.80 들어올 때 자리 (웅덩이가 없는 방에서 테스트로 들어온 경우 돌아갈 자리)
     G.trans = { t: 0, dur: 0.35, phase: 'out', go: () => {
       const L = makeLab();
       G.dun = { rooms: [L], start: L, cur: null, eliteDone: 2, keys: 0, sock: [true, true], bossOpen: true, gate: null, stage: G.stage, home: true, lab: true, bx0: 0, bx1: 0, by0: 0, by1: 0 };
@@ -1029,7 +1029,7 @@ function ceilingDrips(t) {
     const r = G.labRet; if (!r) return;
     G.trans = { t: 0, dur: 0.35, phase: 'out', go: () => {
       G.dun = r.dun; G.labRet = null; enterRoom(r.room, null);
-      const p = r.room.pond; Object.assign(G.player, { x: p.x, y: p.y + 40, face: 1 }); solveObs(G.player, G.player.r);
+      const p = r.room.pond; /* v3.80 Shift+7 등 테스트로 웅덩이 없는 방에서 들어왔으면 들어온 자리로 — 웅덩이를 찾다 오류가 나 화면이 검게 멈추던 문제 */ Object.assign(G.player, p ? { x: p.x, y: p.y + 40, face: 1 } : { x: r.px != null ? r.px : CX, y: r.py != null ? r.py : CY, face: 1 }); solveObs(G.player, G.player.r);
     } };
     sfx('dodge');
   }
@@ -1246,7 +1246,7 @@ function ceilingDrips(t) {
   }
   const hidePlayer = () => !!(G && G.pHide);
 
-  return { dbgLab: enterLab, dbgJournal: giveJournal, dbgKirk: kirkAppear, talk, freeze, at, box, peek, loop2, prep1, prep2: r => TRUTH2.prep2(r), floor: (gg, R) => TRUTH2.floor(gg, R), sealHidden: (R, d) => TRUTH2.sealHidden(R, d), gatePost, slimeColor, ground, ents, lights: labLights, interact, act, tick, top, hud, busy, update, belly, paintLab, hidePlayer, makeLab, get Q() { return Q(); } };
+  return { abort: () => { DLG = null; SEQ = null; } /* v3.80 테스트 Shift+7: 대화 · 연출 강제 종료 */, dbgLab: enterLab, dbgJournal: giveJournal, dbgKirk: kirkAppear, talk, freeze, at, box, peek, loop2, prep1, prep2: r => TRUTH2.prep2(r), floor: (gg, R) => TRUTH2.floor(gg, R), sealHidden: (R, d) => TRUTH2.sealHidden(R, d), gatePost, slimeColor, ground, ents, lights: labLights, interact, act, tick, top, hud, busy, update, belly, paintLab, hidePlayer, makeLab, get Q() { return Q(); } };
   })();
 
 // ================================================================ 2장 「기사단 서약의 밀실」 (v2.59) — 그림은 시안(_작업자료/시안/기사단밀실_시안.html)과 같은 코드
