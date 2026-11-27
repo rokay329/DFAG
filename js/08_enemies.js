@@ -7,9 +7,8 @@
     const sc = Object.assign({}, phaseScale());
     const base = {
       ghoul: { hp: 60, atk: 10, def: 20, spd: 46, r: 7, kb: 1, blade: 'squire' },
-      exec: { hp: 420, atk: 19, def: 60, spd: 38, r: 12, kb: 0.25, grogiMax: 60, blade: 'headsman' }, mordred: { hp: 500, atk: 20, def: 70, spd: 40, r: 13, kb: 0.2, grogiMax: 70, blade: 'royal' }, queen: { hp: 400, atk: 17, def: 40, spd: 36, r: 11, kb: 0.3, grogiMax: 55 }, bearer: { hp: 400, atk: 18, def: 55, spd: 38, r: 11, kb: 0.25, grogiMax: 60, blade: 'pole' }, flag: { hp: 90, atk: 0, def: 0, spd: 0, r: 9, kb: 0 },
+      exec: { hp: 420, atk: 19, def: 60, spd: 38, r: 12, kb: 0.25, grogiMax: 60, blade: 'headsman' }, mordred: { hp: 500, atk: 20, def: 70, spd: 40, r: 13, kb: 0.2, grogiMax: 70, blade: 'royal' }, queen: { hp: 400, atk: 17, def: 40, spd: 36, r: 11, kb: 0.3, grogiMax: 55 }, 
       dog: { hp: 42, atk: 12, def: 10, spd: 70, r: 7, kb: 1 },
-      butcher: { hp: 380, atk: 22, def: 60, spd: 34, r: 12, kb: 0.25, grogiMax: 60 },
       ghost: { hp: 230, atk: 15, def: 40, spd: 56, r: 8, kb: 0.6 },
       cultist: { hp: 45, atk: 12, def: 10, spd: 40, r: 7, kb: 1 },
       bloat: { hp: 70, atk: 20, def: 5, spd: 30, r: 9, kb: 0.5 },
@@ -21,7 +20,6 @@
       gballista: { hp: 200, atk: 18, def: 30, spd: 0, r: 18, kb: 0 }, // v3.32 2장 거치 무기: 해골 발리스타
       ghellaltar: { hp: 180, atk: 16, def: 20, spd: 0, r: 24, kb: 0 }, // v3.34 3장 거치 무기: 지옥불 의식대
       gthrower: { hp: 36, atk: 9, def: 5, spd: 46, r: 7, kb: 1 },
-      hob: { hp: 300, atk: 16, def: 45, spd: 36, r: 12, kb: 0.3, grogiMax: 55 },
       garcher: { hp: 36, atk: 9, def: 5, spd: 46, r: 7, kb: 1 },
       weasel: { hp: 560, atk: 12, def: 30, spd: 84, r: 7, kb: 0.35, grogiMax: 45 }, // v1.65 난입자 4장
       shrewA: { hp: 300, atk: 11, def: 20, spd: 86, r: 6, kb: 0.4, grogiMax: 30 }, shrewB: { hp: 300, atk: 11, def: 20, spd: 86, r: 6, kb: 0.4, grogiMax: 30 }, // v1.63 난입자 3장 (둘이 함께)
@@ -40,8 +38,7 @@
       coffin: { hp: 300, atk: 20, def: 45, spd: 32, r: 12, kb: 0.3, grogiMax: 35 }, herald: { hp: 140, atk: 8, def: 20, spd: 50, r: 8, kb: 0.8, grogiMax: 25 },
       urg: { hp: 620, atk: 24, def: 60, spd: 40, r: 18, kb: 0.15, grogiMax: 75 }, troll: { hp: 580, atk: 22, def: 50, spd: 36, r: 20, kb: 0.15, grogiMax: 80 },
     }[type];
-    const kind = type === 'hob' ? 'hob' : null;
-    if (type === 'hob') type = 'butcher';
+    const kind = null;
     const SM = STG(); sc.hp *= SM.hpMul * ASCF.eHp(); sc.atk *= SM.atkMul * ASCF.eAtk(); // v1.96 잿불 단계
     const ne = {
       type, kind, x, y, z: 0, squash: 0, r: base.r, hp: base.hp * sc.hp, maxHp: base.hp * sc.hp, atk: base.atk * sc.atk, def: base.def, spd: base.spd, kbRes: base.kb,
@@ -60,7 +57,7 @@
   }
   function cancelTele(owner) { G.tele = G.tele.filter(t => t.owner !== owner); G.fx = G.fx.filter(f => !(f.kind === 'lob' && f.owner === owner)); }
   function alertMark(e, h, big) { G.fx.push({ kind: 'alert', o: e, h, s: big ? 3 : 2, t: 0.5, max: 0.5 }); }
-  const restAng = e => e.blade === 'boss' ? (e.face > 0 ? -70 : -110) * DEG /* v2.50 발도르: 기사처럼 칼을 세워 듦 */ : e.type === 'mordred' ? (e.face > 0 ? -128 : -52) * DEG : e.type === 'exec' ? (e.face > 0 ? -152 : -28) * DEG : e.type === 'bearer' && !e.flagRef ? (e.face > 0 ? -78 : -102) * DEG : (e.face > 0 ? 125 : 55) * DEG; // 처형인은 도끼를 어깨에, 기수는 깃대를 세워 듦
+  const restAng = e => e.blade === 'boss' ? (e.face > 0 ? -70 : -110) * DEG /* v2.50 발도르: 기사처럼 칼을 세워 듦 */ : e.type === 'mordred' ? (e.face > 0 ? -128 : -52) * DEG : e.type === 'exec' ? (e.face > 0 ? -152 : -28) * DEG : (e.face > 0 ? 125 : 55) * DEG; // 처형인은 도끼를 어깨에, 기수는 깃대를 세워 듦
 
   const INV = {};
   function invInit() {
@@ -652,7 +649,6 @@
     e.glow = 0;
     for (const t of G.tele) if (t.owner === e) e.glow = Math.max(e.glow, t.t / t.dur);
     if (e.blade) updateBlade(e, dt);
-    if (e.type === 'butcher') eliteTick(e, dt);
     if (e.type === 'slime' || e.type === 'bigslime' || e.type === 'toxslime') e.squash = Math.max(0, e.squash - dt);
     if (e.type === 'gbrute') bruteTick(e, dt);
     if (e.type === 'boar') boarTick(e, dt);
@@ -660,7 +656,7 @@
     if (e.type === 'mother') motherTick(e, dt);
     if (e.orc) orcTick(e, dt);
     if (e.rallyT > 0) { e.rallyT -= dt; if (e.rallyT <= 0 && e.rallied) { e.atk = e.atkBase; e.rallied = false; } }
-    if (e.type === 'mordred') mordredTick(e, dt); else if (e.type === 'queen') queenTick(e, dt); else if (e.type === 'exec') execTick(e, dt); else if (e.type === 'bearer') bearerTick(e, dt); else if (e.type === 'flag') flagTick(e, dt);
+    if (e.type === 'mordred') mordredTick(e, dt); else if (e.type === 'queen') queenTick(e, dt); else if (e.type === 'exec') execTick(e, dt);
     if (e.haste > 0) { e.haste -= dt; if (Math.random() < dt * 8) G.parts.push({ x: e.x + rand(-5, 5), y: e.y - rand(20, 30), vx: 0, vy: -20, t: 0.3, c: '#ff6040', g: 0, glow: true }); }
     if (e.grogiT > 0) { e.grogiT -= dt; e.bladeTarget = 90 * DEG; if (e.grogiT <= 0) e.state = 'chase'; return; }
     const d = dist(e, P), a = angTo(e, P);
@@ -710,15 +706,14 @@
     else if (e.type === 'mordred') updateMordred(e, dt, d, a, moveTo);
     else if (e.type === 'queen') updateQueen(e, dt, d, a, moveTo);
     else if (e.type === 'exec') { if (e.state === 'chase') updateExec(e, dt, d, a, moveTo); }
-    else if (e.type === 'bearer') { if (e.state === 'chase') updateBearer(e, dt, d, a, moveTo); }
-    else if (e.type === 'flag') { /* 꽂힌 깃발: 움직이지 않음 */ }
     else if (e.type === 'ghoul' || e.type === 'ghost' || e.type === 'goblin') {
       if (e.state === 'chase') {
         if (d > 22) moveTo(a, e.spd);
         else if (e.cd <= 0) {
-          // 바닥 표시 없이: 멈춰서 팔을 치켜들고 잠시 버틴 뒤 내려친다
+          // 멈춰서 팔을 치켜들고 잠시 버틴 뒤 내려친다 (v3.65 호박색 약한 예고)
           e.state = 'hold'; e.t = e.type === 'ghost' ? 0.7 : e.type === 'goblin' ? 0.55 : 0.6; e.holdMax = e.t; e.holdAng = a; if (e.blade) e.bladeTarget = a - (Math.cos(a) > 0 ? 1 : -1) * 120 * DEG;
           e.face = Math.cos(a) > 0 ? 1 : -1; e.lean = -0.2 * e.face;
+          weakTele(e, { shape: 'cone', x: e.x, y: e.y, ang: a, arc: 110 * DEG, r: e.type === 'ghost' ? 38 : 30 }, e.t, ['hold']); /* v3.65 잡몹 약한 예고 */
         }
       }
     } else if (e.type === 'dog') {
@@ -737,25 +732,6 @@
         if (!e.hitPlayer && dist(e, P) < e.r + P.r + 2) { e.hitPlayer = true; hurtPlayer(e.atk, e); }
         const bonk = dashBlocked(e); if (bonk) { solveObs(e, e.r); dust(e.x, e.y, 6); addShake(2, e.lockAng); }
         if (e.t <= 0 || bonk) { e.state = 'recover'; e.t = bonk ? 1.1 : 0.9; e.cd = rand(1.4, 2.2); }
-      }
-    } else if (e.type === 'butcher') {
-      if (e.state === 'dash') {
-        const sp = e.enraged ? 400 : 360;
-        e.x += Math.cos(e.lockAng) * sp * dt; e.y += Math.sin(e.lockAng) * sp * dt;
-        G.fx.push({ kind: 'ghost', x: e.x, y: e.y, face: e.face, rot: 0.2 * e.face, t: 0.22, max: 0.22, map: e.kind === 'hob' ? 'butcher' : 'abom', pal: 'shadeB', sc: 2, glowy: true });
-        if (Math.random() < 0.8) dust(e.x, e.y, 1);
-        if (!e.hitPlayer && dist(e, P) < e.r + P.r + 4) { e.hitPlayer = true; hurtPlayer(e.atk * 1.1, e); }
-        if (e.t <= 0 || e.x < A.x0 + e.r + 1 || e.x > A.x1 - e.r - 1 || e.y < A.y0 + e.r + 1 || e.y > A.y1 - e.r - 1 || dashBlocked(e)) {
-          solveObs(e, e.r); e.state = 'recover'; e.t = 1.0; e.cd = rand(1.0, 1.6);
-          addShake(6, e.lockAng); debris(e.x, e.y, 16); crack(e.x, e.y); sfx('blast');
-          G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 8, t: 0.4, max: 0.4, c: '#ff4030', grow: 220 });
-        }
-      } else if (e.state === 'chase') {
-        if (d > 40) moveTo(a, e.spd);
-        if (e.cd <= 0) {
-          if (d > 90 && d < 230) butcherAttack(e, a, 2);
-          else if (d <= 75) butcherAttack(e, a, e.pat === 1 ? 0 : 1);
-        }
       }
     } else if (e.type === 'cultist' || e.type === 'garcher') {
       // 피의 광신도: 거리를 벌리고 핏빛 구체를 쏜다
@@ -791,88 +767,6 @@
   }
 
   // 엘리트(도살꾼): 공격 3종 + 체력 50% 이하 격노
-  function eliteTick(e, dt) {
-    if (!e.enraged && e.hp < e.maxHp * 0.5 && !e.dead) {
-      e.enraged = true; e.spd *= 1.25;
-      G.fx.push({ kind: 'ring', x: e.x, y: e.y - 20, r: 8, t: 0.5, max: 0.5, c: '#ff3030', grow: 300 });
-      addShake(5); sfx('roar'); alertMark(e, 70, true); burst(e.x, e.y - 24, '#ff3030', 16);
-    }
-    e.lift = 0;
-    if (e.state === 'wind' && e.pat === 1) {
-      const g = e.glow;
-      e.lift = g < 0.25 ? 0 : g < 0.85 ? 26 * easeOut((g - 0.25) / 0.6) : 26 * (1 - (g - 0.85) / 0.15);
-      if (e.lift > 4 && Math.random() < 0.5) G.fx.push({ kind: 'ghost', x: e.x, y: e.y - e.lift, face: e.face, rot: 0, t: 0.2, max: 0.2, map: e.kind === 'hob' ? 'butcher' : 'abom', pal: 'shadeB', sc: 2, glowy: true });
-    }
-    e.squash = Math.max(0, (e.squash || 0) - dt);
-    // 팔: 상태마다 목표 각도, 공격 순간엔 빠르게 휘두른다
-    if (e.armA == null) { e.armA = Math.PI / 2; e.armB = Math.PI / 2; e.armTrail = []; }
-    const hang = Math.PI / 2, f = e.face;
-    let ta, tb;
-    if (e.grogiT > 0 || e.state === 'stun') { ta = hang + 0.35 * f; tb = hang - 0.25 * f; }
-    else if (e.state === 'wind' && e.pat === 0) { ta = f > 0 ? -1.05 : Math.PI + 1.05; tb = hang - 0.7 * f; }
-    else if (e.state === 'wind' && e.pat === 1) { ta = -Math.PI / 2 + 0.6 * f; tb = -Math.PI / 2 - 0.6 * f; }
-    else if (e.state === 'wind') { ta = f > 0 ? Math.PI - 0.6 : 0.6; tb = f > 0 ? Math.PI + 0.3 : -0.3; }
-    else if (e.state === 'dash') { ta = e.lockAng + Math.PI - 0.45 * f; tb = e.lockAng + Math.PI + 0.45 * f; }
-    else { const sw = Math.sin(e.walk) * 0.35; ta = hang - 0.25 * f + sw; tb = hang + 0.15 * f - sw; }
-    for (const k of ['A', 'B']) {
-      const sw = e['sw' + k];
-      if (sw) {
-        sw.t += dt; e['arm' + k] = sw.from + sw.d * easeOut(sw.t / sw.dur);
-        if (k === 'A') e.armTrail.push({ a: e.armA, t: 0.12 });
-        if (sw.t >= sw.dur) e['sw' + k] = null;
-      } else e['arm' + k] = lerpAng(e['arm' + k], k === 'A' ? ta : tb, dt * (e.state === 'wind' ? 14 : 8));
-    }
-    for (const s of e.armTrail) s.t -= dt;
-    e.armTrail = e.armTrail.filter(s => s.t > 0);
-    if (e.glow > 0 && Math.random() < 0.85) {
-      const cx = e.x + e.face * 6, cy = e.y - 26 - e.lift, a = rand(0, TAU), r = rand(16, 30);
-      G.parts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r, vx: -Math.cos(a) * r * 4, vy: -Math.sin(a) * r * 4, t: 0.22, c: pick(['#ff3030', '#ff9060', '#a01010']), g: 0, glow: true });
-    }
-    if (e.enraged && Math.random() < 0.5) G.parts.push({ x: e.x + rand(-10, 10), y: e.y - rand(10, 40), vx: rand(-6, 6), vy: -rand(25, 50), t: 0.45, c: pick(['#ff3030', '#c0c0c0']), g: 0, glow: true });
-  }
-  function armSwing(e, k, to, side, dur) {
-    const from = e['arm' + k]; let d = angDiff(to, from);
-    if (side > 0 && d < 0) d += TAU; if (side < 0 && d > 0) d -= TAU;
-    e['sw' + k] = { from, d, t: 0, dur };
-  }
-  function butcherAttack(e, a, pat) {
-    const tm = e.enraged ? 0.85 : 1, side = e.face = Math.cos(a) > 0 ? 1 : -1;
-    e.state = 'wind'; e.pat = pat; alertMark(e, 64); sfx('warn');
-    if (pat === 0) { // 피의 손톱 할퀴기
-      e.lean = -0.22 * side;
-      G.tele.push({ shape: 'cone', x: e.x, y: e.y, ang: a, arc: 150 * DEG, r: 62, t: 0, dur: 0.95 * tm, owner: e, heavy: true,
-        onFire: tt => {
-          e.lean = 0.32 * side; e.x += Math.cos(tt.ang) * 14; e.y += Math.sin(tt.ang) * 14; hitShape(tt, e.atk);
-          armSwing(e, 'A', tt.ang + side * 70 * DEG, side, 0.12); armSwing(e, 'B', tt.ang - side * 20 * DEG, side, 0.16);
-          G.fx.push({ kind: 'claw', x: e.x, y: e.y - 14, ang: tt.ang, r: 50, w: 3, c: '255,70,50', glow: true, t: 0.26, max: 0.26 });
-          G.fx.push({ kind: 'claw', x: e.x, y: e.y - 14, ang: tt.ang - 0.12 * side, r: 62, w: 2, c: '255,140,90', glow: true, t: 0.3, max: 0.3 });
-          flashT = Math.max(flashT, 0.05); flashColor = '#ff5040';
-          G.fx.push({ kind: 'claw', x: e.x, y: e.y - 14, ang: tt.ang + 0.15 * side, r: 36, w: 2, c: '255,200,180', glow: true, t: 0.2, max: 0.2 });
-          G.fx.push({ kind: 'arcwave', x: e.x, y: e.y - 6, ang: tt.ang, arc: tt.arc, r0: 18, r1: 84, t: 0.28, max: 0.28, c: '255,60,40' });
-          sparks(e.x + Math.cos(tt.ang) * 40, e.y + Math.sin(tt.ang) * 40, tt.ang, '#ff9070', 8);
-          burst(e.x + Math.cos(tt.ang) * 30, e.y - 10, '#a3161c', 10, tt.ang);
-          addShake(5, tt.ang); sfx('heavy');
-          e.state = 'recover'; e.t = 0.9; e.cd = rand(1.0, 1.6);
-        } });
-    } else if (pat === 1) { // 도약 내려찍기
-      e.lean = -0.1 * side;
-      G.tele.push({ shape: 'circle', x: e.x, y: e.y, r: 70, t: 0, dur: 1.15 * tm, owner: e, heavy: true,
-        onFire: tt => {
-          e.lift = 0; e.squash = 0.2; hitShape(tt, e.atk * 1.2);
-          armSwing(e, 'A', Math.PI / 2 + 0.4 * e.face, e.face, 0.08); armSwing(e, 'B', Math.PI / 2 - 0.2 * e.face, e.face, 0.08);
-          G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 10, t: 0.45, max: 0.45, c: '#ff4030', grow: 280 });
-          G.fx.push({ kind: 'ring', x: e.x, y: e.y, r: 6, t: 0.3, max: 0.3, c: '#ffe0d0', grow: 180 });
-          for (let i = 0; i < 6; i++) { const ang = i / 6 * TAU + rand(-0.2, 0.2); G.fx.push({ kind: 'arcwave', x: e.x, y: e.y, ang, arc: 40 * DEG, r0: 10, r1: 70, t: 0.3, max: 0.3, c: '255,120,80' }); }
-          debris(e.x, e.y, 26); dust(e.x, e.y, 26); crack(e.x, e.y); crack(e.x + rand(-14, 14), e.y + rand(-8, 8));
-          addShake(9); sfx('blast'); flashT = 0.06; flashColor = '#ff6040';
-          e.state = 'recover'; e.t = 1.1; e.cd = rand(1.0, 1.6);
-        } });
-    } else { // 광란 돌진
-      e.lockAng = a; e.lean = -0.25 * side;
-      G.tele.push({ shape: 'line', x: e.x, y: e.y, ang: a, len: 230, w: 28, t: 0, dur: 0.9 * tm, owner: e, heavy: true,
-        onFire: () => { e.state = 'dash'; e.t = 0.6; e.hitPlayer = false; sfx('whoosh'); addShake(3, a); dust(e.x, e.y, 10); } });
-    }
-  }
   function bloatBlast(x, y, r, dmg) {
     const P = G.player;
     if (!P.dead && Math.hypot(P.x - x, P.y - y) < r + P.r) hurtPlayer(dmg, null);
@@ -893,9 +787,15 @@
       if (!pr.friend && G.eng && engEproj(pr)) { pr.t = 0; continue; } // v2.41 물결 장막 · 붉은 표적판
       const ec = pr.kind === 'spear' ? ['#c8a070', '#8a6a48'] : pr.kind === 'acid' ? ['#7ac843', '#b8f080'] : pr.kind === 'bile' ? ['#9ae050', '#d8f0a0'] : pr.kind === 'rock' ? ['#5b5560', '#3a3540'] : pr.kind === 'arrow' ? ['#c8ccd4', '#8a6a48'] : pr.kind === 'quill' ? ['#e0d8c0', '#8a7a60'] : pr.kind === 'tear' ? ['#ff7a30', '#ffc070'] : pr.kind === 'crescent' ? ['#c070ff', '#f4e8ff'] : pr.kind === 'ember' ? ['#ff9a3a', '#fff0c0'] : ['#ff3040', '#ff9080'];
       if (Math.random() < (pr.kind === 'rock' || pr.kind === 'arrow' || pr.kind === 'quill' || pr.kind === 'spear' ? 0.15 : 0.6)) G.parts.push({ x: pr.x + rand(-2, 2), y: pr.y - 10 + rand(-2, 2), vx: 0, vy: -12, t: 0.3, c: pick(ec), g: 0, glow: !['rock', 'arrow', 'quill', 'spear'].includes(pr.kind) });
+      if (!pr.friend && !pr.passed && !P.dead) { // v3.63 투사체 회피 신호 · 판정: 주인공에게 닿기까지 남은 시간(tti)을 재서 퍼펙트 판정 구간이면 번쩍 · 회피를 누른 순간 0.43초 안에 닿을 투사체는 어느 쪽으로 피하든 피한 것으로
+        const dx = P.x - pr.x, dy = P.y - pr.y, ux = Math.cos(pr.ang), uy = Math.sin(pr.ang), al = dx * ux + dy * uy, lat = Math.abs(-dx * uy + dy * ux), R = pr.r + P.r;
+        const tti = al > 0 && lat < R + 2 ? Math.max(0, (al - Math.sqrt(Math.max(0, R * R - lat * lat))) / Math.max(1, pr.sp)) : 9;
+        if (P.dodgeN && pr.dn !== P.dodgeN && P.state === 'dodge') { pr.dn = P.dodgeN; if (pr.tti != null && pr.tti <= 0.43) { pr.dodged = true; if (pr.tti <= PD_WIN() && !P.perfectUsed) perfectDodge(); } }
+        pr.tti = tti; pr.warn = !pr.dodged && tti <= PD_WIN(); }
       if (pr.friend) { for (const e of G.enemies) if (!e.dead && Math.hypot(pr.x - e.x, pr.y - (e.y - 8)) < pr.r + e.r + 4) { damageEnemy(e, 1.0, { proc: true, ang: pr.ang, kb: 160, grogi: 6, gauge: 1 }); pr.t = 0; burst(pr.x, pr.y - 10, '#ffd34d', 8); break; } }
       else if (!P.dead && !pr.passed && Math.hypot(pr.x - P.x, pr.y - P.y) < pr.r + P.r) {
-        if (P.iframe > 0) { hurtPlayer(pr.dmg, null); pr.passed = true; }
+        if (pr.dodged) { pr.passed = true; } // 피한 투사체: 반투명하게 몸을 지나감
+        else if (P.iframe > 0) { hurtPlayer(pr.dmg, null); pr.passed = true; }
         else { if (pr.poison) poisonHit(null); else hurtPlayer(pr.dmg, null); // v2.50 독 투사체는 피해 없이 중독만
  pr.t = 0; burst(pr.x, pr.y - 10, ec[0], 10); G.fx.push({ kind: 'ring', x: pr.x, y: pr.y - 10, r: 4, t: 0.25, max: 0.25, c: ec[1], grow: 90 }); }
       }
@@ -1275,7 +1175,7 @@
   // ---------------------------------------------------------------- 판정
   function inShape(t, x, y, pr) {
     const dx = x - t.x, dy = y - t.y, dd = Math.hypot(dx, dy);
-    if (t.shape === 'circle') return dd <= t.r + pr;
+    if (t.shape === 'circle') return dd <= t.r + pr && !(t.inner && dd < t.inner - pr); // v3.58 도넛: 안쪽 빈 곳은 안전
     if (t.shape === 'cone') return dd <= t.r + pr && Math.abs(angDiff(Math.atan2(dy, dx), t.ang)) <= t.arc / 2 + (dd > 0 ? Math.atan(pr / Math.max(dd, 1)) : Math.PI);
     if (t.shape === 'line') {
       const ux = Math.cos(t.ang), uy = Math.sin(t.ang), along = dx * ux + dy * uy, perp = Math.abs(-dx * uy + dy * ux);
@@ -1288,7 +1188,7 @@
   const sigHit = f => { SIG_ON = true; try { f(); } finally { SIG_ON = false; } };
   function hitShape(t, dmg) { const P = G.player; if (inShape(t, P.x, P.y, P.r)) hurtPlayer(dmg, t.owner); }
 
-  const PD_WIN = () => (TOUCH.on ? 0.24 : 0.16); // v2.27 모바일 보정: 퍼펙트 회피 판정 0.24초 (PC 0.16)
+  const PD_WIN = () => (TOUCH.on ? 0.26 : 0.2); // v3.62 퍼펙트 회피 판정 PC 0.16 → 0.2초 · 모바일 0.24 → 0.26초 (구르기 · 점멸 같음)
   let GOD_MODE = false; // v2.40 테스트용 무적 (Shift+O로 켜고 끔, 새로고침하면 꺼짐)
   function hurtPlayer(raw, src, unblockable, dot) {
     if (G && G.player) G.player.idleT = 0;

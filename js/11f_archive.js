@@ -166,7 +166,7 @@ const ARCH = (() => {
     initAudio(); sfx('select'); applyClassUI();
     for (const k in pressed) pressed[k] = false;
     HOME.again = false;
-    const runs = SAVE.runs; newRun(); SAVE.runs = runs; // 원정 횟수는 세지 않는다
+    newRun(); SAVE.runs = Math.max(0, SAVE.runs - 1); // 원정 횟수는 세지 않는다 (v3.53 캐릭터별 회차)
     G.cls = cls; const A0 = arcSave();
     // 상황 대사: 결과 화면에서 들어왔을 때만
     const q = [];

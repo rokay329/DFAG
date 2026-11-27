@@ -200,7 +200,7 @@ const idle = () => S.ph === 'bet' || S.ph === 'end';
 function leave() { if (HUBMODE && idle()) parent.postMessage({ dfag: 'leave', n: S.gold }, '*'); }
 function fixBet() { while (S.bet > S.gold && BETS.indexOf(S.bet) > 0) S.bet = BETS[BETS.indexOf(S.bet) - 1]; }
 function refill() { if (!HUBMODE && S.gold < 1 && idle()) { S.gold = 10; fixBet(); } }
-function tail(bar) { if (HUBMODE) bar.appendChild(bt('ESC', '일어나기', leave)); else if (S.gold < 1) bar.appendChild(bt('R', '개다래나무 가지 칩 다시 받기 (시안용)', refill)); }
+function tail(bar) { if (HUBMODE) bar.appendChild(bt('ESC', '닫기', leave)); else if (S.gold < 1) bar.appendChild(bt('R', '개다래나무 가지 칩 다시 받기 (시안용)', refill)); }
 const cur = () => S.H[S.hi];
 const isBJ = h => S.H.length === 1 && !h.split && two21(h.c);
 function start() {

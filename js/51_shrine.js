@@ -137,7 +137,7 @@
         const E = ENG[o.k], poor = have < p;
         return `<button class="choice engC${o.done ? ' done' : ''}${poor ? ' poor' : ''}" data-c="${c}" style="--ec:${H.c};--ecd:${ENG_ICOL[c].M[2]}"><span class="engHue">${H.n}</span><span class="engSeal"><img src="${engSeal(o.k, o.done)}" data-seal="${o.k}${o.done ? '+' : ''}" alt=""></span>${o.done ? '<span class="engDone">완성</span>' : ''}<b>${E.n}</b><span class="engD">${o.done ? E.x : E.d}</span><span class="engCost"><img src="${hueURL(c)}" alt="">${p} <span style="color:#8a8494">(보유 ${have})</span></span><span class="key">${i + 1}</span></button>`; }).join('');
       $('engChoices').querySelectorAll('[data-c]').forEach(bt => bt.addEventListener('click', () => buy(bt.dataset.c)));
-      { let lv = $('shrineLeave'); if (!lv) { lv = document.createElement('button'); lv.id = 'shrineLeave'; lv.className = 'shrineLeave'; lv.textContent = '떠나기 (Esc)'; lv.addEventListener('click', close); $('engChoices').after(lv); } lv.style.display = ''; } // 카드 줄 아래
+      { let lv = $('shrineLeave'); if (!lv) { lv = document.createElement('button'); lv.id = 'shrineLeave'; lv.className = 'pbtn shrineLeave'; lv.innerHTML = '닫기 <span class="key kc">ESC</span>'; lv.addEventListener('click', close); $('engChoices').after(lv); } lv.style.display = ''; } // 카드 줄 아래
       $('ovEng').classList.add('on');
     }
     function close() { $('ovEng').classList.remove('on'); { const lv = $('shrineLeave'); if (lv) lv.style.display = 'none'; } if (mode === 'shrine') mode = 'play'; for (const k in pressed) pressed[k] = false; }

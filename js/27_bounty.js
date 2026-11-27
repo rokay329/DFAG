@@ -197,7 +197,7 @@ const BOUNTY = (() => {
     if (el) return el; css();
     el = document.createElement('div'); el.className = 'ov'; el.id = 'ovBounty';
     el.innerHTML = `<div class="pf win bntWin"><h2>단군의 의뢰 게시판</h2><div class="bntSub">수수료는 의뢰당 은화 20개라냥!</div><div class="bntTabs"></div><div class="bntStage"></div>
-      <div class="bntKeys"><span><span class="key">←</span><span class="key">→</span>넘기기</span><span><span class="key">F</span><span class="key">ESC</span>닫기</span></div></div>`;
+      <div class="bntKeys"><span><span class="key">←</span><span class="key">→</span>탭</span><span><span class="key">F</span><span class="key">ESC</span>닫기</span></div></div>`;
     (document.getElementById('ovPop') || document.body).parentNode.appendChild(el);
     el.addEventListener('click', e => { const t = e.target.closest('.bntTab'); if (t) { cur = +t.dataset.i; sfx('blip'); render(); } else if (e.target === el) close(); });
     return el;

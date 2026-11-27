@@ -884,7 +884,7 @@
       drawGearIcon(it, l.x, l.y - hover + 1);
       return;
     }
-    if (l.type === 'sealkey') { drawSealKey(l, l.x, l.y - hover + 1); return; }
+    if (l.type === 'sealkey') { if (typeof KEYFX !== 'undefined') KEYFX.sealKey(l, l.x, l.y - hover + 1); else drawSealKey(l, l.x, l.y - hover + 1); return; } // v3.82 바닥의 봉인 해제 아이템 강조
     if (l.type === 'relic' && l.relic && RELIC_ART[l.relic]) { drawSprite('relic_' + l.relic, 'relic_' + l.relic, 2, l.x, l.y - hover + 1, false); return; } // v2.21 유물별 도트
     drawSprite(L.map, L.pal || 'loot', L.sc, l.x, l.y - hover + 1, false);
   }

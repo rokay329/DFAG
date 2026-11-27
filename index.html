@@ -355,8 +355,7 @@
   .engC .engCost img { width: 18px; height: 18px; image-rendering: pixelated; }
   .engC.poor { opacity: .45; cursor: not-allowed; } .engC.poor .engCost { color: #ff7a6a; }
   .engC.none { opacity: .35; cursor: default; }
-  .shrineLeave { display: block; margin: 14px auto 0; padding: 6px 18px; background: #231f29; color: #bfb8c8; border: 2px solid #3a3444; font: inherit; font-size: 12px; cursor: pointer; }
-  .shrineLeave:hover { color: #fff; border-color: #6a6474; }
+  .shrineLeave { display: block; margin: 14px auto 0; } /* v3.53 다른 시설과 같은 pbtn 단추 (닫기 + ESC 키캡) */
   .engC b { color: var(--ec); font-size: 13px; text-shadow: 0 2px 0 #000; margin-bottom: 4px; }
   .engC .engD { display: block; word-break: keep-all; font-size: 11px; line-height: 15px; color: #bfb8c8; min-height: 45px; }
   .engC .key { display: inline-block; margin-top: 6px; }
@@ -757,7 +756,7 @@
         </div>
         <div class="row" style="justify-content:space-between">
           <div class="row fgAct" style="margin:0" id="fgEqRow"></div>
-          <button class="pbtn" id="fgClose">돌아가기 <span class="key kc">ESC</span></button>
+          <button class="pbtn" id="fgClose">닫기 <span class="key kc">ESC</span></button>
         </div>
       </div>
     </div>
@@ -778,7 +777,7 @@
         <p class="exSay" id="denSay"></p>
         <div class="choices" id="denCh"></div>
         <p class="exMsg" id="denMsg"></p>
-        <div class="row" style="justify-content:space-between;align-items:center"><span class="f7" style="color:var(--quiet)">개다래나무 가지 칩은 2스테이지를 벗어나면 모두 사라집니다.</span><button class="pbtn" id="denClose">돌아가기 <span class="key kc">ESC</span></button></div>
+        <div class="row" style="justify-content:space-between;align-items:center"><span class="f7" style="color:var(--quiet)">개다래나무 가지 칩은 2스테이지를 벗어나면 모두 사라집니다.</span><button class="pbtn" id="denClose">닫기 <span class="key kc">ESC</span></button></div>
       </div>
     </div>
 
@@ -989,6 +988,11 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="js/71_informant.js"></script>
 <script src="js/72_cinema.js"></script>
 <script src="js/73_baldor_free.js"></script>
+<script src="js/74_notebook.js"></script>
+<script src="js/75_cultboss.js"></script>
+<script src="js/76_weaktele.js"></script>
+<script src="js/77_clue.js"></script>
+<script src="js/78_keyfx.js"></script>
 <!-- v3.37 성벽 공격 구멍 뺌 (사용자 결정: 난잡함) · 파일 js/66_wallholes.js 는 남겨 둠 -->
 </body>
 </html>

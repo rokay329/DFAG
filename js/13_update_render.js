@@ -65,7 +65,7 @@
       const first = !A.unl.includes(L); if (first) A.unl.push(L);
       { const bonus = 50 * L + (ascOn(6) ? Math.round(G.gold * 0.4) : 0); if (bonus) { SAVE.gold += bonus; G.ascBonus = bonus; } } // v1.97 클리어 정산 골드 · 궁핍 정산
       if (first && ASC_FIRST[L]) { const f = ASC_FIRST[L]; SAVE.gold += f.gold || 0; SAVE.mats.iron += f.iron || 0; SAVE.mats.crystal += f.crystal || 0; G.ascFirst = f; } // v1.97 첫 돌파 꾸러미
-      if (L >= A.max && A.max < ASC_MAX) { A.max = L + 1; A.sel = A.max; ascMsg = L === 0 ? ` · 잿불 단계가 열렸다 (잿불 1 — ${ASC[1].n})` : ` · 잿불 ${L} 돌파 — 잿불 ${L + 1}(${ASC[L + 1].n})이 열렸다`; }
+      if (L >= A.max && A.max < ASC_MAX) { A.max = L + 1; A.sel = A.max; ascMsg = L === 0 ? ` · 잿불 단계가 열렸습니다 (잿불 1 — ${ASC[1].n})` : ` · 잿불 ${L} 돌파 — 잿불 ${L + 1}(${ASC[L + 1].n})이 열렸습니다`; }
       else if (L > 0) ascMsg = ` · 잿불 ${L} 돌파`; }
     persist();
     resultShowAll = false;
@@ -73,14 +73,14 @@
     { let n = $('resNight'); if (!n) { n = document.createElement('div'); n.id = 'resNight'; n.style.cssText = 'font-size:11px;color:#a89a84;letter-spacing:1px;margin-bottom:2px'; $('resTitle').before(n); } n.textContent = `영원한 어둠의 땅 · ${SAVE.runs}번째 밤`; } // v3.23 회차 = 밤
     $('resTitle').style.color = win ? 'var(--gold-l)' : '#ff7070';
     const chMsg = newChronicle ? ` · [전서 기록: ${newChronicle.label}]` : '';
-    $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸다 — 다음 원정은 STAGE 3까지 이어진다' : '다음 원정은 다시 빈손으로 시작한다'}${ascMsg}${chMsg}` : `${failPlace()}에서 ${quit ? '원정을 포기했다' : '쓰러졌다'} · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었다`;
+    $('resSub').textContent = win ? `STAGE ${Array.from({ length: G.stage }, (_, i) => i + 1).join(' · ')} 돌파 · 처치 수 ${G.kills} · ${opened ? '오크 부락이 열렸습니다 — 다음 원정은 STAGE 3까지 이어집니다' : '다음 원정은 다시 빈손으로 시작합니다'}${ascMsg}${chMsg}` : `${failPlace()}에서 ${quit ? '원정을 포기했습니다' : '쓰러졌습니다'} · 장비 ${G.lostItems}개와 모든 재료·골드를 잃었습니다`;
     if (G.newUnl && G.newUnl.length) $('resSub').textContent += ' · 새로 열림: ' + G.newUnl.map(id => { const u = UNLOCKS.find(x => x.id === id); if (id.startsWith('w:')) { const [, c, i] = id.split(':'), W0 = wcat(c)[+i]; return `${GRADES.find(x => x.k === W0.grade).n} 무기 「${W0.name}」`; } return u && u.kind === 'r' ? RELICS[u.key].n : id; }).join(', ') + ' (코코아의 기록 보관소)'; // v2.29
     renderResultItems(win);
     $('ovResult').classList.add('on');
   }
   function renderResultItems(win) {
     const list = !win ? [] : resultShowAll ? SAVE.inv.slice().reverse() : [...G.newItems, ...G.fieldItems];
-    $('resItems').innerHTML = list.length ? list.map(it => itemCard(it, true, !resultShowAll)).join('') : `<p>${!win ? '남은 장비가 없다.' : resultShowAll ? '보유 장비가 없다.' : '획득한 장비가 없다.'}</p>`;
+    $('resItems').innerHTML = list.length ? list.map(it => itemCard(it, true, !resultShowAll)).join('') : `<p>${!win ? '남은 장비가 없습니다.' : resultShowAll ? '보유 장비가 없습니다.' : '획득한 장비가 없습니다.'}</p>`;
     $('resMats').innerHTML = win ? `이번 런 — 골드 ${G.gold} · 철광석 조각 ${G.iron} · 정령의 결정 ${G.crystal} · 현장 장비 ${G.fieldItems.length}${G.ascBonus ? ` · <span style="color:#ffb040">잿불 정산 골드 +${G.ascBonus}</span>` : ''}${G.ascFirst ? ` · <span style="color:#ffb040">첫 돌파 꾸러미 ${[G.ascFirst.gold && `골드 ${G.ascFirst.gold}`, G.ascFirst.iron && `철광석 ${G.ascFirst.iron}`, G.ascFirst.crystal && `결정 ${G.ascFirst.crystal}`].filter(Boolean).join(' · ')}</span>` : ''}` : `<span style="color:#ff7070">잃음 — 골드 ${G.gold} · 철광석 조각 ${G.iron} · 정령의 결정 ${G.crystal} · 장비 ${G.lostItems}</span>`;
     $('resStats').textContent = statLine();
     $('btnInv').textContent = resultShowAll ? '이번 획득만 보기' : `장비 전체 보기 (${SAVE.inv.length})`;
@@ -154,7 +154,7 @@
   function updateCamera(dt, snap) {
     const P = G.player;
     // v1.07: 카메라는 캐릭터에 딱 붙음 (늦게 따라가며 미끄러지던 것·조준 방향 쏠림 제거). 보스전에서 보스 쪽 15% 보정만 천천히 바뀜
-    const bk = snap ? 1 : Math.min(1, dt * 2.5), bxT = G.boss && !G.boss.dead ? (G.boss.x - P.x) * 0.15 : 0, byT = G.boss && !G.boss.dead ? (G.boss.y - P.y) * 0.15 : 0;
+    const bk = snap ? 1 : Math.min(1, dt * 2.5), bxT = G.boss && !G.boss.dead ? (G.boss.x - P.x) * (G.boss.camK || 0.15) : 0, byT = G.boss && !G.boss.dead ? (G.boss.y - P.y) * (G.boss.camK || 0.15) : 0; /* v3.53 camK: 보스마다 보정 (교주 2페이즈 0.5) */
     cam.bx = (cam.bx || 0) + (bxT - (cam.bx || 0)) * bk; cam.by = (cam.by || 0) + (byT - (cam.by || 0)) * bk;
     let tx = P.x - SAFE.cx + cam.bx, ty = P.y - 10 - SAFE.cy + cam.by;
     { const OW = (typeof OUT2 !== 'undefined' && OUT2.wide && OUT2.wide()) || (typeof OUT3 !== 'undefined' && OUT3.wide && OUT3.wide()) || (typeof OUT4 !== 'undefined' && OUT4.wide && OUT4.wide()) /* v3.26 3장 고원 구름다리도 */ /* v3.26 2장 벽 바깥: 오른쪽 · 아래도 판석 턱과 다리까지 보이게 (왼쪽과 같은 여유) */, x0 = A.x0 - 136, x1 = A.x1 + (OW ? 136 : 16) - VW, y0 = A.y0 - ((typeof RUIN !== 'undefined' && RUIN.camTop && RUIN.camTop()) /* v3.21 교단 본거지: 윗벽 태피스트리까지 보이게 */ || (G.stage === 3 && G.dun && G.dun.cur && G.dun.cur.type === 'boss' ? 150 : 100)), y1 = A.y1 + (OW ? (((typeof OUT3 !== 'undefined' && OUT3.wide && OUT3.wide()) || (typeof OUT4 !== 'undefined' && OUT4.wide && OUT4.wide())) ? 150 : 120) : 88) - VH; /* v3.26 3장: 벼랑이 구름에 잠기는 데까지 */
@@ -213,6 +213,7 @@
     if (dbgK('sd6', '선조의 결투장 드나들기 (3장 아니면 3장으로 건너뛴 뒤)') && !G.clear) TRUTH3.debugAnc(); // v3.54 테스트
     if (dbgK('c', '용의 유적 드나들기') && !G.clear && !G.trans && !G.cine) RUIN.debugEnter(); // v3.20 테스트: 용의 유적으로 (Shift+C · 안에서 다시 누르면 나옴)
     if (dbgK('j', '교단의 갱도로 바로 가기') && !G.clear && !G.trans && !G.cine) RUIN.debugMine(); // v3.20 테스트: 갱도 (유적 밖이면 유적에 들어간 뒤 갱도로)
+    if (dbgK('l', '불꽃 비늘 교주 전투 (지하 석실로 → 말 걸기 → 페이즈 넘기기)') && !G.clear && !G.trans && !G.cine) CULTB.debug(); // v3.53 테스트
     if (dbgK('k', '교단 본거지로 (누를 때마다 앞 홀 → 교주의 방 → 지하 석실)') && !G.clear && !G.trans && !G.cine) RUIN.debugCult(); // v3.21 테스트
     if (dbgK('u', '안전 놀이터로') && !G.clear && !G.trans && !G.cine) DEN.debugEnter(); // v3.17 테스트: 영수 명수의 안전 놀이터로 (Shift+U)
     if (dbgK('x', '각성 게이지 가득')) { const P = G.player; if (P && !P.dead) { P.gauge = 100; lootFeed('테스트 — 각성 게이지 가득 (Shift+X)', '#ffd76a', 2500); sfx('blip'); } } // v3.16 테스트: 각성 게이지 채우기
@@ -234,7 +235,7 @@
     ascTick(dt); // v1.96 잿빛 왕관
     updatePressure(dt);
     updateRoom(dt);
-    TRUTH.tick(dt); DEN.tick(dt); RUIN.tick(dt); BDC.tick(dt); // v2.58 · v3.17 안전 놀이터
+    TRUTH.tick(dt); DEN.tick(dt); RUIN.tick(dt); BDC.tick(dt); CULTB.tick(dt); /* v3.53 교주 전투 */ // v2.58 · v3.17 안전 놀이터
     updateCamera(dt);
     updateProj(dt);
     const fxE0 = G.fx.length, ptE0 = G.parts.length; // v2.28 적이 만든 이펙트 표시 (반격 시간 흑백용)
@@ -264,6 +265,7 @@
     squeezeTick(dt); // v2.40 크루가쉬 3단계 방책
     engTick(dt); engTryOpen(); // v2.41 빛의 각인
     G.tele = G.tele.filter(t => !t.oa || (t.owner && !t.owner.dead && t.owner.state === 'seq'));
+    G.tele = G.tele.filter(t => !t.oSt || (t.owner && !t.owner.dead && t.oSt.includes(t.owner.state))); /* v3.65 공격이 끊기면 예고도 지움 */
     for (const t of G.tele) {
       t.t += dt * (t.owner && t.owner.type === 'boss' ? ASCF.bossTele() : 1) * (t.owner ? stScale(t.owner) : 1) * engTeleRate(t); // v1.96 왕의 분노 · v2.03 둔화·기절이면 예고도 같이
       if (t.pin) { const Q = t.owner && t.owner.air; if (Q) { t.x = Q.x1; t.y = Q.y1; } }
@@ -307,7 +309,8 @@
   // 텔레그래프: 바닥(어둠 아래) + 발광(조명 위) 두 단계로 그린다
   function telePath(t, k = 1) {
     ctx.beginPath();
-    if (t.shape === 'circle') ctx.arc(t.x, t.y, Math.max(0.1, t.r * k), 0, TAU);
+    if (t.shape === 'circle' && t.inner) { ctx.arc(t.x, t.y, Math.max(0.1, t.inner + (t.r - t.inner) * k), 0, TAU); ctx.moveTo(t.x + t.inner, t.y); ctx.arc(t.x, t.y, t.inner, TAU, 0, true); } // v3.58 도넛 (몸 쪽이 빈 원)
+    else if (t.shape === 'circle') ctx.arc(t.x, t.y, Math.max(0.1, t.r * k), 0, TAU);
     else if (t.shape === 'cone') { ctx.moveTo(t.x, t.y); ctx.arc(t.x, t.y, Math.max(0.1, t.r * k), t.ang - t.arc / 2, t.ang + t.arc / 2); ctx.closePath(); }
     else if (t.shape === 'line') {
       const ux = Math.cos(t.ang), uy = Math.sin(t.ang), nx = -uy * t.w / 2, ny = ux * t.w / 2, L = t.len * k;
@@ -316,7 +319,7 @@
   }
   function teleFront(t, p) {
     ctx.beginPath();
-    if (t.shape === 'circle') ctx.arc(t.x, t.y, Math.max(0.1, t.r * p), 0, TAU);
+    if (t.shape === 'circle') ctx.arc(t.x, t.y, Math.max(0.1, t.inner ? t.inner + (t.r - t.inner) * p : t.r * p), 0, TAU);
     else if (t.shape === 'cone') ctx.arc(t.x, t.y, Math.max(0.1, t.r * p), t.ang - t.arc / 2, t.ang + t.arc / 2);
     else if (t.shape === 'line') { const ux = Math.cos(t.ang), uy = Math.sin(t.ang), cx = t.x + ux * t.len * p, cy = t.y + uy * t.len * p; ctx.moveTo(cx - uy * t.w / 2, cy + ux * t.w / 2); ctx.lineTo(cx + uy * t.w / 2, cy - ux * t.w / 2); }
   }
@@ -357,6 +360,7 @@
       ctx.restore(); return;
     }
     if (t.mark) { drawMarkTele(t, p); ctx.restore(); return; }
+    if (t.weak) { drawWeakTele(t, p); ctx.restore(); return; }
     if (isBossTele(t)) { drawBossTele(t, p); ctx.restore(); return; }
     const col = t.mark ? '120,30,170' : '170,10,20';
     ctx.fillStyle = `rgba(${col},${0.22 + 0.16 * p})`; telePath(t); ctx.fill();
@@ -465,6 +469,7 @@
     if (t.shape === 'spawn') return;
     if (t.shape === 'line' && !t.fading) { t.fading = true; withLineFade(t, () => drawTeleGlow(t)); t.fading = false; return; }
     if (t.mark) return drawMarkGlow(t, clamp(t.t / t.dur, 0, 1));
+    if (t.weak) return drawWeakGlow(t, clamp(t.t / t.dur, 0, 1));
     if (isBossTele(t)) return drawBossTeleGlow(t, clamp(t.t / t.dur, 0, 1));
     const p = clamp(t.t / t.dur, 0, 1), near = p > 0.72;
     const flick = near ? (Math.floor(time * 24) % 2 ? 1 : 0.35) : 0.75 + Math.sin(time * 10) * 0.25;
@@ -599,78 +604,6 @@
     if (zb) { cells.set(Math.round(E.x) + ',' + (Math.round(E.y) + Math.ceil(th / 2)), 'b'); const wx = Math.round((E.x + Hh.x) / 2), wy = Math.round((E.y + Hh.y) / 2); cells.set(wx + ',' + wy, 'a'); }
     let mx = 1e9, my = 1e9, Mx = -1e9, My = -1e9; for (const k of cells.keys()) { const [x, y] = k.split(',').map(Number); mx = Math.min(mx, x); my = Math.min(my, y); Mx = Math.max(Mx, x); My = Math.max(My, y); }
     return (limbCache[key] = cellWeapon(Mx - mx + 3, My - my + 3, 1 - mx, 1 - my, C, put => { for (const [k, c] of cells) { const [x, y] = k.split(',').map(Number); put(x + 1 - mx, y + 1 - my, c); } }));
-  }
-  function drawArm(x, y, ang, len, w, white, back, pal) { drawBlade(cellLimb('arm', pal || 'butcher', len, w, back), x, y, ang, 1, white); }
-  function drawArmOld(x, y, ang, len, w, white, back, pal) {
-    const P = PAL[pal || 'butcher'], skin = white ? '#ffffff' : back ? P.S : P.s;
-    ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.rotate(ang);
-    ctx.fillStyle = P.k; ctx.fillRect(-2, -w / 2 - 1, len + 2, w + 2);
-    ctx.fillStyle = skin; ctx.fillRect(-1, -w / 2, len, w);
-    if (!white) {
-      ctx.fillStyle = back ? '#5a4036' : '#d0a892'; ctx.fillRect(-1, -w / 2, len, 1);
-      ctx.fillStyle = P.c; ctx.fillRect(len - 10, -w / 2 - 1, 2, w + 2); ctx.fillRect(len - 6, -w / 2 - 1, 2, w + 2);
-      ctx.fillStyle = P.C; ctx.fillRect(len - 8, -w / 2 - 1, 2, w + 2);
-    }
-    ctx.fillStyle = P.k; ctx.fillRect(len - 1, -w / 2 - 2, 9, w + 4);
-    ctx.fillStyle = skin; ctx.fillRect(len, -w / 2 - 1, 7, w + 2);
-    if (!white) { ctx.fillStyle = P.k; ctx.fillRect(len + 3, -w / 2, 1, w); ctx.fillStyle = P.b; ctx.fillRect(len + 4, -w / 2 - 1, 3, 2); ctx.fillRect(len + 1, w / 2 - 1, 2, 2); }
-    ctx.restore();
-  }
-  // 누더기 거인 팔: 위팔 → 팔꿈치(뼈가 비죽) → 아래팔 → 길게 뻗은 손가락. 꿰맨 자국과 썩은 상처
-  function drawZombieArm(x, y, ang, len, white, back) { drawBlade(cellLimb('zombie', 'abom', len + 4, 8, back), x, y, ang, 1, white); }
-  function drawZombieArmOld(x, y, ang, len, white, back) {
-    const P = PAL.abom, skin = white ? '#ffffff' : back ? '#4e564a' : P.s, dark = white ? '#ffffff' : back ? '#363c34' : P.S, hi = white ? '#ffffff' : back ? '#5e665a' : '#a8b09c';
-    const hx = x + Math.cos(ang) * len, hy = y + Math.sin(ang) * len;
-    let px = -Math.sin(ang), py = Math.cos(ang); if (py < 0) { px = -px; py = -py; }
-    const ex = (x + hx) / 2 + px * 4, ey = (y + hy) / 2 + py * 4;
-    const seg = (x0, y0, x1, y1, w, col) => { const L = Math.hypot(x1 - x0, y1 - y0); ctx.save(); ctx.translate(Math.round(x0), Math.round(y0)); ctx.rotate(Math.atan2(y1 - y0, x1 - x0)); ctx.fillStyle = col; ctx.fillRect(-1, -w / 2, L + 2, w); ctx.restore(); };
-    // 윤곽
-    seg(x, y, ex, ey, 9, P.k); seg(ex, ey, hx, hy, 7, P.k);
-    // 위팔 (굵고 축 늘어짐) · 아래팔 (말라붙어 가늘다)
-    seg(x, y, ex, ey, 7, skin); seg(ex, ey, hx, hy, 5, skin);
-    if (!white) {
-      seg(x, y, ex, ey, 2, hi); seg(ex, ey, hx, hy, 1, hi);
-      const ux = (ex - x), uy = (ey - y);
-      ctx.fillStyle = dark; ctx.fillRect(Math.round(x + ux * 0.6 + px * 2), Math.round(y + uy * 0.6 + py * 2), 3, 2);
-      ctx.fillStyle = P.c; // 꿰맨 자국
-      for (const t of [0.35, 0.6]) { const sx = Math.round(x + ux * t), sy = Math.round(y + uy * t); ctx.fillRect(sx - 1, sy - 2, 1, 4); ctx.fillRect(sx - 2, sy - 1, 3, 1); ctx.fillRect(sx - 2, sy + 1, 3, 1); }
-      const fx = ex + (hx - ex) * 0.45, fy = ey + (hy - ey) * 0.45; // 썩은 상처
-      ctx.fillStyle = P.A; ctx.fillRect(Math.round(fx) - 1, Math.round(fy) - 1, 3, 3); ctx.fillStyle = P.a; ctx.fillRect(Math.round(fx), Math.round(fy) - 1, 2, 2);
-      ctx.fillStyle = P.k; ctx.fillRect(Math.round(ex + px * 3) - 1, Math.round(ey + py * 3) - 1, 4, 4); ctx.fillStyle = P.b; ctx.fillRect(Math.round(ex + px * 3), Math.round(ey + py * 3), 2, 2); // 팔꿈치 뼈
-    }
-    // 손: 손바닥 + 길게 갈라진 손가락 3개, 끝은 뼈가 드러난 손톱
-    ctx.fillStyle = P.k; ctx.fillRect(Math.round(hx) - 3, Math.round(hy) - 3, 7, 7);
-    ctx.fillStyle = skin; ctx.fillRect(Math.round(hx) - 2, Math.round(hy) - 2, 5, 5);
-    for (const off of [-0.45, 0, 0.45]) {
-      const a2 = ang + off, L2 = off ? 6 : 8, tx = hx + Math.cos(a2) * L2, ty = hy + Math.sin(a2) * L2;
-      seg(hx, hy, tx, ty, 3, P.k); seg(hx, hy, tx, ty, 1.4, skin);
-      if (!white) { ctx.fillStyle = P.b; ctx.fillRect(Math.round(tx) - 1, Math.round(ty) - 1, 2, 2); }
-    }
-  }
-  function drawButcher(e, ya, al) {
-    const white = e.flash > 0, lf = e.lift || 0;
-    const hobM = e.kind === 'hob'; // v1.37 고블린 대장: 몸통·다리를 따로, 웅크림·착지는 칸 단위로 내려앉음 (늘이기 제거)
-    let hbob = 0, hlL = 0, hlR = 0;
-    if (hobM) { if (e.state === 'chase') { const ph = Math.floor(e.walk * 0.9) % 4; if (ph === 0) hlL = -2; else if (ph === 2) hlR = -2; else hbob = 2; }
-      if (e.state === 'wind' && e.pat === 1 && e.glow < 0.25) hbob = e.glow < 0.12 ? 2 : 4;
-      if (e.state === 'wind' && e.pat === 2) { hbob = 2; if (Math.floor(time * 9) % 2) hlR = -2; }
-      if (e.state === 'dash') { if (Math.floor(time * 12) % 2) { hlL = -2; } else { hlR = -2; hbob = -2; } }
-      if (e.squash > 0) hbob = e.squash > 0.1 ? 4 : 2; }
-    const sq = hobM ? 1 : e.squash > 0 ? 1 - 0.2 * (e.squash / 0.2) : 1 + Math.sin(e.walk * 2) * 0.03;
-    const sx = hobM ? 1 : e.squash > 0 ? 1 + 0.18 * (e.squash / 0.2) : 1;
-    const crouch = hobM ? 1 : e.state === 'wind' && e.pat === 1 && e.glow < 0.25 ? 1 - 0.14 * (e.glow / 0.25) : 1;
-    const tr = e.enraged ? rand(-0.6, 0.6) : 0;
-    drawShadow(e.x, e.y + 2, 17 - Math.min(7, lf * 0.3));
-    const bp = e.kind === 'hob' ? 'hob' : 'abom';
-    // 어깨는 큰 머리 바깥쪽 몸통 끝에 (v0.60: 팔을 들 때 머리 옆에 붙어 보이던 문제)
-    const by0 = e.y + 2 + ya - lf, by = by0 + hbob, shY = by - (bp === 'hob' ? 21 : 22) * sq * crouch, so = bp === 'hob' ? 11 : 12;
-    const fx = e.x + e.face * so + tr, bx = e.x - e.face * so + tr;
-    if (e.armTrail && e.armTrail.length > 1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; enemyTrail(e, e.armTrail, fx, shY, 8, 30, '255,60,40', true); ctx.restore(); }
-    if (bp === 'abom') drawZombieArm(bx, shY, e.armB, 20, white, true); else drawArm(bx, shY, e.armB, 20, 5, white, true, bp);
-    if (hobM) { const ro = e.lean + (e.grogiT > 0 ? 0.25 * e.face : 0); drawSprite('hbLegL', 'hob', 2, e.x + tr, by0 + hlL, e.face < 0, { white, rot: ro, alpha: al }); drawSprite('hbLegR', 'hob', 2, e.x + tr, by0 + hlR, e.face < 0, { white, rot: ro, alpha: al }); drawSprite('hbBody', 'hob', 2, e.x + tr, by, e.face < 0, { white, rot: ro, alpha: al }); }
-    else drawSprite('abom', bp, 2, e.x + tr, by, e.face < 0, { white, rot: e.lean + (e.grogiT > 0 ? 0.25 * e.face : 0), alpha: al, sx, sy: sq * crouch });
-    if (bp === 'abom') drawZombieArm(fx, shY, e.armA, 20, white, false); else drawArm(fx, shY, e.armA, 20, 5, white, false, bp);
-    if (e.grogiT > 0) { for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(by - 50 + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); } }
   }
   // ---------- 버프 상태 표시 (v0.92): 타원 선 하나 대신 2px 도트 이펙트
   //  보호막(발도르 망령 방벽 · 주술사 피의 방벽 · 의식 방벽) = 격자 무늬 돔 + 위로 훑는 빛 + 도는 룬 + 맞으면 번쩍, 줄면 금이 감

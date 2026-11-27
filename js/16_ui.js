@@ -648,9 +648,9 @@
       $('bossfill').style.width = `${clamp(b.hp / b.maxHp, 0, 1) * 100}%`;
       $('bossback').style.width = `${clamp(b.hpBack / b.maxHp, 0, 1) * 100}%`;
       $('grogifill').style.width = `${!b.grogiMax ? 0 : b.grogiT > 0 ? (b.grogiT / 5) * 100 : (b.grogi / b.grogiMax) * 100}%`;
-      $('bossTime').textContent = b.dead ? '처치' : b.type === 'anc' ? b.duelTxt /* v2.84 */ : `남은 시간 ${Math.floor(Math.max(0, G.bossTime) / 60)}:${String(Math.floor(Math.max(0, G.bossTime) % 60)).padStart(2, '0')}`;
-      $('bossStage').textContent = b.dead ? '' : b.type === 'anc' ? b.title : b.grogiT > 0 ? '그로기!' : b.kind === 'ashking' ? ['재의 왕', '대관식', b.fell ? '몰락' : '타오르는 왕'][b.stage - 1] : b.stage === 3 ? (b.kind === 'slimeking' ? '폭주' : b.kind === 'krugash' ? '피의 광란' : '광폭화') : b.armorMul && b.armorMul < 1 ? '2단계 · 북의 가호' : `${b.stage}단계`;
-      $('shieldtag').style.display = b.shield && !b.dead ? 'inline' : 'none';
+      $('bossTime').textContent = b.dead ? '처치' : b.kind === 'cultlead' ? (b.barTxt || '') : b.type === 'anc' ? b.duelTxt /* v2.84 */ : `남은 시간 ${Math.floor(Math.max(0, G.bossTime) / 60)}:${String(Math.floor(Math.max(0, G.bossTime) % 60)).padStart(2, '0')}`;
+      $('bossStage').textContent = b.dead ? '' : b.kind === 'cultlead' ? (b.stageTxt || '') : b.type === 'anc' ? b.title : b.grogiT > 0 ? '그로기!' : b.kind === 'ashking' ? ['재의 왕', '대관식', b.fell ? '몰락' : '타오르는 왕'][b.stage - 1] : b.stage === 3 ? (b.kind === 'slimeking' ? '폭주' : b.kind === 'krugash' ? '피의 광란' : '광폭화') : b.armorMul && b.armorMul < 1 ? '2단계 · 북의 가호' : `${b.stage}단계`;
+      $('shieldtag').style.display = b.shield && !b.dead && b.kind !== 'cultlead' ? 'inline' : 'none'; /* v3.53 교주는 보호막 설명 없음 (팅팅 소리로 알림) */
     }
   }
 
@@ -726,7 +726,7 @@
     else if (act === 'popClose') closePop();
     else if (act === 'back') showTitlePanel('main');
     else if (act === 'reset') {
-      if (!resetArmed) { resetArmed = true; btn.textContent = '정말 지울까? 한 번 더 선택'; }
+      if (!resetArmed) { resetArmed = true; btn.textContent = '정말 지우시겠습니까? 한 번 더 선택하면 지워집니다'; }
       else { SAVE = blankSave(); persist(); try { sessionStorage.setItem('acr_reset_done', '1'); } catch (e) { /* 무시 */ } location.reload(); } // v2.86 불러오기 때 채우는 저장 항목(weaponRolls 등)까지 다시 갖추도록 새로 불러옴 — 초기화 직후 출정하면 멈추던 문제
     }
     else if (act === 'resume') resume();
@@ -751,7 +751,7 @@
 
   function titleMats() {
     const b = SAVE.best || 0, bst = Math.floor((b - 1) / 11) + 1, bp = b - (bst - 1) * 11, bs = b ? `STAGE ${bst} · ${bp === 11 ? 'BOSS' : 'PHASE ' + bp}` : '없음';
-    if ($('titleInfo')) $('titleInfo').innerHTML = `원정 완료 <b>${SAVE.clears}</b>${SAVE.clears3 ? ` (오크 부락 <b>${SAVE.clears3}</b>)` : ''} / 시도 <b>${SAVE.runs}</b> · 최고 도달 <b>${bs}</b><br>로그라이크 — 장비·재료는 한 번의 원정 동안만 유지되고, 쓰러지면 모두 잃는다`;
+    if ($('titleInfo')) $('titleInfo').innerHTML = `원정 완료 <b>${SAVE.clears}</b>${SAVE.clears3 ? ` (오크 부락 <b>${SAVE.clears3}</b>)` : ''} / 시도 <b>${SAVE.runs}</b> · 최고 도달 <b>${bs}</b><br>로그라이크 — 장비·재료는 한 번의 원정 동안만 유지되며, 쓰러지면 모두 잃습니다`;
   }
   function start() {
     ['ovTitle', 'ovResult', 'ovPause', 'ovRest', 'ovSelect', 'ovForge', 'ovInv'].forEach(id => $(id).classList.remove('on'));
@@ -1103,7 +1103,7 @@
   function ascShiftOld(d) { const A = SAVE.asc, v = clamp((A.sel || 0) + d, 0, A.max || 0); if (v === (A.sel || 0)) return; A.sel = v; persist(); sfx('blip'); renderAsc(); }
   function skinRowHtml() { // v1.99 외형 고르기 (설명은 마우스를 올리면)
     const open = skinOpen(), cur = SAVE.skin === 'ash' && open ? 'ash' : '';
-    const tip = open ? '잿빛 몸·무기, 붉은 안광과 기운' + '' : '잿불 3을 돌파하면 열린다';
+    const tip = open ? '잿빛 몸·무기, 붉은 안광과 기운' + '' : '잿불 3을 돌파하면 열립니다';
     return `<span class="skinRow"><span class="ascT">외형</span><button class="ascB skinB${cur ? '' : ' on'}" data-skin="">기본</button><button class="ascB skinB${cur ? ' on' : ''}" data-skin="ash" ${open ? '' : 'disabled'} ${aTip('잿불 외형', tip, '#ffb040')}>잿불</button></span>`;
   }
   function bindSkin(el) { el.querySelectorAll('.skinB').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; pxTip.hide(); SAVE.skin = b.dataset.skin || undefined; persist(); sfx('blip'); renderAsc(); $('selCards').querySelectorAll('canvas[data-pv]').forEach(c => classPreview(c, c.dataset.pv, true)); })); }
@@ -1113,12 +1113,12 @@
   function renderAsc() {
     const A = SAVE.asc, el = $('ascRow'); if (!el) return;
     if (true) { el.innerHTML = `<div class="ascHead">${skinRowHtml()}</div>`; bindSkin(el); return; } // v2.29 잿불 단계 취소: 외형만
-    if (!A.max) { el.innerHTML = `<div class="ascHead"><span class="ascT" ${aTip('잿불 단계', '첫 원정(마지막 보스)을 마치면 열린다', '#ffb040')}>잿불 단계</span><span class="ascLock">잠김</span>${skinRowHtml()}</div>`; bindSkin(el); return; }
+    if (!A.max) { el.innerHTML = `<div class="ascHead"><span class="ascT" ${aTip('잿불 단계', '첫 원정(마지막 보스)을 마치면 열립니다', '#ffb040')}>잿불 단계</span><span class="ascLock">잠김</span>${skinRowHtml()}</div>`; bindSkin(el); return; }
     const L = Math.min(A.sel || 0, A.max), best = A.best[selCls];
-    const next = A.max < ASC_MAX ? `잿불 ${A.max} 클리어 → 잿불 ${A.max + 1} 열림` : '모든 단계 열림';
+    const next = A.max < ASC_MAX ? `잿불 ${A.max} 단계를 클리어하면 다음 단계가 열립니다` : '모든 단계가 열렸습니다';
     const sum = `<div>${CLASSES[selCls].name} 최고 ${best == null || best < 0 ? '—' : '잿불 ' + best} · ${next}</div>`
       + (L ? `<div class="fx">보상 재료 +${L * 10}% · 장비 수치 +${L * 2}%<br>높은 등급 ↑ · 클리어 골드 +${L * 50}</div><div class="rp">적용 중인 규칙</div>` + ASC.slice(1, L + 1).map((r, i) => `<div><b style="color:#ff8a2a;font-weight:normal">${i + 1}</b> ${r.n}</div>`).join('') : '<div class="rp">원래 난이도 — 규칙 없음</div>');
-    const pips = Array.from({ length: ASC_MAX }, (_, i) => { const r = ASC[i + 1], open = i < A.max; return `<i class="${i < L ? 'on' : ''}${open ? '' : ' lock'}" ${aTip(`잿불 ${i + 1} · ${open ? r.n : '???'}`, open ? r.d : `잿불 ${i} 클리어 시 열림`, i < L ? '#ffb040' : '#9a8ea5')}></i>`; }).join('');
+    const pips = Array.from({ length: ASC_MAX }, (_, i) => { const r = ASC[i + 1], open = i < A.max; return `<i class="${i < L ? 'on' : ''}${open ? '' : ' lock'}" ${aTip(`잿불 ${i + 1} · ${open ? r.n : '???'}`, open ? r.d : `잿불 ${i} 단계를 클리어하면 열립니다`, i < L ? '#ffb040' : '#9a8ea5')}></i>`; }).join('');
     el.innerHTML = `<div class="ascHead"><span class="ascT" ${aTip(`잿불 ${L}`, sum, '#ffb040')}>잿불 단계</span><button class="ascB" data-d="-1">◀</button><b class="ascN" ${aTip(`잿불 ${L}`, sum, '#ffb040')}>${L}</b><button class="ascB" data-d="1">▶</button>
       <span class="ascEm">${pips}</span>${skinRowHtml()}</div>`;
     bindSkin(el);
@@ -1152,7 +1152,7 @@
     if (from === 'between' && G.newItems[0]) forgeSel = G.newItems[0].id;
     ['ovTitle', 'ovResult'].forEach(id => $(id).classList.remove('on'));
     $('fgTabs').style.display = from === 'between' || from === 'station' ? 'none' : '';
-    $('fgClose').innerHTML = (from === 'between' ? `STAGE ${G.stage + 1}로` : from === 'station' ? '대장간으로' : '돌아가기') + ' <span class="key kc">ESC</span>'; // v2.63 키캡
+    $('fgClose').innerHTML = (from === 'between' ? `STAGE ${G.stage + 1}로` : '닫기') + ' <span class="key kc">ESC</span>'; // v2.63 키캡
     $('fgClose').classList.toggle('primary', from === 'between');
     $('ovForge').classList.add('on'); renderForge();
   }
@@ -1175,7 +1175,7 @@
     if (!forgeSel || !SAVE.inv.some(i => i.id === forgeSel)) forgeSel = list[0] ? list[0].id : null;
     const ids = new Set(Object.values(eqOf(forgeCls)));
     $('fgList').innerHTML = list.length ? list.map(it => `<button class="fgRow ${it.id === forgeSel ? 'sel' : ''}" data-id="${it.id}" style="--c:${gradeOf(it).c}">${ids.has(it.id) ? '<span class="eq">E</span>' : ''}<span class="nm">${it.name}</span>${it.lv ? `<span class="lv">+${it.lv}</span>` : ''}<span class="sl">${slotName(it)}</span></button>`).join('')
-      : '<p>장비가 없다. 던전의 적·상자·상인·보스에게서 얻을 수 있다.</p>';
+      : '<p>장비가 없습니다. 던전의 적·상자·상인·보스에게서 얻을 수 있습니다.</p>';
     $('fgList').querySelectorAll('.fgRow').forEach(b => b.addEventListener('click', () => { forgeSel = +b.dataset.id; forgeMsg = null; sfx('blip'); renderForge(); }));
     const selRow = $('fgList').querySelector('.fgRow.sel'); if (selRow) selRow.scrollIntoView({ block: 'nearest' });
     renderForgeDetail();
@@ -1191,7 +1191,7 @@
   }
   function renderForgeDetail() {
     const it = SAVE.inv.find(i => i.id === forgeSel), d = $('fgDetail');
-    if (!it) { forgeEqRow(null); d.innerHTML = `<p>${{ roll: '옵션을 다시 굴릴', salv: '녹여서 재료로 바꿀' }[$('ovForge').dataset.m] || '강화할'} 장비를 고른다.</p>`; return; }
+    if (!it) { forgeEqRow(null); d.innerHTML = `<p>${{ roll: '옵션을 다시 굴릴', salv: '녹여서 재료로 바꿀' }[$('ovForge').dataset.m] || '강화할'} 장비를 고르십시오.</p>`; return; }
     const g = gradeOf(it), sl = slotOf(it), lv = it.lv || 0, cap = enhCap(), max = lv >= cap, full = lv >= ENH_MAX;
     const label = PCT_STAT[it.stat] || sl.label, unit = PCT_STAT[it.stat] ? '%' : '';
     const cur = itemVal(it), next = max ? cur : itemVal(it, lv + 1);
@@ -1225,12 +1225,12 @@
   const salvageGain = it => ({ iron: [1, 2, 4, 6, 6][GI[it.grade]] + Math.floor((it.lv || 0) / 2) + Math.floor((it.asc || 0) / 3), crystal: [0, 0, 1, 2, 3][GI[it.grade]] + ((it.lv || 0) >= 10 ? 1 : 0) });
   function doReroll() {
     const it = SAVE.inv.find(i => i.id === forgeSel); if (!it) return;
-    const c = rerollCost(it); if (SAVE.gold < c.gold || SAVE.mats.crystal < c.crystal) { sfx('block'); forgeMsg = '<span class="ng">재료가 모자란다</span>'; renderForgeDetail(); return; }
+    const c = rerollCost(it); if (SAVE.gold < c.gold || SAVE.mats.crystal < c.crystal) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
     SAVE.gold -= c.gold; SAVE.mats.crystal -= c.crystal;
     const g = gradeOf(it), keep = it.opts.filter(o => o.cb), n = it.opts.length - keep.length, pool = OPTS.filter(o => !keep.some(k => k.k === o.k)), opts = keep.slice();
     for (let i = 0; i < n && pool.length; i++) { const o = pool.splice(randi(0, pool.length - 1), 1)[0]; opts.push({ k: o.k, v: optRoll(o, g) }); }
     it.opts = opts; if (it.efx) it.efx = pick(Object.keys(EFX).filter(k => k !== it.efx));
-    if (G) G.grindT = 1.6; persist(); sfx('drop'); forgeMsg = `<span class="ok">옵션을 다시 굴렸다${it.efx ? ` · 효과 「${EFX[it.efx].n}」` : ''}</span>`; renderForge();
+    if (G) G.grindT = 1.6; persist(); sfx('drop'); forgeMsg = `<span class="ok">옵션을 다시 굴렸습니다${it.efx ? ` · 효과 「${EFX[it.efx].n}」` : ''}</span>`; renderForge();
     const d = $('fgDetail'); d.classList.remove('hitok', 'hitng'); void d.offsetWidth; d.classList.add('hitok');
   }
   function doSalvage() {
@@ -1246,7 +1246,7 @@
     const it = SAVE.inv.find(i => i.id === forgeSel);
     if (!it || (it.lv || 0) >= enhCap()) return; // v2.40 대장간별 상한
     const c = enhCost(it.lv || 0);
-    if (SAVE.mats.iron < c.iron || SAVE.mats.crystal < c.crystal || SAVE.gold < c.gold) { sfx('block'); forgeMsg = '<span class="ng">재료가 모자란다</span>'; renderForgeDetail(); return; }
+    if (SAVE.mats.iron < c.iron || SAVE.mats.crystal < c.crystal || SAVE.gold < c.gold) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
     SAVE.mats.iron -= c.iron; SAVE.mats.crystal -= c.crystal; SAVE.gold -= c.gold;
     const from = it.lv || 0, success = Math.random() * 100 < enhRate(it);
     if (success) {
@@ -1256,11 +1256,11 @@
         const pool = OPTS.filter(o => !it.opts.some(x => x.k === o.k)), o = pick(pool);
         it.opts.push({ k: o.k, v: randi(o.r[0], o.r[1]) }); extra = ` · 새 옵션 「${optText(it.opts[it.opts.length - 1])}」`;
       }
-      forgeMsg = `<span class="ok">강화 성공! +${from} → +${it.lv}${extra}</span>`; sfx('drop');
+      forgeMsg = `<span class="ok">강화에 성공했습니다! +${from} → +${it.lv}${extra}</span>`; sfx('drop');
     } else {
       it.fail = (it.fail || 0) + 1;
-      let t = `강화 실패… +${from} 유지`;
-      if (from + 1 >= 10) { it.lv = from - 1; t = `강화 실패… +${from} → +${it.lv}`; }
+      let t = `강화에 실패했습니다 · +${from} 단계가 유지됩니다`;
+      if (from + 1 >= 10) { it.lv = from - 1; t = `강화에 실패했습니다 · +${from} → +${it.lv}`; }
       forgeMsg = `<span class="ng">${t} · 장인의 숨결 +2%p</span>`; sfx('hurt');
     }
     persist(); renderForge();

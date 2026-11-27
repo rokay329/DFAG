@@ -1207,26 +1207,37 @@
     return { arrow: arrow('#c8ccd4'), arrowB: arrow('#ffffff'), spear: spear('#c8cbd0'), spearB: spear('#fff4dc') };
   })();
   const TRI_W = {}, triW = (col, n) => TRI_W[col + n] || (TRI_W[col + n] = cellWeapon(n + 2, n * 2 + 3, 1 + (n >> 1), n + 1, { k: '#000000', c: `rgb(${col})` }, put => { for (let x = 0; x <= n; x++) for (let y = -(n - x); y <= n - x; y++) put(x + 1, n + 1 + y, 'c'); }));
+  // v3.63 투사체 회피 신호: 닿기 0.2초 전(퍼펙트 판정 구간)부터 투사체 자체가 하얗게 반짝임 — 처음엔 0.05초 간격으로 깜빡이다 닿기 직전 0.06초는 계속 하얗게
+  const PW = document.createElement('canvas'); PW.width = PW.height = 96; const PWg = PW.getContext('2d');
+  const projFlash = pr => pr.tti < 0.06 || Math.floor(pr.tti / 0.05) % 2 === 0;
+  function projWhite(pr, one) { // 투사체를 작은 캔버스에 같은 변환으로 그린 뒤 흰색으로 칠해 그 자리에 찍음
+    const M = ctx.getTransform(), sx = M.a * pr.x + M.c * (pr.y - 10) + M.e, sy = M.b * pr.x + M.d * (pr.y - 10) + M.f, ox = Math.round(sx) - 48, oy = Math.round(sy) - 48;
+    PWg.setTransform(1, 0, 0, 1, 0, 0); PWg.globalCompositeOperation = 'source-over'; PWg.globalAlpha = 1; PWg.clearRect(0, 0, 96, 96); PWg.setTransform(M.a, M.b, M.c, M.d, M.e - ox, M.f - oy); PWg.imageSmoothingEnabled = false;
+    dshEll(ctx, Math.round(pr.x) & ~1, Math.round(pr.y) & ~1, 5, 2, 0.5); const main = ctx; ctx = PWg; pr._ns = true; try { one(pr); } finally { ctx = main; pr._ns = false; }
+    PWg.setTransform(1, 0, 0, 1, 0, 0); PWg.globalCompositeOperation = 'source-atop'; PWg.fillStyle = '#ffffff'; PWg.fillRect(0, 0, 96, 96);
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(PW, ox, oy); ctx.restore();
+  }
   function drawEProjs() {
     const blink = Math.floor(time * 14) % 2;
-    for (const pr of G.eproj) {
+    for (const pr of G.eproj) { if (pr.warn && projFlash(pr)) { projWhite(pr, one); continue; } ctx.save(); if (pr.dodged) ctx.globalAlpha = 0.4; one(pr); ctx.restore(); } // v3.63 피한 투사체는 반투명 · 곧 닿을 투사체는 하얗게 반짝임
+    function one(pr) {
       const gx = Math.round(pr.x) & ~1, gy = Math.round(pr.y) & ~1, hy = pr.y - 10;
       // 바닥 그림자 (날아가는 높이를 보여 준다)
-      dshEll(ctx, gx, gy, 5, 2, 0.5); // v3.20 디더
-      if (pr.kind === 'fireball') { drawMProj({ kind: 'fireball', x: pr.x, y: pr.y - 10, r: pr.r, hist: pr.hist.map(q => ({ x: q.x, y: q.y - 10 })) }); continue; } // v3.20 갱도 교단 마법사: 여우 마법사 불덩이와 같은 모습
+      if (!pr._ns) dshEll(ctx, gx, gy, 5, 2, 0.5); // v3.20 디더 (하얗게 반짝일 땐 그림자는 따로 그림)
+      if (pr.kind === 'fireball') { drawMProj({ kind: 'fireball', x: pr.x, y: pr.y - 10, r: pr.r, hist: pr.hist.map(q => ({ x: q.x, y: q.y - 10 })) }); return; } // v3.20 갱도 교단 마법사: 여우 마법사 불덩이와 같은 모습
       if (pr.kind === 'arrow' || pr.kind === 'spear') {
         drawBlade(pr.kind === 'arrow' ? (blink ? PROJ_W.arrowB : PROJ_W.arrow) : (blink ? PROJ_W.spearB : PROJ_W.spear), gx, hy, pr.ang); // v1.05 칸 단위 회전 도트 (투척꾼은 다시 투창)
-        continue;
+        return;
       }
-      if (pr.kind === 'ember') { const I = invInit(); pr.hist.forEach((q, i) => { if (i % 2) return; ctx.fillStyle = `rgba(255,140,50,${0.45 * (i + 1) / pr.hist.length})`; ctx.fillRect(Math.round(q.x) & ~1, Math.round(q.y - 10) & ~1, 2, 2); }); drawBlade(blink ? I.emberB : I.ember, gx, hy, pr.ang); continue; } // v1.65 총잡이 잉걸 탄
-      if (pr.kind === 'crescent') { const I = invInit(); drawBlade(blink ? I.crescentB : I.crescent, gx, hy, pr.ang); continue; } // v1.59 낫잡이 초승달 탄
+      if (pr.kind === 'ember') { const I = invInit(); pr.hist.forEach((q, i) => { if (i % 2) return; ctx.fillStyle = `rgba(255,140,50,${0.45 * (i + 1) / pr.hist.length})`; ctx.fillRect(Math.round(q.x) & ~1, Math.round(q.y - 10) & ~1, 2, 2); }); drawBlade(blink ? I.emberB : I.ember, gx, hy, pr.ang); return; } // v1.65 총잡이 잉걸 탄
+      if (pr.kind === 'crescent') { const I = invInit(); drawBlade(blink ? I.crescentB : I.crescent, gx, hy, pr.ang); return; } // v1.59 낫잡이 초승달 탄
       if (pr.kind === 'quill') {
         const ux = Math.cos(pr.ang), uy = Math.sin(pr.ang), L = 12;
         ctx.fillStyle = 'rgba(255,255,255,.35)'; for (let k = L; k < L + 14; k += 2) ctx.fillRect(Math.round(pr.x - ux * k) & ~1, Math.round(hy - uy * k) & ~1, 2, 2);
         ctx.fillStyle = '#0b0a0e'; for (let k = 0; k <= L; k += 2) ctx.fillRect((Math.round(pr.x - ux * k) & ~1) - 2, (Math.round(hy - uy * k) & ~1) - 2, 6, 6);
         ctx.fillStyle = '#fff4dc'; for (let k = 2; k <= L; k += 2) ctx.fillRect((Math.round(pr.x - ux * k) & ~1) - 1, (Math.round(hy - uy * k) & ~1) - 1, 4, 4);
         ctx.fillStyle = blink ? '#ffffff' : '#ffc890'; ctx.fillRect((Math.round(pr.x) & ~1) - 2, (Math.round(hy) & ~1) - 2, 6, 6);
-        continue;
+        return;
       }
       if (pr.kind === 'tear') { // v1.30 왕비의 잉걸 눈물: 검은 외곽선 물방울 + 꼬리
         const ux = Math.cos(pr.ang), uy = Math.sin(pr.ang);
@@ -1234,13 +1245,13 @@
         ctx.fillStyle = '#0b0a09'; ctx.fillRect(gx - 4, (Math.round(hy) & ~1) - 4, 8, 8); ctx.fillRect((Math.round(pr.x - ux * 6) & ~1) - 2, (Math.round(hy - uy * 6) & ~1) - 2, 6, 6);
         ctx.fillStyle = '#ff7a30'; ctx.fillRect(gx - 2, (Math.round(hy) & ~1) - 2, 4, 4); ctx.fillRect(Math.round(pr.x - ux * 6) & ~1, Math.round(hy - uy * 6) & ~1, 2, 2);
         ctx.fillStyle = blink ? '#ffffff' : '#ffc070'; ctx.fillRect(gx - 2, (Math.round(hy) & ~1) - 2, 2, 2);
-        continue;
+        return;
       }
       if (pr.kind === 'rock') {
         pr.hist.forEach((q, i) => { ctx.fillStyle = `rgba(200,190,170,${0.25 * (i + 1) / pr.hist.length})`; ctx.fillRect(Math.round(q.x) & ~1, Math.round(q.y - 10) & ~1, 2, 2); });
         pxDisc(pr.x, hy, 9, '#0b0a0e'); pxDisc(pr.x, hy, 7, blink ? '#d0c8d8' : '#9a94a4'); pxDisc(pr.x, hy, 5, '#7a7484'); ctx.fillStyle = '#d0c8d8'; ctx.fillRect((Math.round(pr.x) & ~1) - 2, (Math.round(hy) & ~1) - 2, 4, 2);
         if (blink) { ctx.fillStyle = '#ffffff'; ctx.fillRect((Math.round(pr.x) & ~1) - 2, (Math.round(hy) & ~1) - 2, 2, 2); }
-        continue;
+        return;
       }
       const green = pr.kind === 'acid' || pr.kind === 'bile';
       const body = green ? (pr.kind === 'bile' ? '#c8e040' : '#80e040') : '#ff3048', rim = green ? '#f0ffb0' : '#ffd0d8', trail = green ? '150,230,60' : '255,60,80';

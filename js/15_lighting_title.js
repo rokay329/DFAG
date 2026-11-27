@@ -99,12 +99,11 @@ void main() {
     for (const f of G.fx) if (f.kind === 'pillar') lights.push({ x: f.x, y: f.y - 30, r: 55, a: 0.6 * (f.t / f.max), c: '255,210,90', ca: 0.2 * (f.t / f.max) });
     for (const e of G.enemies) {
       if (e.dead) continue;
-      if (e.type === 'boss') lights.push({ x: e.x, y: e.y - 30 - (e.z || 0), r: e.kind === 'slimeking' ? 90 : e.kind === 'krugash' || e.kind === 'ashking' ? 120 : 70, a: 0.45, c: e.kind === 'slimeking' ? (e.stage === 3 ? '230,90,170' : '140,230,90') : e.kind === 'krugash' ? (e.stage === 3 ? '255,50,30' : '255,130,60') : '170,80,230', ca: 0.14 });
+      if (e.type === 'boss') lights.push({ x: e.x, y: e.y - 30 - (e.z || 0), r: e.kind === 'slimeking' ? 90 : e.kind === 'krugash' || e.kind === 'ashking' ? 120 : 70, a: 0.45, c: e.kind === 'cultlead' ? '255,110,50' : e.kind === 'slimeking' ? (e.stage === 3 ? '230,90,170' : '140,230,90') : e.kind === 'krugash' ? (e.stage === 3 ? '255,50,30' : '255,130,60') : '170,80,230', ca: 0.14 });
       else if (e.type === 'mordred') lights.push({ x: e.x + e.face * 4, y: e.y - 48, r: 34 + (e.state === 'guard' ? 30 : 0), a: 0.45, c: e.state === 'guard' ? '255,210,100' : '255,130,50', ca: 0.08 + (e.state === 'guard' ? 0.12 : 0) });
       else if (e.type === 'queen') lights.push({ x: e.x, y: e.y - 44, r: e.pose === 'weep' ? 50 : 32, a: 0.45 * (e.fadeA == null ? 1 : e.fadeA), c: '255,130,60', ca: e.pose ? 0.14 : 0.06 });
       else if (e.ash === 'lancer') lights.push({ x: e.x, y: e.y - 10, r: e.state === 'wind' ? 44 : 26, a: 0.4, c: '255,130,50', ca: e.state === 'wind' ? 0.16 : 0.06 }); // v1.27 잿더미 잉걸 심장
       else if (e.type === 'ghost') lights.push({ x: e.x, y: e.y - 12, r: 40, a: 0.4, c: '150,200,255', ca: 0.12 });
-      else if (e.type === 'butcher') lights.push({ x: e.x, y: e.y - 24, r: 40 + 40 * (e.glow || 0), a: 0.45, c: '255,60,40', ca: 0.06 + 0.16 * (e.glow || 0) + (e.enraged ? 0.06 : 0) });
       else if (e.type === 'crow') lights.push({ x: e.x, y: e.y - (e.z || 0) - 6, r: 24, a: 0.4, c: '150,100,200', ca: 0.06 });
       else if (e.type === 'mother') lights.push({ x: e.x, y: e.y - 24, r: 50 + 40 * Math.max(e.glow || 0, e.state === 'bilecharge' ? 1 - e.t / e.chargeMax : 0), a: 0.5, c: '150,230,80', ca: 0.08 + 0.15 * (e.glow || 0) });
       else if (e.type === 'gbrute' || e.type === 'boar') lights.push({ x: e.x, y: e.y - 24, r: 40 + 40 * (e.glow || 0), a: 0.45, c: e.type === 'boar' ? '255,70,40' : '255,190,60', ca: 0.05 + 0.15 * (e.glow || 0) + (e.enraged ? 0.06 : 0) });
@@ -128,7 +127,6 @@ void main() {
     for (const e of G.enemies) { const B = buffState(e); if (!B) continue; const h = enemyH(e);
       if (B.bar) lights.push({ x: e.x, y: e.y, r: Math.max(40, enemyW(e) * 2 + 20), a: 0.55, c: B.bar.c, ca: 0.1 + 0.05 * Math.sin(time * 4) });
       if (B.emp) lights.push({ x: e.x, y: e.y - 4, r: 34, a: 0.45, c: B.emp, ca: 0.1 }); }
-    for (const f of G.enemies) if (f.type === 'flag' && !f.dead) { lights.push({ x: f.x, y: f.y - 50, r: 60, a: 0.55, c: '255,200,110', ca: 0.12 }); lights.push({ x: f.x, y: f.y, r: FLAG_R + 20, a: 0.25, c: '255,200,90', ca: 0.04 }); }
     if (G.boss && !G.boss.dead && G.boss.shield) for (const g2 of G.enemies) if (g2.type === 'ghost' && !g2.dead) for (let i = 1; i <= 3; i++) { const t = i / 4; lights.push({ x: g2.x + (G.boss.x - g2.x) * t, y: g2.y - 20 + (G.boss.y - 14 - g2.y) * t, r: 30, a: 0.4, c: '120,170,240', ca: 0.06 }); }
     if (G.frenzyT > 0) lights.push({ x: G.player.x, y: G.player.y - 12, r: 48, a: 0.5, c: '255,40,50', ca: 0.14 + 0.05 * Math.sin(time * 10) });
     for (const f of G.fx) if (f.kind === 'hitspark') lights.push({ x: f.x, y: f.y, r: f.r * 1.6, a: 0.4 * (f.t / f.max), c: f.c, ca: 0.07 * (f.t / f.max) });
@@ -359,7 +357,7 @@ void main() {
     roomEnts(ents); gearEnts(ents); forgeEnts(ents); CA.ents(ents); END.ents(ents); sqzEnts(ents); TRUTH.ents(ents); DEN.ents(ents); BDC.ents(ents); if (typeof HABIULT !== 'undefined') HABIULT.ents(ents); if (typeof CASING !== 'undefined') CASING.ents(ents); // v2.57 크루가쉬 방책 말뚝도 깊이 정렬
     for (const f of G.fx) if (f.kind === 'rockspike') ents.push({ y: f.y, d: () => drawFx(f) }); // 솟는 바위는 깊이 정렬
     if (TOUCH.on && TOUCH.lock && !TOUCH.lock.dead && G.enemies.includes(TOUCH.lock) && mouse.active <= 0) { const L = TOUCH.lock; ents.push({ y: L.y - 0.5, d: () => drawAimMark(L) }); } // v2.25 모바일 조준 표시
-    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d === drawPlayer ? sideClip(drawPlayer) : o.d()); for (const l of G.loot) drawLoot(l); /* v2.80 보상은 늘 맨 위 층 (상자 · 소품 · 캐릭터에 가려지지 않게) */ BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); G._wt = ctx.getTransform();
+    { const ES = ents.sort((a, b) => a.y - b.y); ES.forEach(o => o.d === drawPlayer ? sideClip(drawPlayer) : o.d()); for (const l of G.loot) drawLoot(l); /* v2.80 보상은 늘 맨 위 층 (상자 · 소품 · 캐릭터에 가려지지 않게) */ BUFF_BATCH = false; G._occ = null; drawEvOutline(); drawGateArrows(); drawWeakTop(); G._wt = ctx.getTransform();
       if (G.player.counterT > 0 || grayRoom(G.dun && G.dun.cur)) { const i = ES.findIndex(o => o.d === drawPlayer), py = G.player.y; G._occ = i < 0 ? [] : ES.slice(i + 1).filter(o => o.y < py + 140); } } // v2.28 반격 흑백: 캐릭터를 가리는 앞쪽 물체
     if (FRONT_ON && G.stage === 1 && !(G.dun && (G.dun.forge || G.dun.home))) ctx.drawImage(frontM, 0, 0); // 아래쪽 울타리·나무를 캐릭터 앞에
     // v3.25 좌우 벽 가림은 sideClip(캐릭터 · 적 · 시체를 벽 안쪽으로 잘라 그림)으로 대체 — 예전 drawSideWalls는 바닥 그림을 벽 띠에 다시 덮어 옆문 · 문 기둥 · 바닥 효과까지 지웠음

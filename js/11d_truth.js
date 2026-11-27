@@ -936,6 +936,7 @@ function ceilingDrips(t) {
     const p = R.pond; p.t += dt;
     if (p.state === 'burst') { if (p.t > 1.2) p.state = 'hole'; return; }
     if (p.state !== 'pond') return;
+    if (kingDead() && !Q().met) return; // v3.80 키륵을 만나기 전에 점액왕이 쓰러지면 웅덩이가 열리지 않음
     const s = p.slime;
     if (s && s.dead && !s.melted) { // 녹기 전에 웅덩이 근처에서 쓰러뜨림 → 한 번에 터짐
       p.slime = null;
@@ -1048,7 +1049,7 @@ function ceilingDrips(t) {
   // ---------------------------------------------------------------- 대화 · 연출 (진행 중엔 조작 없음)
   let DLG = null, SEQ = null;
   function freeze() { const P = G && G.player; if (!P) return; P.moving = false; P.vx = 0; P.vy = 0; if (P.state === 'walk' || P.state === 'run') P.state = 'idle'; P.t = 0; for (const k of ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']) { keys[k] = false; pressed[k] = false; } }
-  function talk(lines, done, opt = {}) { DLG = Object.assign({ lines, i: 0, t: 0, done }, opt); G.prompt = null; pressed['f'] = false; freeze(); sfx('blip', 0.9); }
+  function talk(lines, done, opt = {}) { try { if (typeof NOTEBOOK !== 'undefined') NOTEBOOK.heard(lines); } catch (e) { console.error(e); } /* v3.80 원정 수첩 */ DLG = Object.assign({ lines, i: 0, t: 0, done }, opt); G.prompt = null; pressed['f'] = false; freeze(); sfx('blip', 0.9); }
   function box(lines, done, opt = {}) { talk(lines, done, Object.assign({ box: true }, opt)); } // v2.61 통상 텍스트 박스: [제목, 본문]
   const busy = () => { if (DLG || SEQ) { if (G) G.prompt = null; return true; } return false; };
   function update(rdt) {
@@ -1111,6 +1112,9 @@ function ceilingDrips(t) {
     '제단으로의 이송이 필연이라는 확신이 존재함. 확신의 출처 불명. 재검토 필요.',
     '재검토 결과. 보존해야 함. 이송해야 함. 확신 출처 불명. 재검토 필요.'];
   const JOURNAL_MORE = [Array.from({ length: 5 }, () => '재검토 결과. 보존해야 함. 이송해야 함. 확신 출처 불명. 재검토 필요.')]; // v3.78 다음 장(2장) 한 장에 같은 문구가 되풀이되어 채워짐
+  // v3.80 점액왕이 먼저 쓰러진 판: 만나기 전이면 키륵이 나오지 않음(웅덩이가 열리지 않음) · 이미 만났으면 「이미 늦었다」 대사 (진실 1 없음)
+  const kingDead = () => { const D = (G.labRet && G.labRet.dun) || G.dun; return !!(G.stage === 1 && D && D.boss && D.boss.cleared); };
+  const KIRK_LATE = ['초록 왕… 죽었어?', '책… 같이 녹았어.', '키륵 전부… 없어졌어.', '…가, 사람. 키륵, 혼자 있을래.'];
   function kirkAppear() {
     freeze();
     SEQ = { k: 'appear', t: 0, dur: 2.7, end: () => { Q().met = true; talk([['kirk', '너… 사람. 무기 든 사람.']], null, { auto: 2.4 }); } };
@@ -1168,7 +1172,8 @@ function ceilingDrips(t) {
       if (p.state === 'hole' && near(p, 60)) return { k: 'truth', a: 'down', x: p.x, y: p.y - 32, t: 'F 내려가기' }; }
     if (R.type === 'lab') { const q = Q(), k = kirkPos(), lad = lw(146, 96);
       if (near(lad, 34)) return { k: 'truth', a: 'up', x: lad.x, y: lad.y - 44, t: 'F 올라가기' };
-      if (q.met && near(k, 52)) { if (q.q === 0) return { k: 'truth', a: 'ask', x: k.x, y: k.y - 50, t: 'F 이야기 듣기' }; if (q.q === 2) return { k: 'truth', a: 'give', x: k.x, y: k.y - 50, t: 'F 일지 건네기' }; } }
+      if (q.met && near(k, 52) && kingDead() && q.q !== 3 && q.q !== 2 && !q.late) return { k: 'truth', a: 'late', x: k.x, y: k.y - 50, t: 'F 이야기 듣기' }; // v3.80
+      if (q.met && near(k, 52) && !(kingDead() && q.q !== 3 && q.q !== 2)) { if (q.q === 0) return { k: 'truth', a: 'ask', x: k.x, y: k.y - 50, t: 'F 이야기 듣기' }; if (q.q === 2) return { k: 'truth', a: 'give', x: k.x, y: k.y - 50, t: 'F 일지 건네기' }; } }
     if (R.type === 'boss' && journalOn()) { const e = G.enemies.find(x => x.kind === 'slimeking' && !x.dead); if (e && e.grogiT > 0 && near(e, 80)) return { k: 'truth', a: 'pull', o: e, x: e.x, y: e.y - 80, t: 'F 일지 꺼내기' }; }
     return null;
   }
@@ -1180,6 +1185,7 @@ function ceilingDrips(t) {
     else if (it.a === 'pond') { lootFeed('바닥이 보이지 않는 점액 웅덩이다. 시큼한 냄새가 난다.', '#a8a094', 3000); sfx('blip'); }
     else if (it.a === 'down') enterLab();
     else if (it.a === 'up') leaveLab();
+    else if (it.a === 'late') { const q = Q(); talk(KIRK_LATE.map(t => ['kirk', t]), () => { q.late = true; if (q.q !== 3) q.q = -1; }); }
     else if (it.a === 'ask') talk(KIRK_ASK.map(t => ['kirk', t]), acceptQuest, { auto: 3 });
     else if (it.a === 'give') giveJournal();
     else if (it.a === 'pull') pullJournal(it.o);
@@ -1200,7 +1206,7 @@ function ceilingDrips(t) {
     if (R.pond) tickPond(R, dt);
     if (R.type === 'lab') {
       if (!inLab(P.x, P.y)) { if (G.labLast) { P.x = G.labLast.x; P.y = G.labLast.y; } } else G.labLast = { x: P.x, y: P.y };
-      const q = Q(), k = kirkPos(); if (!q.met && !SEQ && Math.hypot(P.x - k.x, P.y - k.y) < 110) kirkAppear();
+      const q = Q(), k = kirkPos(); if (!q.met && !SEQ && !kingDead() && Math.hypot(P.x - k.x, P.y - k.y) < 110) kirkAppear();
     }
     if (G.stage === 1 && Q().q === 1 && R.type === 'boss') { const e = G.enemies.find(x => x.kind === 'slimeking'); if (e && e.dead) { Q().q = -1; lootFeed('연구 일지가 점액왕과 함께 녹아 사라졌다', '#a8a094', 3600); } }
   }
@@ -1211,7 +1217,7 @@ function ceilingDrips(t) {
     bardTop();
     if (DLG && !DLG.box) { const [who, text] = DLG.lines[DLG.i], p = speakerPos(who); drawBubble(text, p.x, p.y, 0); }
     else if (R.type === 'lab' && Q().met && !SEQ) { const q = Q(), P = G.player, k = kirkPos(), near = Math.hypot(P.x - k.x, P.y - k.y) < 90;
-      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '{해}, 안 떠.'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
+      const lines = q.q === 1 ? ['초록 왕… 배 속. 키륵 책.', '가져와. 키륵 전부야.'] : q.q === 3 ? ['제단… 가지 마, 사람.', '{해}, 안 떠.'] : q.late ? ['…'] : q.q === -1 ? ['초록 왕… 죽었어. 키륵 책… 없어.'] : null;
       const s = lines && npcTalk('kirk', near, lines); if (s) drawBubble(s.line, k.x, k.y - 32, 0); }
     const q = G.tq1; if (q && q.hold > time && G.player) { const P = G.player; at(P.x, P.y - 52, 3, 2, () => { for (let yy = 0; yy < 5; yy++) for (let xx = 0; xx < 7; xx++) px(xx, yy, xx === 0 ? '#5a321c' : yy === 4 ? '#e8dcc0' : yy === 0 ? '#a8683e' : '#8a5232'); px(3, 2, '#e8c870'); px(4, 2, '#e8c870'); for (let xx = -1; xx <= 7; xx++) { px(xx, -1, OUTK); px(xx, 5, OUTK); } for (let yy = 0; yy < 5; yy++) { px(-1, yy, OUTK); px(7, yy, OUTK); } glow(3, 2, 12, '255,230,160', 0.3, 8); }); }
   }

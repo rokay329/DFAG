@@ -1,5 +1,5 @@
 'use strict';
-// 잿빛 왕관 토벌대 — 12_chapter3.js : 3장 핏빛 엄니 부락: 오크·잡기·전쟁 북·엘리트·크루가쉬, 3단계 방책, 부락 방 그래픽
+// 잿빛 왕관 토벌대 — 12_chapter3.js : 3장 핏빛 엄니 부락: 오크·들이받기·전쟁 북·엘리트·크루가쉬, 3단계 방책, 부락 방 그래픽
 // index.html이 js/ 파일을 번호 순서대로 불러온다. 모든 파일이 같은 전역 스코프를 함께 쓴다(예전 game.js 한 덩어리를 그대로 나눔).
 
   // ================================================================ 챕터 3 — 핏빛 엄니 부락 (v0.53)
@@ -443,7 +443,7 @@
   const oSwing = (e, deg, dur) => { e.asw = { from: e.aa, to: deg * DEG, t: 0, dur }; };
   // 타격 프레임용 휘두르기 (v0.89): 판정·충격 이펙트가 나는 바로 그 프레임에 무기가 이미 70% 내려와 있게 — 히트스톱 동안 무기가 머리 위에 멈춰 엇박으로 보이던 문제
   const oSlam = (e, deg, dur) => { const to = deg * DEG, f = e.aa + (to - e.aa) * 0.7; e.aa = f; e.asw = { from: f, to, t: 0, dur: dur * 0.5 }; };
-  // 오크 공격 전조 (v0.89): 바닥 경고. 공격이 끊기면(기절·잡기 성공·사망) 같이 사라지고(oa), 실제 판정은 이 경고의 각도를 그대로 쓴다
+  // 오크 공격 전조 (v0.89): 바닥 경고. 공격이 끊기면(기절·사망) 같이 사라지고(oa), 실제 판정은 이 경고의 각도를 그대로 쓴다
   function oTele(e, o) { const t = Object.assign({ x: e.x, y: e.y, t: 0, owner: e, oa: true, ff: false }, o); G.tele.push(t); return t; }
   const oCt = (e, ang, r, arcDeg, dur, o) => oTele(e, Object.assign({ shape: 'cone', ang, r, arc: arcDeg * DEG, dur }, o));
   const oLt = (e, ang, len, w, dur, o) => oTele(e, Object.assign({ shape: 'line', ang, len, w, dur }, o));
@@ -519,9 +519,8 @@
       if (D.plow) for (const o of G.enemies) if (o !== e && !o.dead && o.type !== 'boss' && !isElite(o) && Math.hypot(o.x - e.x, o.y - e.y) < e.r + o.r + 2) { o.vx += Math.cos(D.ang) * 260; o.vy += Math.sin(D.ang) * 260; o.lean = 0.5 * e.face; if (isKrug(e)) krugHitAlly(o, e.atk, e); }
       if (!D.done && !P.dead && Math.hypot(P.x - e.x, P.y - e.y) < e.r + P.r + 4) {
         D.done = true;
-        if (D.grab) {
-          if (P.iframe > 0) { if (P.state === 'dodge' && P.dodgeT < PD_WIN() && !P.perfectUsed) perfectDodge(); }
-          else if (!P.grab && P.inv <= 0) { e.dash = null; startGrab(e, D.grab); return; }
+        if (D.grab) { // v3.64 잡기 없앰 (들이받기 오크 · 우르그 · 크루가쉬): 붙잡는 대신 어깨로 들이받아 피해 + 밀쳐냄 · 4장 「재의 잠식」만 붙잡기로 남음
+          const hp0 = P.hp; hurtPlayer(D.grab.dmg || e.atk, e); if (P.hp < hp0) { P.kx = Math.cos(D.ang) * 240; P.ky = Math.sin(D.ang) * 240; addShake(4); }
         } else if (D.dmg) { const hp0 = P.hp; hurtPlayer(D.dmg, e); if (P.hp < hp0 && D.kb) { P.kx = Math.cos(D.ang) * D.kb; P.ky = Math.sin(D.ang) * D.kb; } if (D.onHit) D.onHit(); }
       }
       if (wall && D.onWall) { e.dash = null; D.onWall(); return; }
@@ -638,7 +637,7 @@
     for (const o of G.enemies) if (!o.dead && o.type === 'slave' && Math.hypot(o.x - e.x, o.y - e.y) < 170) { o.frenzyT = 1.2; burst(o.x, o.y - 14, '#ff6040', 4); }
   }
 
-  // ---------- 잡기: 플레이어를 붙잡아 던지거나(throw) 내리꽂는다(slam). v3.47 SPACE 연타로만 빠져나온다 (잡기 오크 3 · 우르그 5 · 크루가쉬 6번, 4장 「재의 잠식」 4번 — 같은 규칙)
+  // ---------- (v3.64부터 쓰지 않음) 오크 잡기: 플레이어를 붙잡아 던지거나(throw) 내리꽂던 기능 — 지금은 들이받기(위 돌진 판정)로 바뀜. 4장 「재의 잠식」은 68_ashgrip.js에서 따로 붙잡음
   function startGrab(e, g) {
     const P = G.player; if (P.dead || P.grab) return;
     P.grab = { by: e, t: 0, dur: g.dur, need: g.need, mash: 0, dmg: g.dmg, kind: g.kind, slams: 0 };
@@ -1003,7 +1002,7 @@
   const wpick2 = arr => { let t = Math.random() * arr.reduce((s, x) => s + x[1], 0); for (const [k, w] of arr) { if (t < w) return k; t -= w; } return arr[0][0]; };
   function eliteIntro(e) { sfx('roar', 0.85); addShake(6); dust(e.x, e.y, 20); G.fx.push({ kind: 'ring', x: e.x, y: e.y - e.tall * 0.4, r: 10, t: 0.6, max: 0.6, c: '#ffb070', grow: 380 }); }
 
-  // ---------- 엘리트: 투기장 챔피언 우르그 — 3연타 · 대지 강타(충격파 2중) · 도약 내려찍기 / 50% 이하 오크 전사 난입 + 4타 잡기
+  // ---------- 엘리트: 투기장 챔피언 우르그 — 3연타 · 대지 강타(충격파 2중) · 도약 내려찍기 / 50% 이하 오크 전사 난입 + 4타 들이받기
   function updateUrg(e, dt, d, a, moveTo) {
     const P = G.player;
     if (!e.enraged && e.hp < e.maxHp * 0.5) {

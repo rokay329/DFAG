@@ -276,7 +276,7 @@
   const DGC = new Map(), DGS = new Map();
   function dCol(c) { // 색 문자열 → [r,g,b,a]
     if (c[0] === '#') return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16), 1];
-    const m = c.match(/[\d.]+/g); return [+m[0], +m[1], +m[2], m.length > 3 ? +m[3] : 1];
+    const m = c.match(/-?[\d.]+(?:e[-+]?\d+)?/gi); return [+m[0], +m[1], +m[2], m.length > 3 ? Math.max(0, Math.min(1, +m[3])) : 1]; // v3.81 고침: 알파가 -5.5e-17처럼 지수로 적히면 「5.5」로 읽혀 꽉 찬 빛이 한 프레임 번쩍이던 문제 (화염구 폭발 끝 등)
   }
   function dGrad(kind, geo) {
     return { kind, geo, st: [], addColorStop(t, c) { this.st.push([t, dCol(c)]); },
@@ -320,6 +320,15 @@
   const blankSave = () => ({ inv: [], equip: {}, equipBy: { knight: {}, ranger: {}, mage: {}, priest: {}, gunner: {} }, mats: { iron: 0, crystal: 0 }, gold: 0, runs: 0, clears: 0, nextId: 1, lastCls: 'knight', lastStage: 1 });
   let SAVE = blankSave();
   try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.inv) SAVE = Object.assign(blankSave(), s); } catch (e) { /* 저장소 없음 */ }
+  // v3.53 캐릭터별 기록 분리 (사용자 결정): 회차(밤) · 원정 완료 · 최고 도달 · 진실 기록 · 수첩 진실 기록 · 「해」를 처음 들음
+  //  SAVE.byCls[직업]에 따로 담고, SAVE.runs 같은 이름은 지금 캐릭터(G.cls → 선택 중인 CUR → lastCls) 것을 읽고 쓰는 통로로 바꾼다 (저장 JSON에는 byCls만 남음)
+  //  해금 · 업적 누적(rec · unl) · 인벤토리 · 재료는 그대로 함께 씀. 예전 저장의 공용 기록은 마지막으로 고른 직업으로 옮김
+  { const PK = ['runs', 'clears', 'clears3', 'clears4', 'best', 'truth', 'noteTruth', 'sunKnown'], C5 = ['knight', 'ranger', 'mage', 'priest', 'gunner'];
+    if (!SAVE.byCls) { SAVE.byCls = {}; const o = SAVE.byCls[C5.includes(SAVE.lastCls) ? SAVE.lastCls : 'knight'] = {}; for (const k of PK) if (SAVE[k] != null) o[k] = SAVE[k]; }
+    for (const c of C5) if (!SAVE.byCls[c]) SAVE.byCls[c] = {};
+    const curC = () => { if (typeof G !== 'undefined' && G && G.cls) return G.cls; if (typeof CUR !== 'undefined' && CUR) return CUR; return SAVE.lastCls || 'knight'; };
+    const box = () => { const c = curC(); return SAVE.byCls[c] || (SAVE.byCls[c] = {}); };
+    for (const k of PK) { delete SAVE[k]; Object.defineProperty(SAVE, k, { get: () => { const v = box()[k]; return v === undefined && (k === 'runs' || k === 'clears') ? 0 : v; }, set: v => { box()[k] = v; }, enumerable: false, configurable: true }); } }
   // 이전 버전 저장 데이터 옮기기: 장착은 기사 것으로, 무기는 기사 무기로
   if (!SAVE.equipBy || !SAVE.equipBy.knight) SAVE.equipBy = { knight: Object.assign({}, SAVE.equip || {}), ranger: {} };
   for (const k of ['knight', 'ranger', 'mage', 'priest', 'gunner']) if (!SAVE.equipBy[k]) SAVE.equipBy[k] = {};
@@ -649,29 +658,6 @@
       '...kBBBk.kBBBk......',
       '...kkkkk.kkkkk......',
     ],
-    bearer: [
-      '.....rr...........',
-      '....rrrR..........',
-      '....kkkkkkk.......',
-      '...kwlllllmk......',
-      '..kwllllllmmk.....',
-      '..klllllllmmk.....',
-      '..kkkkkkkkekk.....',
-      '..klmlmllmmmk.....',
-      '...kkkkkkkkk......',
-      '.kmlkgRgRgkmlk....',
-      'kmllkgggggkllmk...',
-      'kdmkRrrrrrRkdmk...',
-      '.kk.kRrrrRk.kk....',
-      '....kRrrrRk.......',
-      '...kmRrrrRmk......',
-      '...kdRRrRRdk......',
-      '....kRrrRrk.......',
-      '....kdmk.kdmk.....',
-      '....kdmk.kdmk.....',
-      '...kddmk.kddmk....',
-      '...kkkkk.kkkkk....',
-    ],
     squireB: [
       '....kkkkk.......',
       '...kmllllk......',
@@ -762,30 +748,6 @@
       'kDkk.kDdk.....kDdkkDdk..',
       'kDdk..kDdk.....kDddkDddk',
       'kkkk..kkkk.....kkkkkkkkk',
-    ],
-    abom: [
-      '.....kkkkkkk......',
-      '....kHhhhhhhk.....',
-      '...kHhchhhhhHk....',
-      '..kHhhchhhhhhHk...',
-      '..khhhhcccchhhk...',
-      '..khhhhhhhhhhhk...',
-      '..kHhhekhhhekhk...',
-      '..kHhhhhhhhhhhk...',
-      '..kHhmmcmcmmhhk...',
-      '...kHhhhhhhhHk....',
-      '..kkkSSSSSSSkkk...',
-      '.kSscSssSsscSSk...',
-      'kSsAAbAssssSsSsk..',
-      'kssAbAbAssccsSsk..',
-      'kSsAAbAsssssSsSk..',
-      '.kksssssscsssskk..',
-      '..kSsssssssscsk...',
-      '..kcCcCcCcCcCck...',
-      '...kSSk...kSSk....',
-      '...kSSk...kSSk....',
-      '..kSSSk..kSSSk....',
-      '..kkkkk..kkkkk....',
     ],
     mother: [
       '......kkkkkkkk......',
@@ -1223,29 +1185,6 @@
       '....kkSk.kSk.....',
       '....kkkk.kkkk....',
     ],
-    butcher: [
-      '....kkkkkk......',
-      '...kHhhhhHk.....',
-      '..kHhhhhhhHk....',
-      '..khkhhhkhhk....',
-      '..khekhhekhk....',
-      '..kHhmhmhhHk....',
-      '...kHhhhhHk.....',
-      '..kkkSSSSkkk....',
-      '.kSccCccCccSk...',
-      'kSsSaaaaaaSsSk..',
-      'kssAaaabaaAssk..',
-      'kSsAaaaabaAsSk..',
-      '.kkAabaaaaAkk...',
-      '..kAaaaaaaAk....',
-      '..kAaaaabaAk....',
-      '..kAAaaaaAAk....',
-      '...kAAAAAAk.....',
-      '...kSSkkSSk.....',
-      '...kSSk.kSSk....',
-      '..kSSSk.kSSSk...',
-      '..kkkkk.kkkkk...',
-    ],
     cultist: [
       '.....kkkk.....',
       '....kRRRRk....',
@@ -1413,9 +1352,7 @@
     pknight: {'k':  '#121012', 'l':  '#8a8e96', 'm':  '#5a5e68', 'd':  '#3a3c44', 's':  '#8f9a6a', 'S':  '#5f6a45', 'P':  '#a3452e', 'e':  '#ff3b2c'},
     hound: {'k':  '#100c0c', 'd':  '#4e3b33', 'D':  '#2f231e', 'l':  '#a8aeb8', 'L':  '#94766a', 't':  '#e0d8c0', 'e':  '#ff3b2c', 'm':  '#6a707c', 'r':  '#7a1a22', 'R':  '#4a0e14', 'g':  '#b89040'},
     exec: {'B':  '#2a2024', 'k':  '#0c0a0a', 'H':  '#141014', 'h':  '#2a242a', 'e':  '#ff3020', 's':  '#b08a78', 'S':  '#7a5a4c', 'b':  '#3a2418', 'A':  '#3a2418', 'a':  '#5a3a24', 'r':  '#7a1418'},
-    bearer: {'k':  '#0e0c10', 'w':  '#d8dce4', 'l':  '#9aa0ac', 'm':  '#6a707c', 'd':  '#3c404a', 'e':  '#ff4030', 'R':  '#4a0e14', 'r':  '#8a1a22', 'g':  '#c9a24a', 's':  '#9aa0ac', 'S':  '#5a5e68', 'hl':  '#d8dce4'},
     pknightHot: { k: '#300808', l: '#e08a5a', m: '#b05030', d: '#702010', s: '#e05a36', S: '#a02818', P: '#ffd060', e: '#ffffff' },
-    abom: { k: '#0e0c0c', H: '#4a5048', h: '#7a8274', e: '#d8e070', m: '#2a1414', s: '#8a9282', S: '#5a6256', c: '#2a2420', C: '#14100e', a: '#6e2a24', A: '#3d1411', b: '#d8d0b8' },
     mother: { k: '#0c0a0c', H: '#1a1418', h: '#3a2e34', s: '#b8b09c', S: '#7a7464', e: '#c8f060', m: '#2a1010', v: '#9ae050', V: '#4a7a20', r: '#4a3a38', R: '#2a2020', b: '#d8d0b8' },
     crow: { k: '#141018', K: '#5a5070', e: '#ff3030', y: '#8a8070', r: '#8a1a22' },
     gbrute: { k: '#0b0f08', s: '#5e8a34', S: '#3e5e24', h: '#8ab858', e: '#ffdf3a', r: '#a3222a', w: '#ece0c4', b: '#d8d0b8', c: '#5a3a22', C: '#3a2414' },
@@ -1431,7 +1368,6 @@
     garcher_v2: { k: '#0e120a', s: '#9a5a42', S: '#6c3c2c', c: '#3a5a34', C: '#22381f', e: '#ffd23a' },
     garcher_v3: { k: '#0e120a', s: '#788282', S: '#545c5e', c: '#3a5a34', C: '#22381f', e: '#ffd23a' },
     gthrower: { k: '#0e120a', s: '#7aa040', S: '#4a6a2a', c: '#6a3a5a', C: '#3e2034', e: '#ff9a3a' },
-    hob: { k: '#0b0f08', H: '#2e3e1c', h: '#4a6228', e: '#ffd23a', m: '#141c0c', s: '#6e9a3a', S: '#46682a', c: '#8a8070', C: '#3a3428', a: '#5a3a22', A: '#3a2414', b: '#9a2a1a' },
     mage: { k: '#120c0a', H: '#7a4868', h: '#a25c86', s: '#ecbb7e', e: '#2a1a12', r: '#8a5078', R: '#6a3c60', g: '#eca359', d: '#5a3a2a', E: '#c0723e', F: '#eca359', i: '#5a3028', W: '#fae1ca', P: '#c07aa0', q: '#a8689a', Q: '#4a2844', S: '#d68b59' }, // 초상(섬네일)과 같은 따뜻한 색으로
     priest: { k: '#120c0a', W: '#c8ad94', w: '#f3dbb6', s: '#f3cf9f', e: '#2a1a12', g: '#c0723e', G: '#eca359', d: '#895042', E: '#fae1ca', F: '#ecd4af', i: '#eca359', v: '#d6bea4', V: '#b89277', S: '#e0a878' }, // 초상(섬네일)과 같은 따뜻한 색으로
     gunner2: { k: '#0b0a0e', H: '#2a2a30', r: '#70707a', L: '#16161a', q: '#b39a78', b: '#9a9aa4', G: '#f3dbb6', g: '#c8ad94', d: '#a29378', W: '#fae1ca', e: '#f8f4ee', n: '#26262e', C: '#44444e', c: '#62626e', x: '#26262e', S: '#9a9aa4', B: '#c8b890', F: '#1c1c22' }, // v2.42 그레이브 새 도트
@@ -1445,8 +1381,6 @@
     ghost: { k: '#16233a', s: '#cfe6ff', d: '#3b5a86', m: '#5f86b8', l: '#9cc1ea', w: '#e4f2ff', g: '#9cc1ea', r: '#cfe6ff', R: '#4f74a6', e: '#ffffff' },
     boss: { k: '#050407', d: '#1d1a24', m: '#2f2a3a', l: '#4d465c', w: '#7a7090', g: '#6d1c83', e: '#d17aff', r: '#4a0f14', R: '#2a070b', q: '#6e1a24', G: '#a87a30' },
     ghoul: { k: '#120f12', s: '#8a9476', S: '#59614c', c: '#4b3b30', C: '#2c231d', e: '#ff3b2c', b: '#d8d0b8', m: '#3a0c0c' },
-    butcher: { k: '#0f0b0b', H: '#4a3a28', h: '#6e5a40', e: '#ff4030', m: '#2a1a14', s: '#b08a78', S: '#7a5a4c', c: '#9a9da4', C: '#4d4f55', a: '#6e2a24', A: '#3d1411', b: '#b01c22' },
-    shadeB: { k: '#3a0808', H: '#701414', h: '#a02020', e: '#ffffff', m: '#3a0808', s: '#d03434', S: '#901c1c', c: '#ff6050', C: '#701414', a: '#b02424', A: '#701414', b: '#ff8070' },
     dog: { k: '#100c0c', d: '#4e3b33', D: '#2f231e', l: '#74594d', L: '#94766a', t: '#e0d8c0', e: '#ff3b2c' },
     cultist: { k: '#0e080a', R: '#3d0c14', r: '#6a1722', e: '#ffcc66', s: '#c9b49a', h: '#24070b' },
     bloat: { k: '#121012', s: '#8f9a6a', S: '#5f6a45', P: '#a3452e', e: '#ff3b2c', m: '#2a1010' },
@@ -1569,11 +1503,11 @@
     nGuardW1: ["...............", "......kkk......", ".....k1GGk.....", "...kkk2aakkk...", "..k22aaaaaaak..", "..k22aaaaaaak..", "..k33DeDDeDDk..", "..k22aaaaaaak..", "..kAk2aaaakAk..", "...kk4mmmmkk...", "k2aak5dgddk2aak", "kAak55dGdddkaAk", ".kak55dgdddkak.", ".kak33DgDDDkak.", "...kddk.kddk...", "...kDDk.kDDk..,"],
     nGuardW3: ["...............", "......kkk......", ".....k1GGk.....", "...kkk2aakkk...", "..k22aaaaaaak..", "..k22aaaaaaak..", "..k33DeDDeDDk..", "..k22aaaaaaak..", "..kAk2aaaakAk..", "...kk4mmmmkk...", "k2aak5dgddk2aak", "kAak55dGdddkaAk", ".kak55dgdddkak.", ".kak33DgDDDkak.", "...kddk.kddk...", "...kDDk.kDDk..,"],
     nGuardShield: [".kkkkkk.", "kaaaaaak", "kaGGGGak", "kaaGGaak", "kaaGGaak", "kaaGGaak", "kAaaaaAk", ".kAaaAk.", "..kAAk..", "...kk..."],
-    nBaldor: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcRrrrrPk5pupqRR6Dk.....", ".....kcRrrrrpkgGGGgRR6Dk.....", "....kcrRrrrrrkqqkqRRR64Dk....", "....kkkRkkkkkkQQkQkkk6kkk....", "....k..k.....kkkkk...k..k...,"],
-    nBaldorW0: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcRrrrrPk5pupqRR6Dk.....", ".....kcRrrrrpkgGGGgRR6Dk.....", "...kcrrRrrrrrkqqkqRRR64Dk....", "...kkkkRkkkkkkQQkQkkk6kkk....", "...k...k.....kkkkk...k..k...,"],
-    nBaldorW1: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrrrrk5qqqR4Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", "....kcrrRrrrPk5pupqR64Dk.....", "....kcrrRrrrpkgGGGgR64Dk.....", "...kcrrrRrrrrkqqkqRR64Dk.....", "..kkRkkkRkkkkkQQkQkk6kkk.....", "..k.k...k....kkkkk..k..k....,"],
-    nBaldorW2: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcRrrrk5qqqR6Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", ".....kcrrRrrPk5pupq6R4Dk.....", ".....kcrrRrrpkgGGGg6R4Dk.....", "...kcRrrrRrrrkqqkqR6RR4Dk....", "...kkRkkkRkkkkQQkQk6kkkDk....", "...k.k...k...kkkkk.k...kk...,"],
-    nBaldorW3: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkkk.....", ".......kcrRrrk5qqq64Dk.......", "......kccRPPPk5pupqk1Dk......", "......kccRgggk5uvuqkgDk......", "....kcRrrrrrPk5pupqRR4Dk.....", "....kcRrrrrrpkgGGGgRR4Dk.....", "...kcrRrrrRrrkqqkq6RR4Dk.....", "..kkkkRkkkRkkkQQkQ6kkkDk.....", "..k...k...k..kkkkkk...kk....,"],
+    nBaldor: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkk......", ".......kcrrkkk5qqqkkkk.......", "......kcckPPPk5pupqkPPPk.....", "......kcckgggk5uvuqkgggk.....", ".....kcRrrrkPk5pupqkPk6Dk....", ".....kcRrrrkkkgGGGgkkk6Dk....", "....kcrRrrrrrkqqkqqkR64Dk....", "....kkkRkkkkkkQQkQQkk6kkk....", "....k..k.....kkkkkkk.k..k...."],
+    nBaldorW0: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkk......", ".......kcrrkkk5qqqkkkk.......", "......kcckPPPk5pupqkPPPk.....", "......kcckgggk5uvuqkgggk.....", ".....kcRrrrkPk5pupqkPk6Dk....", ".....kcRrrrkkkgGGGgkkk6Dk....", "....kcrRrrrrrkqqkqqkR64Dk....", "....kkkRkkkkkkQQkQQkk6kkk....", "....k..k.....kkkkkkk.k..k...."],
+    nBaldorW1: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkk......", ".......kcrrkkk5qqqkkkk.......", "......kcckPPPk5pupqkPPPk.....", "......kcckgggk5uvuqkgggk.....", ".....kcRrrrkPk5pupqkPk6Dk....", ".....kcRrrrkkkgGGGgkkk6Dk....", "....kcrRrrrrrkqqkqqkR64Dk....", "....kkkRkkkkkkQQkQQkk6kkk....", "....k..k.....kkkkkkk.k..k...."],
+    nBaldorW2: [".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "...........k11PPPPPPPk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkk......", ".......kcrrkkk5qqqkkkk.......", "......kcckPPPk5pupqkPPPk.....", "......kcckgggk5uvuqkgggk.....", ".....kcrRrrkPk5pupqkPk6Dk....", ".....kcrRrrkkkgGGGgkkk6Dk....", "....kcRrrrRrrkqqkqqkR64Dk....", "....kkkkRkkkkkQQkQQkk6kkk....", "....k...k....kkkkkkk.k..k...."],
+    nBaldorW3: [".............................", ".........kk...k.k.k...kk.....", ".........kik.kGkGkGk.kik.....", "..........kikkgggggkkik......", "...........kHk1PPPPkHk.......", "..........k11PPPPPPPPPk......", "..........k2EvQQQQEvQQk......", "..........k31PpPPPpPPpk......", ".........kkk31PPPPPPpkk......", ".......kcrrkkk5qqqkkkk.......", "......kcckPPPk5pupqkPPPk.....", "......kcckgggk5uvuqkgggk.....", ".....kcrRrrkPk5pupqkPk6Dk....", ".....kcrRrrkkkgGGGgkkk6Dk....", "....kcRrrrRrrkqqkqqkR64Dk....", "....kkkkRkkkkkQQkQQkk6kkk....", "....k...k....kkkkkkk.k..k...."],
     nKrugash: [".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kFFk.kFFk............", "............kkkk.kkkk...........,"],
     nKrugashW1: [".................................", ".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kFFk.kkkk...........,"],
     nKrugashW3: [".................................", ".......krRk..........krrk........", ".....kkrRrk..........krRrkk......", "....krrRkrk...........krrRrk.....", "...kwwRkkRk...........kRkrwwk....", "..kwVwk..k.............k.kwwVk...", "..kWWk....................kWWk...", "..kWWk....................kWVk...", ".kwwk......................kwwk..", ".kwwVk....................kwVwk..", ".kwWWk....................kWWwk..", "..kwwk....................kwwk...", "..kwwwk..................kwwwk...", "..kwWWWkk..............kkWWWwk...", "..kwWWWwwkkk........kkkwwVWWwk...", "...kWWVwwwVwk......kVwwwwWWWk....", "....kWWwwwwVkkkkkkkkwVwwwVWk.....", ".....kVwwwVMMmmmnmmmMMwwwWk......", "......kkkwwVMMMMMMMMMVwkkk.......", ".........kkk11ddlddddkkk.........", ".........klkAEeAAAEeAklk.........", "........k.kk2lTklkTllkk.k........", ".......kwkWk2lTkkkTllkWkwk.......", ".......k3WwWkk2llllkkWwWuk.......", "........k3WWmmBlllk4mWWuk........", ".......kuk4mmk2wBllk4mmkuk.......", "........kkrllk2llBBk2lrkk........", ".........krddk5ywyBk1drk.........", ".........krkkWWWWWWWkkrk.........", "..........k.kMMkkkMMk.k..........", "............kkkk.kFFk...........,"],

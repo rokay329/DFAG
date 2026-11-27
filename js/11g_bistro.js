@@ -285,7 +285,7 @@ const BISTRO = (() => {
   }
   let last = null;
   const ate = k => { last = k; SERVE.k = k; SERVE.want = true; };
-  const doneText = () => [last && D.dishes[last] ? `「${D.dishes[last].n}」` : '맛있게 먹었다', '든든하게 배를 채웠다'];
+  const doneText = () => [last && D.dishes[last] ? `「${D.dishes[last].n}」` : '맛있게 먹었습니다', '든든하게 배를 채웠습니다'];
   function lights(list) { const R = G.dun && G.dun.cur; if (!R || R.type !== 'rest' || !R.bis) return; for (const k of ['kuo', 'cookie']) list.push({ x: R.bis[k].x, y: R.bis[k].y - 16, r: 56, a: 0.6, c: '255,190,120', ca: 0.05 }); list.push({ x: R.bis.cart.x - 24, y: R.bis.cart.y - 58, r: 70, a: 0.8, c: '255,200,120', ca: 0.08 }); /* 수레 등불 */ list.push({ x: R.bis.sign.x, y: R.bis.sign.y - 20, r: 44, a: 0.4 }); const st = time - SERVE.popT; if (st >= 0 && st < 1.5 && G.bonfire) list.push({ x: G.bonfire.x, y: G.bonfire.y - 100, r: 60, a: 0.9, c: '255,220,160', ca: 0.08 }); } // 떠오른 요리는 밝게
   function interact() { // 쿠키 · 땅에 있는 쿠오 바로 옆이면 「F 대화하기」 (솥의 「F 주문하기」보다 먼저)
     const R = G.dun && G.dun.cur, P = G.player; if (!R || R.type !== 'rest' || !R.bis || !P || P.dead || TK.on) return null;

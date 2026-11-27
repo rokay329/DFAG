@@ -39,7 +39,7 @@
     3: { n: '결투장', tag: '결투장', foe: '결투', clear: '결투 승리', loot: '결투의 전리품',
       sub: { 4: '투기장 챔피언 우르그가 부러진 엄니를 걸고 서 있다', 9: '사슬이 끊어진 트롤 그러크가 우리 밖을 배회한다' } },
     4: { n: '알현실', tag: '알현실', foe: '알현', clear: '알현 종료', loot: '왕실의 하사품',
-      sub: { 4: '근위대장 모르드레드가 주인 없는 문을 여전히 지킨다', 9: '상복의 왕비가 빈 왕좌 앞에서 재를 매만진다' } },
+      sub: { 4: '근위대장이 주인 없는 문을 여전히 지킨다', 9: '상복의 왕비가 빈 왕좌 앞에서 재를 매만진다' } },
   };
   const ER = () => ELITE_ROOM[G && G.stage] || ELITE_ROOM[1];
   const roomName = t => t === 'ruin' ? RUIN.name() : t === 'den' ? DEN.name() : t === 'archive' ? ARCH.name() : t === 'home' && G ? HOME.name(G.cls) : t === 'elite' && G && G.dun && !G.dun.forge ? ER().n : ROOM_N[t];

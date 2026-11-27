@@ -210,8 +210,6 @@
     else if (e.type === 'mordred') drawMordred(e, ya, al);
     else if (e.type === 'queen') drawQueen(e, ya, al);
     else if (e.type === 'exec') drawExec(e, ya, al);
-    else if (e.type === 'bearer') drawBearer(e, ya, al);
-    else if (e.type === 'flag') drawFlagEnt(e, ya, al);
     else if (e.type === 'boss' && e.kind === 'ashking') withAura(e, '#ff8a3a', () => drawAshKing(e, ya, al));
     else if (e.type === 'boss' && e.kind === 'slimeking') withAura(e, '#7ae0ff', () => { drawSlimeKing(e, ya, al); TRUTH.belly(e); }); // v2.46 보스 오오라
     else if (INV_DRAW[e.type]) invDraw(e, ya, al, white); // v2.43 난입자 (공격 모션 포함)
@@ -282,16 +280,15 @@
         const hk = nrPart('bloat', 'head'); for (let s = 0; s >= -g; s--) drawSprite(hk, pal, 2, x, by + s * 2, flip, o);
       } else nrBiped(e, 'bloat', pal, e.x, by, flip, o);
     }
-    else if (e.type === 'butcher') drawButcher(e, ya, al);
     else if (e.type === 'ghost' || (e.type === 'boss' && e.kind !== 'slimeking')) {
       const sc = 2;
       const map = e.type === 'boss' ? 'baldor' : e.type === 'ghost' ? 'soldier' : 'ghoul';
-      const pal = e.type === 'boss' ? 'boss' : e.type === 'ghost' ? 'ghost' : 'butcher';
-      const handY = e.type === 'boss' ? 30 : e.type === 'butcher' ? 24 : 14;
+      const pal = e.type === 'boss' ? 'boss' : e.type === 'ghost' ? 'ghost' : 'ghoul';
+      const handY = e.type === 'boss' ? 30 : 14;
       const hx0 = e.x + e.face * (e.type === 'boss' ? NM_HAND + (e.sw ? 0 : 4) : 3), hy = e.type === 'boss' ? e.y - (e.sw ? 8 : 14) + bdPose(e).dy : e.y - handY; /* v2.50 들고 다닐 때는 가슴 높이에서 쥠 */ const hx = hx0 + (e.type === 'boss' ? bdPose(e).ux : 0);
       const bl = e.type === 'boss' ? BOSS_SWORD : BLADES[e.blade]; // v2.46 발도르: 특대형 대검
       const behind = e.type === 'boss' ? !e.sw && Math.cos(e.bladeAng) * e.face < -0.25 /* v2.50 발도르: 세워 든 칼은 손에 쥔 채 몸 앞, 뒤로 넘긴 때만 등 뒤 */ : !e.sw && Math.sin(e.bladeAng) < -0.2 === false && Math.cos(e.bladeAng) * e.face < 0;
-      drawShadow(e.x, e.y + 2, e.type === 'boss' ? 24 : e.type === 'butcher' ? 16 : 10);
+      drawShadow(e.x, e.y + 2, e.type === 'boss' ? 24 : 10);
       if (e.type === 'boss' && !e.dead && Math.random() < 0.5) G.parts.push({ x: e.x + rand(-16, 16), y: e.y - rand(0, 48), vx: 0, vy: -24, t: 0.6, c: e.stage === 3 ? '#8a3fb0' : '#3e2b4a', g: 0 });
       if (bl && behind) drawBlade(bl, hx, hy, e.bladeAng, al, white);
       if (bl) enemyTrail(e, e.trail, hx, hy, 10, bl.reach, e.type === 'ghost' ? '170,210,255' : e.type === 'boss' ? '190,120,240' : '230,220,210', e.type === 'boss');
@@ -315,29 +312,16 @@
       if (e.grogiT > 0) { for (let i = 0; i < 3; i++) { ctx.fillStyle = '#ffd34d'; ctx.fillRect(Math.round(e.x + Math.cos(time * 6 + i * 2.1) * 16), Math.round(e.y - (e.type === 'boss' ? 62 : 50) + Math.sin(time * 6 + i * 2.1) * 3), 2, 2); } }
     }
     if (e.type === 'boss' && e.kind !== 'slimeking' && e.kind !== 'krugash') drawBossAura(e);
-    if (e.type === 'butcher' && !e.dead) {
-      const lf = e.lift || 0;
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      if (e.glow > 0) {
-        const cx = e.x + e.face * 6, cy = e.y - 26 - lf, rr = 14 + 22 * e.glow;
-        const gr = dRadial(ctx, cx, cy, 0, cx, cy, rr);
-        gr.addColorStop(0, `rgba(255,80,50,${0.55 * e.glow})`); gr.addColorStop(1, 'rgba(255,40,30,0)');
-        ctx.fillStyle = gr.p(ctx); ctx.fillRect(cx - rr, cy - rr, rr * 2, rr * 2);
-      }
-      ctx.fillStyle = e.enraged ? 'rgba(255,60,40,.95)' : `rgba(220,240,110,${0.4 + 0.5 * e.glow})`;
-      ctx.fillRect(Math.round(e.x + (e.face > 0 ? -1 : 1) * 3) - 3, Math.round(e.y - 34 - lf), 2, 2); ctx.fillRect(Math.round(e.x + (e.face > 0 ? -1 : 1) * 3) + 3, Math.round(e.y - 34 - lf), 2, 2);
-      ctx.restore();
-    }
     // 준엘리트·엘리트 이름표 (v0.69: 챕터 1~3 모두) — 엘리트는 주황, 준엘리트는 금색
     const nm = e.type !== 'boss' && !e.dead && (e.semiName || (isElite(e) ? eliteName(e) : null));
     if (nm) {
-      const top = e.tall ? e.tall + 8 : (ELITE_TOP[e.kind === 'hob' ? 'hob' : e.type] || 60);
+      const top = e.tall ? e.tall + 8 : (ELITE_TOP[e.type] || 60);
       ctx.font = '8px Galmuri7'; ctx.textAlign = 'center';
       const ty = Math.round(e.y - top - 5 - (e.z || 0) - (e.lift || 0)), el = isElite(e);
       ctx.fillStyle = '#000'; fillTextW(nm, Math.round(e.x) + 1, ty + 1); ctx.fillStyle = el ? '#ffa070' : '#f2d78c'; fillTextW(nm, Math.round(e.x), ty);
     }
     if (e.type !== 'boss' && e.hp < e.maxHp && !e.dead) {
-      const w = isElite(e) ? 30 : isSemi(e) ? 22 : 16, top = e.tall ? e.tall + 8 : isElite(e) ? (ELITE_TOP[e.kind === 'hob' ? 'hob' : e.type] || 60) : 40;
+      const w = isElite(e) ? 30 : isSemi(e) ? 22 : 16, top = e.tall ? e.tall + 8 : isElite(e) ? (ELITE_TOP[e.type] || 60) : 40;
       ctx.fillStyle = '#000'; ctx.fillRect(Math.round(e.x - w / 2) - 1, Math.round(e.y - top) - 1, w + 2, 4);
       ctx.fillStyle = '#b3262b'; ctx.fillRect(Math.round(e.x - w / 2), Math.round(e.y - top), Math.round(w * e.hp / e.maxHp), 2);
       if (e.grogiMax) { ctx.fillStyle = '#e8c35a'; ctx.fillRect(Math.round(e.x - w / 2), Math.round(e.y - top) + 2, Math.round(w * (e.grogiT > 0 ? 1 : e.grogi / e.grogiMax)), 1); }
@@ -389,7 +373,7 @@
       ctx.restore();
     }
     const ifr = idleFrame(P), wFr = walkFr(P), bob = ifr ? (ifr.F.drop ? 2 : 0) : (wFr % 2 || wFr === -2) ? 2 : 0; // v2.43 걷기 4프레임 · v2.51 대기 동작
-    let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
+    let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1; if (P.blinkRec > time && G.cls === 'mage') alpha = Math.min(alpha, 1 - 0.55 * (P.blinkRec - time) / 0.29); // v3.62 점멸 뒤 나타나는 동안 몸이 또렷해짐
     const dashS = P.state === 'dodge' && P.t >= 0.03 && P.t < BLINK;
     if (P.state === 'dodge') { const [a, b] = DASH_POSE(P.t), hz = Math.abs(P.dvx) >= Math.abs(P.dvy); [sx, sy] = hz ? [a, b] : [b, a]; } // v3.20 어세신 대시: 웅크림 → 몸 뒷부분만 늘어남 → 되튐 → 자리잡기 (눌림 방향은 가로·세로 중 큰 쪽)
     if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
@@ -451,7 +435,7 @@
     const blink = P.inv > 0 && Math.floor(time * 16) % 2 === 0;
     drawShadow(P.x, (P.rollGY != null ? P.rollGY : P.y) + 1, 8 - Math.min(3, lift * 0.3));
     if (holy) { ctx.fillStyle = `rgba(255,211,77,${0.22 + Math.sin(time * 11) * 0.07})`; ctx.beginPath(); ctx.ellipse(P.x, P.y, 20, 8, 0, 0, TAU); ctx.fill(); }
-    let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1;
+    let rot = 0, alpha = blink ? 0.45 : 1, sx = 1, sy = 1; if (P.blinkRec > time && G.cls === 'mage') alpha = Math.min(alpha, 1 - 0.55 * (P.blinkRec - time) / 0.29); // v3.62 점멸 뒤 나타나는 동안 몸이 또렷해짐
     if (P.state === 'dodge') { if (P.rolling) rot = rollPose(P).rot; else { alpha = 0.5 + 0.5 * clamp((P.t - BLINK) / 0.09, 0, 1); sx = 0.9; sy = 1.1; } }
     if (P.state === 'charge') { rot = 0.3 * P.face; sx = 1.1; }
     if (PPOSE) ({ rot, sx, sy } = PPOSE); // v2.43 공격 모션
