@@ -371,8 +371,8 @@
       if (r.type === 'secret') { r.chest = { x: CX, y: CY - 10, opened: false, kind: 'secret' }; r.altars = [{ x: CX - 96, y: CY + 44, k: 'gear' }, { x: CX + 96, y: CY + 44, k: 'heart' }]; } // v2.02 피의 제단
       if (r.type === 'shop') {
         const mul = realStage === 4 ? 1.9 : stage === 2 ? 1.3 : stage === 3 ? 1.6 : 1;
-        const all = [['meat', 100], ['orb', 45], ['vial', 55], ['gear', 650], ['iron', 30], ['armor', 220]]; // v2.00 방패 조각
-        const pickd = [all[0], all[3], ['heartUp', 800], ...all.filter((_, i) => i !== 0 && i !== 3).sort(() => Math.random() - 0.5).slice(0, 1)].sort((a, b) => a[1] - b[1]); // v2.02 빈 하트 그릇은 가게마다 하나
+        const all = [['meat', 100], ['orb', 45], ['vial', 55], ['gear', 650], ['iron', 30], ['armor', 220]].filter(([k]) => !(k === 'orb' && G && G.cls === 'priest')); // v2.00 방패 조각 · v3.83 성직자는 투지 결정 없음
+        const pickd = [all.find(x => x[0] === 'meat'), all.find(x => x[0] === 'gear'), ['heartUp', 800], ...all.filter(x => x[0] !== 'meat' && x[0] !== 'gear').sort(() => Math.random() - 0.5).slice(0, 1)].sort((a, b) => a[1] - b[1]); // v2.02 빈 하트 그릇은 가게마다 하나
         r.shop = pickd.map(([k, p], i) => ({ k, price: Math.round(p * mul * ASCF.shop() / 5) * 5, x: CX - 135 + i * 90, y: CY + 40, sold: false }));
       }
       // 방 꾸미기 설정과 서 있는 소품
@@ -711,7 +711,7 @@
   function shopHeartFix(R) { // v2.39 최대 하트(6칸)면 상점의 빈 하트 그릇을 다른 물건으로 바꿈
     if (!R || !R.shop || !G || !G.stats || G.stats.hp < HEART_CAP) return;
     const s = R.shop.find(x => x.k === 'heartUp' && !x.sold); if (!s) return;
-    const have = new Set(R.shop.map(x => x.k)), alt = [['armor', 220], ['vial', 55], ['orb', 45], ['iron', 30], ['meat', 100]].find(([k]) => !have.has(k)) || ['armor', 220];
+    const have = new Set(R.shop.map(x => x.k)), alt = [['armor', 220], ['vial', 55], ['orb', 45], ['iron', 30], ['meat', 100]].find(([k]) => !have.has(k) && !(k === 'orb' && G.cls === 'priest')) || ['armor', 220];
     const mul = G.stage === 4 ? 1.9 : G.stage === 2 ? 1.3 : G.stage === 3 ? 1.6 : 1;
     s.k = alt[0]; s.price = Math.round(alt[1] * mul * ASCF.shop() / 5) * 5;
   }
@@ -1517,11 +1517,13 @@
   // v2.51 보스 문 열쇠 패널 (미니맵 아래): 칸 2개 — 빈 칸(못 얻음) · 열쇠(가지고 있음) · 금 테두리(받침에 설치함)
   const SKEY_URL = {};
   function skeyURL() { const st = SST() in SKEY_ART ? SST() : 1; return SKEY_URL[st] || (SKEY_URL[st] = gCanvas(fromRows(SKEY_ART[st][0]), SKEY_PAL[st]).toDataURL()); }
+  let bkTop = 160, bkTopAt = 0;
   function updateBossKeys() {
     const el = $('bkPanel'); if (!el) return; const D = G && G.dun, R = D && D.cur;
     const show = !!(D && !D.forge && !D.home && !D.bossOpen && R && R.type !== 'boss' && mode !== 'map' && mode !== 'wmap' && $('phase').style.display !== 'none');
     if (!show) { if (el.style.display !== 'none') el.style.display = 'none'; hudPrev.bk = ''; return; }
-    const put = sealPlaced(), held = D.keys || 0, pe = $('party'), top = pe ? pe.offsetTop + pe.offsetHeight + 6 : 160, // v2.53 왼쪽 캐릭터·빛 패널 바로 아래
+    if (!(bkTopAt > performance.now())) { const pe = $('party'); bkTop = pe ? pe.offsetTop + pe.offsetHeight + 6 : 160; bkTopAt = performance.now() + 500; } /* v3.83 패널 위치는 0.5초마다만 잼 (매 프레임 재면 레이아웃을 다시 계산함) */
+    const put = sealPlaced(), held = D.keys || 0, top = bkTop, // v2.53 왼쪽 캐릭터·빛 패널 바로 아래
        key = `${G.stage}|${put}|${held}|${top}`;
     if (el.style.display === 'none') el.style.display = '';
     if (key === hudPrev.bk) return; hudPrev.bk = key; el.style.top = top + 'px';

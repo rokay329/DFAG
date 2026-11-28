@@ -14,7 +14,7 @@
     el.style.cssText = 'right:8px;bottom:40px;padding:6px 8px;font:8px/12px Galmuri7,monospace;color:var(--quiet);white-space:nowrap;pointer-events:none;display:none';
     (document.getElementById('ui') || document.body).appendChild(el); let key = '';
     setInterval(() => { const on = typeof mode !== 'undefined' && mode === 'play' && !!G; el.style.display = on ? 'block' : 'none'; if (!on) return;
-      const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? (+k.slice(2) <= 4 ? '1~4' : k.slice(2)) : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
+      const rows = [...DEVK].map(([k, d]) => [k.startsWith('sd') ? (+k.slice(2) >= 1 && +k.slice(2) <= 4 ? '1~4' : k.slice(2)) /* v3.83 Shift+0이 1~4로 묶여 목록에서 안 보이던 문제 */ : k.toUpperCase(), d]).filter((r, i, a) => a.findIndex(q => q[0] === r[0]) === i).sort((p, q) => (p[0] === 'ESC') - (q[0] === 'ESC')), k2 = rows.map(r => r.join()).join('|') + (GOD_MODE ? 1 : 0);
       if (!DEV_LIST) { if (key === 'closed') return; key = 'closed'; el.innerHTML = '<span style="color:#ffe9b0">Shift+?</span> 테스트 단축키 열기'; return; }
       if (k2 === key) return; key = k2;
       el.innerHTML = '<b style="color:#9fd2ff;font:9px Galmuri9">테스트 단축키</b><br>' + rows.map(([k, d]) => `<span style="color:#ffe9b0">Shift+${k}</span> ${d}${k === 'O' && GOD_MODE ? ' <span style="color:#9fd2ff">(켜짐)</span>' : ''}`).join('<br>'); }, 400); });
@@ -242,7 +242,7 @@
     },
     priest: {
       n: '사제', name: '미레아', sub: '토끼 사제', role: '방패 · 버프', map: 'hPriest', pal: 'hPriest', ghostPal: 'hPriestGhost', weapon: '메이스',
-      base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, tier: { atk: '중', crit: '하', spd: '중' }, skill: '치유의 빛', skillCd: 12, awaken: '기적',
+      base: { atk: 20, def: 0, hp: 6, crit: 0.08, spd: 90 }, tier: { atk: '중', crit: '하', spd: '중' }, skill: '권능', skillCd: 12, awaken: '기적',
       skillD: '빛의 방패 1칸을 얻고 주변 적을 밀쳐냅니다.', awakenD: '사용할 수 없습니다. 한 판에 한 번, 쓰러지면 하트 1.5칸으로 되살아납니다.',
       atkD: '메이스 3연타, 3타는 충격파를 일으킵니다. 신의 가호: 맞을 때 10% 확률로 막아냅니다.', icons: ['mace', 'heal', 'miracle'],
     },

@@ -369,8 +369,13 @@
       sfx('select');
     }
     const busy = () => { const R = R0(); return !!(R && R.seqT != null); };
+    // v3.83 왕관이 재가 된 뒤 주인공 말주머니 (스토리 문서 「재의 제단」)
+    const ALTAR_SAY = { knight: ['…재가 됐다고?', '그런데 문장은 아직 성문 너머를 가리키고 있어.'], ranger: ['…재가 됐어?', '그럼 의뢰인은 대체 뭘 받으려는 거지?'],
+      mage: ['재가 됐는데, 마력은 사라지지 않았어요.', '어딘가로… 옮겨 갔어요.'], priest: ['…바친 것이 재가 되었어요.', '이게 정말 끝을 위한 제물이었을까요?'],
+      gunner: ['…재가 됐군.', '제물을 받아 놓고 문만 열어 준다라.', '어디 한번 들어가 보지.'] };
     function update(dt) {
       const R = R0(); if (!R || R.seqT == null) return;
+      if (R.talkOn) { flashT = Math.max(0, flashT - dt); TRUTH.update(dt); return; } // v3.83 제단 말주머니가 끝날 때까지 연출 멈춤
       const t0 = R.seqT, t = R.seqT += dt, ev = R.ev, hit = (k, at) => { if (!ev[k] && t >= at) { ev[k] = true; return true; } return false; };
       for (const k in pressed) pressed[k] = false; G.prompt = null; flashT = Math.max(0, flashT - dt); // 연출 중엔 update 본체를 건너뛰므로 번쩍임은 여기서 줄인다
       for (let i = 0; i < 3; i++) { if (hit('e' + i, TL.emerge[i])) sfx('blip', 1.2 + i * 0.15); if (hit('s' + i, TL.snap[i] + TL.snapDur)) sfx('coin', 0.9 + i * 0.1); }
@@ -378,7 +383,7 @@
       if (hit('ring', TL.ring)) sfx('boss');
       if (hit('crumble', TL.crumble)) { sfx('block', 0.5); sfx('drop', 0.5); }
       if (hit('ban', TL.banner)) banner('재의 왕관', '바친 왕관이 재가 되어 흩어졌습니다');
-      if (hit('huh', TL.huh)) sayPlayer('…?', 2.2); // 의아함만 남김
+      if (hit('huh', TL.huh)) { const L = ALTAR_SAY[G.cls]; if (L && typeof TRUTH !== 'undefined') { R.talkOn = true; TRUTH.talk(L.map(x => ['me', x]), () => { R.talkOn = false; }); } else sayPlayer('…?', 2.2); } // v3.83 「…?」 대신 캐릭터별 말주머니 (F로 넘기는 동안 연출 멈춤)
       if (hit('gate', TL.gate[0])) sfx('drop', 0.6);
       if (t >= TL.end && t0 < TL.end) finish();
     }

@@ -171,7 +171,7 @@
     if (G && G.cine) { updateCine(rdt); return; }
     if (G && CA.busy()) { CA.update(rdt); return; } // v2.52 재의 제단 연출 중엔 조작 없음
     if (G && END.busy()) { END.update(rdt); return; } // v2.54 엔딩 연출 중엔 조작 없음
-    if (G && TRUTH.busy()) { TRUTH.update(rdt); return; } // v2.58 진엔딩 단서 대화 · 연출 중엔 조작 없음
+    if (G && TRUTH.busy()) { flashT = Math.max(0, flashT - rdt); TRUTH.update(rdt); return; } // v3.83 연출 중에도 번쩍임이 줄어들게 (3장 공명 끝 번쩍임이 말주머니 동안 화면에 남던 문제) // v2.58 진엔딩 단서 대화 · 연출 중엔 조작 없음
     if (G && RUIN.busy()) { RUIN.update(rdt); return; } // v3.20 용의 유적: 엠브라즈 대화 중엔 조작 없음
     if (G && DEN.busy()) { DEN.update(rdt); return; } // v3.18 안전 놀이터 도박사 대화 중엔 조작 없음 (F로 넘김)
     if (G && G.dun && G.dun.arch && ARCH.update(rdt)) return; // v3.00 코코아의 기록 보관소: 인사 · ESC로 나가기

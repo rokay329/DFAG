@@ -70,7 +70,9 @@ const CULTB = (() => {
       const cells = bodyCells(key, flip), hair = HC[key + flip], mx = px - bx, my = py - by, drag = st.drag || 0;
       const ca = Math.cos(lean), sa = Math.sin(lean), HP = new Map(), tug = drag ? 0 : sg * 3 * Math.min(1, Math.max(0, st.lean || 0) / 0.28 + Math.max(0, st.dx || 0) / 14); // 휘두르는 순간 끝단도 몸 쪽으로 살짝 끌려옴 (최대 3칸)
       for (const [x, y, c, f] of hair) { const h = -y, hw = ease((h - 4) / 9), w = Math.max(hw, f * f), rx = x * ca - y * sa, ry = x * sa + y * ca; // w: 몸을 따라가는 정도 (머리 쪽 1 → 땅에 닿은 끝 0)
-        HP.set(x + ',' + y, [bx + Math.round(x + (rx + mx - x) * w + (drag + tug) * (1 - w)), by + Math.round(y + (ry + my - y) * w), c]); }
+        let X = bx + Math.round(x + (rx + mx - x) * w + (drag + tug) * (1 - w)), Y = by + Math.round(y + (ry + my - y) * w);
+        if (st.air) { const k = (1 - w) * st.air, dx = X - bx, sw = Math.sin(time * 9 + y * 0.5) * 1.5 * k; X = bx + Math.round(dx * (1 - 0.55 * k) + sw); Y += Math.round(Math.min(Math.abs(dx) * 0.6, 14) * k); } // v3.83 도약 중: 바닥에 끌리던 끝이 몸 아래로 처짐
+        HP.set(x + ',' + y, [X, Y, c]); }
       const seg = (a, b, c) => { const n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])); ctx.fillStyle = P[c]; for (let i = 0; i <= n; i++) { const t = n ? i / n : 0; ctx.fillRect(Math.round(a[0] + (b[0] - a[0]) * t) * C, Math.round(a[1] + (b[1] - a[1]) * t) * C, C, C); } };
       for (const [x, y, c] of hair) { const p = HP.get(x + ',' + y), r = HP.get((x + 1) + ',' + y), d = HP.get(x + ',' + (y + 1)); seg(p, p, c); if (r) seg(p, [Math.round((p[0] + r[0]) / 2), Math.round((p[1] + r[1]) / 2)], c); if (d) seg(p, [Math.round((p[0] + d[0]) / 2), Math.round((p[1] + d[1]) / 2)], c); if (r) seg(r, [Math.round((p[0] + r[0]) / 2), Math.round((p[1] + r[1]) / 2)], r[2]); if (d) seg(d, [Math.round((p[0] + d[0]) / 2), Math.round((p[1] + d[1]) / 2)], d[2]); } // 머리카락: 뿌리는 몸을 따라, 바닥에 닿은 끝은 땅에 남아 끌림 · 칸 사이를 이어 끊기지 않게
       for (const [x, y, c] of rotPivot(cells, lean)) { if (py + y > kb) continue; ctx.fillStyle = P[c]; ctx.fillRect((px + x) * C, (py + y) * C, C, C); }
@@ -97,6 +99,12 @@ const CULTB = (() => {
         if (t < 0.85) { const q = ease((t - 0.5) / 0.35), g = S + TAU * q; return { ang: g, lean: 0.12, low: 1, dy: 2, spin: q, trail: [Math.max(S, g - 5.2), g, 0] }; }
         if (t < 1.15) return { ang: S + TAU, lean: 0.1, low: 1, dy: 2, trail: [S + TAU - 5.2, S + TAU, (t - 0.85) / 0.3] };
         const q = ease((t - 1.15) / 0.35); return { ang: lerp(S + TAU, rest(a) + TAU, q), lean: lerp(0.1, 0, q), dy: Math.round(lerp(2, 0, q)) }; },
+      leap: (t, a) => { const sg = Math.cos(a) >= 0 ? 1 : -1, A0 = -Math.PI / 2 - 0.55 * sg, A1 = sg > 0 ? Math.PI / 2 - 0.3 : -Math.PI * 1.5 + 0.3; // v3.83 도약: 칼을 머리 위로 들고 날아 → 착지 순간 위에서 아래로 내려찍음
+        if (t < 0.15) { const k = ease(t / 0.15); return { ang: lerp(rest(a), A0 + (sg < 0 ? TAU : 0), k), lean: -0.1 * k, low: 1 }; } // 앞쪽으로 들어 올림
+        if (t < 0.65) return { ang: A0 + Math.sin(t * 40) * 0.03, lean: -0.14, dy: -1 };
+        if (t < 0.73) { const q = ease((t - 0.65) / 0.08); return { ang: lerp(A0, A1, q), lean: lerp(-0.14, 0.32, q), dx: lerp(0, 5, q), low: q > 0.5, trail: [A0, lerp(A0, A1, q), 0] }; }
+        if (t < 1.05) { const q = (t - 0.73) / 0.32; return { ang: A1, lean: lerp(0.32, 0.2, q), dx: 5, low: 1, trail: [A0, A1, q] }; }
+        const q = ease((t - 1.05) / 0.4); return { ang: lerp(A1, rest(a) + (sg < 0 ? -TAU : 0), q), lean: lerp(0.2, 0, q), dx: lerp(5, 0, q) }; },
       fwd: (t, a) => { const A0 = a - 2.2, A1 = a + 1.4;
         if (t < 0.5) { const k = ease(t / 0.5); return { ang: lerp(rest(a), A0, k), lean: -0.22 * k, dx: -3 * k }; }
         if (t < 0.65) return { ang: A0 + Math.sin(t * 60) * 0.03, lean: -0.22, dx: -3 };
@@ -177,7 +185,7 @@ const CULTB = (() => {
         x = nx; y = ny; seen.add(x * 1000 + y); p.push([x, y]); }
       return p.length >= 10 ? p : null; }
     function near(x, y, r) { const L = SEAM.list; for (let k = 0; k < 60; k++) { const s = L[(Math.random() * L.length) | 0], sx = (s / 1000) | 0, sy = s % 1000; if (Math.hypot(sx - x, sy - y) < r) return [sx, sy]; } return null; }
-    function add(burst) { if (!SEAM || !SEAM.list.length) return; let s = burst ? near(cx, cy, 14) || near(cx, cy, 30) : null; if (!s) { const v = SEAM.list[(Math.random() * SEAM.list.length) | 0]; s = [(v / 1000) | 0, v % 1000]; }
+    function add(burst) { if (!SEAM || !SEAM.size) return; let s = burst ? near(cx, cy, 14) || near(cx, cy, 30) : null; if (!s) { const v = SEAM.list[(Math.random() * SEAM.list.length) | 0]; s = [(v / 1000) | 0, v % 1000]; }
       const p = path(s[0], s[1], burst); if (p) F.push({ p, t: burst ? -Math.random() * 6 : -Math.random() * 20, sp: burst ? 26 + Math.random() * 10 : 12 + Math.random() * 8 }); }
     function start(wx, wy) { const o = org(); on = true; t0 = time; endT = 0; cx = Math.round((wx - o.x) / 2); cy = Math.round((wy - o.y) / 2); F = []; for (let i = 0; i < 34; i++) add(true); }
     function tick(dt) { if (!on) return; Kd += (K - Kd) * Math.min(1, dt * 3); for (const f of F) f.t += dt * f.sp * Kd; F = F.filter(f => f.t < f.p.length + 16); if (endT) { if (time - endT > 1.6) { on = false; F = []; } return; } const want = time - t0 < 1.2 ? 34 : 40; while (F.length < want) add(time - t0 < 1.2); } // 교주가 죽으면 새 불씨 없이 1.6초에 걸쳐 사그라듦
@@ -190,7 +198,22 @@ const CULTB = (() => {
           if (dd < 1.5 && !endT && Math.random() < 0.016 * 6) G.parts.push({ x: o.x + x * 2, y: o.y + y * 2, vx: rand(-6, 6), vy: rand(-24, -10), t: 0.5, c: Math.random() < 0.5 ? '#ffc040' : '#ff7a20', g: 0, glow: true }); } }
       ctx.restore(); }
     function lights(list) { if (!on) return; const o = org(); F.forEach((f, i) => { if (i % 2) return; const j = Math.min(f.p.length - 1, Math.max(0, Math.floor(f.t))); if (f.t < 0 || f.t > f.p.length) return; const [x, y] = f.p[j]; list.push({ x: o.x + x * 2, y: o.y + y * 2, r: 44, a: 0.45 * (endT ? Math.max(0, 1 - (time - endT) / 1.6) : 1), c: '255,120,40', ca: 0.07 }); }); }
-    return { start, tick, draw, lights, setK: k => { K = k; }, on: () => on, end: () => { if (on && !endT) endT = time; }, stop: () => { on = false; F = []; } };
+    // v3.83 큰 공격이 땅에 닿으면 그 자리 줄눈에서 불길이 물결처럼 번짐 (시안 _시안/교주2페이즈_불연출_바닥불_시안01) — R: 반지름(칸) · sp: 퍼지는 속도(칸/초) · ring: 도넛 고리 반지름(칸)
+    let SP = []; const SPC = ['#fff6d0', '#ffd860', '#ff9a2a', '#e05418', '#a8280c', '#5a1e0a'];
+    const BAY = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], dth = (x, y, v) => v > (BAY[(y & 3) * 4 + (x & 3)] + 0.5) / 16;
+    function spread(wx, wy, R, sp, ring) { if (!SEAM || !SEAM.size) return; const o = org(), x = Math.round((wx - o.x) / 2), y = Math.round((wy - o.y) / 2), seeds = [];
+      const nr = (px, py) => { for (let d = 0; d < 12; d++) for (let k = 0; k < 24; k++) { const a = k / 24 * TAU, sx = Math.round(px + Math.cos(a) * d), sy = Math.round(py + Math.sin(a) * d); if (has(sx, sy)) return [sx, sy]; } return null; };
+      if (ring) { for (let i = 0; i < 18; i++) { const a = i / 18 * TAU, q = nr(x + Math.cos(a) * ring, y + Math.sin(a) * ring * 0.7); if (q) seeds.push(q); } } else { const q = nr(x, y); if (q) seeds.push(q); }
+      const ph = Math.random() * 10, lim = a => R * (0.7 + 0.45 * (0.5 + 0.5 * Math.sin(a * 3 + ph) * Math.sin(a * 5 + ph * 1.7))); // 가장자리를 불규칙하게
+      const T = new Map(), q = []; for (const s0 of seeds) { T.set(s0[0] * 1000 + s0[1], 0); q.push([s0[0], s0[1], 0]); }
+      while (q.length) { const [cx, cy, d] = q.shift(); if (Math.hypot(cx - x, (cy - y) / 0.7) - (ring || 0) > lim(Math.atan2(cy - y, cx - x))) continue;
+        for (const [dx, dy] of dirs) { const nx = cx + dx, ny = cy + dy, k = nx * 1000 + ny; if (!has(nx, ny) || T.has(k)) continue; T.set(k, d + 1); q.push([nx, ny, d + 1]); } }
+      SP.push({ T: [...T].map(([k, d]) => { const xx = (k / 1000) | 0, yy = k % 1000, r = Math.hypot(xx - x, (yy - y) / 0.7) - (ring || 0); return [xx, yy, d / sp, Math.max(0, 1 - r / lim(Math.atan2(yy - y, xx - x)))]; }), t0: time }); }
+    function drawSpread() { if (!SP.length) return; const o = org(); SP = SP.filter(S => { const u = time - S.t0; let alive = false;
+        for (const [x, y, a, w] of S.T) { const e = u - a; if (e < 0) { alive = true; continue; } const L = 0.35 + 0.55 * w; if (e > L) continue; alive = true; const k = e / L, c = k < 0.08 ? 0 : k < 0.18 ? 1 : k < 0.34 ? 2 : k < 0.55 ? 3 : k < 0.75 ? 4 : 5;
+          if (c >= 4 && !dth(x, y, (1 - k) * 2.2)) continue; ctx.fillStyle = SPC[c]; ctx.fillRect(o.x + x * 2, o.y + y * 2, 2, 2); if (c === 0 && Math.random() < 0.012) G.parts.push({ x: o.x + x * 2, y: o.y + y * 2 - 2, vx: rand(-10, 10), vy: rand(-40, -20), t: 0.35, c: '#ffcc66', g: 0, glow: true }); }
+        return alive; }); }
+    return { start, tick, draw: () => { draw(); drawSpread(); }, lights, spread, setK: k => { K = k; }, on: () => on, end: () => { if (on && !endT) endT = time; }, stop: () => { on = false; F = []; SP = []; } };
   })();
 
   // ---------------------------------------------------------------- v3.60 죽음: 온몸이 타올라 검게 그을린 뒤, 위에서부터 검은 재로 부서져 바닥에 내려앉아 쌓임
@@ -229,7 +252,7 @@ const CULTB = (() => {
   function mvState(e) {
     const C = e.cb, M = C.mv; if (!M) return null; const u = time - M.t0; let t, end;
     if (M.k === 'fan') { const w = Math.max(0.05, M.d - 0.05); t = u < w ? 0.6 * u / w : 0.6 + (u - w); end = 1.4; }
-    else if (M.k === 'fwd') { const w = Math.max(0.05, M.d - 0.05); t = u < w ? 0.65 * u / w : 0.65 + (u - w); end = 1.5; }
+    else if (M.k === 'fwd' || M.k === 'leap') { const w = Math.max(0.05, M.d - 0.05); t = u < w ? 0.65 * u / w : 0.65 + (u - w); end = 1.5; }
     else if (M.k === 'spin') { const w = Math.max(0.05, M.d - 0.15); t = u < w ? 0.5 * u / w : 0.5 + (u - w); end = 1.5; }
     else { // 돌진: 겨눔 → 달림 → 칼끝 떨궈 웅크림 → 확 베어 올림
       if (C.dash) t = 0.5 + 0.39 * Math.min(1, C.dash.t * 560 / Math.max(1, C.dash.len)); else if (M.t1) t = 0.9 + (time - M.t1); else t = 0.5 * Math.min(1, u / 0.85); end = 1.7; }
@@ -282,6 +305,7 @@ const CULTB = (() => {
     G.enemies.push(b); G.boss = b; $('bossName').textContent = '불꽃 비늘 교주'; G.bossTime = 600;
     lowRoar(); G.fx.push({ kind: 'ring', x: b.x, y: b.y - 24, r: 10, t: 0.8, max: 0.8, c: '#a01828', grow: 420 });
     banner('불꽃 비늘 교주', '붉은 비늘 교단의 주인', false, b.x);
+    setMood('cultBoss1'); // v3.83 교주 전투 곡 (1페이즈)
   }
 
   // ---------------------------------------------------------------- 1 · 2페이즈: 부채꼴 · 돌진 · 회전 (2페이즈는 범위 ↑ · 템포 ↑ · 짱 넓은 도넛 회전 추가)
@@ -313,7 +337,7 @@ const CULTB = (() => {
     if (d > 60) { const sp = b.spd * V.walk; b.x += Math.cos(a) * sp * dt; b.y += Math.sin(a) * sp * dt; clampIn(b); C.walk = (C.walk || 0) + dt; } else C.walk = 0;
   }
 
-  // ---------------------------------------------------------------- v3.61 2페이즈 몰아치기 (체력 75 · 50 · 25%마다): 포효 → 꺾어 치는 3연 돌진(끝에 베어 올림) → 3연타 베기 → 몸에 두른 불을 터뜨리는 큰 한 방 → 불이 꺼지며 지침 3.5초
+  // ---------------------------------------------------------------- v3.61 2페이즈 몰아치기 (체력 75 · 50 · 25%마다): 포효 → (v3.83) 불꽃 도약 내려찍기 3회 → 3연타 베기 → 몸에 두른 불을 터뜨리는 큰 한 방 → 불이 꺼지며 지침 3.5초
   //  몰아치는 동안 몸에 두른 불이 점점 커지고(테두리 · 불티) 화면 가장자리에 붉은 열기 · 줄눈 불씨가 빨라짐 / 지친 동안 불이 꺼져 연기만 나고 줄눈 불씨도 느려짐
   const RUSH_AT = [0.75, 0.5, 0.25], TIRED = 3.5;
   function rushStart(b) {
@@ -330,34 +354,46 @@ const CULTB = (() => {
   function rushTick(b, dt) {
     const C = b.cb, R = C.rush, P = G.player, t = time - R.t0, a = angTo(b, P);
     if (R.st === 'roar') { b.face = Math.cos(a) >= 0 ? 1 : -1; if (t < 0.6) return;
-      R.pts = rushPath(b); R.i = 0; R.st = 'dash'; R.next = time + 0.55; R.lv = 1; sfx('warn');
-      for (let i = 0; i < 3; i++) { const p = R.pts[i], q = R.pts[i + 1], len = Math.hypot(q.x - p.x, q.y - p.y); G.tele.push({ shape: 'line', x: p.x, y: p.y, ang: Math.atan2(q.y - p.y, q.x - p.x), len, w: 46, t: 0, dur: 0.55 + i * 0.46, owner: b, quiet: i > 0, onFire: () => {} }); }
-      const a0 = Math.atan2(R.pts[1].y - b.y, R.pts[1].x - b.x); setMv(b, 'dash', a0); return; }
+      R.i = 0; R.st = 'leap'; R.next = time; R.lv = 1; return; } // v3.83 꺾어 치는 3연 돌진 → 불꽃 도약 내려찍기 3회
+    if (R.st === 'leap') { if (time < R.next) return; // 주인공이 선 자리를 노려 뛰어오름 — 착지할 원을 미리 보여 줌 (첫 번째는 조금 더 길게)
+      const big = R.i === 2, dur = R.i === 0 ? 0.9 : 0.8, r = big ? 84 : 64, tg = { x: clamp(P.x, A.x0 + 30, A.x1 - 30), y: clamp(P.y, A.y0 + 24, A.y1 - 30) }, ang = Math.atan2(tg.y - b.y, tg.x - b.x);
+      R.lp = { sx: b.x, sy: b.y, tx: tg.x, ty: tg.y, t0: time, dur }; R.st = 'air'; b.state = 'rush'; setMv(b, 'leap', ang, dur); sfx('warn'); sfx('whoosh', 0.7);
+      G.tele.push({ shape: 'circle', x: tg.x, y: tg.y, r, t: 0, dur, owner: b, onFire: tt => { if (b.dead || !C.rush) return; leapLand(b, tt, big); } }); return; }
+    if (R.st === 'air') { const L = R.lp, u = (time - L.t0) / L.dur, k = clamp((u - 0.15) / 0.85, 0, 1); // 0.15 웅크림 → 포물선으로 날아감 (그림자는 바닥에)
+      b.x = L.sx + (L.tx - L.sx) * k; b.y = L.sy + (L.ty - L.sy) * k; C.jz = Math.sin(k * Math.PI) * 58;
+      if (u > 1.4) leapLand(b, { x: L.tx, y: L.ty, r: 0 }, false, true); return; } // 안전장치 (예고가 지워졌을 때)
     if (R.st === 'dash') { if (time < R.next) return; const p = R.pts[R.i + 1], ang = Math.atan2(p.y - b.y, p.x - b.x), len = Math.hypot(p.x - b.x, p.y - b.y);
       C.mv = { k: 'dash', a: ang, t0: time - 0.85 }; b.face = Math.cos(ang) >= 0 ? 1 : -1; C.dash = { ang, len, t: 0 }; b.state = 'dash'; sfx('whoosh'); R.st = 'dashing'; return; }
     if (R.st === 'combo') { if (time < R.next) return; const offs = [-0.85, 0.85, 0], durs = [0.42, 0.38, 0.6];
       if (R.i >= 3) { R.st = 'big'; R.next = time + 0.4; return; }
       const st = Math.min(22, Math.max(0, dist(b, P) - 70)); b.x += Math.cos(a) * st; b.y += Math.sin(a) * st; clampIn(b); // 한 걸음씩 다가오며
       const last = R.i === 2, ang = a + offs[R.i], dur = durs[R.i]; b.face = Math.cos(a) >= 0 ? 1 : -1; setMv(b, 'fan', ang, dur); R.lv = 2;
-      G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: (last ? 180 : 110) * DEG, r: last ? 170 : 140, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; hitShape(tt, b.atk); shake(last ? 6 : 4); sfx('slam', last ? 0.7 : 0.9); hitFx(b, b.x + Math.cos(ang) * 60, b.y + Math.sin(ang) * 40, 8); } });
+      G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: (last ? 180 : 110) * DEG, r: last ? 170 : 140, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; FIREFX.trail(b.x, b.y, ang, (last ? 180 : 110) * DEG, (last ? 170 : 140) * 0.8, b.face); hitShape(tt, b.atk); shake(last ? 6 : 4); sfx('slam', last ? 0.7 : 0.9); hitFx(b, b.x + Math.cos(ang) * 60, b.y + Math.sin(ang) * 40, 8); } });
       R.i++; R.next = time + dur + 0.2; return; }
     if (R.st === 'bigwind' && time > R.bigT + 1.7) { C.rush = null; C.tired = time + TIRED; b.state = 'tired'; return; } // 안전장치
     if (R.st === 'big') { if (time < R.next) return; const dur = 1.2; R.st = 'bigwind'; R.bigT = time; R.lv = 3; b.face = Math.cos(a) >= 0 ? 1 : -1; setMv(b, 'fwd', a, dur); sfx('warn'); sfx('roar', 0.5); // 칼을 높이 들어 몸에 두른 불을 모음
-      G.tele.push({ shape: 'circle', x: b.x, y: b.y, r: 196, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; hitShape(tt, b.atk * 1.3); shake(11); sfx('blast'); sfx('blast', 0.7);
+      G.tele.push({ shape: 'circle', x: b.x, y: b.y, r: 196, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; GR.spread(b.x, b.y, 80, 100); hitShape(tt, b.atk * 1.3); shake(11); sfx('blast'); sfx('blast', 0.7);
         G.fx.push({ kind: 'ring', x: b.x, y: b.y - 10, r: 30, t: 0.6, max: 0.6, c: '#ffcc66', grow: 520 }); G.fx.push({ kind: 'ring', x: b.x, y: b.y - 10, r: 12, t: 0.45, max: 0.45, c: '#ffffff', grow: 380 });
         for (let i = 0; i < 60; i++) { const an = rand(0, TAU), sp = rand(120, 320); G.parts.push({ x: b.x, y: b.y - rand(10, 40), vx: Math.cos(an) * sp, vy: Math.sin(an) * sp * 0.6 - 40, t: rand(0.4, 0.8), c: pick(['#fff0be', '#ffcc66', '#ff7a2a', '#d0402a']), g: 0, glow: true }); }
         C.rush = null; C.tired = time + TIRED; b.state = 'tired'; sfx('grogi', 0.7); } }); return; } // 터뜨린 뒤 불이 꺼지며 지침
+  }
+  function leapLand(b, tt, big, quiet) { // 착지: 불꽃이 원 모양으로 터짐 → 0.35초 뒤 다음 도약 · 세 번째 뒤엔 3연타 베기로
+    const C = b.cb, R = C.rush; if (!R) return; b.x = tt.x; b.y = tt.y; C.jz = 0; clampIn(b);
+    if (!quiet) { GR.spread(tt.x, tt.y, big ? 55 : 40, 75); hitShape(tt, b.atk * (big ? 1.15 : 1)); shake(big ? 9 : 7); sfx('blast', big ? 0.7 : 0.85); sfx('slam', 0.7); hitFx(b, tt.x, tt.y, 10);
+      G.fx.push({ kind: 'ring', x: tt.x, y: tt.y - 6, r: 14, t: 0.45, max: 0.45, c: '#ffcc66', grow: tt.r * 4.5 });
+      for (let i = 0; i < (big ? 36 : 24); i++) { const an = rand(0, TAU), sp = rand(80, 220); G.parts.push({ x: tt.x, y: tt.y - rand(2, 14), vx: Math.cos(an) * sp, vy: Math.sin(an) * sp * 0.6 - 30, t: rand(0.3, 0.6), c: pick(['#fff0be', '#ffcc66', '#ff7a2a', '#d0402a']), g: 0, glow: true }); } }
+    R.i++; const more = R.i < 3; R.st = more ? 'leap' : 'combo'; R.next = time + (more ? 0.35 : 0.8); if (!more) R.i = 0;
   }
   function rushDashEnd(b, ang) { const C = b.cb, R = C.rush; R.i++; if (R.i < 3) { R.st = 'dash'; R.next = time + 0.1; return; } upper(b, ang, 0.3); R.st = 'combo'; R.i = 0; R.next = time + 0.95; }
   const rushing = () => !!(B && B.cb && B.cb.rush), tired = () => !!(B && B.cb && B.cb.tired);
   const hitFx = (b, x, y, n) => { dust(x, y, n); if (b.cb.ph === 'p2') for (let i = 0; i < n; i++) G.parts.push({ x: x + rand(-20, 20), y: y + rand(-10, 10), vx: rand(-30, 30), vy: -rand(40, 110), t: rand(0.3, 0.6), c: pick(['#ffcc66', '#ff7a2a', '#fff0be']), g: 0, glow: true }); };
   function upper(b, ang, warn) { // 돌진 끝: 칼끝을 떨궜다가 확 베어 올림 (warn: 예고를 늘림 — 몰아치기 0.3초)
     const C = b.cb, V = PH[C.ph], w = warn || 0.09; if (!C.mv || C.mv.k !== 'dash') setMv(b, 'dash', ang); C.mv.t1 = time + w - 0.09; b.state = 'swing'; C.until = time + 0.66 + w;
-    G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: 120 * DEG, r: V.upR, t: 0, dur: w, owner: b, onFire: tt => { if (b.dead) return; hitShape(tt, b.atk); shake(5); sfx('slam', 0.9); hitFx(b, b.x + Math.cos(ang) * 50, b.y + Math.sin(ang) * 34, 8); } });
+    G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: 120 * DEG, r: V.upR, t: 0, dur: w, owner: b, onFire: tt => { if (b.dead) return; if (C.ph === 'p2') FIREFX.trail(b.x, b.y, ang, 120 * DEG, V.upR * 0.8, b.face); hitShape(tt, b.atk); shake(5); sfx('slam', 0.9); hitFx(b, b.x + Math.cos(ang) * 50, b.y + Math.sin(ang) * 34, 8); } });
   }
   function swing(b, ang, dur) { // 부채꼴 베기
     const C = b.cb, V = PH[C.ph]; b.state = 'swing'; C.until = time + dur + 0.45 * V.cd; setMv(b, 'fan', ang, dur);
-    G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: V.fanArc * DEG, r: V.fanR, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; hitShape(tt, b.atk); shake(4); sfx('slam', 0.8); hitFx(b, b.x + Math.cos(ang) * 60, b.y + Math.sin(ang) * 40, 8); } });
+    G.tele.push({ shape: 'cone', x: b.x, y: b.y, ang, arc: V.fanArc * DEG, r: V.fanR, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return; if (C.ph === 'p2') FIREFX.trail(b.x, b.y, ang, V.fanArc * DEG, V.fanR * 0.8, b.face); hitShape(tt, b.atk); shake(4); sfx('slam', 0.8); hitFx(b, b.x + Math.cos(ang) * 60, b.y + Math.sin(ang) * 40, 8); } });
     if (dur > 0.2) sfx('warn');
   }
   function spin(b, huge) { // 한 바퀴 회전베기 · huge: 짱 넓음 (몸 쪽이 빈 도넛)
@@ -365,6 +401,7 @@ const CULTB = (() => {
     C.until = time + dur + 0.5 * V.cd; setMv(b, 'spin', angTo(b, G.player), dur, huge); C.spin = time + dur - 0.1; C.spinR = r;
     G.tele.push({ shape: 'circle', x: b.x, y: b.y, r, inner: huge ? V.hugeIn : 0, quiet: !!huge, t: 0, dur, owner: b, onFire: tt => { if (b.dead) return;
       const P = G.player, dd = Math.hypot(P.x - tt.x, P.y - tt.y); if (dd <= tt.r + P.r && !(tt.inner && dd < tt.inner - P.r)) hurtPlayer(b.atk, b);
+      if (C.ph === 'p2') { if (huge) GR.spread(b.x, b.y, 26, 75, Math.round((tt.inner + tt.r) / 4)); try { FIREFX.trail(b.x, b.y, 0, TAU, r * 0.8, 1); } catch (e) { /* 없음 */ } } // v3.83 회전베기: 칼끝 궤적 불 · 도넛은 줄눈 번짐
       shake(huge ? 7 : 5); sfx(huge ? 'blast' : 'whoosh', huge ? 0.8 : 1); G.fx.push({ kind: 'ring', x: b.x, y: b.y - 10, r: huge ? 60 : 20, t: 0.4, max: 0.4, c: C.ph === 'p2' ? '#ff9a4a' : '#d8d4dc', grow: huge ? 520 : 240 }); } });
     sfx('warn');
   }
@@ -382,7 +419,7 @@ const CULTB = (() => {
       const k = Math.min(1, t / T_DIE); C.br += dt / (0.45 + 0.75 * k);
       if (Math.random() < dt * 7 * (1 - k)) BLOOD.push({ x: b.x + rand(-10, 10), y: b.y + rand(-2, 4), s: pick([2, 4, 4, 6]), t0: time });
       if (t > T_DIE) { C.ph = 'still'; C.t0 = time; } return; }
-    if (C.ph === 'still') { if (t > T_STILL) { C.ph = 'rise'; C.t0 = time; cancelTele(b); try { CINE.focus(Math.round((b.x + G.player.x) / 2), Math.round((b.y - 40 + G.player.y - 12) / 2)); } catch (x) { /* 시네마 없음 */ } } return; } // 멈춤 → 잠시 뒤 2페이즈 진입 컷신 (말은 저절로)
+    if (C.ph === 'still') { if (t > T_STILL) { C.ph = 'rise'; C.t0 = time; setMood('cultBoss2'); /* v3.83 일어서는 순간 2페이즈 곡으로 */ cancelTele(b); try { CINE.focus(Math.round((b.x + G.player.x) / 2), Math.round((b.y - 40 + G.player.y - 12) / 2)); } catch (x) { /* 시네마 없음 */ } } return; } // 멈춤 → 잠시 뒤 2페이즈 진입 컷신 (말은 저절로)
     if (C.ph === 'rise') { // 일어서며 알 수 없는 말: {말}, {말}, {말}{말}{말}
       if (!C.said) { C.said = true; say(glyWord(2), 0.3, RB); say(glyWord(2), 0.3 + RB, RB); say(glyWord(2).concat(glyWord(2), glyWord(2)), 0.3 + RB * 2, RB * 1.4); }
       if (t > 0.3 + RB * 3.4) { C.ph = 'ignite'; C.t0 = time; C.igFl = false; sfx('hurt', 0.5); }
@@ -394,7 +431,7 @@ const CULTB = (() => {
   }
 
   function die(b) {
-    const C = b.cb; C.ph = 'dead'; C.t0 = time; b.hp = 0; C.dash = null; C.mv = null; cancelTele(b); b.state = 'dead';
+    const C = b.cb; C.ph = 'dead'; C.t0 = time; setMood('cultHall'); // v3.83 처치하면 교단 성가로 b.hp = 0; C.dash = null; C.mv = null; cancelTele(b); b.state = 'dead';
     lowRoar(); ASH.start(b); GR.end(); sfx('blast', 0.5); // v3.60 검은 재로 타올라 바닥에 내려앉음 · 바닥 줄눈 불씨도 사그라듦
     setTimeout(() => { if (B !== b) return; b.dead = true; const R = vault(); if (R) R.ru.cbDone = true; banner('불꽃 비늘 교주 처치', '비늘의 불이 꺼졌습니다', false, b.x); sfx('victory'); }, 1600);
   }
@@ -448,11 +485,12 @@ const CULTB = (() => {
     if (st) { // 칼 휘두르기: 나눈 몸 · 칼 · 머리카락으로 그림
       const fire = C.ph === 'p2', face = st.spin != null ? (Math.floor(st.spin * 4) % 2 ? Math.cos(C.mv.a) >= 0 : Math.cos(C.mv.a) < 0) : null;
       drawShadow(e.x, e.y + 1, 14);
-      SWR.draw(e.x, e.y, C.mv.a, st, fire, face, e.flash > 0, C.rush ? (Math.floor(time / 0.07) % 2 ? '#ffcc66' : '#ff7a2a') : null); // 몰아치는 동안 몸 둘레 불꽃 테두리
+      st.air = C.jz > 0 ? Math.min(1, C.jz / 30) : 0; // v3.83 머리카락 처짐 정도
+      SWR.draw(e.x, e.y - ((C.jz || 0) & ~1), C.mv.a, st, fire, face, e.flash > 0, C.rush ? (Math.floor(time / 0.07) % 2 ? '#ffcc66' : '#ff7a2a') : null); // 몰아치는 동안 몸 둘레 불꽃 테두리
       if (fire && Math.random() < 0.5) G.parts.push({ x: e.x + rand(-16, 16), y: e.y - rand(6, 50), vx: rand(-8, 8), vy: -rand(40, 80), t: rand(0.25, 0.5), c: pick(['#ffcc66', '#ff7a2a', '#ff9a4a']), g: 0, glow: true });
       return; }
     const K = keyOf(e), flip = e.face < 0, white = e.flash > 0, cv = frameCv(K.k, flip, white);
-    let X = Math.round(e.x - (flip ? W - 1 - AX : AX) * 2) & ~1, Y = Math.round(e.y - H * 2) & ~1, rot = 0, al = 1;
+    let X = Math.round(e.x - (flip ? W - 1 - AX : AX) * 2) & ~1, Y = Math.round(e.y - H * 2 - (C.jz || 0)) & ~1, rot = 0, al = 1; // v3.83 도약 중 높이
 
     drawShadow(e.x, e.y + 1, 14);
     ctx.save(); ctx.globalAlpha = al;
@@ -505,5 +543,7 @@ const CULTB = (() => {
     if (C.ph === 'dying' || C.ph === 'fall') { C.ph = 'still'; C.t0 = time - T_STILL + 0.3; return; }
     if (C.ph === 'p2') { if (C.rush || C.tired) return; if (C.rk < 3) { B.hp = B.maxHp * RUSH_AT[C.rk] - 1; return; } die(B); }
   }
+  // v3.83 교단 본거지(앞 홀 · 교주의 방 · 지하 석실)는 유적 곡 대신 교단 성가 — 교주와 싸우는 중이면 그대로
+  { const o = enterRoom; enterRoom = function (R) { const r = o.apply(this, arguments); try { if (R && R.ru && ['hall', 'sanct', 'vault'].includes(R.ru.k) && !(B && G.boss === B && !B.dead)) setMood('cultHall'); } catch (e) { console.error(e); } return r; }; }
   return { tick: dt => { leaveCheck(); tick(dt || 1 / 60); }, debug, get boss() { return B; } };
 })();

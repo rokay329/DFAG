@@ -302,7 +302,6 @@
     const P = G.player, s = G.stats;
     if (e.type === 'boss' && e.shield) {
       e.barHit = time;
-      G.nums.push({ x: e.x, y: e.y - 60, v: '0', t: 0.5, c: '#9cc1ea', s: 1 });
       e.flash = 0.06; sfx('block');
       sparks(e.x, e.y - 20, o.ang || 0, '#9cc1ea', 4);
       return;

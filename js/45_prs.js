@@ -1,7 +1,7 @@
 'use strict';
 // ==================================================================================================
 // 잿빛 왕관 원정대 — 45_prs.js : v3.22 미레아(사제) 무기별 우클릭 기술 (41 · 42 · 43 · 44와 같은 방식)
-//  · 레어 · 유니크 · 레전더리 메이스는 무기마다 고유한 우클릭 기술을 씀 (커먼 · 초록은 기본 「치유의 빛」)
+//  · 레어 · 유니크 · 레전더리 메이스는 무기마다 고유한 우클릭 기술을 씀 (커먼 · 초록은 기본 「권능」)
 //  · 고해의 채찍은 우클릭 자체가 고유 효과(짧게 / 길게 누르기)라 그대로 둠
 //  · 사제는 방패 · 버프 역할이라 고유 우클릭도 쓸 때 빛의 방패 1칸을 얻음 (성유물함은 2칸까지 · 별빛 성가는 2초 보호막)
 //  · 쿨타임 무기마다 따로 (KRS.tick) · 깊이 정렬(SKD) · 겹침 디더(SKD.pd) · 몸 · 무기 동작(SKP) 공용
@@ -40,7 +40,7 @@ const PRS = (() => {
   const ring = (x, y, r, c, gap, ry, off) => { const n = Math.max(8, Math.ceil(r * 1.3)); for (let i = 0; i < n; i++) { if (gap && (i + (off || 0)) % gap === 0) continue; const a = i / n * TAU; dot(x + Math.cos(a) * r, y + Math.sin(a) * r * (ry || 0.6), c); } };
   const star4 = (x, y, s, c) => { for (let i = -s; i <= s; i += 2) { dot(x + i, y, Math.abs(i) < 2 ? '#ffffff' : c); dot(x, y + i, Math.abs(i) < 2 ? '#ffffff' : c); } };
   const tipPt = (P, d) => { const h = heroHand(); return { x: h.x + Math.cos(P.blade) * (d || 22), y: h.y - 4 + Math.sin(P.blade) * (d || 22) }; };
-  // 빛의 방패 (치유의 빛과 같은 규칙: 성유물함은 2칸까지 · 별빛 성가는 2초 보호막)
+  // 빛의 방패 (권능과 같은 규칙: 성유물함은 2칸까지 · 별빛 성가는 2초 보호막)
   function giveShield(n) { const P = G.player, s = G.stats; const cap = wSkill() === 'reliq' ? 2 : 1; for (let i = 0; i < (n || 1); i++) if ((P.holyArmor || 0) < cap && (P.armor || 0) < ARMOR_MAX) addArmor(1, true);
     if (s.fx.has('dawn')) P.shieldT = 2; if (pasO('healShield')) P.shieldT = Math.max(P.shieldT || 0, pasV('healShield')); }
   // 하늘에서 떨어지는 빛기둥 (2px 칸 · 가운데 흰 심)

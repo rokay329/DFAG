@@ -974,7 +974,7 @@
     }
     const idx = myWeapons(cls).indexOf(it) + 1;
     const K = t => `<span class="key">${t}</span>`; // 키보드·마우스 키는 네모 칸으로
-    const keys = TOUCH.on ? [ok && !on ? '한 번 더 탭 — 장착' : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 무기라 지금 직업으로는 쓸 수 없습니다.`] : [ok && !on ? `${K('좌클릭')} 장착` : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 무기라 지금 직업으로는 쓸 수 없습니다.`, idx ? `${K(idx)} 게임 중 바꿔 들기` : '', invCanDrop() ? `${K('F')} 길게 눌러 버리기` : '', `${K('I')} ${K('ESC')} 닫기`].filter(Boolean);
+    const keys = TOUCH.on ? [ok && !on ? '한 번 더 탭 — 장착' : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 무기라 지금 직업으로는 쓸 수 없습니다.`] : [ok && !on ? `${K('좌클릭')} 장착` : on ? '장착 중' : `${CLASSES[it.cls].n} 전용 무기라 지금 직업으로는 쓸 수 없습니다.`, idx ? `${K(idx)} 게임 중 바꿔 들기` : '', invCanDrop() ? `${K('F')} 길게 누르거나 창 밖으로 끌어 놓아 버리기` : '', `${K('I')} ${K('ESC')} 닫기`].filter(Boolean);
     return `<div class="dl"><div class="gr">${g.n} · ${slotName(it)}${ascTag(it)}${on ? ' · 장착 중' : ''}</div><div class="nm">${it.name}${it.lv ? ` <b>+${it.lv}</b>` : ''}</div>
       <div class="mn">${main}</div>${it.opts.map(o => `<div class="op">${optText(o)}</div>`).join('')}${it.fx ? `<div class="fx">★ ${LEGEND_FX[it.fx].d}</div>` : ''}${itemExtra(it, cls)}${pasLine(it, cls)}
       ${it.lv || it.fail ? `<div class="rp">강화 +${it.lv || 0}${it.fail ? ` · 장인의 숨결 +${2 * it.fail}%p` : ''}</div>` : ''}</div>${right}
@@ -1146,6 +1146,9 @@
 
   // ---------------------------------------------------------------- 대장간
   let forgeFrom = 'title', forgeSel = null, forgeCls = CUR, forgeMsg = null;
+  // v3.83 대장간 골드는 원정 중에는 플레이어 소지 골드(G.gold) 하나로 표시·차감한다 (예전에는 SAVE.gold만 깎여 HUD 골드와 어긋남)
+  const fgGold = () => G ? G.gold : SAVE.gold;
+  function fgPay(n) { SAVE.gold -= n; if (G) { G.gold -= n; if (G.committed) G.committed.gold -= n; } }
   function openForge(from, m) {
     $('ovForge').dataset.m = m || 'all'; $('fgTitle').textContent = { enh: '모루 — 강화', roll: '숫돌 — 재련 (옵션 다시 굴리기)', salv: '용광로 — 분해' }[m] || '대장간 — 강화';
     forgeFrom = from; forgeCls = G ? G.cls : CUR; forgeMsg = from === 'between' ? `<span class="ok">STAGE ${G.stage} 클리어 — 보스 전리품 획득</span>` : null; mode = 'forge';
@@ -1169,7 +1172,7 @@
     return SAVE.inv.filter(i => !i.hold).sort((a, b) => (ids.has(b.id) - ids.has(a.id)) || (go[a.grade] - go[b.grade]) || ((b.lv || 0) - (a.lv || 0)) || (b.id - a.id));
   }
   function renderForge() {
-    $('fgGold').textContent = SAVE.gold; $('fgIron').textContent = SAVE.mats.iron; $('fgCrystal').textContent = SAVE.mats.crystal;
+    $('fgGold').textContent = fgGold(); $('fgIron').textContent = SAVE.mats.iron; $('fgCrystal').textContent = SAVE.mats.crystal;
     document.querySelectorAll('#fgTabs [data-cls]').forEach(b => b.classList.toggle('sel', b.dataset.cls === forgeCls));
     const list = forgeList();
     if (!forgeSel || !SAVE.inv.some(i => i.id === forgeSel)) forgeSel = list[0] ? list[0].id : null;
@@ -1196,7 +1199,7 @@
     const label = PCT_STAT[it.stat] || sl.label, unit = PCT_STAT[it.stat] ? '%' : '';
     const cur = itemVal(it), next = max ? cur : itemVal(it, lv + 1);
     const c = enhCost(lv), rate = max ? 0 : enhRate(it);
-    const has = { iron: SAVE.mats.iron >= c.iron, crystal: SAVE.mats.crystal >= c.crystal, gold: SAVE.gold >= c.gold };
+    const has = { iron: SAVE.mats.iron >= c.iron, crystal: SAVE.mats.crystal >= c.crystal, gold: fgGold() >= c.gold };
     const can = !max && has.iron && has.crystal && has.gold;
     const eq = isEq(forgeCls, it), ok = canEquip(it, forgeCls);
     d.innerHTML = `
@@ -1207,10 +1210,10 @@
       <div class="fgRate"><span>성공 확률</span><b>${rate}%</b>${it.fail ? `<em>장인의 숨결 +${2 * it.fail}%p</em>` : ''}</div>
       <div class="fgRisk">${lv + 1 < 5 ? '반드시 성공합니다.' : '실패해도 단계는 유지됩니다. 실패할 때마다 다음 성공 확률이 2%p 증가합니다.'}</div>
       ${[3, 6, 9].includes(lv + 1) ? `<div class="mile">★ +${lv + 1} 달성 시 옵션 1줄 추가</div>` : ''}
-      <div class="fgCost"><span class="${has.iron ? '' : 'no'}">철광석 조각 ${c.iron} <small>보유 ${SAVE.mats.iron}</small></span>${c.crystal ? `<span class="${has.crystal ? '' : 'no'}">정령의 결정 ${c.crystal} <small>보유 ${SAVE.mats.crystal}</small></span>` : ''}<span class="${has.gold ? '' : 'no'}">골드 ${c.gold} <small>보유 ${SAVE.gold}</small></span></div>`}
+      <div class="fgCost"><span class="${has.iron ? '' : 'no'}">철광석 조각 ${c.iron} <small>보유 ${SAVE.mats.iron}</small></span>${c.crystal ? `<span class="${has.crystal ? '' : 'no'}">정령의 결정 ${c.crystal} <small>보유 ${SAVE.mats.crystal}</small></span>` : ''}<span class="${has.gold ? '' : 'no'}">골드 ${c.gold} <small>보유 ${fgGold()}</small></span></div>`}
       <div id="fgMsg">${forgeMsg || ''}</div>`;
     // v1.15 강화·다시 굴리기·분해 버튼은 설명 칸 밖 (창 아래 줄, 장착 버튼 옆)
-    const rc = rerollCost(it), sv = salvageGain(it), canR = SAVE.gold >= rc.gold && SAVE.mats.crystal >= rc.crystal;
+    const rc = rerollCost(it), sv = salvageGain(it), canR = fgGold() >= rc.gold && SAVE.mats.crystal >= rc.crystal;
     const act = (max ? '' : `<button class="pbtn primary" id="fgGo" ${can ? '' : 'disabled'}>강화하기 <span class="key kc">ENTER</span></button>`)
       + `<button class="pbtn" id="fgSalv" ${eq ? 'disabled' : ''}>${forgeSalvArm === it.id ? '정말 분해? 한 번 더' : '분해'} <small>${eq ? '장착 중' : `철광석 ${sv.iron}${sv.crystal ? ` · 결정 ${sv.crystal}` : ''}`}</small></button>`;
     forgeEqRow(it, eq, ok, act);
@@ -1225,8 +1228,8 @@
   const salvageGain = it => ({ iron: [1, 2, 4, 6, 6][GI[it.grade]] + Math.floor((it.lv || 0) / 2) + Math.floor((it.asc || 0) / 3), crystal: [0, 0, 1, 2, 3][GI[it.grade]] + ((it.lv || 0) >= 10 ? 1 : 0) });
   function doReroll() {
     const it = SAVE.inv.find(i => i.id === forgeSel); if (!it) return;
-    const c = rerollCost(it); if (SAVE.gold < c.gold || SAVE.mats.crystal < c.crystal) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
-    SAVE.gold -= c.gold; SAVE.mats.crystal -= c.crystal;
+    const c = rerollCost(it); if (fgGold() < c.gold || SAVE.mats.crystal < c.crystal) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
+    fgPay(c.gold); SAVE.mats.crystal -= c.crystal;
     const g = gradeOf(it), keep = it.opts.filter(o => o.cb), n = it.opts.length - keep.length, pool = OPTS.filter(o => !keep.some(k => k.k === o.k)), opts = keep.slice();
     for (let i = 0; i < n && pool.length; i++) { const o = pool.splice(randi(0, pool.length - 1), 1)[0]; opts.push({ k: o.k, v: optRoll(o, g) }); }
     it.opts = opts; if (it.efx) it.efx = pick(Object.keys(EFX).filter(k => k !== it.efx));
@@ -1246,8 +1249,8 @@
     const it = SAVE.inv.find(i => i.id === forgeSel);
     if (!it || (it.lv || 0) >= enhCap()) return; // v2.40 대장간별 상한
     const c = enhCost(it.lv || 0);
-    if (SAVE.mats.iron < c.iron || SAVE.mats.crystal < c.crystal || SAVE.gold < c.gold) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
-    SAVE.mats.iron -= c.iron; SAVE.mats.crystal -= c.crystal; SAVE.gold -= c.gold;
+    if (SAVE.mats.iron < c.iron || SAVE.mats.crystal < c.crystal || fgGold() < c.gold) { sfx('block'); forgeMsg = '<span class="ng">재료가 부족합니다</span>'; renderForgeDetail(); return; }
+    SAVE.mats.iron -= c.iron; SAVE.mats.crystal -= c.crystal; fgPay(c.gold);
     const from = it.lv || 0, success = Math.random() * 100 < enhRate(it);
     if (success) {
       it.lv = from + 1; it.fail = 0;

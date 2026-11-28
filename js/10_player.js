@@ -870,7 +870,7 @@
   }
   function castHeal() { rec('p_heal');
     const P = G.player, s = G.stats;
-    { let cap = wSkill() === 'reliq' ? 2 : 1; if (cap === 1 && pasO('reliq') && (P.holyArmor || 0) >= 1 && (P.armor || 0) < ARMOR_MAX && pasOnce('reliq')) cap = 2; if ((P.holyArmor || 0) < cap && (P.armor || 0) < ARMOR_MAX) addArmor(1, true); } // v2.15 치유의 빛: 하트 회복 대신 빛의 방패 (이 기술로는 1칸, 성유물함 2칸까지)
+    { let cap = wSkill() === 'reliq' ? 2 : 1; if (cap === 1 && pasO('reliq') && (P.holyArmor || 0) >= 1 && (P.armor || 0) < ARMOR_MAX && pasOnce('reliq')) cap = 2; if ((P.holyArmor || 0) < cap && (P.armor || 0) < ARMOR_MAX) addArmor(1, true); } // v2.15 권능: 하트 회복 대신 빛의 방패 (이 기술로는 1칸, 성유물함 2칸까지)
     if (wSkill() === 'carrot') for (let i = 0; i < 3; i++) (G.wproj = G.wproj || []).push({ k: 'carrotm', x: P.x, y: P.y - 10, ang: P.ang + i * TAU / 3, t: 0.7, hit: new Set() }); // 당근 셋
     if (s.fx.has('dawn')) P.shieldT = 2;
     if (pasO('healShield')) P.shieldT = Math.max(P.shieldT || 0, pasV('healShield')); // v2.22
@@ -1314,6 +1314,7 @@
   // 잡몹 한 마리당 소모품은 최대 1개, 장비는 따로 굴린다
   const LOOT_TABLE = [['meat', 0.03], ['orb', 0.05], ['pouch', 0.03], ['vial', 0.01]];
   function spawnLoot(type, x, y, it) {
+    if (type === 'orb' && G && G.cls === 'priest') return; // v3.83 성직자는 각성 게이지를 안 씀 → 투지 결정이 나오지 않음
     const a = rand(0, TAU), sp = rand(30, 70);
     if (type === 'gear' && it && it.grade === 'rby') { sfx('legend'); sfx('boss'); flashT = Math.max(flashT, 0.1); flashColor = '#ff2a2a'; G.fx.push({ kind: 'skybeam', x, y, w: 30, c: '255,42,42', t: 1.0, max: 1.0 }); }
     if (type === 'gear' && it && it.grade === 'legend') { sfx('legend'); flashT = Math.max(flashT, 0.06); flashColor = '#ff9a2e'; G.fx.push({ kind: 'skybeam', x, y, w: 24, c: '255,160,60', t: 0.7, max: 0.7 }); }
@@ -1339,7 +1340,8 @@
     if (l.type === 'meat' || l.type === 'bigmeat') return P.hp < s.hp || P.poisonT > 0;
     if (l.type === 'armor') return (P.armor || 0) < ARMOR_MAX;
     if (l.type === 'heartUp' || l.type === 'medal') return s.hp < HEART_CAP;
-    if (l.type === 'relic' || l.type === 'hue') return true;
+    if (l.type === 'relic') return ((G.relics || []).length) < RELIC_SLOTS; // v3.83 유물 칸(5)이 가득 차면 줍지 않음
+    if (l.type === 'hue') return true;
     if (l.type === 'crumb' || l.type === 'mochi' || l.type === 'carrot' || l.type === 'fish') return P.hp < s.hp;
     if (l.type === 'orb') return P.gauge < 100;
     return true;

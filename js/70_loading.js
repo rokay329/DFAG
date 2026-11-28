@@ -3,7 +3,7 @@
 //  · 로딩 작업 목록(LOADQ): 한 프레임에 약 12ms씩 작업을 처리 · 작업이 다 끝나고 최소 시간이 지나야 닫힘 · 키 · 클릭으로 넘길 수 없음 (v3.66 준비가 끝나고 달이 정해진 바퀴 수만큼 졌다가 다시 떠야 닫힘 — 해가 뜨지 않는 세계)
 //  · 처음 시작 · 원정 실패 뒤 다시 깨어날 때(시작 장소): 1장 던전을 미리 만들고 시작 방 · 가까운 방 바닥 그림을 미리 그려 둠
 //  · 장 넘어갈 때: 던전 생성 + 시작 방 · 가까운 방 바닥 그림을 달 창이 도는 동안 처리한 뒤 월드맵으로
-//  · 게임 중 틈날 때(방을 비운 조용한 시간): 문으로 이어진 이웃 방 바닥 그림을 1.5초에 한 방씩 미리 그림
+//  · 게임 중 틈날 때(방을 비우고 손을 놓고 서 있는 동안): 문으로 이어진 이웃 방 바닥 그림을 1.5초에 한 방씩 미리 그림 (v3.83 걷는 중엔 안 그림)
 window.MOONSKY_OFF = true; // 예전 「실패 뒤 초승달」 연출은 이 로딩 화면이 대신함
 const LOADQ = (() => {
   let S = null;
@@ -76,7 +76,7 @@ const LOADQ = (() => {
       try { const D = G && G.dun, R = D && D.cur;
         const calm = mode === 'play' && R && !D.home && !D.forge && !D.lab && !D.anc && R.cleared && !G.sealed && !G.trans && !G.cine && !G.enemies.some(e => !e.dead && !isDummy(e));
         calmT = calm ? calmT + dt : 0;
-        if (calmT > 1.0 && time > nextPre) { nextPre = time + 1.5; for (const d in R.doors) { const id = R.doors[d]; if (id == null) continue; if (prePaint(D, D.rooms[id])) break; } }
+        if (calmT > 1.0 && time > nextPre && G.player && (G.player.idleT || 0) > 0.6) { /* v3.83 손을 놓고 서 있을 때만 — 방 하나를 통째로 그리느라(2장은 특히 무거움) 걷는 도중 1.5초마다 뚝 끊기던 문제 */ nextPre = time + 1.5; for (const d in R.doors) { const id = R.doors[d]; if (id == null) continue; if (prePaint(D, D.rooms[id])) break; } }
       } catch (e) { console.error(e); }
       return r; }; }
   { const o = render; render = function () { if (S) { draw(); return; } return o.apply(this, arguments); }; }

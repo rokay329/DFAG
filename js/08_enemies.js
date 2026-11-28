@@ -1197,7 +1197,7 @@
     if (G.decoyUpd) return; // v2.41 미끼 잔상을 노린 공격
     if (GOD_MODE) { if (!dot && !(P.godNumT > time)) { P.godNumT = time + 0.3; G.nums.push({ x: P.x, y: P.y - 26, v: '무적', t: 0.5, c: '#9fd2ff', s: 1, txt: true }); } return; } // v2.40 테스트: 무적 (Shift+O)
     if (P.grab && !unblockable) return;
-    if (P.miracleT > 0 || P.shieldT > 0) { if (!dot) G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#ffe39a', s: 1 }); return; }
+    if (P.miracleT > 0 || P.shieldT > 0) { return; }
     if (!unblockable && !dot && P.iframe > 0) {
       if (P.state === 'dodge' && P.dodgeT < PD_WIN() && !P.perfectUsed) perfectDodge();
       return;
@@ -1210,7 +1210,7 @@
     if (dot) { if (time < (P.dotNext || 0)) return; P.dotNext = time + 2.5; }
     const keep = -(censerIn() ? 0.2 : 0) - pasV('parry') + meleeKeep() * (P.state === 'storm' || P.state === 'cast' || P.state === 'aim' ? 0.5 : 1); // 옛 피해 감소 → 그만큼 확률로 흘려냄
     if (!kill && !dot && !unblockable && Math.random() > keep) { P.inv = 0.3; P.evOutT = 0.45; G.fx = G.fx.filter(f => !(f.t >= (f.max || 0) - 0.001 && ['ring', 'impact', 'hitspark', 'hitflash', 'boom'].includes(f.kind) && Math.hypot(f.x - P.x, f.y - (P.y - 10)) < 30)); /* v2.35 몸에 뜨던 원 대신 도트 외곽선 */ const lb = { knight: '흘려냄', ranger: '베어냄', priest: '신의 가호', gunner: '빗나감', mage: '마나 격류' }[G.cls] || '0'; rec('ev_' + G.cls); G.nums.push({ x: P.x, y: P.y - 30, v: lb, t: 0.8, c: G.cls === 'priest' ? '#ffe39a' : '#cfe6ff', s: 2 }); if (G.cls === 'ranger') G.fx.push({ kind: 'spark', x: P.x + P.face * 10, y: P.y - 14, ang: P.atkAng || 0, len: 18, sp: 60, t: 0.18, max: 0.18, c: '#ffffff' }); sfx('block'); return; } // v2.23 직업 패시브 표시
-    if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; G.nums.push({ x: P.x, y: P.y - 26, v: '0', t: 0.5, c: '#cfe6ff', s: 1 }); sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
+    if (!kill && !dot && hasRelic('feather') && Math.random() < 0.05) { P.inv = 0.4; sfx('block'); for (let i = 0; i < 6; i++) G.parts.push({ x: P.x + rand(-6, 6), y: P.y - rand(8, 20), vx: rand(-30, 30), vy: rand(-40, -10), t: 0.5, c: '#eef6ff', g: 30 }); return; } // v2.19 수호 깃털
     let dmg = 1; G.hitStage = G.stage; // v2.36 순례자의 지팡이 기록 (이번 챕터에 맞음)
     if (s.curse.has('glass') && Math.random() < 0.25) dmg = 2;
     if (!dot && src && ascOn(3) && (src.type === 'boss' || isElite(src))) dmg = 2; // 잿불 3 날 선 칼
@@ -1324,7 +1324,7 @@
   });
   for (const k in RELIC_ART) { MAPS['relic_' + k] = RELIC_ART[k].rows; PAL['relic_' + k] = RELIC_ART[k].pal; }
   const hasRelic = k => !!(G && G.relics && G.relics.includes(k));
-  const RELIC_SLOTS = 4; // v2.19 유물은 글 없이 칸으로 (챕터 보스마다 하나씩)
+  const RELIC_SLOTS = 5; // v2.19 유물은 글 없이 칸으로 · v3.83 4칸 → 5칸, 가득 차면 더 줍지 못함 (버리기로 자리를 비움)
   function relicSlotsHTML() {
     const R = (G && G.relics) || [];
     return `<div class="relicSlots">${Array.from({ length: Math.max(RELIC_SLOTS, R.length) }, (_, i) => { const k = R[i], r = k && RELICS[k];

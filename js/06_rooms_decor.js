@@ -1306,7 +1306,7 @@
     c.restore(); return W;
   }
   // v3.13 줍지 않고 남겨 둔 아이템 가까이 가면 이름표 (이름 · 이유 한 줄, 가장 가까운 하나만)
-  const LT_WHY = { meat: '체력이 가득 찼습니다', bigmeat: '체력이 가득 찼습니다', crumb: '체력이 가득 찼습니다', carrot: '체력이 가득 찼습니다', fish: '체력이 가득 찼습니다', mochi: '체력이 가득 찼습니다', orb: '투지가 가득 찼습니다', armor: '방패가 가득 찼습니다', heartUp: '최대 하트가 한도에 도달했습니다', medal: '최대 하트가 한도에 도달했습니다' };
+  const LT_WHY = { relic: '유물 칸이 가득 찼습니다', meat: '체력이 가득 찼습니다', bigmeat: '체력이 가득 찼습니다', crumb: '체력이 가득 찼습니다', carrot: '체력이 가득 찼습니다', fish: '체력이 가득 찼습니다', mochi: '체력이 가득 찼습니다', orb: '투지가 가득 찼습니다', armor: '방패가 가득 찼습니다', heartUp: '최대 하트가 한도에 도달했습니다', medal: '최대 하트가 한도에 도달했습니다' };
   function lootTag() {
     const P = G.player; if (!P || P.dead || mode !== 'play') return;
     let best = null, bd = 26;

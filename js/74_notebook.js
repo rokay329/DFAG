@@ -195,6 +195,6 @@ const NOTEBOOK = (() => {
           else if ((take('f') || take('enter')) && tab === 2 && L[sel]) reopenTruth(L[sel].truth); } } catch (e) { console.error(e); }
       return o.apply(this, arguments); }; }
   { const b = document.createElement('button'); b.className = 'pbtn'; b.id = 'ivNote'; b.style.marginRight = '6px'; b.innerHTML = '원정 수첩 <span class="key kc">N</span>'; b.onclick = () => open('inv');
-    const c = $('ivClose'); if (c && c.parentNode) c.parentNode.insertBefore(b, c); }
+    const c = $('ivClose'); if (c && c.parentNode) c.parentNode.insertBefore(b, c.parentNode.firstChild); } // v3.83 창 왼쪽 끝에 맞춤 (닫기는 오른쪽)
   return { heard, open, close, get on() { return mode === 'note'; } };
 })();

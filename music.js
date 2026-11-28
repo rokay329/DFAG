@@ -205,6 +205,26 @@ window.AudioSys = (() => {
     ['Am', 'C6 -:2 B5 -:2 A5 -'], ['Am', '-:4 E5 -:3'], ['F', 'A5 -:3 G5 -:3'], ['C', '-:2 E5 -:5'],
     ['Dm', 'F5 -:2 A5 -:2 D6 -'], ['Dm', '-:8'], ['E', 'B5 -:3 G#5 -:3'], ['Am', 'A5:4 -:4'],
   ], lead: { i: 'piano', vol: 0.13, oct: -24 }, p2: { style: 'trem', i: 'strpad', vol: 0.02, oct: -12 }, bass: { style: 'none', i: 'piano' }, /* v3.20 같은 곡조를 두 옥타브 낮은 피아노로 */ echo: { t: 0.24, fb: 0.58, mix: 0.5, on: [0, 1] }, gba: { lp: 6500 } }); // v3.20 콘트라베이스 뺌
+  // ================= v3.83 붉은 비늘 교단 — 음울한 성가 (성스럽지 않게): E 프리지안 · 트라이톤(Bb) · 4도 · 5도 평행 성부(오르가눔)
+  DR.toll = ['t...............', '................']; // 두 마디에 한 번 낮은 팀파니 종소리
+  // 교단의 홀 · 교주의 방 · 지하 석실(싸우기 전): 낮은 남성 성가처럼 좁은 음역을 맴도는 합창 + 오르간 지속음 + 콘트라베이스 지속음
+  SONGS.cultHall = mk({ bpm: 54, M: 16, rows: [
+    ['Em', 'E4:4 F4:2 E4:2'], ['Em', 'D4:2 E4:2 F4:2 E4:2'], ['F', 'F4:4 G4:2 F4:2'], ['Em', 'E4:6 -:2'],
+    ['Am', 'A4:4 Bb4:2 A4:2'], ['Bbdim', 'G4:2 Bb4:2 A4:2 G4:2'], ['F', 'F4:2 G4:2 F4:2 E4:2'], ['Em', 'E4:6 -:2'],
+    ['Dm', 'D4:4 F4:2 E4:2'], ['Em', 'E4:4 G4:2 F4:2'], ['Bbdim', 'Bb4:4 A4:2 G4:2'], ['Am', 'A4:6 -:2'],
+    ['F', 'F4:2 E4:2 D4:2 E4:2'], ['Dm', 'F4:4 E4:2 D4:2'], ['Bbdim', 'E4:2 Bb4:2 A4:2 F4:2'], ['Em', 'E4:8'],
+  ], lead: { i: 'choir', vol: 0.1, gate: 0.97, oct: -12 }, p2: { style: 'trem', i: 'organ', vol: 0.024, oct: -12 }, bass: { style: 'long', i: 'contra' }, drum: { pat: DR.toll, kit: 'orch', vol: 0.55 }, echo: { t: 0.24, fb: 0.58, mix: 0.6 }, gba: { lp: 6500 } });
+  // 교주 1페이즈: 같은 음을 되풀이하는 미사 낭송 같은 오르간 선율 + 아래 4도로 따라가는 리드(오르가눔) + 합창 화음 · 몰아치는 북
+  SONGS.cultBoss1 = mk({ bpm: 138, M: 16, rows: [
+    ['Em', 'E5 E5 F5 E5 E5 E5 F5 G5'], ['Em', 'E5 E5 F5 E5 D5:2 E5:2'], ['F', 'F5 F5 G5 F5 F5 F5 G5 A5'], ['Em', 'G5:2 F5:2 E5:4'],
+    ['Am', 'A5 A5 Bb5 A5 G5:2 A5:2'], ['Bbdim', 'Bb5 A5 G5 F5 E5:2 F5:2'], ['Dm', 'D5 F5 E5 D5 C5 D5 E5 F5'], ['B7', 'D#5:2 F#5:2 B4:4'],
+  ], lead: { i: 'organ', vol: 0.07, oct: -12, gate: 0.85 }, p2: { style: 'harm', iv: -5, i: 'reed', vol: 0.55 }, pad: { i: 'choir', vol: 0.055 }, bass: { style: 'drive16', i: 'contra' }, drum: { pat: DR.boss1, fill: DR.boss1F, kit: 'orch', vol: 1 }, echo: { t: 0.18, fb: 0.45, mix: 0.45 }, stab: true });
+  // 교주 2페이즈(불이 붙음): 반음씩 기어오르는 금관 + 크게 부푼 합창 · 쳄발로 16분 아르페지오 · 더 빠른 북
+  SONGS.cultBoss2 = mk({ bpm: 160, M: 16, rows: [
+    ['Em', 'E5 F5 E5 F5 G5 F5 E5 D5'], ['F', 'F5 G5 F5 G5 A5 G5 F5 E5'], ['Em', 'B5:2 Bb5:2 A5:2 G5:2'], ['F', 'A5 G5 F5 E5 F5:2 G5:2'],
+    ['Am', 'A5 Bb5 A5 G5 A5 C6 Bb5 A5'], ['Bbdim', 'Bb5:2 E6:2 D6 C6 Bb5 A5'], ['Dm', 'F5 E5 D5 E5 F5 G5 A5 Bb5'], ['B7', 'B5:2 A5 G5 F#5:2 D#5:2'],
+    ['Em', 'E6:2 D6 C6 B5:2 G5:2'], ['F', 'C6:2 Bb5 A5 G5:2 F5:2'], ['Em', 'G5 F5 E5 F5 G5 A5 B5 C6'], ['B7', 'D#6:2 C6 B5 A5:2 F#5:2'],
+  ], lead: { i: 'brass', vol: 0.11 }, p2: { style: 'arp16', i: 'harpsi', vol: 0.07, oct: 12 }, pad: { i: 'choir', vol: 0.065 }, bass: { style: 'drive16', i: 'bassP' }, drum: { pat: DR.boss2, fill: DR.boss2F, kit: 'orch', vol: 1 }, echo: { t: 0.16, fb: 0.4, mix: 0.4 }, stab: true });
   // 옛 무드 이름 호환
   const ALIAS = { field: 's1', survive: 's1Survive', boss: 's1Boss', rest: 's1Rest', citadel: 's2', citadelSurvive: 's2Survive', citadelBoss: 's2Boss', citadelRest: 's2Rest', orc: 's3', orcboss: 's3Boss' };
 

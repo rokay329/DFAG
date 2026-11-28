@@ -19,35 +19,35 @@ const CLUE = (() => {
         priest: '파편에 새겨진 왕가의 문양이 희미하게 빛났다. 그 빛은 왕도 쪽으로 기울었고, 미레아의 기도에는 여전히 아무 응답도 돌아오지 않았다.',
         gunner: '파편에는 왕가의 문양이 찍혀 있었다. 그레이브는 그 문양이 이름 없는 묘지의 비석 하나에 새겨진 표식과 같다는 걸 알아차렸다.' },
       say: {
-        knight: ['이쪽이군.', '왜 내 팔이 길을 아는 거지?'],
-        ranger: ['이건 단순한 사냥 의뢰가 아니야.', '의뢰인은 왕도에서 무언가를 찾고 있었어.'],
-        mage: ['왕관은 목적지가 아니라, 무언가를 끌어당기는 중심일 수 있어요.'],
-        priest: ['침묵의 한가운데까지 가야만 그 의미를 알 수 있을 거예요.'],
-        gunner: ['무덤에 있어야 할 문양이 왜 괴물 배 속에 있지?'] } },
-    2: { gem: 1, c: '#6aa8ff', rgb: '74,140,255', hi: '#c8e0ff', name: '파란 파편', title: '발도르의 기록', band: true, dx: -56, dy: 14,
-      common: '「왕명을 받들어 기사단은 이 조각을 지킨다. 누구도 성채 밖으로 가져가지 못한다.」',
+        knight: ['윽…!', '왜 이 문양에 상처가 반응하는 거지…?'],
+        ranger: ['의뢰인은 이걸 쫓고 있었던 건가…?', '다음 대상에게 가 보자.'],
+        mage: ['이 문양이 마력을 왕도로 끌어당기고 있어요.', '왕관은 목적지가 아니라, 무언가를 끌어당기는 중심일지도 몰라요.'],
+        priest: ['왕가의 문양이 왕도를 향해 빛나고 있어요.', '침묵의 한가운데까지 가 봐야겠어요.'],
+        gunner: ['묘지 비석에 있던 문양이군.', '이게 왜 괴물 배 속에서 나오지?'] } },
+    2: { gem: 1, c: '#6aa8ff', rgb: '74,140,255', hi: '#c8e0ff', name: '파란 파편', title: '파란 파편', band: false, dx: -56, dy: 14, // v3.83 발도르의 기록(띠 · 쪽지 · 맹세) 폐기 → 1장처럼 표면에 문양이 떠오름
+      common: '파편 표면에 첫 번째 파편과 같은 왕가의 문양이 떠올라 있다.',
       para: {
-        knight: '기록 끝에 찍힌 왕가의 문양을 보는 순간, 오른팔의 통증이 지금까지보다 깊게 파고들었다.',
-        ranger: '기록 끝에는 네로의 계약서에 찍힌 인장과 같은 표식이 남아 있었다.',
-        mage: '기록 뒷면의 주문은 파편을 중심에 두고 성채의 방들을 잇고 있었지만, 의식의 목적은 남아 있지 않았다.',
-        priest: '파편을 지키라는 명령은 기록에 남았지만, 발도르가 왜 그 자리를 떠나지 못했는지는 적혀 있지 않았다.',
-        gunner: '그가 적이었어도, 죽음 이후까지 자리를 지키게 된 자라는 걸 그레이브는 알았다.' },
+        knight: '문양이 떠오르는 순간, 오른팔의 통증이 지금까지보다 깊게 파고들었다.',
+        ranger: '떠오른 문양은 네로의 계약서에 찍힌 인장과 같은 모양이었다.',
+        mage: '두 파편을 나란히 두자, 같은 문양이 서로를 향해 희미하게 빛났다. 빛이 기우는 쪽은 이번에도 왕도였다.',
+        priest: '문양이 떠오르자, 발도르가 쓰러진 자리에 남아 있던 차가운 기운이 그제야 흩어졌다.',
+        gunner: '떠오른 문양은 묘지 비석에서 본 것과 똑같았다.' },
       say: {
-        knight: ['이건 단순한 흉터가 아니야.', '통증이 가리키는 곳으로 가면, 이 문장이 누구의 것인지 알 수 있을 거야.'],
-        ranger: ['나 말고도 이걸 뒤진 놈이 있었군.', '의뢰인은 왕의 명령에 가담했거나, 그걸 막으려 했겠지.'],
-        mage: ['왕의 명령은 확인했어요.', '이제 그 명령이 무엇을 위한 것이었는지 알아야 해요.'],
-        priest: ['왕의 명령이 이들을 붙들었다면, 그 책임을 묻겠어요.'],
-        gunner: ['이제 네가 지키던 건 내가 들고 간다.', '누가 널 여기 세워 뒀는지 확인하마.'] } },
+        knight: ['크윽… 통증이 훨씬 강해졌군.', '좋아… 마지막 왕관 조각을 찾으러 가자.'],
+        ranger: ['계약서와 같은 인장이군.', '의뢰인은 이 문양의 주인과 이어져 있어.'],
+        mage: ['두 조각의 문양이 서로를 끌어당기고 있어요.', '모일수록 힘이 강해진다면…', '세 번째 조각에서 답이 나오겠네요.'],
+        priest: ['그를 붙들고 있던 건 이 조각이었네요.', '이런 걸 맡긴 자에게 그 책임을 묻겠어요.'],
+        gunner: ['또 그 문양이군.', '비석에 새긴 놈하고 이걸 맡긴 놈, 같은 놈이겠지.'] } },
     // v3.81e 3장 크루가쉬: 붉은 조각을 주우면 양피지 대신 「세 파편의 공명」 → 말주머니 · 네로는 전리품 더미의 찢긴 계약서 조각 · 그레이브는 유품 더미를 한쪽으로 정리
     3: { gem: 2, c: '#ff7060', rgb: '224,64,48', hi: '#ffb0a0', name: '붉은 파편', band: false, reso: true, dx: -60, dy: 16,
       say: {
-        knight: ['도망치라고 아픈 게 아니야.', '가라고 하는 거다.', '…우리가 이걸 깨우고 있는 건가.'],
-        ranger: [] /* 공명 뒤 말이 없고 옆 전리품 더미가 반짝이기 시작함 */,
+        knight: ['허억… 허억…', '팔이 통째로 떨어져 나갈 것 같군.', '좋아, 왕도로 가서 직접 확인해 주지.'],
+        ranger: ['역시 이건 단순한 사냥 의뢰가 아니야.', '처리 대상은 핑계였어.', '누군가 날 왕관 조각을 모으도록 의도한 거야.'],
         mage: ['우리가 길을 연 게 아니라…', '무언가가 우리를 통해 길을 찾은 걸지도 몰라요.'],
         priest: ['누구도 이 전쟁을 원하지 않았던 것 같아요.', '이 빛이 무엇을 깨우는지, 왕도에서 확인하겠어요.'],
-        gunner: ['우리가 끝내려는 건 왕 하나가 아닐지도 모르겠군.'] } } };
+        gunner: ['셋이 모이니 이제야 말을 하는군.', '왕도까지 길 안내는 확실히 받았어.'] } } };
   const CONTRACT = { title: '찢긴 계약서 조각', c: '#d0a050', para: '글자는 거의 지워졌지만, 모서리의 인장은 네로가 가진 계약서와 맞물렸다. 필체가 낯익었지만, 네로는 그 이유를 떠올리지 못했다.',
-    say: ['이 의뢰는 왕관을 찾는 일이 아니야.', '누군가 왕관을 감시하라고 날 보낸 거야.'] };
+    say: ['역시 이건 단순한 사냥 의뢰가 아니야.', '처리 대상은 핑계였어.', '누군가 날 왕관 조각을 모으도록 의도한 거야.'] };
   const sn = v => Math.round(v / 2) * 2;
   const px = (x, y, c, w = 2, h = 2) => { ctx.fillStyle = c; ctx.fillRect(sn(x), sn(y), w, h); };
   const curR = () => G && G.dun && G.dun.cur;
@@ -64,7 +64,7 @@ const CLUE = (() => {
          open: ['.kkkkkkk', 'kWWWWWsk', 'kWlllLsk', 'kwwwwwsk', 'kwllLRrk', 'kssdrqdk', '.kkkkkk.'] },
     B: { fold: ['.kkkk.', 'kWWwsk', 'kwwRrk', '.kkqk.'],
          open: ['.kkkkkkkk', 'kWWWWWWsk', 'kWllllLsk', 'kwwwwwwsk', 'kwlllLwsk', 'kwwwwRrdk', 'kssddrqdk', '.kkkkkqk.'] } };
-  const TORN = ['.kkkkk..', 'kWWWWsk.', 'kWllLskk', 'kwwwwwsk', 'kwlLwRrk', 'kssdsrqk', '.kkkkkk.']; // 3장 찢긴 계약서 조각 (오른쪽 위가 찢김 · 인장 모서리)
+  const TORN = ['.kkkkkk....', 'kWWWWWsk...', 'kWllLlskkk.', 'kwwwwwwwsk.', 'kwlLlkkkkkk', 'kwwwkRrRrRk', 'kssdkRRRRRk', '.kkkkqqqqqk', '.....kkkkk.']; // v3.83 모서리 밀랍 인장에 왕가 문양(세 봉우리 왕관) // 3장 찢긴 계약서 조각 (오른쪽 위가 찢김 · 인장 모서리)
   let NOTE = NOTES.A; // v3.81b 사용자 결정: A안 (시안 _시안/발도르의기록_쪽지_시안03.html)
   function drawNote(cx, cy, key) { const m = key === 'torn' ? TORN : NOTE[key], H = m.length, W = m[0].length, X = sn(cx) - Math.floor(W / 2) * 2, Y = sn(cy) - Math.floor(H / 2) * 2;
     for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) { const c = m[j][i]; if (c !== '.') px(X + i * 2, Y + j * 2, NOTE_P[c]); } }
@@ -95,7 +95,7 @@ const CLUE = (() => {
   function drop(e, ch) { const R = curR(); if (!R || R.clue) return; const C = CH[ch]; // 쓰러진 몸의 왼쪽 (발도르 칼 · 점액 웅덩이를 피함)
     const lx = clamp(e.x + C.dx, A.x0 + 24, A.x1 - 24), ly = clamp(e.y + C.dy, A.y0 + 30, A.y1 - 14);
     R.clue = { ch, ph: 'wait', t: 0, bx: e.x, by: e.y - 30, x: lx, y: ly, z: 0 };
-    if (ch === 3 && (G.cls === 'ranger' || G.cls === 'gunner')) R.clue.pile = { x: G.cls === 'ranger' ? lx - 40 : lx, y: ly + 4, paper: G.cls === 'ranger', ox: 0 }; } // 네로: 옆에 전리품 더미 · 그레이브: 조각 둘레에 유품 더미
+  } // v3.83 그레이브 유품 더미 · 네로 전리품 더미(찢긴 계약서 조각) 폐기 — 3장은 모두 붉은 파편 → 공명 → 말주머니 // 네로: 옆에 전리품 더미 · 그레이브: 조각 둘레에 유품 더미
   const BOUNCE = [[0, 0.55, 46], [0.55, 0.22, 10], [0.77, 0.14, 4]]; // [시작, 길이, 높이]
   function stepDrop(c, dt) { c.t += dt;
     if (c.ph === 'wait') { if (TRUTH.busy()) { c.t = Math.min(c.t, 0.6); return; } /* 진엔딩 루트: 크루가쉬 마지막 말 · 양피지가 끝난 뒤 */ if (c.t >= 1.1) { c.ph = 'fly'; c.t = 0; sfx('swing', 1.6); burstAt(c.bx, c.by, 6, CH[c.ch].c); } return; }
@@ -120,8 +120,13 @@ const CLUE = (() => {
     if (s.ph === 'grab') { const c = s.c, u = Math.min(1, t / 0.35), hx = P.x + P.face * 7, hy = P.y - 8;
       if (!s.from) s.from = { x: c.cx, y: c.cy }; c.ph = 'taken'; s.sx = s.from.x + (hx - s.from.x) * u; s.sy = s.from.y + (hy - s.from.y) * u - Math.sin(u * Math.PI) * 14;
       if (t >= 0.35) { s.sx = null; s.t = 0; sfx('coin', 1.9); burstAt(hx, hy, 8, s.C.c); lootFeed('왕관 조각 — ' + s.C.name, s.C.c, 3000);
-        if (s.C.band) { s.ph = 'unfold'; s.note = 'fold'; } else if (s.C.reso) { s.ph = 'reso'; sfx('swing', 1.2); } else s.ph = 'hold'; } return; }
-    if (s.ph === 'hold') { if (t > 0.45) { s.ph = 'parch'; s.t = 0; read(); } return; } // 1장: 조각을 손에 넣고 잠깐 멈춤
+        if (s.C.reso) { s.ph = 'reso'; sfx('swing', 1.2); } else { s.ph = 'lift'; s.ins = { hx, hy }; } } return; }
+    // v3.83 살펴보기: 들어 올리기 → 표면에서 왕가 문양이 3단계로 떠오름 · 번쩍 → (2장) 초록 파편과 끌어당김 → 양피지 → 넣기 (시안 _시안/왕관조각_살펴보기_문양_시안01.html)
+    if (s.ph === 'lift') { if (t >= INS.lift) { s.ph = 'crest'; s.t = 0; sfx('blip', 1.5); } return; }
+    if (s.ph === 'crest') { if (!s.fl && t >= INS.rev[2]) { s.fl = true; sfx('coin', 2.2); const q = insPos(s); burstAt(q.x, q.y - 22, 8, s.C.c); }
+      if (t >= INS.crestEnd) { s.t = 0; if (s.c.ch === 2) { s.ph = 'pull'; sfx('swing', 1.7); } else { s.ph = 'parch'; read(); } } return; }
+    if (s.ph === 'pull') { if (!s.pl1 && t >= INS.pull[0]) { s.pl1 = true; sfx('blip', 1.8); } if (!s.pl2 && t >= INS.pull[1]) { s.pl2 = true; sfx('blip', 2.0); } if (t >= INS.pullEnd) { s.ph = 'parch'; s.t = 0; read(); } return; }
+    if (s.ph === 'away') { if (!s.aw && t >= INS.awayCrest) { s.aw = true; sfx('step', 1.6); } if (t >= INS.awayEnd) S = null; return; }
     if (s.ph === 'unfold') { if (t > 0.22 && s.note === 'fold') { s.note = 'open'; sfx('swing', 2.2); } if (t > 0.75) { s.ph = 'parch'; s.t = 0; read(); } return; }
     if (s.ph === 'reso') { resoTick(s, dt, t); if (t >= RESO.end) { s.ph = 'talk'; s.t = 0; afterReso(); } return; }
     if (s.ph === 'cgrab') { const pl = s.c.pile, u = Math.min(1, t / 0.35), hx = P.x + P.face * 7, hy = P.y - 8; // 네로: 더미에서 계약서 조각을 뽑아 듦
@@ -164,11 +169,40 @@ const CLUE = (() => {
     (SAVE.clueSeen || (SAVE.clueSeen = {}))['ranger:3c'] = true; persist();
     showTruthParchment({ no: '발견', title: CONTRACT.title, ac: CONTRACT.c, paras: [CONTRACT.para], clue: true, onClose: done }); }
   function read() { const ch = S.c.ch, C = S.C;
-    const done = () => { if (!S) return; S.ph = 'talk'; TRUTH.talk((C.say[G.cls] || C.say.knight).map(t => ['me', t]), () => { if (!S) return; if (S.note) { S.ph = 'fold'; S.t = 0; } else S = null; }); };
+    const done = () => { if (!S) return; S.ph = 'talk'; TRUTH.talk((C.say[G.cls] || C.say.knight).map(t => ['me', t]), () => { if (!S) return; if (S.ins) { S.ph = 'away'; S.t = 0; } else if (S.note) { S.ph = 'fold'; S.t = 0; } else S = null; }); };
     const skip = seen(ch) || (ch === 1 && G.truthRun && G.truthRun.t1); // 두 번째 밤부터 · 1장 진엔딩 루트(키륵 진실)는 말주머니만
     if (skip) { done(); return; }
     (SAVE.clueSeen || (SAVE.clueSeen = {}))[seenKey(ch)] = true; persist();
     showTruthParchment({ no: '발견', title: C.title, ac: C.c, paras: [C.common, C.para[G.cls] || C.para.knight], clue: true, onClose: done }); }
+
+  // ---------------------------------------------------------------- v3.83 살펴보기 (조각을 들어 올려 문양 확인)
+  const INS = { lift: 0.35, rev: [0.0, 0.15, 0.3], flash: 0.17, crestEnd: 0.75, pull: [0.5, 1.0], pop: 0.25, pullEnd: 1.3, awayCrest: 0.36, awayEnd: 0.86 };
+  const CREST_A = ['#..#..#', '##.#.##', '#######', '#.#.#.#', '#######']; // 왕가 문양: 세 봉우리 왕관 (비석 · 계약서 인장 · 깃발과 같음)
+  const hashC = i => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+  const ease3 = k => 1 - Math.pow(1 - Math.max(0, Math.min(1, k)), 3);
+  const stepT = (t, fps = 12) => Math.floor(t * fps) / fps;
+  function insPos(s) { const P = G.player, ins = s.ins, top = { x: P.x + P.face * 14, y: P.y - 40 }, t = stepT(s.t), bob = Math.floor(time * 2) % 2 ? -2 : 0;
+    if (s.ph === 'lift') { const u = ease3(t / INS.lift); return { x: ins.hx + (top.x - ins.hx) * u, y: ins.hy + (top.y - ins.hy) * u }; }
+    if (s.ph === 'away' && t > INS.awayCrest) { const u = ease3((t - INS.awayCrest) / (INS.awayEnd - INS.awayCrest)), hx = P.x + P.face * 7, hy = P.y - 8; return { x: top.x + (hx - top.x) * u, y: top.y + (hy - top.y) * u }; }
+    return { x: top.x, y: top.y + bob }; }
+  function drawCrest(cx, cy, col, hi, show = 1, flash = false) { const m = CREST_A, H = m.length, W = m[0].length, X = sn(cx) - Math.floor(W / 2) * 2, Y = sn(cy) - Math.floor(H / 2) * 2;
+    const on = (x, y) => y >= 0 && y < H && x >= 0 && x < W && m[y][x] === '#', vis = (x, y) => on(x, y) && hashC(x * 13 + y * 7 + 3) < show + 0.001;
+    for (let y = -1; y <= H; y++) for (let x = -1; x <= W; x++) { if (vis(x, y)) continue; if (vis(x + 1, y) || vis(x - 1, y) || vis(x, y + 1) || vis(x, y - 1)) px(X + x * 2, Y + y * 2, '#0b0a0e'); }
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (vis(x, y)) px(X + x * 2, Y + y * 2, flash ? '#ffffff' : !on(x, y - 1) ? hi : col); }
+  function dither(cx, cy, rx, ry, rgb, a) { ctx.save(); ctx.fillStyle = `rgba(${rgb},${a})`; for (let y = -ry; y <= ry; y += 2) for (let x = -rx; x <= rx; x += 2) if ((((x + y) / 2) & 1) === 0 && (x / rx) ** 2 + (y / ry) ** 2 <= 1) ctx.fillRect(sn(cx) + x, sn(cy) + y, 2, 2); ctx.restore(); }
+  function drawInspect(s) { const t = stepT(s.t), ph = s.ph, C = s.C, gi = C.gem, p = piece(gi), q = insPos(s);
+    const hold = ph === 'pull' || ph === 'parch' || ph === 'talk', pullK = ph === 'pull' ? (t >= INS.pull[1] ? 4 : t >= INS.pull[0] ? 2 : 0) : (hold || ph === 'away') && s.c.ch === 2 ? 4 : 0;
+    let show = 0, rise = 10, flash = false;
+    if (ph === 'crest') { show = t < INS.rev[1] ? 0.34 : t < INS.rev[2] ? 0.67 : 1; rise = t < INS.rev[1] ? 2 : t < INS.rev[2] ? 6 : 10; flash = t >= INS.rev[2] && t < INS.rev[2] + INS.flash; }
+    else if (hold) show = 1; else if (ph === 'away') show = t < INS.awayCrest ? 1 - Math.min(1, Math.floor(t / 0.12 + 1) / 3) : 0;
+    const blink = ph === 'pull' && t >= INS.pop ? Math.floor((t - INS.pop) * 4) % 2 : -1;
+    const one = (gi2, x, y, sh, bl) => { const C2 = CH[gi2 + 1], pp = piece(gi2), top = y - pp.pc[1] * 2; if (ph !== 'lift' && !(ph === 'away' && t > INS.awayCrest)) dither(x, y, 12, 10, C2.rgb, 0.26);
+      drawShard(x, y, false, 1, gi2); if (sh > 0) drawCrest(x, top - rise - 4, C2.c, bl ? '#ffffff' : C2.hi, sh, flash && gi2 === gi); };
+    one(gi, q.x - pullK * G.player.face, q.y, show, blink === 1);
+    if (s.c.ch === 2 && (ph === 'pull' || hold || ph === 'away')) { const P = G.player, k = ph === 'pull' ? Math.min(1, t / INS.pop) : 1, gx = P.x - P.face * 14 + pullK * P.face;
+      let x = gx, y = q.y + (k < 1 ? 6 : 0); if (ph === 'away' && t > INS.awayCrest) { const u = ease3((t - INS.awayCrest) / (INS.awayEnd - INS.awayCrest)); x = gx + (P.x + P.face * 7 - gx) * u; y = q.y + (P.y - 8 - q.y) * u; }
+      one(0, x, y, ph === 'pull' ? (t >= INS.pop ? 1 : 0) : show, blink === 0); }
+    if (flash) for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2, r = 12 + (t - INS.rev[2]) * 60, top = q.y - p.pc[1] * 2 - rise - 4; px(q.x + Math.cos(a) * r, top + Math.sin(a) * r * 0.8, i % 2 ? '#ffffff' : C.hi); } }
 
   // ---------------------------------------------------------------- 그리기
   function ents(list) { const R = curR(); if (!R) return; const c = R.clue;
@@ -176,13 +210,15 @@ const CLUE = (() => {
     if (c && (c.ph === 'fly' || c.ph === 'rest')) { const C = CH[c.ch], cx = c.cx == null ? c.x : c.cx, cy = c.cy == null ? c.y - 10 : c.cy, bob = c.ph === 'rest' ? (Math.floor(time * 2) % 2 ? -2 : 0) : 0;
       list.push({ y: c.y, d: () => { const rest = c.ph === 'rest', fx = rest && typeof KEYFX !== 'undefined'; if (fx) { KEYFX.under(c.x, c.y, C.rgb); KEYFX.pillar(c.x, c.y, C.rgb); } else if (rest) glow(C, c.x, c.y, 0.5 + 0.5 * Math.sin(time * 3)); drawShadow(c.x, c.y, 5); shard(C, cx, cy - c.z + bob); if (fx) KEYFX.over(c.x, c.y - 24, C.c, C.hi); /* v3.82c 크기는 원래대로 · 효과만 */ else if (rest) twinkle(C, c.x, c.y, 0.3); } }); } // v3.82 왕관 조각도 봉인 해제 아이템처럼 강조
     if (S && S.sx != null && S.c) { const s = S; list.push({ y: G.player.y + 2, d: () => shard(s.C, s.sx, s.sy) }); }
+    if (S && S.ins && S.ph !== 'grab') { const s = S; list.push({ y: G.player.y + 2, d: () => drawInspect(s) }); } // v3.83 살펴보기
     if (S && S.cx != null) { const s = S; list.push({ y: G.player.y + 2, d: () => drawNote(s.cx, s.cy, 'torn') }); }
     if (S && S.ph === 'reso') { const s = S; list.push({ y: G.player.y + 60, d: () => drawReso(s) }); }
     if (S && S.note) { const P = G.player, s = S; list.push({ y: P.y + 1, d: () => drawNote(P.x + P.face * 7, P.y - 8, s.note) /* 가슴 앞 손 높이 · 얼굴을 가리지 않게 */ }); }
   }
   function lights(list) { const R = curR(), c = R && R.clue; if (c && c.ph === 'rest') list.push({ x: c.x, y: c.y - 10, r: 72, a: 0.8, c: CH[c.ch].rgb, ca: 0.3 });
     if (c && c.pile && c.pile.spark) list.push({ x: c.pile.x, y: c.pile.y - 6, r: 30, a: 0.4, c: '208,160,80', ca: 0.15 });
-    if (S && S.ph === 'reso') { const o = resoC(); list.push({ x: o.x, y: o.y, r: 90, a: 0.9, c: '255,220,200', ca: 0.25 }); } }
+    if (S && S.ph === 'reso') { const o = resoC(); list.push({ x: o.x, y: o.y, r: 90, a: 0.9, c: '255,220,200', ca: 0.25 }); }
+    if (S && S.ins && S.ph !== 'grab' && S.ph !== 'away') { const q = insPos(S); list.push({ x: q.x, y: q.y - 12, r: 46, a: 0.7, c: S.C.rgb, ca: 0.25 }); } } // v3.83 살펴보는 조각의 빛
 
   // ---------------------------------------------------------------- 연결
   { const o = killEnemy; killEnemy = function (e, silent) { const ch = !e || e.dead ? 0 : bossCh(e); const r = o.apply(this, arguments); try { if (ch && e.dead && !silent) drop(e, ch); } catch (x) { console.error(x); } return r; }; }
@@ -204,7 +240,7 @@ const CLUE = (() => {
   function dbg() {
     if (typeof DEV === 'undefined' || !DEV) return;
     if (!DEVK.has('sd9')) DEVK.set('sd9', '1장 점액왕을 쓰러뜨린 자리로 (초록 파편 · 처음 본 기록 지움)');
-    if (!DEVK.has('sd8')) DEVK.set('sd8', '2장 발도르를 쓰러뜨린 자리로 (발도르의 기록 · 처음 본 기록 지움)');
+    if (!DEVK.has('sd8')) DEVK.set('sd8', '2장 발도르를 쓰러뜨린 자리로 (파란 파편 · 처음 본 기록 지움)');
     if (!DEVK.has('sd0')) DEVK.set('sd0', '3장 크루가쉬를 쓰러뜨린 자리로 (세 파편의 공명 · 처음 본 기록 지움)');
     for (const [k, ch] of [['sd9', 1], ['sd8', 2], ['sd0', 3]]) if (pressed[k] === 'shift' && G && mode === 'play' && !G.trans) { pressed[k] = false; if (SAVE.clueSeen) { delete SAVE.clueSeen[seenKey(ch)]; if (ch === 3) delete SAVE.clueSeen['ranger:3c']; } S = null;
       if (G.stage !== ch || G.dun.home || G.dun.forge) { G.stage = ch - 1; G.noLoad = true; nextStage(); if (mode === 'wmap') wmEnd(); if (mode === 'parchment') closeStageParchment(); }
