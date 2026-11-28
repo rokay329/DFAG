@@ -350,7 +350,7 @@
   .engC::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 6px; height: 2px; background: repeating-linear-gradient(90deg, var(--ec) 0 6px, transparent 6px 8px, var(--ec) 8px 10px, transparent 10px 16px); opacity: .45; }
   .engC .engSeal { display: block; width: 64px; height: 64px; margin: 4px auto 8px; }
   .engC .engSeal img { display: block; width: 64px; height: 64px; image-rendering: pixelated; }
-  .engC .engHue { display: block; font-size: 11px; color: var(--ec); letter-spacing: 1px; margin-bottom: 2px; } /* v3.25 빛의 방 */
+  .engC .engHue { display: block; font-size: 11px; color: var(--ec); letter-spacing: 1px; margin-bottom: 2px; } /* v3.25 빛의 샘 */
   .engC .engCost { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 6px; font-size: 13px; color: #f0e8d8; }
   .engC .engCost img { width: 18px; height: 18px; image-rendering: pixelated; }
   .engC.poor { opacity: .45; cursor: not-allowed; } .engC.poor .engCost { color: #ff7a6a; }
@@ -749,7 +749,7 @@
           <h2 id="fgTitle">대장간 — 강화</h2>
           <div class="fgMoney"><span>골드 <b id="fgGold">0</b></span><span>철광석 조각 <b id="fgIron">0</b></span><span>정령의 결정 <b id="fgCrystal">0</b></span></div>
         </div>
-        <div class="fgTabs" id="fgTabs"><span class="f7" style="color:var(--quiet)">장착 기준</span><button class="pbtn" data-cls="knight">기사</button><button class="pbtn" data-cls="ranger">어세신</button><button class="pbtn" data-cls="mage">마법사</button><button class="pbtn" data-cls="priest">사제</button><button class="pbtn" data-cls="gunner">거너</button></div>
+        <div class="fgTabs" id="fgTabs"><span class="f7" style="color:var(--quiet)">장착 기준</span><button class="pbtn" data-cls="knight">기사</button><button class="pbtn" data-cls="ranger">암살자</button><button class="pbtn" data-cls="mage">마법사</button><button class="pbtn" data-cls="priest">사제</button><button class="pbtn" data-cls="gunner">거너</button></div>
         <div class="fgBody">
           <div class="fgList" id="fgList"></div>
           <div class="fgDetail" id="fgDetail"></div>
@@ -909,92 +909,22 @@ window.addEventListener('unhandledrejection',function(e){show('오류(promise): 
 <script src="music.js"></script>
 <!-- 게임 코드: js/ 폴더를 번호 순서대로 불러온다 (순서 중요 — 앞 파일의 함수·상수를 뒤 파일이 쓴다. 새 파일은 번호 사이에 끼워 넣기) -->
 <iframe id="denGame" title="미니게임"></iframe>
-<script src="js/01_core.js"></script>
-<script src="js/02_weapons.js"></script>
-<script src="js/03_state.js"></script>
-<script src="js/04_monsters.js"></script>
-<script src="js/05_dungeon.js"></script>
-<script src="js/06_rooms_decor.js"></script>
-<script src="js/07_worldmap.js"></script>
-<script src="js/08_enemies.js"></script>
-<script src="js/09_skills.js"></script>
-<script src="js/10_player.js"></script>
-<script src="js/11_altar_forge.js"></script>
-<script src="js/11b_ending.js"></script>
-<script src="js/11c_home.js"></script>
-<script src="js/11f_archive.js"></script>
-<script src="js/11g_bistro.js"></script>
-<script src="js/11h_den.js"></script>
-<script src="js/11d_truth.js"></script>
-<script src="js/12_chapter3.js"></script>
-<script src="js/13_update_render.js"></script>
-<script src="js/14_rig.js"></script>
-<script src="js/15_lighting_title.js"></script>
-<script src="js/16_ui.js"></script>
-<script src="js/17_main.js"></script>
-<script src="js/18_scenery.js"></script>
-<script src="js/19_scenery34.js"></script>
-<script src="js/11e_truth3.js"></script>
-<script src="js/20_occupancy.js"></script>
-<script src="js/21_ash4.js"></script>
-<script src="js/22_house4.js"></script>
-<script src="js/23_sr4.js"></script>
-<script src="js/24_wall4.js"></script>
-<script src="js/25_habi_ult.js"></script>
-<script src="js/26_casings.js"></script>
-<script src="js/27_bounty.js"></script>
-<script src="js/28_den_relics.js"></script>
-<script src="js/29_ruin1.js"></script>
-<script src="js/30_keep2.js"></script>
-<script src="js/31_camp3.js"></script>
-<script src="js/32_town4.js"></script>
-<script src="js/33_well2.js"></script>
-<script src="js/34_px1.js"></script>
-<script src="js/35_rollword.js"></script>
-<script src="js/35b_cult_as.js"></script>
-<script src="js/36_ruin.js"></script>
-<script src="js/37_bossdeath.js"></script>
-<script src="js/38_deathpx.js"></script>
-<script src="js/39_altarwind.js"></script>
-<script src="js/40_road4.js"></script>
-<script src="js/41_krs.js"></script>
-<script src="js/42_ars.js"></script>
-<script src="js/43_grs.js"></script>
-<script src="js/44_mrs.js"></script>
-<script src="js/45_prs.js"></script>
-<script src="js/46_icons.js"></script>
-<script src="js/47_awk.js"></script>
-<script src="js/48_moon.js"></script>
-<script src="js/49_pups.js"></script>
-<script src="js/50_swap.js"></script>
-<script src="js/51_shrine.js"></script>
-<script src="js/52_bloodaltar.js"></script>
-<script src="js/53_pathclear.js"></script>
-<script src="js/54_out2.js"></script>
-<script src="js/55_out3.js"></script>
-<script src="js/56_orc3.js"></script>
-<script src="js/57_out4.js"></script>
-<script src="js/58_walldeco.js"></script>
-<script src="js/59_pillars.js"></script>
-<script src="js/61_gsemi.js"></script>
-<script src="js/62_gcatapult.js"></script>
-<script src="js/63_gballista.js"></script>
-<script src="js/64_crewnav.js"></script>
-<script src="js/65_ghell.js"></script>
-<script src="js/67_judge.js"></script>
-<script src="js/68_ashgrip.js"></script>
-<script src="js/69_grabpose.js"></script>
-<script src="js/70_loading.js"></script>
-<script src="js/71_informant.js"></script>
-<script src="js/72_cinema.js"></script>
-<script src="js/73_baldor_free.js"></script>
-<script src="js/74_notebook.js"></script>
-<script src="js/75_cultboss.js"></script>
-<script src="js/76_weaktele.js"></script>
-<script src="js/77_clue.js"></script>
-<script src="js/78_keyfx.js"></script>
-<script src="js/79_invdrag.js"></script>
-<script src="js/80_firefx.js"></script>
+<script src="js/core.js"></script>
+<script src="js/world.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/town.js"></script>
+<script src="js/frame.js"></script>
+<script src="js/stage_props.js"></script>
+<script src="js/bounty.js"></script>
+<script src="js/stage_maps.js"></script>
+<script src="js/cult_ruin.js"></script>
+<script src="js/death_fx.js"></script>
+<script src="js/class_skills.js"></script>
+<script src="js/rooms_extra.js"></script>
+<script src="js/siege.js"></script>
+<script src="js/story_ui.js"></script>
+<script src="js/cultboss.js"></script>
+<script src="js/misc_fx.js"></script>
 <!-- v3.37 성벽 공격 구멍 뺌 (사용자 결정: 난잡함) · 파일 js/66_wallholes.js 는 남겨 둠 -->
 </body>
 </html>

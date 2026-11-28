@@ -399,6 +399,7 @@ window.AudioSys = (() => {
   const BASSVOL = { contra: 0.058, bassP: 0.1, celesta: 0.075, pizz: 0.2, piano: 0.07, violin: 0.045, flute: 0.06, harp: 0.1, harpsi: 0.1, horn: 0.06 }; // v3.19 악기 하나로 연주하는 곡의 베이스
   let rendering = false, solo = null;
   function playStep(t) {
+    if (hushed && !rendering) return; // v3.84 꺼 둔 동안은 새 음을 내지 않음 (메아리로 새어 나와 작게 깔리던 문제)
     const S = SONGS[mood], dt = 60 / S.bpm / 4, M = S.M;
     const B = S.bars[barIdx % S.bars.length], ch = B.ch, r = ch[0];
     const L = S.lead, P = S.p2, SO = solo; // solo: 테스트용 파트 하나만
@@ -462,6 +463,7 @@ window.AudioSys = (() => {
     bgmGain.gain.setTargetAtTime(st.muted ? 0 : st.bgm * 0.6, now, 0.08); // v3.18 기본 배경음을 전체적으로 작게 (0.9 → 0.6)
     sfxBus.gain.setTargetAtTime(st.sfx, now, 0.05);
   }
+  let hushed = false;
   const resolve = m => SONGS[m] ? m : ALIAS[m];
   function graph() {
     const limiter = ctx.createDynamicsCompressor(); limiter.threshold.value = -2; limiter.knee.value = 0; limiter.ratio.value = 20; limiter.attack.value = 0.001; limiter.release.value = 0.08; limiter.connect(ctx.destination);
@@ -514,13 +516,16 @@ window.AudioSys = (() => {
       m = resolve(m);
       if (!m) return;
       nextMood = m;
+      if (ctx && hushed && m === mood) { hushed = false; musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setTargetAtTime(1, ctx.currentTime, 0.1); return; } // v3.84 꺼 둔 곡을 다시
       if (!ctx || !immediate || m === mood) return;
+      hushed = false;
       const old = musicBus;
       old.gain.setTargetAtTime(0, ctx.currentTime, 0.12);
       setTimeout(() => { try { old.disconnect(); } catch (e) { /* 무시 */ } }, 2500);
       musicBus = ctx.createGain(); musicBus.connect(gbaIn); chan.fill(null);
       mood = m; barIdx = 0; step = 0; nextT = ctx.currentTime + 0.08; setEcho();
     },
+    hush(sec) { if (!ctx || !musicBus) return; hushed = true; musicBus.gain.cancelScheduledValues(ctx.currentTime); musicBus.gain.setTargetAtTime(0, ctx.currentTime, (sec || 0.6) / 3); }, // v3.84 지금 곡을 서서히 끔 (다음 setMood에서 다시 켜짐)
     setVolume(kind, v) { st[kind] = Math.max(0, Math.min(1, v)); save(); applyVol(); },
     toggleMute() { st.muted = !st.muted; save(); applyVol(); return st.muted; },
     songs: () => Object.keys(SONGS),
